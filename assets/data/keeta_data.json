@@ -1,0 +1,249 @@
+{
+  "user": {
+    "id": "u1",
+    "name": "Ahmed Al-Fawali",
+    "phone": "+965 5000 1234",
+    "avatar": "https://i.pravatar.cc/200?img=12",
+    "deliveryCode": "8421"
+  },
+  "kingkong": [
+    { "id": "k1", "title": "Food", "icon": "restaurant", "color": "#FFE41F" },
+    { "id": "k2", "title": "Grocery", "icon": "shopping_basket", "color": "#00B080" },
+    { "id": "k3", "title": "Pharmacy", "icon": "local_pharmacy", "color": "#1963CC" },
+    { "id": "k4", "title": "Pick-up", "icon": "shopping_bag", "color": "#EE7F00" },
+    { "id": "k5", "title": "Meal for One", "icon": "set_meal", "color": "#FF5324" },
+    { "id": "k6", "title": "Fixed Price", "icon": "sell", "color": "#965EDC" },
+    { "id": "k7", "title": "Flowers", "icon": "local_florist", "color": "#FF4F8F" },
+    { "id": "k8", "title": "More", "icon": "grid_view", "color": "#555555" }
+  ],
+  "banners": [
+    { "id": "b1", "title": "30% OFF first order", "subtitle": "New users only", "image": "https://picsum.photos/seed/keeta_b1/800/360", "bg": "#FFE41F" },
+    { "id": "b2", "title": "Free delivery weekend", "subtitle": "On orders over KD 5", "image": "https://picsum.photos/seed/keeta_b2/800/360", "bg": "#00B080" },
+    { "id": "b3", "title": "Flash deals", "subtitle": "Up to 50% off", "image": "https://picsum.photos/seed/keeta_b3/800/360", "bg": "#FF5324" }
+  ],
+  "filters": ["Recommended", "Nearby", "Rating 4.5+", "Free delivery", "Under 30 min", "New"],
+  "shops": [
+    {
+      "id": "s1",
+      "name": "Burger Boutique",
+      "logo": "https://picsum.photos/seed/keeta_s1logo/120/120",
+      "cover": "https://picsum.photos/seed/keeta_s1cover/800/400",
+      "kind": "restaurant",
+      "rating": 4.8,
+      "ratingCount": 1240,
+      "deliveryFee": 0.0,
+      "deliveryTime": "20-30 min",
+      "distanceKm": 1.2,
+      "minOrder": 3.0,
+      "tags": ["Burgers", "American", "Fast food"],
+      "promo": "Free delivery",
+      "freeDelivery": true,
+      "sponsored": false,
+      "sections": [
+        {
+          "title": "Popular",
+          "products": [
+            { "id": "p1", "name": "Double Cheeseburger", "image": "https://picsum.photos/seed/keeta_p1/300/300", "price": 2.95, "originalPrice": 3.50, "desc": "Two beef patties, cheddar, house sauce", "soldCount": 820, "kcal": 740 },
+            { "id": "p2", "name": "Crispy Chicken Burger", "image": "https://picsum.photos/seed/keeta_p2/300/300", "price": 2.50, "originalPrice": 0, "desc": "Buttermilk fried chicken, pickles", "soldCount": 610, "kcal": 690 },
+            { "id": "p3", "name": "Loaded Fries", "image": "https://picsum.photos/seed/keeta_p3/300/300", "price": 1.75, "originalPrice": 0, "desc": "Cheese, jalapeno, crispy onions", "soldCount": 430, "kcal": 520 }
+          ]
+        },
+        {
+          "title": "Combos",
+          "products": [
+            { "id": "p4", "name": "Classic Combo", "image": "https://picsum.photos/seed/keeta_p4/300/300", "price": 4.25, "originalPrice": 5.00, "desc": "Burger + fries + drink", "soldCount": 350, "kcal": 1100 },
+            { "id": "p5", "name": "Family Box", "image": "https://picsum.photos/seed/keeta_p5/300/300", "price": 9.90, "originalPrice": 12.0, "desc": "4 burgers, 2 fries, 4 drinks", "soldCount": 120, "kcal": 3200 }
+          ]
+        },
+        {
+          "title": "Drinks",
+          "products": [
+            { "id": "p6", "name": "Fresh Lemonade", "image": "https://picsum.photos/seed/keeta_p6/300/300", "price": 0.95, "originalPrice": 0, "desc": "Mint & lemon", "soldCount": 540, "kcal": 120 },
+            { "id": "p7", "name": "Cola", "image": "https://picsum.photos/seed/keeta_p7/300/300", "price": 0.50, "originalPrice": 0, "desc": "330ml can", "soldCount": 980, "kcal": 140 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "name": "Sushi Den",
+      "logo": "https://picsum.photos/seed/keeta_s2logo/120/120",
+      "cover": "https://picsum.photos/seed/keeta_s2cover/800/400",
+      "kind": "restaurant",
+      "rating": 4.6,
+      "ratingCount": 870,
+      "deliveryFee": 0.50,
+      "deliveryTime": "30-40 min",
+      "distanceKm": 2.4,
+      "minOrder": 5.0,
+      "tags": ["Sushi", "Japanese", "Healthy"],
+      "promo": "20% off",
+      "freeDelivery": false,
+      "sponsored": true,
+      "sections": [
+        {
+          "title": "Signature Rolls",
+          "products": [
+            { "id": "p10", "name": "Dragon Roll", "image": "https://picsum.photos/seed/keeta_p10/300/300", "price": 4.50, "originalPrice": 5.50, "desc": "Eel, avocado, tobiko", "soldCount": 410, "kcal": 480 },
+            { "id": "p11", "name": "Salmon Nigiri (4)", "image": "https://picsum.photos/seed/keeta_p11/300/300", "price": 3.20, "originalPrice": 0, "desc": "Fresh Atlantic salmon", "soldCount": 360, "kcal": 220 }
+          ]
+        },
+        {
+          "title": "Bowls",
+          "products": [
+            { "id": "p12", "name": "Salmon Poke Bowl", "image": "https://picsum.photos/seed/keeta_p12/300/300", "price": 3.90, "originalPrice": 0, "desc": "Rice, edamame, mango", "soldCount": 290, "kcal": 560 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "name": "Fresh Mart Grocery",
+      "logo": "https://picsum.photos/seed/keeta_s3logo/120/120",
+      "cover": "https://picsum.photos/seed/keeta_s3cover/800/400",
+      "kind": "grocery",
+      "rating": 4.7,
+      "ratingCount": 2100,
+      "deliveryFee": 0.0,
+      "deliveryTime": "15-25 min",
+      "distanceKm": 0.8,
+      "minOrder": 2.0,
+      "tags": ["Grocery", "Fresh", "Daily"],
+      "promo": "Free delivery",
+      "freeDelivery": true,
+      "sponsored": false,
+      "sections": [
+        {
+          "title": "Fruits & Vegetables",
+          "products": [
+            { "id": "p20", "name": "Bananas 1kg", "image": "https://picsum.photos/seed/keeta_p20/300/300", "price": 0.65, "originalPrice": 0, "desc": "Ecuador", "soldCount": 1500, "kcal": 0 },
+            { "id": "p21", "name": "Avocado (2)", "image": "https://picsum.photos/seed/keeta_p21/300/300", "price": 1.20, "originalPrice": 1.50, "desc": "Ripe & ready", "soldCount": 760, "kcal": 0 }
+          ]
+        },
+        {
+          "title": "Dairy & Eggs",
+          "products": [
+            { "id": "p22", "name": "Fresh Milk 1L", "image": "https://picsum.photos/seed/keeta_p22/300/300", "price": 0.80, "originalPrice": 0, "desc": "Full fat", "soldCount": 2300, "kcal": 0 },
+            { "id": "p23", "name": "Eggs (12)", "image": "https://picsum.photos/seed/keeta_p23/300/300", "price": 1.10, "originalPrice": 0, "desc": "Free range", "soldCount": 1800, "kcal": 0 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "name": "Pizza Republic",
+      "logo": "https://picsum.photos/seed/keeta_s4logo/120/120",
+      "cover": "https://picsum.photos/seed/keeta_s4cover/800/400",
+      "kind": "restaurant",
+      "rating": 4.4,
+      "ratingCount": 560,
+      "deliveryFee": 0.75,
+      "deliveryTime": "35-45 min",
+      "distanceKm": 3.1,
+      "minOrder": 4.0,
+      "tags": ["Pizza", "Italian"],
+      "promo": "",
+      "freeDelivery": false,
+      "sponsored": false,
+      "sections": [
+        {
+          "title": "Pizzas",
+          "products": [
+            { "id": "p30", "name": "Margherita", "image": "https://picsum.photos/seed/keeta_p30/300/300", "price": 3.50, "originalPrice": 0, "desc": "Tomato, mozzarella, basil", "soldCount": 640, "kcal": 900 },
+            { "id": "p31", "name": "Pepperoni", "image": "https://picsum.photos/seed/keeta_p31/300/300", "price": 4.20, "originalPrice": 0, "desc": "Double pepperoni", "soldCount": 720, "kcal": 1050 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "name": "Shawarma House",
+      "logo": "https://picsum.photos/seed/keeta_s5logo/120/120",
+      "cover": "https://picsum.photos/seed/keeta_s5cover/800/400",
+      "kind": "restaurant",
+      "rating": 4.9,
+      "ratingCount": 3400,
+      "deliveryFee": 0.0,
+      "deliveryTime": "20-30 min",
+      "distanceKm": 1.6,
+      "minOrder": 2.0,
+      "tags": ["Arabic", "Shawarma", "Grills"],
+      "promo": "Free delivery",
+      "freeDelivery": true,
+      "sponsored": false,
+      "sections": [
+        {
+          "title": "Shawarma",
+          "products": [
+            { "id": "p40", "name": "Chicken Shawarma", "image": "https://picsum.photos/seed/keeta_p40/300/300", "price": 0.95, "originalPrice": 0, "desc": "Garlic, pickles, fries", "soldCount": 5200, "kcal": 480 },
+            { "id": "p41", "name": "Meat Shawarma", "image": "https://picsum.photos/seed/keeta_p41/300/300", "price": 1.25, "originalPrice": 0, "desc": "Tahini, tomato, onion", "soldCount": 3100, "kcal": 520 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "name": "Sweet Tooth Bakery",
+      "logo": "https://picsum.photos/seed/keeta_s6logo/120/120",
+      "cover": "https://picsum.photos/seed/keeta_s6cover/800/400",
+      "kind": "restaurant",
+      "rating": 4.5,
+      "ratingCount": 430,
+      "deliveryFee": 0.50,
+      "deliveryTime": "25-35 min",
+      "distanceKm": 2.0,
+      "minOrder": 3.0,
+      "tags": ["Desserts", "Bakery", "Coffee"],
+      "promo": "Buy 1 Get 1",
+      "freeDelivery": false,
+      "sponsored": false,
+      "sections": [
+        {
+          "title": "Cakes",
+          "products": [
+            { "id": "p50", "name": "Chocolate Slice", "image": "https://picsum.photos/seed/keeta_p50/300/300", "price": 1.50, "originalPrice": 2.00, "desc": "Rich dark chocolate", "soldCount": 380, "kcal": 410 }
+          ]
+        }
+      ]
+    }
+  ],
+  "addresses": [
+    { "id": "a1", "label": "Home", "line": "Block 4, Street 12, House 7", "area": "Salmiya", "recipient": "Ahmed", "phone": "+965 5000 1234", "isDefault": true, "lat": 29.33, "lng": 48.07 },
+    { "id": "a2", "label": "Office", "line": "Kuwait City, Al-Hamra Tower, Floor 22", "area": "Sharq", "recipient": "Ahmed", "phone": "+965 5000 1234", "isDefault": false, "lat": 29.38, "lng": 47.98 }
+  ],
+  "coupons": [
+    { "id": "c1", "title": "KD 1 off", "subtitle": "Min spend KD 5", "amount": 1.0, "minSpend": 5.0, "expiry": "2026-12-31", "used": false },
+    { "id": "c2", "title": "Free delivery", "subtitle": "Any order", "amount": 0.5, "minSpend": 0.0, "expiry": "2026-09-30", "used": false },
+    { "id": "c3", "title": "20% off", "subtitle": "Up to KD 3", "amount": 3.0, "minSpend": 8.0, "expiry": "2026-08-15", "used": false }
+  ],
+  "orders": [
+    {
+      "id": "o1",
+      "shopName": "Shawarma House",
+      "shopLogo": "https://picsum.photos/seed/keeta_s5logo/120/120",
+      "status": "delivering",
+      "statusStep": 3,
+      "total": 4.85,
+      "date": "Today, 13:20",
+      "items": [
+        { "name": "Chicken Shawarma", "qty": 3, "price": 0.95 },
+        { "name": "Meat Shawarma", "qty": 1, "price": 1.25 }
+      ],
+      "rider": { "name": "Mohammed", "phone": "+965 6000 9999", "vehicle": "motorbike" }
+    },
+    {
+      "id": "o2",
+      "shopName": "Burger Boutique",
+      "shopLogo": "https://picsum.photos/seed/keeta_s1logo/120/120",
+      "status": "completed",
+      "statusStep": 5,
+      "total": 7.20,
+      "date": "Yesterday, 20:05",
+      "items": [
+        { "name": "Double Cheeseburger", "qty": 2, "price": 2.95 },
+        { "name": "Loaded Fries", "qty": 1, "price": 1.75 }
+      ],
+      "rider": { "name": "Ali", "phone": "+965 6000 1111", "vehicle": "car" }
+    }
+  ]
+}

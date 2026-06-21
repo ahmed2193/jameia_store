@@ -1,0 +1,108 @@
+import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text_styles.dart';
+
+/// KeeTa primary CTA — brand-yellow pill with black foreground (the signature
+/// "Place order" / "Add" button look).
+class AppButton extends StatelessWidget {
+  const AppButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.expanded = true,
+    this.enabled = true,
+    this.loading = false,
+    this.height = 48,
+    this.color,
+    this.foreground,
+    this.trailing,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool expanded;
+  final bool enabled;
+  final bool loading;
+  final double height;
+  final Color? color;
+  final Color? foreground;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = color ?? AppColors.primary;
+    final fg = foreground ?? AppColors.brandForeground;
+    final active = enabled && !loading && onPressed != null;
+
+    final child = Material(
+      color: active ? bg : AppColors.divider,
+      borderRadius: BorderRadius.circular(AppRadius.r1),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppRadius.r1),
+        onTap: active ? onPressed : null,
+        child: SizedBox(
+          height: height,
+          child: Center(
+            child: loading
+                ? SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2.4, color: fg),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        label,
+                        style: AppTextStyles.headingMedium.copyWith(
+                          color: active ? fg : AppColors.tertiaryText,
+                          fontWeight: AppTextStyles.bold,
+                        ),
+                      ),
+                      if (trailing != null) ...[
+                        const SizedBox(width: AppSpacing.s8),
+                        trailing!,
+                      ],
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+
+    return expanded ? SizedBox(width: double.infinity, child: child) : child;
+  }
+}
+
+/// Secondary / outline button.
+class AppOutlineButton extends StatelessWidget {
+  const AppOutlineButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.height = 44,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.divider),
+          foregroundColor: AppColors.primaryText,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.r1)),
+        ),
+        child: Text(label, style: AppTextStyles.headingSmall),
+      ),
+    );
+  }
+}

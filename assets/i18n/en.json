@@ -1,0 +1,12 @@
+{
+  "app_name": "KeeTa",
+  "tab_home": "Home",
+  "tab_search": "Search",
+  "tab_orders": "Orders",
+  "tab_mine": "Mine",
+  "search_hint": "Search shops & dishes",
+  "checkout": "Checkout",
+  "place_order": "Place order",
+  "free_delivery": "Free delivery",
+  "retry": "Retry"
+}
