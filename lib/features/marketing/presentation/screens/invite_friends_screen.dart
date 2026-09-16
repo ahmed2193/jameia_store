@@ -1,17 +1,21 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/data/keeta_repository.dart';
+import '../../../../core/design/keeta_assets.dart';
 import '../../../../core/design/keeta_icons.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/core_widgets.dart';
+import '../../../../core/widgets/marketing_moments.dart';
+import '../../domain/entities/invite_friends.dart';
 import '../cubit/invite_friends_cubit.dart';
 
 /// KeeTa Invite-friends / referral screen (`mkt_invite_main`).
@@ -19,14 +23,14 @@ import '../cubit/invite_friends_cubit.dart';
 /// Faithful 1:1 clone of the KeeTa referral flow: brand-yellow hero banner with
 /// the "Invite friends, get KD off" headline, a referral-code box with a Copy
 /// affordance, a numbered three-step "how it works" list, a big share CTA, and a
-/// rewards-earned summary card (all dummy data via [KeetaRepository]).
+/// rewards-earned summary card (all dummy data via [InviteFriendsCubit]).
 class InviteFriendsScreen extends StatelessWidget {
   const InviteFriendsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => InviteFriendsCubit(sl<KeetaRepository>()),
+      create: (_) => sl<InviteFriendsCubit>(),
       child: const _InviteFriendsView(),
     );
   }
@@ -37,7 +41,6 @@ class _InviteFriendsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<InviteFriendsCubit>();
     return Scaffold(
       backgroundColor: AppColors.mediumBackground,
       appBar: AppBar(
@@ -50,43 +53,69 @@ class _InviteFriendsView extends StatelessWidget {
           onPressed: () => Navigator.maybePop(context),
         ),
         title: Text(
-          'Invite friends',
-          style: AppTextStyles.headingMedium
-              .copyWith(fontWeight: AppTextStyles.bold),
+          'marketing.app_bar_title'.tr(),
+          style: AppTextStyles.headingMedium.copyWith(
+            fontWeight: AppTextStyles.bold,
+          ),
         ),
         centerTitle: false,
       ),
-      body: ContentClamp(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: _HeroBanner(reward: cubit.rewardPerFriend),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.secondaryModule),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _ReferralCodeBox(code: cubit.referralCode),
-                    const SizedBox(height: AppSpacing.s24),
-                    const _StepsList(),
-                    const SizedBox(height: AppSpacing.s24),
-                    _RewardsSummary(
-                      friendsJoined: cubit.friendsJoined,
-                      totalEarned: cubit.totalEarned,
-                      pendingEarned: cubit.pendingEarned,
-                    ),
-                    const SizedBox(height: AppSpacing.s24),
-                  ],
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 96)),
-          ],
-        ),
+      body: BlocBuilder<InviteFriendsCubit, InviteFriendsState>(
+        // Only swap between the top-level loading/error/loaded variants here;
+        // the "copied" affordance rebuild is scoped to the copy button below.
+        buildWhen: (a, b) => a.status != b.status || a.invite != b.invite,
+        builder: (context, state) {
+          if (state.status == InviteFriendsStatus.error) {
+            return ErrorView(
+              message: 'marketing.error_load'.tr(),
+              onRetry: () => context.read<InviteFriendsCubit>().load(),
+            );
+          }
+          final invite = state.invite;
+          if (invite == null) return const AppLoader();
+          return _InviteBody(invite: invite);
+        },
       ),
       bottomNavigationBar: const _ShareBar(),
+    );
+  }
+}
+
+class _InviteBody extends StatelessWidget {
+  const _InviteBody({required this.invite});
+  final InviteFriends invite;
+
+  @override
+  Widget build(BuildContext context) {
+    return ContentClamp(
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: _HeroBanner(reward: invite.rewardPerFriend),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.secondaryModule),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ReferralCodeBox(code: invite.referralCode),
+                  const SizedBox(height: AppSpacing.s24),
+                  const _StepsList(),
+                  const SizedBox(height: AppSpacing.s24),
+                  _RewardsSummary(
+                    friendsJoined: invite.friendsJoined,
+                    totalEarned: invite.totalEarned,
+                    pendingEarned: invite.pendingEarned,
+                  ),
+                  const SizedBox(height: AppSpacing.s24),
+                ],
+              ),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 96)),
+        ],
+      ),
     );
   }
 }
@@ -107,19 +136,21 @@ class _HeroBanner extends StatelessWidget {
           colors: [AppColors.primary, AppColors.brandDarkBg],
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(
+      padding: const EdgeInsetsDirectional.fromSTEB(
         AppSpacing.secondaryModule,
         AppSpacing.s8,
         AppSpacing.secondaryModule,
         AppSpacing.s32,
-      ).resolve(Directionality.of(context)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const _GiftBadge(),
           const SizedBox(height: AppSpacing.secondaryModule),
           Text(
-            'Invite friends,\nget ${Formatters.price(reward)} off',
+            'marketing.hero_title'.tr(
+              namedArgs: {'reward': Formatters.price(reward)},
+            ),
             style: AppTextStyles.displayLarge.copyWith(
               color: AppColors.black,
               fontWeight: AppTextStyles.bold,
@@ -128,8 +159,7 @@ class _HeroBanner extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s8),
           Text(
-            'Share your code. Your friend gets a welcome discount, '
-            'and you earn credit on their first order.',
+            'marketing.hero_subtitle'.tr(),
             style: AppTextStyles.bodyLarge.copyWith(color: AppColors.black),
           ),
         ],
@@ -157,7 +187,14 @@ class _GiftBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: const Icon(KeetaIcons.reward, size: 34, color: AppColors.black),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Image.asset(
+          KeetaAssets.inviteRewardCommon,
+          errorBuilder: (_, _, _) =>
+              const Icon(KeetaIcons.reward, size: 34, color: AppColors.black),
+        ),
+      ),
     );
   }
 }
@@ -180,9 +217,10 @@ class _ReferralCodeBox extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Your referral code',
-            style: AppTextStyles.captionLarge
-                .copyWith(color: AppColors.tertiaryText),
+            'marketing.referral_code_label'.tr(),
+            style: AppTextStyles.captionLarge.copyWith(
+              color: AppColors.tertiaryText,
+            ),
           ),
           const SizedBox(height: AppSpacing.s8),
           Row(
@@ -191,7 +229,9 @@ class _ReferralCodeBox extends StatelessWidget {
                 child: Container(
                   height: 48,
                   alignment: AlignmentDirectional.centerStart,
-                  padding: const EdgeInsetsDirectional.symmetric(horizontal: 14),
+                  padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.brandLightBg,
                     borderRadius: BorderRadius.circular(AppRadius.r5),
@@ -207,7 +247,7 @@ class _ReferralCodeBox extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.s12),
-              const _CopyButton(),
+              _CopyButton(code: code),
             ],
           ),
         ],
@@ -217,7 +257,8 @@ class _ReferralCodeBox extends StatelessWidget {
 }
 
 class _CopyButton extends StatelessWidget {
-  const _CopyButton();
+  const _CopyButton({required this.code});
+  final String code;
 
   @override
   Widget build(BuildContext context) {
@@ -225,40 +266,55 @@ class _CopyButton extends StatelessWidget {
       buildWhen: (a, b) => a.copied != b.copied,
       builder: (context, state) {
         final cubit = context.read<InviteFriendsCubit>();
-        return Material(
-          color: state.copied ? AppColors.success : AppColors.black,
-          borderRadius: BorderRadius.circular(AppRadius.r5),
-          child: InkWell(
+        // Press feel on the copy affordance; the InkWell keeps the tap + ripple
+        // so PressScale stays passive.
+        return PressScale(
+          child: Material(
+            color: state.copied ? AppColors.success : AppColors.black,
             borderRadius: BorderRadius.circular(AppRadius.r5),
-            onTap: () async {
-              await Clipboard.setData(ClipboardData(text: cubit.referralCode));
-              cubit.markCopied();
-              await Future<void>.delayed(AppMotion.sheetLarge);
-              cubit.resetCopied();
-            },
-            child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                  horizontal: 18, vertical: 13),
-              child: AnimatedSwitcher(
-                duration: AppMotion.fast,
-                child: Row(
-                  key: ValueKey<bool>(state.copied),
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      state.copied ? Icons.check_rounded : Icons.copy_rounded,
-                      size: 16,
-                      color: AppColors.white,
-                    ),
-                    const SizedBox(width: AppSpacing.s6),
-                    Text(
-                      state.copied ? 'Copied' : 'Copy',
-                      style: AppTextStyles.headingSmall.copyWith(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppRadius.r5),
+              onTap: () async {
+                await Clipboard.setData(
+                  ClipboardData(text: code),
+                );
+                cubit.markCopied();
+                await Future<void>.delayed(AppMotion.sheetLarge);
+                cubit.resetCopied();
+              },
+              child: Padding(
+                padding: const EdgeInsetsDirectional.symmetric(
+                  horizontal: 18,
+                  vertical: 13,
+                ),
+                child: AnimatedSwitcher(
+                  duration: MotionGuard.duration(context, AppMotion.fast),
+                  switchInCurve: MotionGuard.curve(
+                    context,
+                    AppMotion.signature,
+                  ),
+                  switchOutCurve: MotionGuard.curve(context, AppMotion.exit),
+                  child: Row(
+                    key: ValueKey<bool>(state.copied),
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        state.copied ? KeetaIcons.confirm : Icons.copy_rounded,
+                        size: 16,
                         color: AppColors.white,
-                        fontWeight: AppTextStyles.bold,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: AppSpacing.s6),
+                      Text(
+                        state.copied
+                            ? 'marketing.copied'.tr()
+                            : 'marketing.copy'.tr(),
+                        style: AppTextStyles.headingSmall.copyWith(
+                          color: AppColors.white,
+                          fontWeight: AppTextStyles.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -286,29 +342,48 @@ class _StepsList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'How it works',
-            style: AppTextStyles.headingMedium
-                .copyWith(fontWeight: AppTextStyles.bold),
+            'marketing.how_it_works'.tr(),
+            style: AppTextStyles.headingMedium.copyWith(
+              fontWeight: AppTextStyles.bold,
+            ),
           ),
           const SizedBox(height: AppSpacing.s16),
-          const _StepRow(
-            index: 1,
-            icon: KeetaIcons.share,
-            title: 'Share your code',
-            subtitle: 'Send your code to friends via any app.',
+          RepaintBoundary(
+            child: StaggerEntrance(
+              index: 0,
+              child: _StepRow(
+                index: 1,
+                icon: KeetaIcons.share,
+                asset: KeetaAssets.inviteWorkInvite,
+                title: 'marketing.step_share_title'.tr(),
+                subtitle: 'marketing.step_share_subtitle'.tr(),
+              ),
+            ),
           ),
-          const _StepRow(
-            index: 2,
-            icon: KeetaIcons.cart,
-            title: 'Friend places an order',
-            subtitle: 'They get a welcome discount on their first order.',
+          RepaintBoundary(
+            child: StaggerEntrance(
+              index: 1,
+              child: _StepRow(
+                index: 2,
+                icon: KeetaIcons.cart,
+                asset: KeetaAssets.inviteWorkOrder,
+                title: 'marketing.step_order_title'.tr(),
+                subtitle: 'marketing.step_order_subtitle'.tr(),
+              ),
+            ),
           ),
-          const _StepRow(
-            index: 3,
-            icon: KeetaIcons.reward,
-            title: 'You earn credit',
-            subtitle: 'Reward lands in your wallet after delivery.',
-            last: true,
+          RepaintBoundary(
+            child: StaggerEntrance(
+              index: 2,
+              child: _StepRow(
+                index: 3,
+                icon: KeetaIcons.reward,
+                asset: KeetaAssets.inviteWorkReward,
+                title: 'marketing.step_reward_title'.tr(),
+                subtitle: 'marketing.step_reward_subtitle'.tr(),
+                last: true,
+              ),
+            ),
           ),
         ],
       ),
@@ -320,6 +395,7 @@ class _StepRow extends StatelessWidget {
   const _StepRow({
     required this.index,
     required this.icon,
+    required this.asset,
     required this.title,
     required this.subtitle,
     this.last = false,
@@ -327,6 +403,7 @@ class _StepRow extends StatelessWidget {
 
   final int index;
   final IconData icon;
+  final String asset;
   final String title;
   final String subtitle;
   final bool last;
@@ -334,7 +411,9 @@ class _StepRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsDirectional.only(bottom: last ? 0 : AppSpacing.secondaryModule),
+      padding: EdgeInsetsDirectional.only(
+        bottom: last ? 0 : AppSpacing.secondaryModule,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -346,7 +425,13 @@ class _StepRow extends StatelessWidget {
               color: AppColors.brandLightBg,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 18, color: AppColors.black),
+            child: Image.asset(
+              asset,
+              width: 20,
+              height: 20,
+              errorBuilder: (_, _, _) =>
+                  Icon(icon, size: 18, color: AppColors.black),
+            ),
           ),
           const SizedBox(width: AppSpacing.s12),
           Expanded(
@@ -375,8 +460,9 @@ class _StepRow extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: AppTextStyles.headingSmall
-                            .copyWith(fontWeight: AppTextStyles.bold),
+                        style: AppTextStyles.headingSmall.copyWith(
+                          fontWeight: AppTextStyles.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -384,8 +470,9 @@ class _StepRow extends StatelessWidget {
                 const SizedBox(height: AppSpacing.s4),
                 Text(
                   subtitle,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.secondaryText),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.secondaryText,
+                  ),
                 ),
               ],
             ),
@@ -410,49 +497,58 @@ class _RewardsSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      decoration: BoxDecoration(
-        color: AppColors.black,
-        borderRadius: BorderRadius.circular(AppRadius.r4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Your rewards',
-            style: AppTextStyles.headingMedium.copyWith(
-              color: AppColors.white,
-              fontWeight: AppTextStyles.bold,
-            ),
+    // The summary card counts as an "earned/unlocked" reward once any credit has
+    // landed — pop it in on unlock and sweep the brand shine across the art.
+    final unlocked = totalEarned > 0;
+    return PopScale(
+      popKey: unlocked,
+      child: ShineSweep(
+        active: unlocked,
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.s16),
+          decoration: BoxDecoration(
+            color: AppColors.black,
+            borderRadius: BorderRadius.circular(AppRadius.r4),
           ),
-          const SizedBox(height: AppSpacing.s16),
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _SummaryStat(
-                  value: '$friendsJoined',
-                  label: 'Friends joined',
+              Text(
+                'marketing.your_rewards'.tr(),
+                style: AppTextStyles.headingMedium.copyWith(
+                  color: AppColors.white,
+                  fontWeight: AppTextStyles.bold,
                 ),
               ),
-              Container(width: 1, height: 38, color: AppColors.secondaryText),
-              Expanded(
-                child: _SummaryStat(
-                  value: Formatters.price(totalEarned),
-                  label: 'Total earned',
-                  highlight: true,
-                ),
-              ),
-              Container(width: 1, height: 38, color: AppColors.secondaryText),
-              Expanded(
-                child: _SummaryStat(
-                  value: Formatters.price(pendingEarned),
-                  label: 'Pending',
-                ),
+              const SizedBox(height: AppSpacing.s16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _SummaryStat(
+                      value: '$friendsJoined',
+                      label: 'marketing.stat_friends_joined'.tr(),
+                    ),
+                  ),
+                  Container(width: 1, height: 14, color: AppColors.neutral[10]),
+                  Expanded(
+                    child: _SummaryStat(
+                      value: Formatters.price(totalEarned),
+                      label: 'marketing.stat_total_earned'.tr(),
+                      highlight: true,
+                    ),
+                  ),
+                  Container(width: 1, height: 14, color: AppColors.neutral[10]),
+                  Expanded(
+                    child: _SummaryStat(
+                      value: Formatters.price(pendingEarned),
+                      label: 'marketing.stat_pending'.tr(),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -487,8 +583,9 @@ class _SummaryStat extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: AppTextStyles.captionSmall
-              .copyWith(color: AppColors.tertiaryText),
+          style: AppTextStyles.captionSmall.copyWith(
+            color: AppColors.tertiaryText,
+          ),
         ),
       ],
     );
@@ -501,15 +598,21 @@ class _ShareBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<InviteFriendsCubit>();
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.s12),
         child: AppButton(
-          label: 'Share invite',
-          trailing: const Icon(KeetaIcons.share, size: 18, color: AppColors.black),
+          label: 'marketing.share_invite'.tr(),
+          trailing: const Icon(
+            KeetaIcons.share,
+            size: 18,
+            color: AppColors.black,
+          ),
           onPressed: () async {
-            await Clipboard.setData(ClipboardData(text: cubit.referralCode));
+            final cubit = context.read<InviteFriendsCubit>();
+            final code = cubit.state.invite?.referralCode;
+            if (code == null) return;
+            await Clipboard.setData(ClipboardData(text: code));
             cubit.markCopied();
             await Future<void>.delayed(AppMotion.sheetLarge);
             cubit.resetCopied();

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import '../motion/haptics.dart';
+import '../motion/motion_widgets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import 'branded_loader.dart';
 
 /// KeeTa primary CTA — brand-yellow pill with black foreground (the signature
 /// "Place order" / "Add" button look).
@@ -17,6 +20,7 @@ class AppButton extends StatelessWidget {
     this.color,
     this.foreground,
     this.trailing,
+    this.radius,
   });
 
   final String label;
@@ -29,28 +33,34 @@ class AppButton extends StatelessWidget {
   final Color? foreground;
   final Widget? trailing;
 
+  /// Corner radius (defaults to [AppRadius.r1] = 32dp). KeeTa CTAs vary per
+  /// surface — checkout place-order is a 25dp pill, address/settings/save use
+  /// 16dp, order-list/help use 24dp — so callers override per the bundle.
+  final double? radius;
+
   @override
   Widget build(BuildContext context) {
     final bg = color ?? AppColors.primary;
     final fg = foreground ?? AppColors.brandForeground;
     final active = enabled && !loading && onPressed != null;
+    final r = radius ?? AppRadius.r1;
 
     final child = Material(
       color: active ? bg : AppColors.divider,
-      borderRadius: BorderRadius.circular(AppRadius.r1),
+      borderRadius: BorderRadius.circular(r),
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.r1),
-        onTap: active ? onPressed : null,
+        borderRadius: BorderRadius.circular(r),
+        onTap: active
+            ? () {
+                Haptics.tap();
+                onPressed!();
+              }
+            : null,
         child: SizedBox(
           height: height,
           child: Center(
             child: loading
-                ? SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2.4, color: fg),
-                  )
+                ? BrandedLoader.inline(size: 22, color: fg)
                 : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -72,7 +82,11 @@ class AppButton extends StatelessWidget {
       ),
     );
 
-    return expanded ? SizedBox(width: double.infinity, child: child) : child;
+    final sized = expanded
+        ? SizedBox(width: double.infinity, child: child)
+        : child;
+    // Press-scale feel; InkWell keeps the ripple + tap (PressScale stays passive).
+    return PressScale(enabled: active, child: sized);
   }
 }
 
@@ -99,7 +113,8 @@ class AppOutlineButton extends StatelessWidget {
           side: const BorderSide(color: AppColors.divider),
           foregroundColor: AppColors.primaryText,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.r1)),
+            borderRadius: BorderRadius.circular(AppRadius.r1),
+          ),
         ),
         child: Text(label, style: AppTextStyles.headingSmall),
       ),

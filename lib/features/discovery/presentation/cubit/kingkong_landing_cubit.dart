@@ -1,91 +1,96 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/data/keeta_repository.dart';
-import '../../../../core/data/models/models.dart';
+import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../domain/entities/kingkong_landing_view.dart';
+import '../../domain/entities/shop_entity.dart';
+import '../../domain/usecases/get_kingkong_landing_usecase.dart';
+
+enum KingKongLandingStatus { initial, loading, loaded, error }
 
 /// State for the KeeTa `homepage_kingkong_page` (category/kingKongPage) — the
-/// KingKong category landing reached from a home KingKong icon. Holds the
-/// sub-category chip row and the filtered [Shop] feed for the active chip.
-class KingKongLandingState {
+/// KingKong category landing. Holds the sub-category chip row and the filtered
+/// [Shop] feed for the active chip, loaded through [GetKingKongLandingUseCase].
+class KingKongLandingState extends Equatable {
   const KingKongLandingState({
-    required this.subCategories,
-    required this.activeSub,
-    required this.shops,
+    this.status = KingKongLandingStatus.initial,
+    this.subCategories = const [],
+    this.shops = const <ShopEntity>[],
+    this.activeSub = 0,
+    this.error,
   });
+
+  final KingKongLandingStatus status;
 
   /// Sub-category chips under the category title (`subCategory` rail).
   final List<String> subCategories;
 
+  /// Shop cards feed for the active sub-category.
+  final List<ShopEntity> shops;
+
   /// Index of the selected sub-category chip.
   final int activeSub;
-
-  /// Shop cards feed for the active sub-category.
-  final List<Shop> shops;
+  final String? error;
 
   KingKongLandingState copyWith({
+    KingKongLandingStatus? status,
+    List<String>? subCategories,
+    List<ShopEntity>? shops,
     int? activeSub,
-    List<Shop>? shops,
-  }) {
-    return KingKongLandingState(
-      subCategories: subCategories,
-      activeSub: activeSub ?? this.activeSub,
-      shops: shops ?? this.shops,
-    );
-  }
+    String? error,
+  }) => KingKongLandingState(
+    status: status ?? this.status,
+    subCategories: subCategories ?? this.subCategories,
+    shops: shops ?? this.shops,
+    activeSub: activeSub ?? this.activeSub,
+    error: error ?? this.error,
+  );
+
+  @override
+  List<Object?> get props => [status, subCategories, shops, activeSub, error];
 }
 
-/// Page-scoped cubit (constructed inline in the screen via `BlocProvider`, NOT
-/// registered in the service locator). Serves dummy data straight off
-/// [KeetaRepository].
-///
-/// The KingKong landing is a category page: [categoryId] picks the base shop
-/// pool (food → restaurants, grocery/pharmacy/flowers → groceries, anything else
-/// → all shops), and the sub-category chips re-rank/filter that pool.
-class KingKongLandingCubit extends Cubit<KingKongLandingState> {
-  KingKongLandingCubit(this._repo, {required String categoryId})
-      : _categoryId = categoryId,
-        super(
-          KingKongLandingState(
-            subCategories: _subCategoriesFor(categoryId),
+/// Page-scoped cubit — resolved via `sl<KingKongLandingCubit>()`; the screen
+/// kicks off [load] with the tapped categoryId. The base pool + sub-category
+/// chips are derived by the use case; tapping a chip re-filters the feed
+/// synchronously off the loaded [KingKongLandingView].
+class KingKongLandingCubit extends Cubit<KingKongLandingState>
+    with SafeCubitMixin<KingKongLandingState> {
+  KingKongLandingCubit(this._getKingKongLanding)
+    : super(const KingKongLandingState());
+
+  final GetKingKongLandingUseCase _getKingKongLanding;
+  KingKongLandingView? _view;
+
+  Future<void> load(String categoryId) async {
+    safeEmit(state.copyWith(status: KingKongLandingStatus.loading));
+    final result = await _getKingKongLanding(
+      GetKingKongLandingParams(categoryId),
+    );
+    result.fold(
+      (failure) => safeEmit(
+        state.copyWith(
+          status: KingKongLandingStatus.error,
+          error: failure.message,
+        ),
+      ),
+      (view) {
+        _view = view;
+        safeEmit(
+          state.copyWith(
+            status: KingKongLandingStatus.loaded,
+            subCategories: view.subCategories,
+            shops: view.shopsForSub(0),
             activeSub: 0,
-            shops: _basePoolFor(_repo, categoryId),
           ),
         );
-
-  final KeetaRepository _repo;
-  final String _categoryId;
+      },
+    );
+  }
 
   void selectSub(int index) {
-    if (index == state.activeSub) return;
-    emit(state.copyWith(activeSub: index, shops: _shopsFor(index)));
-  }
-
-  List<Shop> _shopsFor(int sub) {
-    final base = _basePoolFor(_repo, _categoryId);
-    // Chip 0 = "All" → the unfiltered base pool.
-    if (sub == 0) return base;
-    return switch (state.subCategories[sub]) {
-      'Free delivery' => base.where((s) => s.freeDelivery).toList(),
-      'Rating 4.5+' => base.where((s) => s.rating >= 4.5).toList(),
-      'Nearby' => [base]
-          .map((l) => l..sort((a, b) => a.distanceKm.compareTo(b.distanceKm)))
-          .first,
-      'Fast delivery' => [base]
-          .map((l) => l..sort((a, b) => a.distanceKm.compareTo(b.distanceKm)))
-          .first,
-      _ => base,
-    };
-  }
-
-  static List<Shop> _basePoolFor(KeetaRepository repo, String categoryId) {
-    return switch (categoryId) {
-      'k1' || 'k5' => repo.restaurants, // Food / Meal for One
-      'k2' || 'k3' || 'k7' => repo.groceries, // Grocery / Pharmacy / Flowers
-      _ => repo.shops,
-    };
-  }
-
-  static List<String> _subCategoriesFor(String categoryId) {
-    return const ['All', 'Nearby', 'Rating 4.5+', 'Free delivery', 'Fast delivery'];
+    final view = _view;
+    if (view == null || index == state.activeSub) return;
+    safeEmit(state.copyWith(activeSub: index, shops: view.shopsForSub(index)));
   }
 }

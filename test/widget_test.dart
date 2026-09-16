@@ -1,30 +1,34 @@
-// This is a basic Flutter widget test.
+// Smoke test for the KeeTa clone.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// The app root (`KeetaApp`) needs the service locator + EasyLocalization booted
+// before it can build, which is too heavy for a widget test. Instead we verify
+// that the KeeTa theme renders a core widget correctly — a fast sanity check
+// that the design-token layer and shared widget catalog wire up.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:keeta_clone/main.dart';
+import 'package:jameia_mart/core/theme/app_theme.dart';
+import 'package:jameia_mart/core/widgets/app_button.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('AppButton renders its label and fires onPressed under KeeTa theme',
+      (WidgetTester tester) async {
+    var tapped = false;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: AppButton(label: 'Place order', onPressed: () => tapped = true),
+        ),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(find.text('Place order'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.tap(find.byType(AppButton));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(tapped, isTrue);
   });
 }

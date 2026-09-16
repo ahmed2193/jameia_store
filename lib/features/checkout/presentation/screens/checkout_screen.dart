@@ -1,566 +1,146 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/data/keeta_repository.dart';
-import '../../../../core/data/models/models.dart';
+// TODO(P2.9-boundary): core Coupon is imported only for the `is Coupon` type
+// test on the coupons-picker route result — the picker (another feature) returns
+// the core DTO via Navigator, so the core type is kept at this boundary. The
+// applied coupon then flows through the cubit/repository as a CouponEntity.
+import '../../../../core/data/models/models.dart' show Coupon;
+import '../../../../core/design/keeta_icons.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/core_widgets.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../domain/entities/checkout_draft.dart';
+import '../../domain/entities/coupon_entity.dart';
+import '../../domain/entities/keeta_order_entity.dart';
+import '../cubit/checkout_cubit.dart';
+import '../widgets/checkout/address_bar.dart';
+import '../widgets/checkout/coupon_row.dart';
+import '../widgets/checkout/drop_off_section.dart';
+import '../widgets/checkout/items_section.dart';
+import '../widgets/checkout/payment_section.dart';
+import '../widgets/checkout/place_order_bar.dart';
+import '../widgets/checkout/price_summary.dart';
+import '../widgets/checkout/promise_and_tips_section.dart';
+import '../widgets/checkout/tableware_row.dart';
+import '../widgets/checkout/weather_surge_strip.dart';
 
-/// KeeTa checkout (`order_confirm_global`) — address bar w/ labels, item list,
-/// drop-off options, cutlery toggle, coupon/voucher row, tips, delivery fee,
-/// payment-method row (COD / Apple Pay / Google Pay), price breakdown, and a
-/// sticky place-order bar. Local UI state (drop-off / cutlery / tip / payment)
-/// is held in this page-scoped [State]; values stand in for `v1/order/preview`.
-class CheckoutScreen extends StatefulWidget {
+/// KeeTa tip chips: 0 / 5 / 10 / 15 SAR (exact labels from bytecode).
+const List<double> _tipOptions = <double>[0, 5, 10, 15];
+
+/// KeeTa checkout (`order_confirm_global`) — address bar w/ type icon, item list,
+/// drop-off options w/ real bundle assets, cutlery toggle w/ real switch asset,
+/// coupon/voucher row, on-time promise, tips w/ KeeTa chip style, payment method
+/// picker w/ real pay logos, price breakdown, and a sticky full-width yellow CTA.
+///
+/// The business state (coupon, drop-off, cutlery, tip, payment) lives in
+/// [CheckoutCubit] as a [CheckoutDraft]; the shared app-root [CartCubit] still
+/// supplies the cart lines/subtotal. The two cubits stay decoupled — the screen
+/// bridges the cart snapshot into `placeOrder` and clears the cart once placed.
+///
+/// Real metrics from bundle.css.json:
+///   page-bg   = #F0F1F5 (smallBackground)
+///   card-bg   = #FFFFFF edge-to-edge (no card radius)
+///   gap       = 8dp between sections
+///   section-title = 16dp/w500/#222222 padding:0dp 16dp mb:12dp
+///   option-row  = padding-v 14dp, icon 20dp
+///   tip-chip    = h:30dp r:10dp, selected #FFE41F, unselected #EBEBEB
+///   place-order = h:50dp r:25dp (pill) full-width #FFE41F
+///   bottom-bar  = padding 16dp 16dp 34dp 16dp (leaves safe area)
+class CheckoutScreen extends StatelessWidget {
   const CheckoutScreen({super.key, required this.shopId});
   final String shopId;
 
   @override
-  State<CheckoutScreen> createState() => _CheckoutScreenState();
-}
-
-/// Drop-off choices mirror KeeTa's `HAND_TO_ME` / `LEAVE_AT_DESIGNATED_SPOT`.
-enum _DropOff { handToMe, leaveAtDoor }
-
-/// Payment methods mirror the order_confirm payment-row asset set.
-enum _PayMethod { cod, applePay, googlePay }
-
-class _CheckoutScreenState extends State<CheckoutScreen> {
-  _DropOff _dropOff = _DropOff.handToMe;
-  bool _cutlery = false;
-  double _tip = 0;
-  _PayMethod _pay = _PayMethod.cod;
-
-  static const _tipOptions = <double>[0, 5, 10, 15];
-
-  @override
   Widget build(BuildContext context) {
-    final repo = sl<KeetaRepository>();
-    final shop = repo.shopById(widget.shopId);
-    final address = repo.defaultAddress;
-
-    return Scaffold(
-      backgroundColor: AppColors.mediumBackground,
-      appBar: AppBar(title: const Text('Checkout')),
-      body: BlocBuilder<CartCubit, CartState>(
-        builder: (context, cart) {
-          if (cart.isEmpty) {
-            return const EmptyStateView(
-                message: 'Your cart is empty',
-                icon: Icons.shopping_cart_outlined);
-          }
-          final deliveryFee = shop.freeDelivery ? 0.0 : shop.deliveryFee;
-          return ListView(
-            padding: const EdgeInsets.only(bottom: 24),
-            children: [
-              _AddressCard(address: address),
-              const SizedBox(height: AppSpacing.s8),
-              _ItemsCard(shop: shop, cart: cart),
-              const SizedBox(height: AppSpacing.s8),
-              _DropOffCard(
-                selected: _dropOff,
-                onSelect: (d) => setState(() => _dropOff = d),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              _SwitchRow(
-                icon: Icons.restaurant_outlined,
-                title: 'Cutlery / tableware',
-                subtitle: 'Add disposable cutlery to your order',
-                value: _cutlery,
-                onChanged: (v) => setState(() => _cutlery = v),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              _OptionRow(
-                  icon: Icons.confirmation_num_outlined,
-                  title: 'Coupons & vouchers',
-                  trailing: '1 available',
-                  trailingColor: AppColors.finalPrice,
-                  onTap: () =>
-                      Navigator.pushNamed(context, Routes.orderCoupons)),
-              _TipRow(
-                selected: _tip,
-                options: _tipOptions,
-                onSelect: (t) => setState(() => _tip = t),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              _PaymentCard(
-                selected: _pay,
-                onSelect: (p) => setState(() => _pay = p),
-              ),
-              const SizedBox(height: AppSpacing.s8),
-              _PriceSummary(
-                subtotal: cart.subtotal,
-                deliveryFee: deliveryFee,
-                tip: _tip,
-                freeDelivery: shop.freeDelivery,
-              ),
-            ],
-          );
-        },
-      ),
-      bottomNavigationBar: _PlaceOrderBar(shop: shop, tip: _tip),
+    return BlocProvider(
+      create: (_) => sl<CheckoutCubit>()..start(shopId),
+      child: const _CheckoutView(),
     );
   }
 }
 
-class _AddressCard extends StatelessWidget {
-  const _AddressCard({required this.address});
-  final KeetaAddress address;
+class _CheckoutView extends StatelessWidget {
+  const _CheckoutView();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: Row(
-        children: [
-          const Icon(Icons.location_on, color: AppColors.finalPrice, size: 22),
-          const SizedBox(width: AppSpacing.s12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    // Address label chip (Home / Office / Other).
-                    Container(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 6, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(AppRadius.r7),
-                      ),
-                      child: Text(address.label,
-                          style: AppTextStyles.captionSmall.copyWith(
-                              color: AppColors.black,
-                              fontWeight: AppTextStyles.bold)),
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(address.fullText,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.headingMedium
-                              .copyWith(fontWeight: AppTextStyles.bold)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text('${address.recipient} · ${address.phone}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.captionLarge
-                        .copyWith(color: AppColors.tertiaryText)),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.tertiaryText),
-        ],
-      ),
-    );
-  }
-}
+  AppBar _appBar() => AppBar(
+    title: Text('checkout.title'.tr()),
+    backgroundColor: AppColors.white,
+    elevation: 0,
+    shadowColor: AppColors.divider,
+  );
 
-class _ItemsCard extends StatelessWidget {
-  const _ItemsCard({required this.shop, required this.cart});
-  final Shop shop;
-  final CartState cart;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              KeetaImage.circle(url: shop.logo, size: 24),
-              const SizedBox(width: 8),
-              Text(shop.name,
-                  style: AppTextStyles.headingMedium
-                      .copyWith(fontWeight: AppTextStyles.bold)),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.s12),
-          for (final line in cart.lines)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
-                children: [
-                  KeetaCardImage(
-                      url: line.product.image, width: 44, height: 44, radius: 8),
-                  const SizedBox(width: AppSpacing.s12),
-                  Expanded(
-                    child: Text(line.product.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.bodyLarge),
-                  ),
-                  Text('x${line.qty}',
-                      style: AppTextStyles.captionLarge
-                          .copyWith(color: AppColors.tertiaryText)),
-                  const SizedBox(width: AppSpacing.s12),
-                  PriceText(price: line.lineTotal, size: 14),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Drop-off preference (hand-to-me vs leave-at-door), two selectable rows.
-class _DropOffCard extends StatelessWidget {
-  const _DropOffCard({required this.selected, required this.onSelect});
-  final _DropOff selected;
-  final ValueChanged<_DropOff> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget tile(_DropOff value, IconData icon, String label) {
-      final on = value == selected;
-      return InkWell(
-        onTap: () => onSelect(value),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s16, vertical: AppSpacing.s14),
-          child: Row(
-            children: [
-              Icon(icon, size: 20, color: AppColors.secondaryText),
-              const SizedBox(width: AppSpacing.s12),
-              Expanded(child: Text(label, style: AppTextStyles.bodyLarge)),
-              Icon(
-                  on
-                      ? Icons.radio_button_checked_rounded
-                      : Icons.radio_button_off_rounded,
-                  size: 20,
-                  color: on ? AppColors.finalPrice : AppColors.disabledText),
-            ],
-          ),
-        ),
-      );
+  /// Open the coupons picker and apply a picked coupon; a null result (system
+  /// back / "Don't use a coupon") leaves the current selection untouched.
+  Future<void> _openCoupons(BuildContext context) async {
+    final picked = await Navigator.pushNamed(context, Routes.orderCoupons);
+    if (!context.mounted) return;
+    // The picker returns a core Coupon (boundary); the cubit re-validates by id
+    // and stores the applied CouponEntity.
+    if (picked is Coupon) {
+      context.read<CheckoutCubit>().applyCoupon(picked.id);
     }
-
-    return Container(
-      color: AppColors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-                AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, 0),
-            child: Text('Delivery preference',
-                style: AppTextStyles.captionLarge),
-          ),
-          tile(_DropOff.handToMe, Icons.pan_tool_alt_outlined, 'Hand it to me'),
-          const ThinDivider(indent: AppSpacing.s16),
-          tile(_DropOff.leaveAtDoor, Icons.door_front_door_outlined,
-              'Leave at the designated spot'),
-        ],
-      ),
-    );
   }
-}
 
-/// Toggle row (cutlery / tableware) — KeeTa's tableware switch.
-class _SwitchRow extends StatelessWidget {
-  const _SwitchRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: AppColors.secondaryText),
-          const SizedBox(width: AppSpacing.s12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppTextStyles.bodyLarge),
-                Text(subtitle,
-                    style: AppTextStyles.captionSmall
-                        .copyWith(color: AppColors.tertiaryText)),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.black,
-            activeTrackColor: AppColors.primary,
-          ),
-        ],
-      ),
-    );
+  /// Once the order is committed: empty the shared cart (the screen bridges the
+  /// decoupled [CartCubit]) and show the success dialog that deep-links to the
+  /// real order's tracking screen.
+  void _onPlaced(BuildContext context, CheckoutState state) {
+    final order = state.placedOrder;
+    if (order == null) return;
+    context.read<CartCubit>().clear();
+    _showSuccess(context, order);
   }
-}
 
-/// Rider tips selector — horizontal chips.
-class _TipRow extends StatelessWidget {
-  const _TipRow(
-      {required this.selected, required this.options, required this.onSelect});
-  final double selected;
-  final List<double> options;
-  final ValueChanged<double> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s16, vertical: AppSpacing.s14),
-      child: Row(
-        children: [
-          const Icon(Icons.volunteer_activism_outlined,
-              size: 20, color: AppColors.secondaryText),
-          const SizedBox(width: AppSpacing.s12),
-          Text('Rider tip', style: AppTextStyles.bodyLarge),
-          const Spacer(),
-          for (final t in options)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: AppSpacing.s6),
-              child: GestureDetector(
-                onTap: () => onSelect(t),
-                child: Container(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                      horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color:
-                        t == selected ? AppColors.primary : AppColors.white,
-                    borderRadius: BorderRadius.circular(AppRadius.r6),
-                    border: Border.all(
-                        color: t == selected
-                            ? AppColors.primary
-                            : AppColors.divider),
-                  ),
-                  child: Text(t == 0 ? 'None' : Formatters.price(t),
-                      style: AppTextStyles.captionLarge.copyWith(
-                          fontWeight: t == selected
-                              ? AppTextStyles.bold
-                              : AppTextStyles.regular)),
-                ),
-              ),
-            ),
-        ],
-      ),
-    );
+  /// A place-order commit failed (see the listener): tell the user instead of
+  /// silently doing nothing, so they can retry the CTA.
+  void _onPlaceFailed(BuildContext context) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('checkout.place_failed'.tr())));
   }
-}
 
-/// Payment method picker — COD / Apple Pay / Google Pay.
-class _PaymentCard extends StatelessWidget {
-  const _PaymentCard({required this.selected, required this.onSelect});
-  final _PayMethod selected;
-  final ValueChanged<_PayMethod> onSelect;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget tile(_PayMethod value, IconData icon, String label) {
-      final on = value == selected;
-      return InkWell(
-        onTap: () => onSelect(value),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s16, vertical: AppSpacing.s14),
-          child: Row(
-            children: [
-              Icon(icon, size: 20, color: AppColors.secondaryText),
-              const SizedBox(width: AppSpacing.s12),
-              Expanded(child: Text(label, style: AppTextStyles.bodyLarge)),
-              Icon(
-                  on
-                      ? Icons.radio_button_checked_rounded
-                      : Icons.radio_button_off_rounded,
-                  size: 20,
-                  color: on ? AppColors.finalPrice : AppColors.disabledText),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      color: AppColors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-                AppSpacing.s16, AppSpacing.s12, AppSpacing.s16, 0),
-            child:
-                Text('Payment method', style: AppTextStyles.captionLarge),
-          ),
-          tile(_PayMethod.cod, Icons.payments_outlined, 'Cash on delivery'),
-          const ThinDivider(indent: AppSpacing.s16),
-          tile(_PayMethod.applePay, Icons.apple_rounded, 'Apple Pay'),
-          const ThinDivider(indent: AppSpacing.s16),
-          tile(_PayMethod.googlePay, Icons.account_balance_wallet_outlined,
-              'Google Pay'),
-        ],
-      ),
-    );
-  }
-}
-
-class _OptionRow extends StatelessWidget {
-  const _OptionRow({
-    required this.icon,
-    required this.title,
-    required this.trailing,
-    required this.onTap,
-    this.trailingColor,
-  });
-  final IconData icon;
-  final String title;
-  final String trailing;
-  final VoidCallback onTap;
-  final Color? trailingColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        color: AppColors.white,
-        padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.s16, vertical: AppSpacing.s14),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: AppColors.secondaryText),
-            const SizedBox(width: AppSpacing.s12),
-            Text(title, style: AppTextStyles.bodyLarge),
-            const Spacer(),
-            Text(trailing,
-                style: AppTextStyles.captionLarge.copyWith(
-                    color: trailingColor ?? AppColors.secondaryText)),
-            const Icon(Icons.chevron_right_rounded,
-                color: AppColors.tertiaryText, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PriceSummary extends StatelessWidget {
-  const _PriceSummary({
-    required this.subtotal,
-    required this.deliveryFee,
-    required this.tip,
-    required this.freeDelivery,
-  });
-  final double subtotal;
-  final double deliveryFee;
-  final double tip;
-  final bool freeDelivery;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget row(String label, String value, {Color? color}) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Row(
-            children: [
-              Text(label,
-                  style: AppTextStyles.bodyLarge
-                      .copyWith(color: AppColors.secondaryText)),
-              const Spacer(),
-              Text(value,
-                  style: AppTextStyles.bodyLarge
-                      .copyWith(color: color ?? AppColors.primaryText)),
-            ],
-          ),
-        );
-
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: Column(
-        children: [
-          row('Subtotal', Formatters.price(subtotal)),
-          row('Delivery fee',
-              freeDelivery ? 'Free' : Formatters.price(deliveryFee),
-              color: freeDelivery ? AppColors.freeDelivery : null),
-          if (tip > 0) row('Rider tip', Formatters.price(tip)),
-          const ThinDivider(),
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Row(
-              children: [
-                Text('Total',
-                    style: AppTextStyles.headingMedium
-                        .copyWith(fontWeight: AppTextStyles.bold)),
-                const Spacer(),
-                PriceText(price: subtotal + deliveryFee + tip, size: 18),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PlaceOrderBar extends StatelessWidget {
-  const _PlaceOrderBar({required this.shop, required this.tip});
-  final Shop shop;
-  final double tip;
-
-  void _placeOrder(BuildContext context) {
-    final cart = context.read<CartCubit>();
+  void _showSuccess(BuildContext context, KeetaOrderEntity order) {
     showDialog<void>(
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: AppColors.white,
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.r3)),
+          borderRadius: BorderRadius.circular(AppRadius.card),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle_rounded,
-                color: AppColors.success, size: 56),
+            const Icon(KeetaIcons.confirm, color: AppColors.success, size: 56),
             const SizedBox(height: AppSpacing.s12),
-            Text('Order placed!',
-                style: AppTextStyles.headingLarge
-                    .copyWith(fontWeight: AppTextStyles.bold)),
-            const SizedBox(height: 4),
-            Text('Your order is on the way',
-                style: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.secondaryText)),
+            Text(
+              'checkout.order_placed'.tr(),
+              style: AppTextStyles.headingLarge.copyWith(
+                fontWeight: AppTextStyles.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s4),
+            Text(
+              'checkout.order_on_way'.tr(),
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.secondaryText,
+              ),
+            ),
           ],
         ),
         actions: [
           AppButton(
-            label: 'Track order',
+            label: 'checkout.track_order'.tr(),
             onPressed: () {
-              cart.clear();
               Navigator.of(context)
-                ..pop() // dialog
-                ..pop() // checkout
-                ..pushNamed(Routes.orderTracking, arguments: 'o1');
+                ..pop()
+                ..pop()
+                ..pushNamed(Routes.orderTracking, arguments: order.id);
             },
           ),
         ],
@@ -570,38 +150,167 @@ class _PlaceOrderBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CartCubit, CartState>(
-      builder: (context, cart) {
-        if (cart.isEmpty) return const SizedBox.shrink();
-        final deliveryFee = shop.freeDelivery ? 0.0 : shop.deliveryFee;
-        final total = cart.subtotal + deliveryFee + tip;
-        return SafeArea(
-          child: Container(
-            color: AppColors.white,
-            padding: const EdgeInsets.all(AppSpacing.s12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      PriceText(price: total, size: 20),
-                      Text('Incl. fees',
-                          style: AppTextStyles.captionSmall
-                              .copyWith(color: AppColors.tertiaryText)),
-                    ],
+    return BlocConsumer<CheckoutCubit, CheckoutState>(
+      listenWhen: (p, c) =>
+          (c.status == CheckoutStatus.placed &&
+              p.status != CheckoutStatus.placed) ||
+          // A failed commit (placing → error) must not be a silent no-op.
+          (c.status == CheckoutStatus.error &&
+              p.status == CheckoutStatus.placing),
+      listener: (context, cs) {
+        if (cs.status == CheckoutStatus.placed) {
+          _onPlaced(context, cs);
+        } else {
+          _onPlaceFailed(context);
+        }
+      },
+      // Draft edits (tip/coupon/drop-off/cutlery/payment) must NOT rebuild the
+      // whole page: the skeleton reacts only to context/status changes; each
+      // draft-driven row self-scopes via a BlocSelector below.
+      buildWhen: (p, c) =>
+          p.shop != c.shop ||
+          p.address != c.address ||
+          p.status != c.status ||
+          p.availableCouponCount != c.availableCouponCount,
+      builder: (context, cs) {
+        final shop = cs.shop;
+        final address = cs.address;
+        // Loading the in-memory context resolves in one microtask; show the
+        // page shell with a branded loader until shop + address land.
+        if (shop == null || address == null) {
+          // A context-load failure (start()) lands here with status == error;
+          // show a retry instead of an infinite loader.
+          final body = cs.status == CheckoutStatus.error
+              ? ErrorView(onRetry: () => context.read<CheckoutCubit>().retry())
+              : const AppLoader();
+          return Scaffold(
+            backgroundColor: AppColors.smallBackground,
+            appBar: _appBar(),
+            body: body,
+          );
+        }
+
+        return Scaffold(
+          // Real KeeTa page bg = #F0F1F5 (system-color-neutral-smallBackground).
+          backgroundColor: AppColors.smallBackground,
+          appBar: _appBar(),
+          body: BlocBuilder<CartCubit, CartState>(
+            builder: (context, cart) {
+              if (cart.isEmpty) {
+                return EmptyStateView(
+                  message: 'checkout.cart_empty'.tr(),
+                  icon: KeetaIcons.cart,
+                );
+              }
+              final cubit = context.read<CheckoutCubit>();
+              final deliveryFee = shop.effectiveDeliveryFee;
+              return ListView(
+                // bottom padding = 120dp to clear the sticky bar height
+                padding: const EdgeInsetsDirectional.only(bottom: 120),
+                children: [
+                  // ── 1. Address bar ───────────────────────────────────────
+                  AddressBar(address: address),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 2. Order items (rebuilds on cart only, never on draft) ─
+                  ItemsSection(shop: shop, cart: cart),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 3. Drop-off preference (scoped to draft.dropOff) ─────
+                  BlocSelector<CheckoutCubit, CheckoutState, DropOffOption>(
+                    selector: (s) => s.draft.dropOff,
+                    builder: (_, dropOff) => DropOffSection(
+                      selected: dropOff,
+                      onSelect: cubit.setDropOff,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 160,
-                  child: AppButton(
-                      label: 'Place order',
-                      onPressed: () => _placeOrder(context)),
-                ),
-              ],
-            ),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 4. Cutlery / tableware switch (scoped to draft.cutlery)
+                  BlocSelector<CheckoutCubit, CheckoutState, bool>(
+                    selector: (s) => s.draft.cutlery,
+                    builder: (_, cutlery) => TablewareRow(
+                      value: cutlery,
+                      onChanged: cubit.setCutlery,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 5. Coupons & vouchers (draft.coupon + cart.subtotal) ─
+                  BlocSelector<CheckoutCubit, CheckoutState, CouponEntity?>(
+                    selector: (s) => s.draft.coupon,
+                    builder: (_, coupon) => CouponRow(
+                      onTap: () => _openCoupons(context),
+                      selected: coupon,
+                      discount: CheckoutDraft(
+                        coupon: coupon,
+                      ).discountFor(cart.subtotal),
+                      availableCount: cs.availableCouponCount,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 6. On-time promise + rider tips (scoped to draft.tip) ─
+                  BlocSelector<CheckoutCubit, CheckoutState, double>(
+                    selector: (s) => s.draft.tip,
+                    builder: (_, tip) => PromiseAndTipsSection(
+                      tip: tip,
+                      options: _tipOptions,
+                      onTipSelect: cubit.setTip,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 7. Payment method (scoped to draft.payMethod) ────────
+                  BlocSelector<CheckoutCubit, CheckoutState, PaymentMethod>(
+                    selector: (s) => s.draft.payMethod,
+                    builder: (_, method) => PaymentSection(
+                      selected: method,
+                      onSelect: cubit.setPayment,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 8. Weather surge strip ───────────────────────────────
+                  const WeatherSurgeStrip(),
+                  const SizedBox(height: AppSpacing.s8),
+
+                  // ── 9. Price summary (cart.subtotal + draft.tip/coupon) ──
+                  BlocSelector<
+                    CheckoutCubit,
+                    CheckoutState,
+                    ({double tip, CouponEntity? coupon})
+                  >(
+                    selector: (s) => (tip: s.draft.tip, coupon: s.draft.coupon),
+                    builder: (_, sel) => PriceSummary(
+                      subtotal: cart.subtotal,
+                      deliveryFee: deliveryFee,
+                      tip: sel.tip,
+                      discount: CheckoutDraft(
+                        coupon: sel.coupon,
+                      ).discountFor(cart.subtotal),
+                      coupon: sel.coupon,
+                      freeDelivery: shop.freeDelivery,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
+          // Sticky CTA re-totals only when tip/coupon change (or cart, via its
+          // own inner BlocBuilder<CartCubit>).
+          bottomNavigationBar:
+              BlocSelector<
+                CheckoutCubit,
+                CheckoutState,
+                ({double tip, CouponEntity? coupon})
+              >(
+                selector: (s) => (tip: s.draft.tip, coupon: s.draft.coupon),
+                builder: (context, _) => PlaceOrderBar(
+                  shop: shop,
+                  draft: context.read<CheckoutCubit>().state.draft,
+                ),
+              ),
         );
       },
     );

@@ -1,10 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/models/models.dart';
+import '../../domain/entities/coupon.dart';
+import '../util/coupon_display.dart';
+import '../../../../core/design/keeta_icons.dart';
+import '../../../../core/motion/motion_widgets.dart';
+import '../../../../core/navigation/navigation.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/core_widgets.dart';
 
 /// KeeTa coupon-ticket card: a left value block (amount + currency) joined to the
 /// right info column (title, min-spend subtitle, expiry, Use button) by a vertical
@@ -21,7 +27,7 @@ class CouponTicketCard extends StatelessWidget {
     this.onUse,
   });
 
-  final Coupon coupon;
+  final CouponEntity coupon;
   final CouponStatus status;
   final VoidCallback? onUse;
 
@@ -29,37 +35,56 @@ class CouponTicketCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = status == CouponStatus.available;
     return RepaintBoundary(
-      child: SizedBox(
-        height: 108,
-        child: Stack(
-          children: [
-            // Ticket body (clipped so the notch overlays read as cut-outs).
-            ClipPath(
-              clipper: _TicketClipper(),
-              child: Container(
-                decoration: BoxDecoration(
+      // Passive PressScale (no onTap) so the InkWell keeps its ripple while the
+      // whole ticket gives the subtle press feel.
+      child: PressScale(
+        child: SizedBox(
+          height: 108,
+          child: Stack(
+            children: [
+              // Ticket body (clipped so the notch overlays read as cut-outs).
+              ClipPath(
+                clipper: _TicketClipper(),
+                child: Material(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(AppRadius.r4),
-                ),
-                child: Row(
-                  children: [
-                    _ValueBlock(coupon: coupon, enabled: enabled),
-                    const _Perforation(),
-                    Expanded(
-                      child: _InfoBlock(
-                        coupon: coupon,
-                        status: status,
-                        enabled: enabled,
-                        onUse: onUse,
-                      ),
+                  child: InkWell(
+                    // Tapping a ticket opens its rule / detail sheet
+                    // (KeeTa `coupon-rule-close` modal).
+                    onTap: () => _showRuleSheet(context),
+                    child: Row(
+                      children: [
+                        _ValueBlock(coupon: coupon, enabled: enabled),
+                        const _Perforation(),
+                        Expanded(
+                          child: _InfoBlock(
+                            coupon: coupon,
+                            status: status,
+                            enabled: enabled,
+                            onUse: onUse,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  void _showRuleSheet(BuildContext context) {
+    showKeetaBottomSheet<void>(
+      context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadiusDirectional.vertical(
+          top: Radius.circular(AppRadius.r4),
+        ),
+      ),
+      builder: (sheetContext) => _CouponRuleSheet(coupon: coupon),
     );
   }
 }
@@ -70,7 +95,7 @@ enum CouponStatus { available, used, expired }
 // ── Left value block ─────────────────────────────────────────────────────────
 class _ValueBlock extends StatelessWidget {
   const _ValueBlock({required this.coupon, required this.enabled});
-  final Coupon coupon;
+  final CouponEntity coupon;
   final bool enabled;
 
   @override
@@ -96,8 +121,10 @@ class _ValueBlock extends StatelessWidget {
                 padding: const EdgeInsetsDirectional.only(bottom: 3),
                 child: Text(
                   Formatters.currency,
-                  style: AppTextStyles.headingSmall
-                      .copyWith(color: fg, fontWeight: AppTextStyles.bold),
+                  style: AppTextStyles.headingSmall.copyWith(
+                    color: fg,
+                    fontWeight: AppTextStyles.bold,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.s2),
@@ -115,7 +142,9 @@ class _ValueBlock extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s2),
           Text(
-            'Min ${Formatters.amount(coupon.minSpend)}',
+            'coupons.min_amount'.tr(
+              namedArgs: {'value': Formatters.amount(coupon.minSpend)},
+            ),
             style: AppTextStyles.captionSmall.copyWith(
               color: enabled ? AppColors.secondaryText : AppColors.tertiaryText,
             ),
@@ -175,18 +204,21 @@ class _InfoBlock extends StatelessWidget {
     required this.onUse,
   });
 
-  final Coupon coupon;
+  final CouponEntity coupon;
   final CouponStatus status;
   final bool enabled;
   final VoidCallback? onUse;
 
   @override
   Widget build(BuildContext context) {
-    final titleColor =
-        enabled ? AppColors.primaryText : AppColors.tertiaryText;
+    final titleColor = enabled ? AppColors.primaryText : AppColors.tertiaryText;
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
-          AppSpacing.s12, AppSpacing.s12, AppSpacing.s10, AppSpacing.s12),
+        AppSpacing.s12,
+        AppSpacing.s12,
+        AppSpacing.s10,
+        AppSpacing.s12,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -195,33 +227,40 @@ class _InfoBlock extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  coupon.title,
+                  coupon.displayTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.headingSmall.copyWith(
-                      color: titleColor, fontWeight: AppTextStyles.bold),
+                    color: titleColor,
+                    fontWeight: AppTextStyles.bold,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s2),
                 Text(
-                  coupon.subtitle,
+                  coupon.displaySubtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.captionLarge
-                      .copyWith(color: AppColors.tertiaryText),
+                  style: AppTextStyles.captionLarge.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s6),
                 Row(
                   children: [
-                    Icon(Icons.access_time_rounded,
-                        size: 12, color: AppColors.tertiaryText),
+                    Icon(
+                      KeetaIcons.time,
+                      size: 12,
+                      color: AppColors.tertiaryText,
+                    ),
                     const SizedBox(width: AppSpacing.s4),
                     Flexible(
                       child: Text(
                         coupon.expiry,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.captionSmall
-                            .copyWith(color: AppColors.tertiaryText),
+                        style: AppTextStyles.captionSmall.copyWith(
+                          color: AppColors.tertiaryText,
+                        ),
                       ),
                     ),
                   ],
@@ -245,35 +284,50 @@ class _Action extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (status == CouponStatus.available) {
-      return Material(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(AppRadius.r1),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.r1),
-          onTap: onUse,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AppSpacing.s16, vertical: AppSpacing.s8),
-            child: Text('Use',
+      return PressScale(
+        child: Material(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(AppRadius.r5),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.r5),
+            onTap: onUse,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AppSpacing.s16,
+                vertical: AppSpacing.s8,
+              ),
+              child: Text(
+                'coupons.use'.tr(),
                 style: AppTextStyles.headingSmall.copyWith(
-                    color: AppColors.brandForeground,
-                    fontWeight: AppTextStyles.bold)),
+                  color: AppColors.brandForeground,
+                  fontWeight: AppTextStyles.bold,
+                ),
+              ),
+            ),
           ),
         ),
       );
     }
     // Used / Expired → muted outline stamp.
-    final label = status == CouponStatus.used ? 'Used' : 'Expired';
+    final label = status == CouponStatus.used
+        ? 'coupons.used'.tr()
+        : 'coupons.expired'.tr();
     return Container(
       padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AppSpacing.s8, vertical: AppSpacing.s4),
+        horizontal: AppSpacing.s8,
+        vertical: AppSpacing.s4,
+      ),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.disabledText, width: 1.2),
         borderRadius: BorderRadius.circular(AppRadius.r6),
       ),
-      child: Text(label,
-          style: AppTextStyles.captionMedium.copyWith(
-              color: AppColors.disabledText, fontWeight: AppTextStyles.bold)),
+      child: Text(
+        label,
+        style: AppTextStyles.captionMedium.copyWith(
+          color: AppColors.disabledText,
+          fontWeight: AppTextStyles.bold,
+        ),
+      ),
     );
   }
 }
@@ -288,8 +342,12 @@ class _TicketClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     final notchY = size.height / 2;
     final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-          Offset.zero & size, const Radius.circular(_radius)));
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Offset.zero & size,
+          const Radius.circular(_radius),
+        ),
+      );
 
     // Carve a circular notch on each side of the perforation seam.
     final seam = _valueWidth;
@@ -300,4 +358,123 @@ class _TicketClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(_TicketClipper oldClipper) => false;
+}
+
+// ── CouponEntity rule / detail sheet ───────────────────────────────────────────────
+/// KeeTa `coupon-rule` modal: title, key conditions (discount, min-spend,
+/// validity) and a static terms block, closed via the header X or the bottom
+/// "Got it" CTA. Built entirely from the existing [CouponEntity] fields.
+class _CouponRuleSheet extends StatelessWidget {
+  const _CouponRuleSheet({required this.coupon});
+  final CouponEntity coupon;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.s16,
+          AppSpacing.s12,
+          AppSpacing.s16,
+          AppSpacing.s16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    coupon.displayTitle,
+                    style: AppTextStyles.headingLarge.copyWith(
+                      fontWeight: AppTextStyles.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(KeetaIcons.close, size: 20),
+                  color: AppColors.tertiaryText,
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.s8),
+            _RuleRow(
+              label: 'coupons.discount'.tr(),
+              value: 'coupons.amount_off'.tr(
+                namedArgs: {
+                  'value':
+                      '${Formatters.currency} ${Formatters.amount(coupon.amount)}',
+                },
+              ),
+            ),
+            _RuleRow(
+              label: 'coupons.min_spend'.tr(),
+              value:
+                  '${Formatters.currency} ${Formatters.amount(coupon.minSpend)}',
+            ),
+            _RuleRow(label: 'coupons.valid_until'.tr(), value: coupon.expiry),
+            const SizedBox(height: AppSpacing.s12),
+            Text(
+              'coupons.terms'.tr(),
+              style: AppTextStyles.headingSmall.copyWith(
+                fontWeight: AppTextStyles.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s4),
+            Text(
+              'coupons.terms_body'.tr(),
+              style: AppTextStyles.captionLarge.copyWith(
+                color: AppColors.secondaryText,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s16),
+            AppButton(
+              label: 'coupons.got_it'.tr(),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RuleRow extends StatelessWidget {
+  const _RuleRow({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 96,
+            child: Text(
+              label,
+              style: AppTextStyles.captionLarge.copyWith(
+                color: AppColors.tertiaryText,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: AppTextStyles.captionLarge.copyWith(
+                color: AppColors.primaryText,
+                fontWeight: AppTextStyles.medium,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

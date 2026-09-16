@@ -64,16 +64,23 @@ class KeetaIcons {
   static const IconData consultDoctor = IconData(0xe02b, fontFamily: fontFamily);
 
   // ── Navigation arrows ───────────────────────────────────────────────────────
-  /// back / arrow-left (`wm_c_iconfont_jiantou_zuo`) — auto-mirrors in RTL via Icon
-  static const IconData back = IconData(0xe036, fontFamily: fontFamily);
-  /// arrow-right (`wm_c_iconfont_jiantou_you`)
-  static const IconData arrowRight = IconData(0xe035, fontFamily: fontFamily);
+  // Horizontal glyphs carry `matchTextDirection: true` so the `Icon` widget
+  // mirrors them under RTL. Custom-font IconData does NOT auto-flip without this
+  // flag (unlike the curated Material directional icons). Vertical arrows
+  // (up/down) are direction-neutral and must NOT mirror.
+  /// back / arrow-left (`wm_c_iconfont_jiantou_zuo`) — mirrors under RTL.
+  static const IconData back =
+      IconData(0xe036, fontFamily: fontFamily, matchTextDirection: true);
+  /// arrow-right (`wm_c_iconfont_jiantou_you`) — mirrors under RTL.
+  static const IconData arrowRight =
+      IconData(0xe035, fontFamily: fontFamily, matchTextDirection: true);
   /// arrow-down (`wm_c_iconfont_jiantou_xia`)
   static const IconData arrowDown = IconData(0xe034, fontFamily: fontFamily);
   /// arrow-up (`wm_c_iconfont_arrow_up`)
   static const IconData arrowUp = IconData(0xe041, fontFamily: fontFamily);
-  /// small arrow-right (`wm_c_iconfont_arrow_right_small`)
-  static const IconData arrowRightSmall = IconData(0xe042, fontFamily: fontFamily);
+  /// small arrow-right (`wm_c_iconfont_arrow_right_small`) — mirrors under RTL.
+  static const IconData arrowRightSmall =
+      IconData(0xe042, fontFamily: fontFamily, matchTextDirection: true);
   /// small arrow-down (`wm_c_iconfont_arrow_down_small`)
   static const IconData arrowDownSmall = IconData(0xe044, fontFamily: fontFamily);
   /// small arrow-up (`wm_c_iconfont_arrow_up_small`)

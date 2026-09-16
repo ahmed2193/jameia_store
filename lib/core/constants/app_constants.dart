@@ -4,7 +4,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'KeeTa';
+  static const String appName = 'JameiaMart';
 
   /// Full-screen splash artwork (dark-navy product shot). Painted by the Flutter
   /// splash screen; the Android ≤11 / iOS native frames use the same image.
@@ -14,6 +14,14 @@ class AppConstants {
   static const String baseUrl = 'https://fooddelivery.mykeeta.com';
   static const Duration connectTimeout = Duration(seconds: 20);
   static const Duration receiveTimeout = Duration(seconds: 20);
+
+  /// Google Maps Platform key for the HTTP Places/geocoding endpoints, injected
+  /// at build time: `flutter run --dart-define=MAPS_API_KEY=<key>`. Empty by
+  /// default so NO secret ships in source; a web-service key can't be restricted
+  /// by app signature, so a leaked literal is billable by anyone. When empty the
+  /// LBS layer skips the billed Places calls and falls back to the native
+  /// geocoder + offline [KeetaGeocode].
+  static const String mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
 
   // ── Storage keys (shared_preferences) ──────────────────────────────────────
   static const String kAuthToken = 'auth_token';

@@ -1,167 +1,34 @@
-import 'package:equatable/equatable.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/data/keeta_repository.dart';
-import '../../../../core/data/models/models.dart';
+import '../../domain/entities/order.dart';
+import '../util/order_display.dart';
+import '../../../../core/design/keeta_assets.dart';
 import '../../../../core/design/keeta_icons.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/core_widgets.dart';
+import '../cubit/order_review_cubit.dart';
 
-// ───────────────────────────────────────────────────────────────────────────
-// Page cubit (constructed inline via BlocProvider — never in service locator).
-// Mirrors KeeTa `mach_pro_sailor_c_order_review`: star rating, comment, like-tags
-// multi-select (capped at MAX_SELECTED_LABEL_COUNT), photo uploader, and
-// per-product review-chip multi-select. `submittable` gates the sticky CTA.
-// ───────────────────────────────────────────────────────────────────────────
-
-/// Cap on simultaneously selected like-tags (KeeTa `MAX_SELECTED_LABEL_COUNT`).
-const int kMaxSelectedLabels = 6;
-
-/// Like-tag suggestions surfaced under the comment field.
+/// Like-tag suggestions surfaced under the comment field. Values are translation
+/// keys (resolved via `.tr()` where the chip is rendered) and double as the
+/// stable identity stored in the selected-tags set.
 const List<String> kReviewLikeTags = [
-  'Great taste',
-  'Fast delivery',
-  'Good value',
-  'Fresh',
-  'Well packaged',
-  'Friendly rider',
-  'Generous portion',
-  'Will reorder',
+  'orders.tag_great_taste',
+  'orders.tag_fast_delivery',
+  'orders.tag_good_value',
+  'orders.tag_fresh',
+  'orders.tag_well_packaged',
+  'orders.tag_friendly_rider',
+  'orders.tag_generous_portion',
+  'orders.tag_will_reorder',
 ];
-
-sealed class OrderReviewState extends Equatable {
-  const OrderReviewState();
-  @override
-  List<Object?> get props => [];
-}
-
-class OrderReviewLoading extends OrderReviewState {
-  const OrderReviewLoading();
-}
-
-class OrderReviewError extends OrderReviewState {
-  const OrderReviewError();
-}
-
-class OrderReviewLoaded extends OrderReviewState {
-  const OrderReviewLoaded({
-    required this.order,
-    required this.stars,
-    required this.likedTags,
-    required this.likedProducts,
-    required this.photoCount,
-    required this.submitting,
-  });
-
-  final KeetaOrder order;
-  final int stars; // 0..5
-  final Set<String> likedTags;
-  final Set<String> likedProducts; // item names selected for praise
-  final int photoCount; // dummy uploaded photos
-  final bool submitting;
-
-  /// Submit is enabled once a star rating is chosen.
-  bool get submittable => stars > 0 && !submitting;
-
-  OrderReviewLoaded copyWith({
-    int? stars,
-    Set<String>? likedTags,
-    Set<String>? likedProducts,
-    int? photoCount,
-    bool? submitting,
-  }) =>
-      OrderReviewLoaded(
-        order: order,
-        stars: stars ?? this.stars,
-        likedTags: likedTags ?? this.likedTags,
-        likedProducts: likedProducts ?? this.likedProducts,
-        photoCount: photoCount ?? this.photoCount,
-        submitting: submitting ?? this.submitting,
-      );
-
-  @override
-  List<Object?> get props =>
-      [order, stars, likedTags, likedProducts, photoCount, submitting];
-}
-
-class OrderReviewCubit extends Cubit<OrderReviewState> {
-  OrderReviewCubit(this._repo) : super(const OrderReviewLoading());
-
-  final KeetaRepository _repo;
-
-  static const int _maxPhotos = 6;
-
-  void load(String orderId) {
-    try {
-      final order = _repo.orderById(orderId);
-      emit(OrderReviewLoaded(
-        order: order,
-        stars: 5,
-        likedTags: const {},
-        likedProducts: const {},
-        photoCount: 0,
-        submitting: false,
-      ));
-    } catch (_) {
-      emit(const OrderReviewError());
-    }
-  }
-
-  void setStars(int value) {
-    final s = state;
-    if (s is! OrderReviewLoaded) return;
-    emit(s.copyWith(stars: value));
-  }
-
-  void toggleTag(String tag) {
-    final s = state;
-    if (s is! OrderReviewLoaded) return;
-    final next = Set<String>.from(s.likedTags);
-    if (next.contains(tag)) {
-      next.remove(tag);
-    } else {
-      if (next.length >= kMaxSelectedLabels) return; // cap reached
-      next.add(tag);
-    }
-    emit(s.copyWith(likedTags: next));
-  }
-
-  void toggleProduct(String name) {
-    final s = state;
-    if (s is! OrderReviewLoaded) return;
-    final next = Set<String>.from(s.likedProducts);
-    next.contains(name) ? next.remove(name) : next.add(name);
-    emit(s.copyWith(likedProducts: next));
-  }
-
-  void addPhoto() {
-    final s = state;
-    if (s is! OrderReviewLoaded) return;
-    if (s.photoCount >= _maxPhotos) return;
-    emit(s.copyWith(photoCount: s.photoCount + 1));
-  }
-
-  void removePhoto() {
-    final s = state;
-    if (s is! OrderReviewLoaded) return;
-    if (s.photoCount <= 0) return;
-    emit(s.copyWith(photoCount: s.photoCount - 1));
-  }
-
-  Future<void> submit() async {
-    final s = state;
-    if (s is! OrderReviewLoaded || !s.submittable) return;
-    emit(s.copyWith(submitting: true));
-    await Future<void>.delayed(AppMotion.medium); // simulate v1/ugc/reviews/submit
-    emit(s.copyWith(submitting: false));
-  }
-}
 
 // ───────────────────────────────────────────────────────────────────────────
 // Screen
@@ -180,7 +47,7 @@ class OrderReviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<OrderReviewCubit>(
-      create: (_) => OrderReviewCubit(sl<KeetaRepository>())..load(orderId),
+      create: (_) => sl<OrderReviewCubit>()..load(orderId),
       child: const _OrderReviewView(),
     );
   }
@@ -233,23 +100,25 @@ class _OrderReviewViewState extends State<_OrderReviewView> {
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         title: Text(
-          'Write a review',
-          style:
-              AppTextStyles.headingLarge.copyWith(fontWeight: AppTextStyles.bold),
+          'orders.write_review'.tr(),
+          style: AppTextStyles.headingLarge.copyWith(
+            fontWeight: AppTextStyles.bold,
+          ),
         ),
       ),
       body: BlocBuilder<OrderReviewCubit, OrderReviewState>(
         builder: (context, state) {
-          return switch (state) {
-            OrderReviewLoading() => const AppLoader(),
-            OrderReviewError() => ErrorView(
-                onRetry: () {},
-                message: 'Could not load this order',
-              ),
-            OrderReviewLoaded() => _ReviewBody(
-                state: state,
-                commentController: _comment,
-              ),
+          return switch (state.status) {
+            OrderReviewStatus.initial ||
+            OrderReviewStatus.loading => const AppLoader(),
+            OrderReviewStatus.error => ErrorView(
+              onRetry: () {},
+              message: 'orders.could_not_load'.tr(),
+            ),
+            OrderReviewStatus.loaded => _ReviewBody(
+              state: state,
+              commentController: _comment,
+            ),
           };
         },
       ),
@@ -285,34 +154,37 @@ class _SubmitScope extends InheritedWidget {
 class _ReviewBody extends StatelessWidget {
   const _ReviewBody({required this.state, required this.commentController});
 
-  final OrderReviewLoaded state;
+  final OrderReviewState state;
   final TextEditingController commentController;
 
   @override
   Widget build(BuildContext context) {
+    final order = state.order!;
+    // Each review block cascades in via the shared StaggerEntrance primitive
+    // (reduced-motion → instant), matching the orders-list entrance grammar.
+    final blocks = <Widget>[
+      _ShopHeaderCard(order: order),
+      const _RatingCard(),
+      _CommentCard(controller: commentController),
+      const _LikeTagsCard(),
+      const _PhotoUploaderCard(),
+      _ProductReviewCard(items: order.items),
+    ];
     return ContentClamp(
-      child: ListView(
+      child: ListView.builder(
         padding: const EdgeInsetsDirectional.fromSTEB(
           AppSpacing.s12,
           AppSpacing.s12,
           AppSpacing.s12,
           AppSpacing.s24,
         ),
-        children: [
-          _ShopHeaderCard(order: state.order),
-          const SizedBox(height: AppSpacing.s12),
-          const _RatingCard(),
-          const SizedBox(height: AppSpacing.s12),
-          _CommentCard(controller: commentController),
-          const SizedBox(height: AppSpacing.s12),
-          const _LikeTagsCard(),
-          const SizedBox(height: AppSpacing.s12),
-          const _PhotoUploaderCard(),
-          if (state.order.items.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.s12),
-            _ProductReviewCard(items: state.order.items),
-          ],
-        ],
+        itemCount: blocks.length,
+        itemBuilder: (_, i) => Padding(
+          padding: EdgeInsetsDirectional.only(
+            bottom: i == blocks.length - 1 ? 0 : AppSpacing.s12,
+          ),
+          child: StaggerEntrance(index: i, child: blocks[i]),
+        ),
       ),
     );
   }
@@ -349,14 +221,20 @@ class _CardTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: AppTextStyles.headingMedium
-                .copyWith(fontWeight: AppTextStyles.bold)),
+        Text(
+          title,
+          style: AppTextStyles.headingMedium.copyWith(
+            fontWeight: AppTextStyles.bold,
+          ),
+        ),
         if (subtitle != null) ...[
           const SizedBox(height: AppSpacing.s2),
-          Text(subtitle!,
-              style: AppTextStyles.captionLarge
-                  .copyWith(color: AppColors.tertiaryText)),
+          Text(
+            subtitle!,
+            style: AppTextStyles.captionLarge.copyWith(
+              color: AppColors.tertiaryText,
+            ),
+          ),
         ],
       ],
     );
@@ -368,7 +246,7 @@ class _CardTitle extends StatelessWidget {
 class _ShopHeaderCard extends StatelessWidget {
   const _ShopHeaderCard({required this.order});
 
-  final KeetaOrder order;
+  final OrderEntity order;
 
   @override
   Widget build(BuildContext context) {
@@ -382,17 +260,22 @@ class _ShopHeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  order.shopName,
+                  order.displayShopName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.headingMedium
-                      .copyWith(fontWeight: AppTextStyles.bold),
+                  style: AppTextStyles.headingMedium.copyWith(
+                    fontWeight: AppTextStyles.bold,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.s2),
                 Text(
-                  '${order.itemCount} items · ${order.date}',
-                  style: AppTextStyles.captionLarge
-                      .copyWith(color: AppColors.tertiaryText),
+                  'orders.item_count_date'.tr(namedArgs: {
+                    'count': '${order.itemCount}',
+                    'date': order.displayDate,
+                  }),
+                  style: AppTextStyles.captionLarge.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
                 ),
               ],
             ),
@@ -409,13 +292,15 @@ class _ShopHeaderCard extends StatelessWidget {
 class _RatingCard extends StatelessWidget {
   const _RatingCard();
 
+  // Rating labels indexed by star count (0..5). Values are translation keys
+  // resolved via `.tr()` where the label is rendered.
   static const List<String> _labels = [
-    'Tap to rate',
-    'Terrible',
-    'Bad',
-    'Okay',
-    'Good',
-    'Excellent',
+    'orders.rating_tap',
+    'orders.rating_terrible',
+    'orders.rating_bad',
+    'orders.rating_okay',
+    'orders.rating_good',
+    'orders.rating_excellent',
   ];
 
   @override
@@ -423,15 +308,12 @@ class _RatingCard extends StatelessWidget {
     return _SectionCard(
       child: Column(
         children: [
-          const _CardTitle('How was your order?'),
+          _CardTitle('orders.how_was_order'.tr()),
           const SizedBox(height: AppSpacing.s16),
           BlocBuilder<OrderReviewCubit, OrderReviewState>(
-            buildWhen: (a, b) =>
-                a is OrderReviewLoaded &&
-                b is OrderReviewLoaded &&
-                a.stars != b.stars,
+            buildWhen: (a, b) => a.stars != b.stars,
             builder: (context, state) {
-              final stars = state is OrderReviewLoaded ? state.stars : 0;
+              final stars = state.stars;
               final cubit = context.read<OrderReviewCubit>();
               return Column(
                 children: [
@@ -447,7 +329,7 @@ class _RatingCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.s8),
                   Text(
-                    _labels[stars.clamp(0, 5)],
+                    _labels[stars.clamp(0, 5)].tr(),
                     style: AppTextStyles.headingSmall.copyWith(
                       color: stars > 0
                           ? AppColors.warn
@@ -477,15 +359,23 @@ class _StarButton extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.s6),
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AppSpacing.s6,
+        ),
         child: AnimatedScale(
           scale: filled ? 1.0 : 0.92,
-          duration: AppMotion.fast,
-          child: Icon(
-            KeetaIcons.star,
-            size: 36,
-            color: filled ? AppColors.warn : AppColors.divider,
-          ),
+          duration: MotionGuard.duration(context, AppMotion.fast),
+          curve: AppMotion.standard,
+          child: filled
+              ? Image.asset(KeetaAssets.reviewStarNormal, width: 36, height: 36)
+              : Opacity(
+                  opacity: 0.25,
+                  child: Image.asset(
+                    KeetaAssets.reviewStarNormal,
+                    width: 36,
+                    height: 36,
+                  ),
+                ),
         ),
       ),
     );
@@ -505,8 +395,10 @@ class _CommentCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _CardTitle('Add a comment',
-              subtitle: 'Share more about your experience (optional)'),
+          _CardTitle(
+            'orders.add_comment'.tr(),
+            subtitle: 'orders.add_comment_sub'.tr(),
+          ),
           const SizedBox(height: AppSpacing.s12),
           Container(
             padding: const EdgeInsets.all(AppSpacing.s12),
@@ -523,11 +415,13 @@ class _CommentCard extends StatelessWidget {
               decoration: InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
-                counterStyle: AppTextStyles.captionSmall
-                    .copyWith(color: AppColors.tertiaryText),
-                hintText: 'What did you like or dislike?',
-                hintStyle: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.tertiaryText),
+                counterStyle: AppTextStyles.captionSmall.copyWith(
+                  color: AppColors.tertiaryText,
+                ),
+                hintText: 'orders.comment_hint'.tr(),
+                hintStyle: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.tertiaryText,
+                ),
               ),
             ),
           ),
@@ -548,17 +442,53 @@ class _LikeTagsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _CardTitle('What did you like?',
-              subtitle: 'Pick up to $kMaxSelectedLabels'),
+          // Title row: label on start, selection-count badge on end.
+          BlocBuilder<OrderReviewCubit, OrderReviewState>(
+            buildWhen: (a, b) => a.likedTags.length != b.likedTags.length,
+            builder: (context, state) {
+              final count = state.likedTags.length;
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _CardTitle(
+                      'orders.what_did_you_like'.tr(),
+                      subtitle: 'orders.pick_up_to'.tr(
+                        namedArgs: {'max': '$kMaxSelectedLabels'},
+                      ),
+                    ),
+                  ),
+                  if (count > 0) ...[
+                    const SizedBox(width: AppSpacing.s8),
+                    AnimatedContainer(
+                      duration: MotionGuard.duration(context, AppMotion.fast),
+                      curve: AppMotion.standard,
+                      padding: const EdgeInsetsDirectional.symmetric(
+                        horizontal: AppSpacing.s8,
+                        vertical: AppSpacing.s4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.brandLightBg,
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      ),
+                      child: Text(
+                        '$count / $kMaxSelectedLabels',
+                        style: AppTextStyles.captionSmall.copyWith(
+                          color: AppColors.brandForeground,
+                          fontWeight: AppTextStyles.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
           const SizedBox(height: AppSpacing.s12),
           BlocBuilder<OrderReviewCubit, OrderReviewState>(
-            buildWhen: (a, b) =>
-                a is OrderReviewLoaded &&
-                b is OrderReviewLoaded &&
-                a.likedTags != b.likedTags,
+            buildWhen: (a, b) => a.likedTags != b.likedTags,
             builder: (context, state) {
-              final selected =
-                  state is OrderReviewLoaded ? state.likedTags : const <String>{};
+              final selected = state.likedTags;
               final cubit = context.read<OrderReviewCubit>();
               return Wrap(
                 spacing: AppSpacing.s8,
@@ -566,9 +496,13 @@ class _LikeTagsCard extends StatelessWidget {
                 children: [
                   for (final tag in kReviewLikeTags)
                     _SelectableChip(
-                      label: tag,
+                      label: tag.tr(),
                       selected: selected.contains(tag),
-                      icon: KeetaIcons.like,
+                      // Real KeeTa two-state like PNGs: light when selected,
+                      // grey when unselected (icon_review_like_light/grey).
+                      leadingAsset: selected.contains(tag)
+                          ? KeetaAssets.reviewLikeLight
+                          : KeetaAssets.reviewLikeGrey,
                       onTap: () => cubit.toggleTag(tag),
                     ),
                 ],
@@ -587,6 +521,7 @@ class _SelectableChip extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.icon,
+    this.leadingAsset,
   });
 
   final String label;
@@ -594,16 +529,22 @@ class _SelectableChip extends StatelessWidget {
   final VoidCallback onTap;
   final IconData? icon;
 
+  /// Optional leading PNG badge (real KeeTa two-state asset). Takes precedence
+  /// over [icon] when supplied.
+  final String? leadingAsset;
+
   @override
   Widget build(BuildContext context) {
     final fg = selected ? AppColors.brandForeground : AppColors.secondaryText;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return PressScale(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: AppMotion.fast,
+        duration: MotionGuard.duration(context, AppMotion.fast),
+        curve: AppMotion.standard,
         padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.s12, vertical: AppSpacing.s8),
+          horizontal: AppSpacing.s12,
+          vertical: AppSpacing.s8,
+        ),
         decoration: BoxDecoration(
           color: selected ? AppColors.primary : AppColors.mediumBackground,
           borderRadius: BorderRadius.circular(AppRadius.r1),
@@ -614,7 +555,10 @@ class _SelectableChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[
+            if (leadingAsset != null) ...[
+              Image.asset(leadingAsset!, width: 16, height: 16),
+              const SizedBox(width: AppSpacing.s4),
+            ] else if (icon != null) ...[
               Icon(icon, size: 13, color: fg),
               const SizedBox(width: AppSpacing.s4),
             ],
@@ -622,7 +566,9 @@ class _SelectableChip extends StatelessWidget {
               label,
               style: AppTextStyles.captionLarge.copyWith(
                 color: fg,
-                fontWeight: selected ? AppTextStyles.bold : AppTextStyles.medium,
+                fontWeight: selected
+                    ? AppTextStyles.bold
+                    : AppTextStyles.medium,
               ),
             ),
           ],
@@ -643,15 +589,15 @@ class _PhotoUploaderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _CardTitle('Add photos', subtitle: 'Up to 6 photos'),
+          _CardTitle(
+            'orders.add_photos'.tr(),
+            subtitle: 'orders.up_to_6_photos'.tr(),
+          ),
           const SizedBox(height: AppSpacing.s12),
           BlocBuilder<OrderReviewCubit, OrderReviewState>(
-            buildWhen: (a, b) =>
-                a is OrderReviewLoaded &&
-                b is OrderReviewLoaded &&
-                a.photoCount != b.photoCount,
+            buildWhen: (a, b) => a.photoCount != b.photoCount,
             builder: (context, state) {
-              final count = state is OrderReviewLoaded ? state.photoCount : 0;
+              final count = state.photoCount;
               final cubit = context.read<OrderReviewCubit>();
               return Wrap(
                 spacing: AppSpacing.s8,
@@ -675,6 +621,14 @@ class _PhotoTile extends StatelessWidget {
 
   final VoidCallback onRemove;
 
+  void _openZoom(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierColor: AppColors.overlayPrimary,
+      builder: (_) => const _PhotoZoomDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -683,16 +637,25 @@ class _PhotoTile extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: AppColors.smallBackground,
-              borderRadius: BorderRadius.circular(AppRadius.r4),
+          // Tappable photo thumbnail — opens full-screen zoom.
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _openZoom(context),
+            child: Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: AppColors.smallBackground,
+                borderRadius: BorderRadius.circular(AppRadius.r4),
+              ),
+              child: Icon(
+                KeetaIcons.image,
+                size: 28,
+                color: AppColors.disabledText,
+              ),
             ),
-            child: Icon(KeetaIcons.image,
-                size: 28, color: AppColors.disabledText),
           ),
+          // Remove badge (top-end corner).
           PositionedDirectional(
             top: -6,
             end: -6,
@@ -704,8 +667,82 @@ class _PhotoTile extends StatelessWidget {
                   color: AppColors.black,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(KeetaIcons.close,
-                    size: 12, color: AppColors.white),
+                child: Icon(KeetaIcons.close, size: 12, color: AppColors.white),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen photo viewer launched when a photo tile is tapped.
+///
+/// Uses [InteractiveViewer] for pinch-zoom + pan. Tap the backdrop or the
+/// close button to dismiss. Shows a dummy placeholder image icon (the real
+/// implementation would pass an image provider once file-picking is wired).
+class _PhotoZoomDialog extends StatelessWidget {
+  const _PhotoZoomDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    return Dialog.fullscreen(
+      backgroundColor: AppColors.black,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Dismiss on tap outside the image.
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.of(context).pop(),
+          ),
+          // Pinch-zoom image area.
+          Center(
+            child: RepaintBoundary(
+              child: InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4.0,
+                clipBehavior: Clip.none,
+                child: Container(
+                  width: size.width,
+                  height: size.width, // square crop placeholder
+                  color: AppColors.smallBackground,
+                  child: Icon(
+                    KeetaIcons.image,
+                    size: 64,
+                    color: AppColors.disabledText,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Close button — top-end safe area.
+          SafeArea(
+            child: Align(
+              alignment: AlignmentDirectional.topEnd,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(
+                  top: AppSpacing.s8,
+                  end: AppSpacing.s12,
+                ),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.s8),
+                    decoration: const BoxDecoration(
+                      color: AppColors.overlayPrimary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      KeetaIcons.close,
+                      size: 18,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -738,9 +775,12 @@ class _AddPhotoTile extends StatelessWidget {
           children: [
             Icon(KeetaIcons.camera, size: 22, color: AppColors.tertiaryText),
             const SizedBox(height: AppSpacing.s4),
-            Text('Add',
-                style: AppTextStyles.captionSmall
-                    .copyWith(color: AppColors.tertiaryText)),
+            Text(
+              'orders.add'.tr(),
+              style: AppTextStyles.captionSmall.copyWith(
+                color: AppColors.tertiaryText,
+              ),
+            ),
           ],
         ),
       ),
@@ -753,7 +793,7 @@ class _AddPhotoTile extends StatelessWidget {
 class _ProductReviewCard extends StatelessWidget {
   const _ProductReviewCard({required this.items});
 
-  final List<OrderItem> items;
+  final List<OrderItemEntity> items;
 
   @override
   Widget build(BuildContext context) {
@@ -761,34 +801,56 @@ class _ProductReviewCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const _CardTitle('Rate the items',
-              subtitle: 'Tap the items you loved'),
-          const SizedBox(height: AppSpacing.s12),
-          BlocBuilder<OrderReviewCubit, OrderReviewState>(
-            buildWhen: (a, b) =>
-                a is OrderReviewLoaded &&
-                b is OrderReviewLoaded &&
-                a.likedProducts != b.likedProducts,
-            builder: (context, state) {
-              final selected = state is OrderReviewLoaded
-                  ? state.likedProducts
-                  : const <String>{};
-              final cubit = context.read<OrderReviewCubit>();
-              return Wrap(
-                spacing: AppSpacing.s8,
-                runSpacing: AppSpacing.s8,
-                children: [
-                  for (final item in items)
-                    _SelectableChip(
-                      label: item.name,
-                      selected: selected.contains(item.name),
-                      icon: KeetaIcons.favorite,
-                      onTap: () => cubit.toggleProduct(item.name),
-                    ),
-                ],
-              );
-            },
+          _CardTitle(
+            'orders.rate_items'.tr(),
+            subtitle: 'orders.rate_items_sub'.tr(),
           ),
+          const SizedBox(height: AppSpacing.s12),
+          if (items.isEmpty)
+            // Real KeeTa empty-list graphic (empty_list_1gqvy22.png) when there
+            // are no order items to rate.
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
+                child: Column(
+                  children: [
+                    Image.asset(KeetaAssets.homeEmptyList, height: 96),
+                    const SizedBox(height: AppSpacing.s8),
+                    Text(
+                      'orders.no_items_to_rate'.tr(),
+                      style: AppTextStyles.captionLarge.copyWith(
+                        color: AppColors.tertiaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            BlocBuilder<OrderReviewCubit, OrderReviewState>(
+              buildWhen: (a, b) => a.likedProducts != b.likedProducts,
+              builder: (context, state) {
+                final selected = state.likedProducts;
+                final cubit = context.read<OrderReviewCubit>();
+                return Wrap(
+                  spacing: AppSpacing.s8,
+                  runSpacing: AppSpacing.s8,
+                  children: [
+                    for (final item in items)
+                      _SelectableChip(
+                        // Show "{qty}x {name}" for context, matching KeeTa's
+                        // order-item conventions; selection still keys on name.
+                        label: item.qty > 1
+                            ? '${item.qty}x ${item.displayName}'
+                            : item.displayName,
+                        selected: selected.contains(item.name),
+                        icon: KeetaIcons.favorite,
+                        onTap: () => cubit.toggleProduct(item.name),
+                      ),
+                  ],
+                );
+              },
+            ),
         ],
       ),
     );
@@ -803,22 +865,18 @@ class _SubmitBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OrderReviewCubit, OrderReviewState>(
-      buildWhen: (a, b) {
-        if (a is OrderReviewLoaded && b is OrderReviewLoaded) {
-          return a.submittable != b.submittable ||
-              a.submitting != b.submitting;
-        }
-        return a.runtimeType != b.runtimeType;
-      },
+      buildWhen: (a, b) =>
+          a.submittable != b.submittable ||
+          a.submitting != b.submitting ||
+          a.status != b.status,
       builder: (context, state) {
-        final loaded = state is OrderReviewLoaded ? state : null;
-        final enabled = loaded?.submittable ?? false;
-        final loading = loaded?.submitting ?? false;
+        final enabled = state.submittable;
+        final loading = state.submitting;
         final onSubmit = _SubmitScope.of(context).onSubmit;
         return SafeArea(
           minimum: const EdgeInsets.all(AppSpacing.s12),
           child: AppButton(
-            label: 'Submit review',
+            label: 'orders.submit_review'.tr(),
             loading: loading,
             enabled: enabled,
             onPressed: enabled ? onSubmit : null,
@@ -852,24 +910,31 @@ class _ReviewSuccessDialog extends StatelessWidget {
                 color: AppColors.brandLightBg,
                 shape: BoxShape.circle,
               ),
-              child: Icon(KeetaIcons.confirm,
-                  size: 40, color: AppColors.success),
+              child: Icon(
+                KeetaIcons.confirm,
+                size: 40,
+                color: AppColors.success,
+              ),
             ),
             const SizedBox(height: AppSpacing.s16),
-            Text('Thanks for your review!',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.headingLarge
-                    .copyWith(fontWeight: AppTextStyles.bold)),
+            Text(
+              'orders.thanks_review'.tr(),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.headingLarge.copyWith(
+                fontWeight: AppTextStyles.bold,
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
             Text(
-              'Your feedback helps the shop and other customers.',
+              'orders.review_success_body'.tr(),
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyLarge
-                  .copyWith(color: AppColors.secondaryText),
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.secondaryText,
+              ),
             ),
             const SizedBox(height: AppSpacing.s24),
             AppButton(
-              label: 'Done',
+              label: 'orders.done'.tr(),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ],

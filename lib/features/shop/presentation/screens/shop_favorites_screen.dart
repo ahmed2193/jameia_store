@@ -1,8 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/data/keeta_repository.dart';
 import '../../../../core/data/models/models.dart';
 import '../../../../core/design/keeta_assets.dart';
 import '../../../../core/design/keeta_icons.dart';
@@ -11,42 +11,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/core_widgets.dart';
-
-// ── Page cubit (constructed INLINE, never registered in the service locator) ──
-
-/// State for the favourited-shops page.
-sealed class ShopFavoritesState {
-  const ShopFavoritesState();
-}
-
-class ShopFavoritesLoading extends ShopFavoritesState {
-  const ShopFavoritesLoading();
-}
-
-class ShopFavoritesLoaded extends ShopFavoritesState {
-  const ShopFavoritesLoaded(this.shops);
-  final List<Shop> shops;
-}
-
-class ShopFavoritesError extends ShopFavoritesState {
-  const ShopFavoritesError();
-}
-
-/// Page-scoped cubit serving the user's favourited shops. Dummy data only — the
-/// whole shop catalogue stands in for "favourites" until a real backend exists.
-class ShopFavoritesCubit extends Cubit<ShopFavoritesState> {
-  ShopFavoritesCubit(this._repo) : super(const ShopFavoritesLoading());
-
-  final KeetaRepository _repo;
-
-  void load() {
-    try {
-      emit(ShopFavoritesLoaded(_repo.shops));
-    } catch (_) {
-      emit(const ShopFavoritesError());
-    }
-  }
-}
+import '../../../../core/widgets/skeletons.dart';
+import '../cubit/shop_favorites_cubit.dart';
 
 /// KeeTa `shop_favorites` (bundle 49) — the user's favourited shops list. Plain
 /// AppBar titled "Favourites" over a feed of [ShopCard]s; tapping a card opens
@@ -57,7 +23,7 @@ class ShopFavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ShopFavoritesCubit(sl<KeetaRepository>())..load(),
+      create: (_) => sl<ShopFavoritesCubit>(),
       child: const _FavoritesView(),
     );
   }
@@ -83,19 +49,30 @@ class _FavoritesView extends StatelessWidget {
           icon: const Icon(KeetaIcons.back, size: 20),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: Text('Favourites',
-            style: AppTextStyles.headingLarge
-                .copyWith(fontWeight: AppTextStyles.bold)),
+        title: Text(
+          'shop.favourites'.tr(),
+          style: AppTextStyles.headingLarge.copyWith(
+            fontWeight: AppTextStyles.bold,
+          ),
+        ),
       ),
       body: BlocBuilder<ShopFavoritesCubit, ShopFavoritesState>(
         builder: (context, state) {
-          return switch (state) {
-            ShopFavoritesLoading() => const AppLoader(),
-            ShopFavoritesError() => ErrorView(
-                onRetry: () => context.read<ShopFavoritesCubit>().load()),
-            ShopFavoritesLoaded(:final shops) => shops.isEmpty
-                ? const _EmptyFavorites()
-                : _FavoritesList(shops: shops, onOpen: _openShop),
+          return switch (state.status) {
+            ShopFavoritesStatus.initial ||
+            ShopFavoritesStatus.loading => const Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.s12,
+                vertical: AppSpacing.s12,
+              ),
+              child: Skeletonized(loading: true, child: ListSkeleton(count: 6)),
+            ),
+            ShopFavoritesStatus.error => ErrorView(
+              onRetry: () => context.read<ShopFavoritesCubit>().load(),
+            ),
+            ShopFavoritesStatus.empty => const _EmptyFavorites(),
+            ShopFavoritesStatus.loaded =>
+              _FavoritesList(shops: state.shops, onOpen: _openShop),
           };
         },
       ),
@@ -116,10 +93,8 @@ class _FavoritesList extends StatelessWidget {
       itemCount: shops.length,
       separatorBuilder: (_, _) =>
           const ThinDivider(indent: AppSpacing.pageMargin),
-      itemBuilder: (_, i) => ShopCard(
-        shop: shops[i],
-        onTap: () => onOpen(context, shops[i].id),
-      ),
+      itemBuilder: (_, i) =>
+          ShopCard(shop: shops[i], onTap: () => onOpen(context, shops[i].id)),
     );
   }
 }
@@ -142,14 +117,20 @@ class _EmptyFavorites extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             const SizedBox(height: AppSpacing.s16),
-            Text('No favourites yet',
-                style: AppTextStyles.headingMedium
-                    .copyWith(fontWeight: AppTextStyles.bold)),
+            Text(
+              'shop.no_favourites_yet'.tr(),
+              style: AppTextStyles.displaySmall.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: AppSpacing.s4),
-            Text('Tap the heart on a shop to save it here.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.secondaryText)),
+            Text(
+              'shop.favourites_empty_hint'.tr(),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.secondaryText,
+              ),
+            ),
           ],
         ),
       ),

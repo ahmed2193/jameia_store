@@ -1,10 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/data/keeta_repository.dart';
-import '../../../../core/data/models/models.dart';
+import '../../domain/entities/order.dart';
+import '../util/order_display.dart';
+import '../../../../core/design/keeta_assets.dart';
+import '../../../../core/design/keeta_icons.dart';
+import '../../../../core/motion/motion_widgets.dart';
+import '../../../../core/responsive/app_size.dart';
 import '../../../../core/responsive/content_clamp.dart';
+import '../../../../core/routing/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -23,11 +29,21 @@ class OrderRefundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => OrderRefundCubit(sl<KeetaRepository>()),
+      create: (_) => sl<OrderRefundCubit>(),
       child: const _OrderRefundView(),
     );
   }
 }
+
+/// Ordered refund-form sections — fed to [StaggerEntrance] for a cascading reveal.
+const List<Widget> _sections = <Widget>[
+  _ReasonSection(),
+  _ItemSection(),
+  _DescriptionSection(),
+  _PhotoSection(),
+  _RefundMethodTip(),
+  _AmountSection(),
+];
 
 class _OrderRefundView extends StatelessWidget {
   const _OrderRefundView();
@@ -42,29 +58,49 @@ class _OrderRefundView extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0.5,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(KeetaIcons.back),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: Text('Request a refund',
-            style: AppTextStyles.headingLarge
-                .copyWith(fontWeight: AppTextStyles.bold)),
+        title: Text(
+          'orders.request_refund'.tr(),
+          style: AppTextStyles.headingLarge.copyWith(
+            fontWeight: AppTextStyles.bold,
+          ),
+        ),
         centerTitle: false,
       ),
-      body: ContentClamp(
-        child: CustomScrollView(
-          slivers: const [
-            SliverToBoxAdapter(child: _ReasonSection()),
-            SliverToBoxAdapter(child: SizedBox(height: AppSpacing.s8)),
-            SliverToBoxAdapter(child: _ItemSection()),
-            SliverToBoxAdapter(child: SizedBox(height: AppSpacing.s8)),
-            SliverToBoxAdapter(child: _DescriptionSection()),
-            SliverToBoxAdapter(child: SizedBox(height: AppSpacing.s8)),
-            SliverToBoxAdapter(child: _PhotoSection()),
-            SliverToBoxAdapter(child: SizedBox(height: AppSpacing.s8)),
-            SliverToBoxAdapter(child: _AmountSection()),
-            SliverToBoxAdapter(child: SizedBox(height: AppSpacing.s24)),
-          ],
-        ),
+      body: BlocBuilder<OrderRefundCubit, OrderRefundState>(
+        buildWhen: (a, b) => a.status != b.status,
+        builder: (context, state) {
+          return switch (state.status) {
+            OrderRefundStatus.initial ||
+            OrderRefundStatus.loading => const AppLoader(),
+            OrderRefundStatus.error => ErrorView(
+              message: 'orders.could_not_load'.tr(),
+              onRetry: () => Navigator.maybePop(context),
+            ),
+            OrderRefundStatus.loaded => ContentClamp(
+              child: CustomScrollView(
+                slivers: [
+                  // Each refund section cascades in via the shared StaggerEntrance
+                  // primitive (reduced-motion → instant), matching the app's list grammar.
+                  for (final (i, section) in _sections.indexed) ...[
+                    SliverToBoxAdapter(
+                      child: StaggerEntrance(index: i, child: section),
+                    ),
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: i == _sections.length - 1
+                            ? AppSpacing.s24
+                            : AppSpacing.s8,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          };
+        },
       ),
       bottomNavigationBar: const _SubmitBar(),
     );
@@ -85,7 +121,9 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       color: AppColors.white,
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s16, vertical: AppSpacing.s16),
+        horizontal: AppSpacing.s16,
+        vertical: AppSpacing.s16,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -93,14 +131,20 @@ class _SectionCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: Text(title,
-                    style: AppTextStyles.headingMedium
-                        .copyWith(fontWeight: AppTextStyles.bold)),
+                child: Text(
+                  title,
+                  style: AppTextStyles.headingMedium.copyWith(
+                    fontWeight: AppTextStyles.bold,
+                  ),
+                ),
               ),
               if (subtitle != null)
-                Text(subtitle!,
-                    style: AppTextStyles.captionLarge
-                        .copyWith(color: AppColors.tertiaryText)),
+                Text(
+                  subtitle!,
+                  style: AppTextStyles.captionLarge.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: AppSpacing.s12),
@@ -118,7 +162,7 @@ class _ReasonSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      title: 'Why are you requesting a refund?',
+      title: 'orders.refund_reason_question'.tr(),
       child: BlocBuilder<OrderRefundCubit, OrderRefundState>(
         buildWhen: (a, b) => a.reason != b.reason,
         builder: (context, state) {
@@ -139,6 +183,17 @@ class _ReasonSection extends StatelessWidget {
   }
 }
 
+/// Localized label for a [RefundReason]. The enum + its English `label` live in
+/// the page cubit (not localized there); this maps each case to a translation
+/// key for display while the enum value stays the identity.
+String _refundReasonLabel(RefundReason reason) => switch (reason) {
+  RefundReason.missingItem => 'orders.reason_missing_item'.tr(),
+  RefundReason.wrongItem => 'orders.reason_wrong_item'.tr(),
+  RefundReason.qualityIssue => 'orders.reason_quality'.tr(),
+  RefundReason.lateDelivery => 'orders.reason_late_delivery'.tr(),
+  RefundReason.other => 'orders.reason_other'.tr(),
+};
+
 class _ReasonTile extends StatelessWidget {
   const _ReasonTile({
     required this.reason,
@@ -152,21 +207,29 @@ class _ReasonTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(reason.label,
+    // Passive PressScale (no onTap) gives the tap a subtle press-shrink without
+    // competing with the InkWell's own ripple/gesture.
+    return PressScale(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.s10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  _refundReasonLabel(reason),
                   style: AppTextStyles.bodyLarge.copyWith(
-                      color: AppColors.primaryText,
-                      fontWeight:
-                          selected ? AppTextStyles.bold : AppTextStyles.regular)),
-            ),
-            _Radio(selected: selected),
-          ],
+                    color: AppColors.primaryText,
+                    fontWeight: selected
+                        ? AppTextStyles.bold
+                        : AppTextStyles.regular,
+                  ),
+                ),
+              ),
+              _Radio(selected: selected),
+            ],
+          ),
         ),
       ),
     );
@@ -179,17 +242,14 @@ class _Radio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // Shipped KeeTa radio glyphs (order_status bundle): selected vs gray.
+    return Image.asset(
+      selected
+          ? KeetaAssets.refundReasonSelected
+          : KeetaAssets.refundReasonUnselected,
       width: 20,
       height: 20,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: selected ? AppColors.primary : AppColors.disabledText,
-          width: selected ? 6 : 2,
-        ),
-        color: AppColors.white,
-      ),
+      fit: BoxFit.contain,
     );
   }
 }
@@ -204,17 +264,18 @@ class _ItemSection extends StatelessWidget {
       buildWhen: (a, b) => a.selectedQty != b.selectedQty,
       builder: (context, state) {
         return _SectionCard(
-          title: 'Which items?',
-          subtitle: '${state.selectedItemCount} selected',
+          title: 'orders.which_items'.tr(),
+          subtitle: 'orders.n_selected'.tr(
+            namedArgs: {'count': '${state.selectedItemCount}'},
+          ),
           child: Column(
             children: [
-              for (var i = 0; i < state.order.items.length; i++)
+              for (var i = 0; i < state.order!.items.length; i++)
                 _RefundItemRow(
-                  item: state.order.items[i],
+                  item: state.order!.items[i],
                   selectedQty: state.selectedQty[i] ?? 0,
                   onAdd: () => context.read<OrderRefundCubit>().increment(i),
-                  onRemove: () =>
-                      context.read<OrderRefundCubit>().decrement(i),
+                  onRemove: () => context.read<OrderRefundCubit>().decrement(i),
                 ),
             ],
           ),
@@ -232,7 +293,7 @@ class _RefundItemRow extends StatelessWidget {
     required this.onRemove,
   });
 
-  final OrderItem item;
+  final OrderItemEntity item;
   final int selectedQty;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
@@ -256,16 +317,21 @@ class _RefundItemRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodyLarge
-                        .copyWith(color: AppColors.primaryText)),
+                Text(
+                  item.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.primaryText,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.s2),
                 Text(
-                    '${Formatters.price(item.price)} · ordered ${item.qty}',
-                    style: AppTextStyles.captionLarge
-                        .copyWith(color: AppColors.tertiaryText)),
+                  '${Formatters.price(item.price)} · ${'orders.ordered_qty'.tr(namedArgs: {'qty': '${item.qty}'})}',
+                  style: AppTextStyles.captionLarge.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
+                ),
               ],
             ),
           ),
@@ -297,12 +363,12 @@ class _DescriptionSectionState extends State<_DescriptionSection> {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      title: 'Describe the problem',
-      subtitle: 'Optional',
+      title: 'orders.describe_problem'.tr(),
+      subtitle: 'orders.optional'.tr(),
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.mediumBackground,
-          borderRadius: BorderRadius.circular(AppRadius.r4),
+          borderRadius: BorderRadius.circular(AppRadius.r6),
         ),
         padding: const EdgeInsets.all(AppSpacing.s12),
         child: TextField(
@@ -310,14 +376,13 @@ class _DescriptionSectionState extends State<_DescriptionSection> {
           minLines: 3,
           maxLines: 5,
           maxLength: 200,
-          onChanged: (v) =>
-              context.read<OrderRefundCubit>().setDescription(v),
-          style: AppTextStyles.bodyLarge
-              .copyWith(color: AppColors.primaryText),
+          onChanged: (v) => context.read<OrderRefundCubit>().setDescription(v),
+          style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText),
           decoration: InputDecoration.collapsed(
-            hintText: 'Tell us what went wrong…',
-            hintStyle: AppTextStyles.bodyLarge
-                .copyWith(color: AppColors.tertiaryText),
+            hintText: 'orders.describe_hint'.tr(),
+            hintStyle: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.tertiaryText,
+            ),
           ),
         ),
       ),
@@ -338,7 +403,7 @@ class _PhotoSection extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<OrderRefundCubit>();
         return _SectionCard(
-          title: 'Add photos',
+          title: 'orders.add_photos'.tr(),
           subtitle: '${state.photoCount}/$_maxPhotos',
           child: Wrap(
             spacing: AppSpacing.s8,
@@ -362,6 +427,14 @@ class _PhotoTile extends StatelessWidget {
 
   static const double _size = 76;
 
+  void _openViewer(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierColor: AppColors.black.withValues(alpha: 0.88),
+      builder: (_) => const _PhotoViewerDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -370,15 +443,21 @@ class _PhotoTile extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Container(
-            width: _size,
-            height: _size,
-            decoration: BoxDecoration(
-              color: AppColors.smallBackground,
-              borderRadius: BorderRadius.circular(AppRadius.r4),
+          GestureDetector(
+            onTap: () => _openViewer(context),
+            child: Container(
+              width: _size,
+              height: _size,
+              decoration: BoxDecoration(
+                color: AppColors.smallBackground,
+                borderRadius: BorderRadius.circular(AppSize.r8),
+              ),
+              child: const Icon(
+                KeetaIcons.image,
+                color: AppColors.disabledText,
+                size: 30,
+              ),
             ),
-            child: const Icon(Icons.image_rounded,
-                color: AppColors.disabledText, size: 30),
           ),
           PositionedDirectional(
             top: -6,
@@ -388,9 +467,84 @@ class _PhotoTile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(2),
                 decoration: const BoxDecoration(
-                    color: AppColors.overlayPrimary, shape: BoxShape.circle),
-                child: const Icon(Icons.close_rounded,
-                    color: AppColors.white, size: 14),
+                  color: AppColors.overlayPrimary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  KeetaIcons.close,
+                  color: AppColors.white,
+                  size: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen zoom viewer shown when a photo tile is tapped.
+///
+/// Uses [InteractiveViewer] for pinch-to-zoom / pan. A close button sits in
+/// the top-right corner so the user can dismiss without swiping back.
+class _PhotoViewerDialog extends StatelessWidget {
+  const _PhotoViewerDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    final safePad = MediaQuery.paddingOf(context);
+    return Material(
+      color: AppColors.black.withValues(alpha: 0.88),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // InteractiveViewer for pinch-zoom & pan
+          Center(
+            child: InteractiveViewer(
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Container(
+                margin: EdgeInsetsDirectional.symmetric(
+                  horizontal: AppSpacing.s24,
+                  vertical: safePad.top + AppSpacing.s48,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.smallBackground,
+                  borderRadius: BorderRadius.circular(AppSize.r8),
+                ),
+                child: const AspectRatio(
+                  aspectRatio: 1,
+                  child: Center(
+                    child: Icon(
+                      KeetaIcons.image,
+                      color: AppColors.disabledText,
+                      size: 64,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Close button — top-end corner
+          PositionedDirectional(
+            top: safePad.top + AppSpacing.s8,
+            end: AppSpacing.s12,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.white.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  KeetaIcons.close,
+                  color: AppColors.white,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -413,20 +567,73 @@ class _AddPhotoTile extends StatelessWidget {
         height: 76,
         decoration: BoxDecoration(
           color: AppColors.mediumBackground,
-          borderRadius: BorderRadius.circular(AppRadius.r4),
+          borderRadius: BorderRadius.circular(AppSize.r8),
           border: Border.all(color: AppColors.divider),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.camera_alt_rounded,
-                color: AppColors.tertiaryText, size: 24),
-            SizedBox(height: AppSpacing.s4),
-            Text('Add',
-                style: TextStyle(
-                    fontSize: 10, color: AppColors.tertiaryText)),
+            const Icon(
+              KeetaIcons.camera,
+              color: AppColors.tertiaryText,
+              size: 24,
+            ),
+            const SizedBox(height: AppSpacing.s4),
+            Text(
+              'orders.add'.tr(),
+              style: AppTextStyles.captionSmall.copyWith(
+                color: AppColors.tertiaryText,
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── 4b. Refund method preference tip ─────────────────────────────────────────
+class _RefundMethodTip extends StatelessWidget {
+  const _RefundMethodTip();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: AppColors.white,
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: AppSpacing.s16,
+        vertical: AppSpacing.s14,
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            KeetaAssets.refundMethodSelected,
+            width: 18,
+            height: 18,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(width: AppSpacing.s10),
+          Expanded(
+            child: Text(
+              'orders.refund_to_original'.tr(),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.secondaryText,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.s8),
+          GestureDetector(
+            onTap: () {},
+            child: Text(
+              'orders.learn_more'.tr(),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.link,
+                fontWeight: AppTextStyles.medium,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -443,16 +650,18 @@ class _AmountSection extends StatelessWidget {
           a.refundAmount != b.refundAmount || a.order != b.order,
       builder: (context, state) {
         return _SectionCard(
-          title: 'Refund amount',
+          title: 'orders.refund_amount'.tr(),
           child: Column(
             children: [
               _AmountRow(
-                  label: 'Items selected',
-                  value: '${state.selectedItemCount}'),
+                label: 'orders.items_selected'.tr(),
+                value: '${state.selectedItemCount}',
+              ),
               const SizedBox(height: AppSpacing.s8),
               _AmountRow(
-                  label: 'Order total',
-                  value: Formatters.price(state.order.total)),
+                label: 'orders.order_total'.tr(),
+                value: Formatters.price(state.order!.total),
+              ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: AppSpacing.s12),
                 child: ThinDivider(),
@@ -460,27 +669,38 @@ class _AmountSection extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text('Estimated refund',
-                        style: AppTextStyles.headingMedium
-                            .copyWith(fontWeight: AppTextStyles.bold)),
+                    child: Text(
+                      'orders.estimated_refund'.tr(),
+                      style: AppTextStyles.headingMedium.copyWith(
+                        fontWeight: AppTextStyles.bold,
+                      ),
+                    ),
                   ),
-                  Text(Formatters.price(state.refundAmount),
-                      style: AppTextStyles.headingLarge.copyWith(
-                          color: AppColors.finalPrice,
-                          fontWeight: AppTextStyles.bold)),
+                  Text(
+                    Formatters.price(state.refundAmount),
+                    style: AppTextStyles.headingLarge.copyWith(
+                      color: AppColors.finalPrice,
+                      fontWeight: AppTextStyles.bold,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: AppSpacing.s8),
               Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded,
-                      size: 14, color: AppColors.tertiaryText),
+                  const Icon(
+                    KeetaIcons.info,
+                    size: 14,
+                    color: AppColors.tertiaryText,
+                  ),
                   const SizedBox(width: AppSpacing.s4),
                   Expanded(
                     child: Text(
-                        'Refunds return to your original payment method within 3–5 days.',
-                        style: AppTextStyles.captionLarge
-                            .copyWith(color: AppColors.tertiaryText)),
+                      'orders.refund_return_note'.tr(),
+                      style: AppTextStyles.captionLarge.copyWith(
+                        color: AppColors.tertiaryText,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -502,13 +722,17 @@ class _AmountRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(label,
-              style: AppTextStyles.bodyLarge
-                  .copyWith(color: AppColors.secondaryText)),
+          child: Text(
+            label,
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.secondaryText,
+            ),
+          ),
         ),
-        Text(value,
-            style: AppTextStyles.bodyLarge
-                .copyWith(color: AppColors.primaryText)),
+        Text(
+          value,
+          style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText),
+        ),
       ],
     );
   }
@@ -530,11 +754,18 @@ class _SubmitBar extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.s12),
             child: AppButton(
               label: state.canSubmit
-                  ? 'Submit · ${Formatters.price(state.refundAmount)}'
-                  : 'Submit refund',
+                  ? '${'orders.submit'.tr()} · ${Formatters.price(state.refundAmount)}'
+                  : 'orders.submit_refund'.tr(),
               enabled: state.canSubmit,
               onPressed: state.canSubmit
-                  ? () => _showSuccess(context, state.refundAmount)
+                  ? () {
+                      context.read<OrderRefundCubit>().submit();
+                      _showSuccess(
+                        context,
+                        state.refundAmount,
+                        state.order!.id,
+                      );
+                    }
                   : null,
             ),
           ),
@@ -543,14 +774,19 @@ class _SubmitBar extends StatelessWidget {
     );
   }
 
-  void _showSuccess(BuildContext context, double amount) {
+  void _showSuccess(BuildContext context, double amount, String orderId) {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => _RefundSuccessDialog(
         amount: amount,
         onDone: () {
           Navigator.of(dialogContext).pop();
-          Navigator.of(context).maybePop();
+          // Land on the refund-progress (detail) screen, replacing the request
+          // form so Back returns to the order — matching KeeTa's refund nav graph
+          // (order_detail/order_status → refund request → refund progress).
+          Navigator.of(
+            context,
+          ).pushReplacementNamed(Routes.orderRefundDetail, arguments: orderId);
         },
       ),
     );
@@ -568,26 +804,33 @@ class _RefundSuccessDialog extends StatelessWidget {
     return Dialog(
       backgroundColor: AppColors.white,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.r3)),
+        borderRadius: BorderRadius.circular(AppRadius.r3),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.s24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle_rounded,
-                size: 56, color: AppColors.success),
+            const Icon(KeetaIcons.confirm, size: 56, color: AppColors.success),
             const SizedBox(height: AppSpacing.s16),
-            Text('Refund requested',
-                style: AppTextStyles.headingLarge
-                    .copyWith(fontWeight: AppTextStyles.bold)),
+            Text(
+              'orders.refund_requested'.tr(),
+              style: AppTextStyles.headingLarge.copyWith(
+                fontWeight: AppTextStyles.bold,
+              ),
+            ),
             const SizedBox(height: AppSpacing.s8),
             Text(
-                'We’re reviewing your ${Formatters.price(amount)} refund. You’ll get an update shortly.',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.bodyLarge
-                    .copyWith(color: AppColors.secondaryText)),
+              'orders.refund_requested_body'.tr(
+                namedArgs: {'amount': Formatters.price(amount)},
+              ),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.secondaryText,
+              ),
+            ),
             const SizedBox(height: AppSpacing.s24),
-            AppButton(label: 'Done', onPressed: onDone),
+            AppButton(label: 'orders.done'.tr(), onPressed: onDone),
           ],
         ),
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
+import 'app_size.dart';
+
 /// M3 window-size breakpoints.
 enum Breakpoint { compact, medium, expanded, large, extraLarge }
 
@@ -75,7 +77,7 @@ class BreakpointOverlay extends StatelessWidget {
                   bp.name.toUpperCase(),
                   style: const TextStyle(
                     color: Color.fromARGB(255, 255, 255, 255),
-                    fontSize: 10,
+                    fontSize: AppSize.font10,
                     decoration: TextDecoration.none,
                   ),
                 ),

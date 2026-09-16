@@ -1,10 +1,12 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/data/keeta_repository.dart';
-import '../../../../core/data/models/models.dart';
+import '../../domain/entities/coupon.dart';
 import '../../../../core/design/keeta_icons.dart';
+import '../../../../core/motion/motion.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_shadows.dart';
@@ -12,12 +14,13 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/core_widgets.dart';
+import '../../../../core/widgets/skeletons.dart';
 import '../cubit/coupons_cubit.dart';
 
 /// KeeTa order-checkout coupon picker (`mach_pro_sailor_c_market_order_coupon_list`).
 ///
 /// A radio-select list of available coupon tickets plus a "Don't use a coupon"
-/// option, with a sticky [AppButton] that pops the chosen [Coupon] (or `null`)
+/// option, with a sticky [AppButton] that pops the chosen [CouponEntity] (or `null`)
 /// back to the checkout screen. Page-scoped [CouponsCubit] is built inline.
 class OrderCouponsScreen extends StatelessWidget {
   const OrderCouponsScreen({super.key, this.selectedId});
@@ -28,7 +31,7 @@ class OrderCouponsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CouponsCubit(sl<KeetaRepository>())..load(),
+      create: (_) => sl<CouponsCubit>(),
       child: _OrderCouponsView(selectedId: selectedId),
     );
   }
@@ -47,7 +50,7 @@ class _OrderCouponsViewState extends State<_OrderCouponsView> {
 
   void _confirm() {
     final coupons = _availableCoupons();
-    Coupon? chosen;
+    CouponEntity? chosen;
     for (final c in coupons) {
       if (c.id == _selectedId) {
         chosen = c;
@@ -57,10 +60,8 @@ class _OrderCouponsViewState extends State<_OrderCouponsView> {
     Navigator.pop(context, chosen);
   }
 
-  List<Coupon> _availableCoupons() {
-    final state = context.read<CouponsCubit>().state;
-    return state is CouponsLoaded ? state.available : const <Coupon>[];
-  }
+  List<CouponEntity> _availableCoupons() =>
+      context.read<CouponsCubit>().state.available;
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +77,10 @@ class _OrderCouponsViewState extends State<_OrderCouponsView> {
           onPressed: () => Navigator.maybePop(context),
         ),
         title: Text(
-          'Select a coupon',
-          style: AppTextStyles.headingLarge
-              .copyWith(fontWeight: AppTextStyles.bold),
+          'coupons.select_coupon'.tr(),
+          style: AppTextStyles.headingLarge.copyWith(
+            fontWeight: AppTextStyles.bold,
+          ),
         ),
         centerTitle: false,
       ),
@@ -86,9 +88,12 @@ class _OrderCouponsViewState extends State<_OrderCouponsView> {
         top: false,
         child: BlocBuilder<CouponsCubit, CouponsState>(
           builder: (context, state) {
-            return switch (state) {
-              CouponsLoading() => const AppLoader(),
-              CouponsLoaded() => _list(context, state),
+            return switch (state.status) {
+              CouponsStatus.loaded => _list(context, state),
+              _ => const Skeletonized(
+                loading: true,
+                child: CouponsSkeleton(),
+              ),
             };
           },
         ),
@@ -97,7 +102,7 @@ class _OrderCouponsViewState extends State<_OrderCouponsView> {
     );
   }
 
-  Widget _list(BuildContext context, CouponsLoaded state) {
+  Widget _list(BuildContext context, CouponsState state) {
     final coupons = state.available;
     if (coupons.isEmpty) {
       return const _NoCouponsView();
@@ -114,18 +119,24 @@ class _OrderCouponsViewState extends State<_OrderCouponsView> {
         itemCount: coupons.length + 1,
         itemBuilder: (context, i) {
           if (i == coupons.length) {
-            return _NoCouponOption(
-              selected: _selectedId == null,
-              onTap: () => setState(() => _selectedId = null),
+            return StaggerEntrance(
+              index: i,
+              child: _NoCouponOption(
+                selected: _selectedId == null,
+                onTap: () => setState(() => _selectedId = null),
+              ),
             );
           }
           final c = coupons[i];
-          return Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s12),
-            child: _CouponTicketTile(
-              coupon: c,
-              selected: _selectedId == c.id,
-              onTap: () => setState(() => _selectedId = c.id),
+          return StaggerEntrance(
+            index: i,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s12),
+              child: _CouponTicketTile(
+                coupon: c,
+                selected: _selectedId == c.id,
+                onTap: () => setState(() => _selectedId = c.id),
+              ),
             ),
           );
         },
@@ -144,40 +155,45 @@ class _CouponTicketTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final Coupon coupon;
+  final CouponEntity coupon;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: Material(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppRadius.r4),
-        child: InkWell(
+      // Passive PressScale (no onTap) so the InkWell keeps its ripple while the
+      // whole ticket gives the subtle press feel.
+      child: PressScale(
+        child: Material(
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(AppRadius.r4),
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.r4),
-              border: Border.all(
-                color: selected ? AppColors.primaryDark : AppColors.divider,
-                width: selected ? 1.5 : 1,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppRadius.r4),
+            onTap: onTap,
+            child: AnimatedContainer(
+              duration: MotionGuard.duration(context, AppMotion.fast),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadius.r4),
+                border: Border.all(
+                  color: selected ? AppColors.primaryDark : AppColors.divider,
+                  width: selected ? 1.5 : 1,
+                ),
               ),
-            ),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _AmountStub(amount: coupon.amount),
-                  Expanded(child: _TicketBody(coupon: coupon)),
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                        end: AppSpacing.s12),
-                    child: _RadioDot(selected: selected),
-                  ),
-                ],
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _AmountStub(amount: coupon.amount),
+                    Expanded(child: _TicketBody(coupon: coupon)),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        end: AppSpacing.s12,
+                      ),
+                      child: _RadioDot(selected: selected),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -194,9 +210,11 @@ class _AmountStub extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 96,
+      width: 110,
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s8, vertical: AppSpacing.s16),
+        horizontal: AppSpacing.s8,
+        vertical: AppSpacing.s16,
+      ),
       decoration: const BoxDecoration(
         color: AppColors.accent1Light,
         borderRadius: BorderRadiusDirectional.horizontal(
@@ -213,14 +231,16 @@ class _AmountStub extends StatelessWidget {
                 TextSpan(
                   text: '${Formatters.currency} ',
                   style: AppTextStyles.captionLarge.copyWith(
-                      color: AppColors.accent1,
-                      fontWeight: AppTextStyles.bold),
+                    color: AppColors.accent1,
+                    fontWeight: AppTextStyles.bold,
+                  ),
                 ),
                 TextSpan(
                   text: Formatters.amount(amount),
                   style: AppTextStyles.digits(22).copyWith(
-                      color: AppColors.accent1,
-                      fontWeight: AppTextStyles.bold),
+                    color: AppColors.accent1,
+                    fontWeight: AppTextStyles.bold,
+                  ),
                 ),
               ],
             ),
@@ -229,9 +249,11 @@ class _AmountStub extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s2),
           Text(
-            'OFF',
+            'coupons.off'.tr(),
             style: AppTextStyles.captionMedium.copyWith(
-                color: AppColors.accent1, fontWeight: AppTextStyles.bold),
+              color: AppColors.accent1,
+              fontWeight: AppTextStyles.bold,
+            ),
           ),
         ],
       ),
@@ -241,21 +263,24 @@ class _AmountStub extends StatelessWidget {
 
 class _TicketBody extends StatelessWidget {
   const _TicketBody({required this.coupon});
-  final Coupon coupon;
+  final CouponEntity coupon;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.s12, vertical: AppSpacing.s12),
+        horizontal: AppSpacing.s12,
+        vertical: AppSpacing.s12,
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             coupon.title,
-            style: AppTextStyles.headingSmall
-                .copyWith(fontWeight: AppTextStyles.bold),
+            style: AppTextStyles.headingSmall.copyWith(
+              fontWeight: AppTextStyles.bold,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -263,8 +288,9 @@ class _TicketBody extends StatelessWidget {
             const SizedBox(height: AppSpacing.s2),
             Text(
               coupon.subtitle,
-              style: AppTextStyles.captionLarge
-                  .copyWith(color: AppColors.secondaryText),
+              style: AppTextStyles.captionLarge.copyWith(
+                color: AppColors.secondaryText,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -274,17 +300,21 @@ class _TicketBody extends StatelessWidget {
             children: [
               if (coupon.minSpend > 0) ...[
                 Text(
-                  'Min ${Formatters.price(coupon.minSpend)}',
-                  style: AppTextStyles.captionMedium
-                      .copyWith(color: AppColors.tertiaryText),
+                  'coupons.min_amount'.tr(
+                    namedArgs: {'value': Formatters.price(coupon.minSpend)},
+                  ),
+                  style: AppTextStyles.captionMedium.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.s8),
               ],
               Flexible(
                 child: Text(
                   coupon.expiry,
-                  style: AppTextStyles.captionMedium
-                      .copyWith(color: AppColors.tertiaryText),
+                  style: AppTextStyles.captionMedium.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -305,34 +335,41 @@ class _NoCouponOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(AppRadius.r4),
-      child: InkWell(
+    // Passive PressScale (no onTap) so the InkWell keeps its ripple while the
+    // whole row gives the subtle press feel.
+    return PressScale(
+      child: Material(
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(AppRadius.r4),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.s16, vertical: AppSpacing.s16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.r4),
-            border: Border.all(
-              color: selected ? AppColors.primaryDark : AppColors.divider,
-              width: selected ? 1.5 : 1,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.r4),
+          onTap: onTap,
+          child: AnimatedContainer(
+            duration: MotionGuard.duration(context, AppMotion.fast),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.s16,
+              vertical: AppSpacing.s16,
             ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  "Don't use a coupon",
-                  style: AppTextStyles.headingSmall
-                      .copyWith(fontWeight: AppTextStyles.medium),
-                ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.r4),
+              border: Border.all(
+                color: selected ? AppColors.primaryDark : AppColors.divider,
+                width: selected ? 1.5 : 1,
               ),
-              _RadioDot(selected: selected),
-            ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'coupons.dont_use'.tr(),
+                    style: AppTextStyles.headingSmall.copyWith(
+                      fontWeight: AppTextStyles.medium,
+                    ),
+                  ),
+                ),
+                _RadioDot(selected: selected),
+              ],
+            ),
           ),
         ),
       ),
@@ -348,9 +385,10 @@ class _RadioDot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      width: 22,
-      height: 22,
+      duration: MotionGuard.duration(context, AppMotion.fast),
+      width: 20,
+      height: 20,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: selected ? AppColors.primary : AppColors.white,
@@ -359,9 +397,12 @@ class _RadioDot extends StatelessWidget {
           width: 1.5,
         ),
       ),
-      child: selected
-          ? const Icon(Icons.check, size: 14, color: AppColors.black)
-          : null,
+      child: PopScale(
+        popKey: selected,
+        child: selected
+            ? const Icon(KeetaIcons.confirm, size: 14, color: AppColors.black)
+            : const SizedBox.shrink(),
+      ),
     );
   }
 }
@@ -380,9 +421,11 @@ class _ConfirmBar extends StatelessWidget {
           color: AppColors.white,
           boxShadow: AppShadows.medium,
         ),
-        child: ContentClamp(
-          child: AppButton(label: 'Confirm', onPressed: onConfirm),
-        ),
+        // NOTE: do NOT wrap this in ContentClamp — its inner Align expands to
+        // fill the loose height a bottomNavigationBar gives, which balloons the
+        // bar to full-screen (button pinned top-centre, body squeezed to zero).
+        // A full-width CTA matches the app's other sticky bottom bars anyway.
+        child: AppButton(label: 'coupons.confirm'.tr(), onPressed: onConfirm),
       ),
     );
   }
@@ -393,9 +436,9 @@ class _NoCouponsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const EmptyStateView(
+    return EmptyStateView(
       icon: Icons.local_activity_outlined,
-      message: 'No coupons available to apply to this order.',
+      message: 'coupons.none_for_order'.tr(),
     );
   }
 }

@@ -45,7 +45,7 @@ class AppRadius {
 
   // Friendly aliases.
   static const double pill = 999;
-  static const double card = 16; // r3 — KeeTa shop/product cards
+  static const double card = 12; // KeeTa cards render at 12dp (bundle.css.json)
   static const double chip = 6; // r6
   static const double sheet = 24; // r2 — bottom sheets
 }

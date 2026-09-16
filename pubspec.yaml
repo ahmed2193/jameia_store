@@ -1,4 +1,4 @@
-name: keeta_clone
+name: jameia_mart
 description: "KeeTa clone — Flutter rebuild of Meituan KeeTa (Consumer) on Clean Architecture + Cubit."
 publish_to: 'none'
 
@@ -19,6 +19,11 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.8
+
+  # Index-exact scroll for the shop rank sections (jm3eia products_screen flow):
+  # ScrollablePositionedList.scrollTo(index) lands a rank flush under the rail
+  # even when far/unbuilt (no estimate/converge needed).
+  scrollable_positioned_list: ^0.3.8
 
   # State management (Cubit)
   flutter_bloc: ^9.1.1
@@ -41,16 +46,45 @@ dependencies:
   # Localization (AR / EN) — easy_localization drives runtime locale + RTL.
   easy_localization: ^3.0.7
 
+  # Locale-aware number/date/currency formatting (Arabic-Indic digits, grouping,
+  # KD ↔ د.ك). Promoted from transitive (pulled by easy_localization) to a direct
+  # dependency since Formatters/PriceText now use it directly.
+  intl: ^0.20.2
+
   # UI/UX fidelity packages (RTL/guardrail-safe)
   flutter_staggered_grid_view: ^0.7.0
   skeletonizer: ^2.1.3
   smooth_page_indicator: ^1.2.1
+  # Vector scan-line glyph in the jameia search bar (ported from jm3eia).
+  flutter_svg: ^2.0.10
   cached_network_image: ^3.4.1
+  # Image stack internals: shared disk cache manager + per-request timeout
+  # service + temp-dir cache-info (promoted from transitive to direct deps).
+  flutter_cache_manager: ^3.4.1
+  path_provider: ^2.1.6
+  http: ^1.6.0
   visibility_detector: ^0.4.0+2
   sliver_tools: ^0.2.12
 
   # Lottie vector animations (real KeeTa splash_lottie_default.json).
   lottie: ^3.1.3
+
+  # Live maps for order tracking / shop + address map surfaces.
+  google_maps_flutter: ^2.17.0
+
+  # Real reverse-geocoding (native platform Geocoder) — resolves a pinned
+  # LatLng to a localized city / area / street / house, matching the app
+  # locale. Falls back to the offline KeetaGeocode when unavailable.
+  geocoding: ^3.0.0
+
+  # Device current location for the address map-picker initial centre
+  # (KeeTa `SLLocation.getLocation` / `address_..._currentlocation`).
+  geolocator: ^13.0.1
+
+  # Voice search — on-device speech-to-text + runtime microphone permission
+  # (search screen mic → VoiceSearchScreen).
+  speech_to_text: ^7.3.0
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:
@@ -59,13 +93,31 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   bloc_test: ^10.0.0
 
+  # In-repo custom_lint rule enforcing the presentation→core-repo boundary
+  # (see tools/presentation_lints). Runs via `dart run custom_lint`.
+  custom_lint: any
+  presentation_lints:
+    path: tools/presentation_lints
+
+  # App-icon + native-splash generation for the JameiaMart re-skin. Config blocks
+  # live at the bottom of this file; source art in assets/launcher + assets/images
+  # (produced by tool/splash_icon/apply_new_assets.ps1).
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
+
 flutter:
   uses-material-design: true
 
   assets:
     - assets/i18n/
     - assets/data/
+    - assets/data/jameia/
     - assets/images/
+    # JameiaMart launcher/splash source art (read by flutter_launcher_icons +
+    # flutter_native_splash: app_icon, app_icon_square, a12_splash).
+    - assets/launcher/
+    # Vector glyphs (jameia search scan-line, ported from jm3eia).
+    - assets/svg/
     # Real KeeTa rasters extracted from the decoded APK (Mach UI bundles),
     # grouped by screen. Referenced by name via KeetaAssets (core/design).
     - assets/images/keeta/
@@ -76,8 +128,21 @@ flutter:
     - assets/images/keeta/order_confirm/
     - assets/images/keeta/mine/
     - assets/images/keeta/login/
-    # Real KeeTa animations (brand loader GIF, onboarding slide, splash Lottie).
+    - assets/images/keeta/review/
+    # Marketing (invite friends + punctual) rasters from mkt_invite_main / c_punctual.
+    - assets/images/keeta/marketing/
+    # Home popup / overlay rasters (coupon pop, image-text, vertical banner,
+    # bottom overlay, newborn, popup_list) from the mkt_resources_* bundles.
+    - assets/images/keeta/popup/
+    # Real KeeTa animations (brand loader GIF, onboarding slide, splash Lottie, shine).
     - assets/animations/
+
+  # GLSL fragment shaders ported from KeeTa's video-effects SDK (.fsh) to the
+  # Flutter runtime-effect spec. Driven by core/motion/shader_transition.dart.
+  shaders:
+    - shaders/dissolve.frag
+    - shaders/affine_reveal.frag
+    - shaders/blur.frag
 
   # Real KeeTa fonts extracted from the APK (assets/fonts/).
   # Brand body face = Noto Sans (+ NotoSansArabicUI for RTL); digits = MT Digital Display;
@@ -122,3 +187,39 @@ flutter:
     - family: KeetaIcon
       fonts:
         - asset: assets/fonts/wm_c_iconfont.ttf
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JameiaMart app-icon generation (flutter_launcher_icons). Source art built by
+# tool/splash_icon/apply_new_assets.ps1. Regenerate with:
+#     dart run flutter_launcher_icons
+# The adaptive FOREGROUND (app_icon.png) is an opaque green-gradient tile with the
+# whole wordmark centered, so adaptive_icon_background is only parallax insurance.
+# ─────────────────────────────────────────────────────────────────────────────
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/launcher/app_icon_square.png"
+  adaptive_icon_foreground: "assets/launcher/app_icon.png"
+  adaptive_icon_background: "#EAF7E6"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JameiaMart native splash (flutter_native_splash). WHITE background (the art has
+# its own white bg + baked tagline). Full-bleed on Android ≤11 / iOS; Android 12+
+# shows white + the centered wordmark icon. Regenerate with:
+#     dart run flutter_native_splash:create
+# ─────────────────────────────────────────────────────────────────────────────
+flutter_native_splash:
+  color: "#FFFFFF"
+  background_image: assets/images/splash_screen.png
+  android: true
+  ios: true
+  web: false
+  fullscreen: false
+  ios_content_mode: scaleAspectFill
+
+  android_12:
+    color: "#FFFFFF"
+    image: assets/launcher/a12_splash.png
+    icon_background_color: "#FFFFFF"

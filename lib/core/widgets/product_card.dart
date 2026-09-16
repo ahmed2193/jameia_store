@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/models/shop.dart';
+import '../motion/motion_widgets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -27,49 +28,62 @@ class ProductRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.s12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            KeetaCardImage(url: product.image, width: 92, height: 92),
-            const SizedBox(width: AppSpacing.s12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(product.name,
+    return PressScale(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.s12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              KeetaCardImage(url: product.image, width: 92, height: 92),
+              const SizedBox(width: AppSpacing.s12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      product.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.headingSmall
-                          .copyWith(fontWeight: AppTextStyles.bold)),
-                  const SizedBox(height: 2),
-                  if (product.desc.isNotEmpty)
-                    Text(product.desc,
+                      style: AppTextStyles.headingSmall.copyWith(
+                        fontWeight: AppTextStyles.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    if (product.desc.isNotEmpty)
+                      Text(
+                        product.desc,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.captionLarge
-                            .copyWith(color: AppColors.tertiaryText)),
-                  const SizedBox(height: AppSpacing.s4),
-                  Text(Formatters.sold(product.soldCount),
-                      style: AppTextStyles.captionSmall
-                          .copyWith(color: AppColors.tertiaryText)),
-                  const SizedBox(height: AppSpacing.s6),
-                  Row(
-                    children: [
-                      Expanded(
+                        style: AppTextStyles.captionLarge.copyWith(
+                          color: AppColors.tertiaryText,
+                        ),
+                      ),
+                    const SizedBox(height: AppSpacing.s4),
+                    Text(
+                      Formatters.sold(product.soldCount),
+                      style: AppTextStyles.captionSmall.copyWith(
+                        color: AppColors.tertiaryText,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s6),
+                    Row(
+                      children: [
+                        Expanded(
                           child: PriceText(
-                              price: product.price,
-                              originalPrice: product.originalPrice)),
-                      QtyStepper(qty: qty, onAdd: onAdd, onRemove: onRemove),
-                    ],
-                  ),
-                ],
+                            price: product.price,
+                            originalPrice: product.originalPrice,
+                          ),
+                        ),
+                        QtyStepper(qty: qty, onAdd: onAdd, onRemove: onRemove),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -97,54 +111,75 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: SizedBox(
-        width: width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              children: [
-                KeetaCardImage(
-                    url: product.image, width: width, height: width),
-                if (product.hasDiscount)
-                  PositionedDirectional(
-                    start: 6,
-                    top: 6,
-                    child: Container(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: AppColors.finalPrice,
-                        borderRadius: BorderRadius.circular(AppRadius.r7),
-                      ),
-                      child: Text('-${product.discountPercent}%',
-                          style: AppTextStyles.captionSmall.copyWith(
-                              color: AppColors.white,
-                              fontWeight: AppTextStyles.bold)),
-                    ),
+    return PressScale(
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          width: width,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  KeetaCardImage(
+                    url: product.image,
+                    width: width,
+                    height: width,
                   ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.s6),
-            Text(product.name,
+                  if (product.hasDiscount)
+                    PositionedDirectional(
+                      start: 6,
+                      top: 6,
+                      child: PopScale(
+                        popKey: product.discountPercent,
+                        child: Container(
+                          padding: const EdgeInsetsDirectional.symmetric(
+                            horizontal: 5,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.finalPrice,
+                            borderRadius: BorderRadius.circular(AppRadius.r7),
+                          ),
+                          child: Text(
+                            '-${product.discountPercent}%',
+                            style: AppTextStyles.captionSmall.copyWith(
+                              color: AppColors.white,
+                              fontWeight: AppTextStyles.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.s6),
+              Text(
+                product.displayName,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.bodyLarge),
-            const SizedBox(height: AppSpacing.s4),
-            Row(
-              children: [
-                Expanded(
+                style: AppTextStyles.bodyLarge,
+              ),
+              const SizedBox(height: AppSpacing.s4),
+              Row(
+                children: [
+                  Expanded(
                     child: PriceText(
-                        price: product.price,
-                        originalPrice: product.originalPrice,
-                        size: 14)),
-                QtyStepper(
-                    qty: qty, onAdd: onAdd, onRemove: onRemove, size: 26),
-              ],
-            ),
-          ],
+                      price: product.price,
+                      originalPrice: product.originalPrice,
+                      size: 14,
+                    ),
+                  ),
+                  QtyStepper(
+                    qty: qty,
+                    onAdd: onAdd,
+                    onRemove: onRemove,
+                    size: 26,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/design/keeta_icons.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -31,13 +32,15 @@ class SettingsCellDivider extends StatelessWidget {
   const SettingsCellDivider({super.key});
 
   @override
+  // je890b: 0.5dp hairline, #00000014 (overlay divider, not opaque #EBEBEB),
+  // margin 12dp. KeeTa grouped cells use the overlay divider.
   Widget build(BuildContext context) => const Divider(
-        height: 1,
-        thickness: 1,
-        color: AppColors.divider,
-        indent: AppSpacing.s16,
-        endIndent: AppSpacing.s16,
-      );
+    height: 0.5,
+    thickness: 0.5,
+    color: AppColors.overlayDivider,
+    indent: AppSpacing.s12,
+    endIndent: AppSpacing.s12,
+  );
 }
 
 /// Navigation cell: label + optional trailing text + chevron, tappable.
@@ -55,25 +58,35 @@ class SettingsNavCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.s16, vertical: AppSpacing.s14),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(label, style: AppTextStyles.headingMedium),
-            ),
-            if (trailingText != null) ...[
-              Text(trailingText!,
-                  style: AppTextStyles.captionLarge
-                      .copyWith(color: AppColors.tertiaryText)),
-              const SizedBox(width: AppSpacing.s6),
+    // PressScale with no onTap → passive Listener (won't steal the InkWell's
+    // ripple); the InkWell keeps owning the tap + ripple.
+    return PressScale(
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpacing.s16,
+            vertical: AppSpacing.s14,
+          ),
+          child: Row(
+            children: [
+              Expanded(child: Text(label, style: AppTextStyles.headingMedium)),
+              if (trailingText != null) ...[
+                Text(
+                  trailingText!,
+                  style: AppTextStyles.captionLarge.copyWith(
+                    color: AppColors.tertiaryText,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.s6),
+              ],
+              const Icon(
+                KeetaIcons.arrowRight,
+                size: 16,
+                color: AppColors.tertiaryText,
+              ),
             ],
-            const Icon(KeetaIcons.arrowRight,
-                size: 16, color: AppColors.tertiaryText),
-          ],
+          ),
         ),
       ),
     );
@@ -97,17 +110,22 @@ class SettingsSwitchCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(
-          start: AppSpacing.s16, end: AppSpacing.s8),
+        start: AppSpacing.s16,
+        end: AppSpacing.s8,
+      ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(label, style: AppTextStyles.headingMedium),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeThumbColor: AppColors.brandForeground,
-            activeTrackColor: AppColors.primary,
+          Expanded(child: Text(label, style: AppTextStyles.headingMedium)),
+          // Subtle pop on the changing state — the switch grows-from-overshoot
+          // each time it flips (re-pops whenever [value] toggles).
+          PopScale(
+            popKey: value,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: AppColors.brandForeground,
+              activeTrackColor: AppColors.primary,
+            ),
           ),
         ],
       ),

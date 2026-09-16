@@ -1,10 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/config/service_locator.dart';
-import '../../../../core/data/keeta_repository.dart';
 import '../../../../core/design/keeta_assets.dart';
+import '../../../../core/motion/motion.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/routing/routes.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -20,15 +23,15 @@ import '../cubit/login_cubit.dart';
 /// divider, the three social sign-in buttons (Google / Apple / Facebook) and the
 /// terms/privacy fine print pinned to the bottom.
 ///
-/// The page cubit is constructed INLINE (not registered in the service locator)
-/// per the project's page-scoped cubit convention.
+/// The page cubit is resolved from the service locator (`sl<LoginCubit>()`),
+/// which wires it to the `AuthRepository` over the offline auth chain.
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => LoginCubit(sl<KeetaRepository>()),
+      create: (_) => sl<LoginCubit>(),
       child: const _LoginView(),
     );
   }
@@ -48,7 +51,8 @@ class _LoginViewState extends State<_LoginView> {
   void initState() {
     super.initState();
     _phone.addListener(
-        () => context.read<LoginCubit>().phoneChanged(_phone.text));
+      () => context.read<LoginCubit>().phoneChanged(_phone.text),
+    );
   }
 
   @override
@@ -76,44 +80,73 @@ class _LoginViewState extends State<_LoginView> {
               const SliverToBoxAdapter(child: _BrandHero()),
               SliverPadding(
                 padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AppSpacing.s24),
+                  horizontal: AppSpacing.s24,
+                ),
                 sliver: SliverList.list(
                   children: [
                     const SizedBox(height: AppSpacing.s32),
-                    Text(
-                      'Log in or sign up',
-                      style: AppTextStyles.displaySmall
-                          .copyWith(fontWeight: AppTextStyles.bold),
+                    StaggerEntrance(
+                      index: 0,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'auth.log_in_or_sign_up'.tr(),
+                            style: AppTextStyles.displaySmall.copyWith(
+                              fontWeight: AppTextStyles.bold,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.s6),
+                          Text(
+                            'auth.enter_phone_to_continue'.tr(),
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: AppColors.secondaryText,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: AppSpacing.s6),
-                    Text(
-                      'Enter your phone number to continue',
-                      style: AppTextStyles.bodyLarge
-                          .copyWith(color: AppColors.secondaryText),
+                    const SizedBox(height: AppSpacing.s24),
+                    StaggerEntrance(
+                      index: 1,
+                      child: _PhoneField(controller: _phone),
                     ),
                     const SizedBox(height: AppSpacing.s24),
-                    _PhoneField(controller: _phone),
+                    const StaggerEntrance(index: 2, child: _ContinueButton()),
                     const SizedBox(height: AppSpacing.s24),
-                    const _ContinueButton(),
+                    const StaggerEntrance(index: 3, child: _OrDivider()),
                     const SizedBox(height: AppSpacing.s24),
-                    const _OrDivider(),
-                    const SizedBox(height: AppSpacing.s24),
-                    _SocialButton(
-                      icon: KeetaAssets.loginGoogle,
-                      label: 'Continue with Google',
-                      onTap: _continue,
+                    StaggerEntrance(
+                      index: 4,
+                      child: _SocialButton(
+                        icon: KeetaAssets.loginGoogle,
+                        label: 'auth.continue_with'.tr(
+                          namedArgs: {'provider': 'Google'},
+                        ),
+                        onTap: _continue,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.s12),
-                    _SocialButton(
-                      icon: KeetaAssets.loginApple,
-                      label: 'Continue with Apple',
-                      onTap: _continue,
+                    StaggerEntrance(
+                      index: 5,
+                      child: _SocialButton(
+                        icon: KeetaAssets.loginApple,
+                        label: 'auth.continue_with'.tr(
+                          namedArgs: {'provider': 'Apple'},
+                        ),
+                        onTap: _continue,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.s12),
-                    _SocialButton(
-                      icon: KeetaAssets.loginFacebook,
-                      label: 'Continue with Facebook',
-                      onTap: _continue,
+                    StaggerEntrance(
+                      index: 6,
+                      child: _SocialButton(
+                        icon: KeetaAssets.loginFacebook,
+                        label: 'auth.continue_with'.tr(
+                          namedArgs: {'provider': 'Facebook'},
+                        ),
+                        onTap: _continue,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.s24),
                   ],
@@ -151,7 +184,9 @@ class _BrandHero extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AppSpacing.s24, vertical: AppSpacing.s40),
+        horizontal: AppSpacing.s24,
+        vertical: AppSpacing.s40,
+      ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -175,7 +210,7 @@ class _BrandHero extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s16),
           Text(
-            'KeeTa',
+            'JameiaMart',
             style: AppTextStyles.displayLarge.copyWith(
               fontWeight: AppTextStyles.bold,
               color: AppColors.brandForeground,
@@ -183,9 +218,10 @@ class _BrandHero extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s4),
           Text(
-            'Food delivery, fast',
-            style: AppTextStyles.bodyLarge
-                .copyWith(color: AppColors.brandForeground),
+            'auth.food_delivery_fast'.tr(),
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.brandForeground,
+            ),
           ),
         ],
       ),
@@ -193,60 +229,121 @@ class _BrandHero extends StatelessWidget {
   }
 }
 
-/// Phone field with the `+965` country-code prefix block.
+/// Phone field: a separate `+965` country-code box and the number input box
+/// sit side-by-side (matching the real bundle's two 45dp / 6dp-radius blocks),
+/// with an inline validation error line below.
 class _PhoneField extends StatelessWidget {
   const _PhoneField({required this.controller});
   final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 54,
-      decoration: BoxDecoration(
-        color: AppColors.mediumBackground,
-        borderRadius: BorderRadius.circular(AppRadius.r4),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AppSpacing.s16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('🇰🇼', style: AppTextStyles.headingMedium),
-                const SizedBox(width: AppSpacing.s6),
-                Text(
-                  '+965',
-                  style: AppTextStyles.headingMedium
-                      .copyWith(fontWeight: AppTextStyles.bold),
-                ),
-              ],
-            ),
-          ),
-          Container(width: 1, height: 24, color: AppColors.divider),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              keyboardType: TextInputType.phone,
-              maxLength: 8,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: AppTextStyles.headingMedium,
-              decoration: InputDecoration(
-                counterText: '',
-                isCollapsed: true,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AppSpacing.s12),
-                hintText: 'Phone number',
-                hintStyle: AppTextStyles.headingMedium
-                    .copyWith(color: AppColors.tertiaryText),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            // Country-code selector box (flag + dial code + caret).
+            Container(
+              height: 45,
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AppSpacing.s12,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadius.r6),
+                border: Border.all(color: AppColors.divider),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('🇰🇼', style: AppTextStyles.headingSmall),
+                  const SizedBox(width: AppSpacing.s6),
+                  Text(
+                    '+965',
+                    style: AppTextStyles.headingSmall.copyWith(
+                      fontWeight: AppTextStyles.bold,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.s4),
+                  Image.asset(
+                    KeetaAssets.loginArrowDown,
+                    width: 12,
+                    height: 12,
+                    fit: BoxFit.contain,
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(width: AppSpacing.s12),
+            // Number input box.
+            Expanded(
+              child: Container(
+                height: 45,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppRadius.r6),
+                  border: Border.all(color: AppColors.divider),
+                ),
+                child: TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.phone,
+                  maxLength: 8,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: AppTextStyles.headingSmall,
+                  decoration: InputDecoration(
+                    counterText: '',
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpacing.s12,
+                      vertical: 14,
+                    ),
+                    hintText: 'auth.phone_number_hint'.tr(),
+                    hintStyle: AppTextStyles.headingSmall.copyWith(
+                      color: AppColors.tertiaryText,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        // Inline validation error (#E51728, 12dp, 6dp top margin in bundle).
+        BlocBuilder<LoginCubit, LoginState>(
+          buildWhen: (a, b) => a.phone != b.phone,
+          builder: (context, state) {
+            final showError = state.phone.isNotEmpty && state.phone.length != 8;
+            // Slide/fade the validation line in as it appears, gated so the
+            // OS reduced-motion flag collapses it to an instant cut.
+            return AnimatedSwitcher(
+              duration: MotionGuard.duration(context, AppMotion.fast),
+              switchInCurve: MotionGuard.curve(context, AppMotion.signature),
+              switchOutCurve: MotionGuard.curve(context, AppMotion.exit),
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SizeTransition(
+                  sizeFactor: animation,
+                  axisAlignment: -1,
+                  child: child,
+                ),
+              ),
+              child: showError
+                  ? Padding(
+                      key: const ValueKey('phone-error'),
+                      padding: const EdgeInsetsDirectional.only(
+                        top: AppSpacing.s6,
+                      ),
+                      child: Text(
+                        'auth.phone_invalid'.tr(),
+                        style: AppTextStyles.captionLarge.copyWith(
+                          color: AppColors.error,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -261,7 +358,7 @@ class _ContinueButton extends StatelessWidget {
       buildWhen: (a, b) => a.canContinue != b.canContinue,
       builder: (context, state) {
         return AppButton(
-          label: 'Continue',
+          label: 'auth.continue_btn'.tr(),
           enabled: state.canContinue,
           onPressed: () {
             context.read<LoginCubit>().submit();
@@ -283,11 +380,15 @@ class _OrDivider extends StatelessWidget {
       children: [
         const Expanded(child: ThinDivider()),
         Padding(
-          padding:
-              const EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.s12),
-          child: Text('or',
-              style: AppTextStyles.captionLarge
-                  .copyWith(color: AppColors.tertiaryText)),
+          padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpacing.s12,
+          ),
+          child: Text(
+            'auth.or'.tr(),
+            style: AppTextStyles.captionLarge.copyWith(
+              color: AppColors.tertiaryText,
+            ),
+          ),
         ),
         const Expanded(child: ThinDivider()),
       ],
@@ -309,34 +410,40 @@ class _SocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(AppRadius.r4),
-      child: InkWell(
+    // Passive press-scale (no onTap) so the InkWell keeps owning the gesture +
+    // ripple while the whole button still gives KeeTa's subtle press feel.
+    return PressScale(
+      child: Material(
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(AppRadius.r4),
-        onTap: onTap,
-        child: Container(
-          height: 50,
-          padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.s16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.r4),
-            border: Border.all(color: AppColors.divider),
-          ),
-          child: Row(
-            children: [
-              Image.asset(icon, width: 22, height: 22, fit: BoxFit.contain),
-              Expanded(
-                child: Center(
-                  child: Text(
-                    label,
-                    style: AppTextStyles.headingSmall
-                        .copyWith(fontWeight: AppTextStyles.medium),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.r4),
+          onTap: onTap,
+          child: Container(
+            height: 50,
+            padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: AppSpacing.s16,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadius.r4),
+              border: Border.all(color: AppColors.divider),
+            ),
+            child: Row(
+              children: [
+                Image.asset(icon, width: 22, height: 22, fit: BoxFit.contain),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      label,
+                      style: AppTextStyles.headingSmall.copyWith(
+                        fontWeight: AppTextStyles.medium,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 22),
-            ],
+                const SizedBox(width: 22),
+              ],
+            ),
           ),
         ),
       ),
@@ -344,24 +451,71 @@ class _SocialButton extends StatelessWidget {
   }
 }
 
-/// Terms-of-service / privacy-policy fine print.
-class _TermsText extends StatelessWidget {
+/// Terms-of-service / privacy-policy fine print with tappable links.
+class _TermsText extends StatefulWidget {
   const _TermsText();
 
   @override
+  State<_TermsText> createState() => _TermsTextState();
+}
+
+class _TermsTextState extends State<_TermsText> {
+  late final TapGestureRecognizer _terms;
+  late final TapGestureRecognizer _privacy;
+
+  @override
+  void initState() {
+    super.initState();
+    _terms = TapGestureRecognizer()
+      ..onTap = () => _open('auth.terms_of_service'.tr());
+    _privacy = TapGestureRecognizer()
+      ..onTap = () => _open('auth.privacy_policy'.tr());
+  }
+
+  void _open(String label) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text('auth.opening_x'.tr(namedArgs: {'label': label})),
+        ),
+      );
+  }
+
+  @override
+  void dispose() {
+    _terms.dispose();
+    _privacy.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final base = AppTextStyles.captionLarge
-        .copyWith(color: AppColors.tertiaryText, height: 1.4);
+    final base = AppTextStyles.captionLarge.copyWith(
+      color: AppColors.tertiaryText,
+      height: 1.4,
+    );
     final link = base.copyWith(
-        color: AppColors.link, fontWeight: AppTextStyles.medium);
+      color: AppColors.link,
+      fontWeight: AppTextStyles.medium,
+    );
     return Text.rich(
       TextSpan(
         style: base,
         children: [
-          const TextSpan(text: 'By continuing, you agree to KeeTa’s '),
-          TextSpan(text: 'Terms of Service', style: link),
-          const TextSpan(text: ' and '),
-          TextSpan(text: 'Privacy Policy', style: link),
+          TextSpan(text: 'auth.terms_prefix'.tr()),
+          TextSpan(
+            text: 'auth.terms_of_service'.tr(),
+            style: link,
+            recognizer: _terms,
+          ),
+          TextSpan(text: 'auth.and_conjunction'.tr()),
+          TextSpan(
+            text: 'auth.privacy_policy'.tr(),
+            style: link,
+            recognizer: _privacy,
+          ),
           const TextSpan(text: '.'),
         ],
       ),

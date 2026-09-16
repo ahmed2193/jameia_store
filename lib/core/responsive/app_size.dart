@@ -118,6 +118,7 @@ class AppSize {
   static const int s1000 = 1000;
 
   // Font sizes used outside the typography token rhythm.
+  static const double font8 = 8.0;
   static const double font9 = 9.0;
   static const double font10 = 10.0;
   static const double font11 = 11.0;
@@ -126,13 +127,32 @@ class AppSize {
   static const double font14 = 14.0;
   static const double font15 = 15.0;
   static const double font16 = 16.0;
+  static const double font17 = 17.0;
   static const double font18 = 18.0;
   static const double font20 = 20.0;
+  static const double font24 = 24.0;
   static const double font30 = 30.0;
+  static const double font40 = 40.0;
 
   // Border-radius primitives.
+  static const double r1 = 1.0;
+  static const double r2 = 2.0;
+  static const double r3 = 3.0;
+  static const double r4 = 4.0;
+  static const double r4_8 = 4.8;
+  static const double r5 = 5.0;
+  static const double r6 = 6.0;
+  static const double r8 = 8.0;
   static const double r10 = 10.0;
+  static const double r11 = 11.0;
   static const double r12 = 12.0;
+  static const double r13 = 13.0;
+  static const double r14 = 14.0;
+  static const double r15 = 15.0;
+  static const double r16 = 16.0;
+  static const double r18 = 18.0;
+  static const double r23 = 23.0;
+  static const double r25 = 25.0;
 
   // Image bitmap cacheWidth/cacheHeight caps. These are intrinsic to the
   // asset's natural resolution, not the screen — DPR-aware caps go through

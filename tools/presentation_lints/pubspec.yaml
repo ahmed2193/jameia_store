@@ -1,0 +1,12 @@
+name: presentation_lints
+description: In-repo custom_lint rules for JameiaMart — enforces the clean-arch
+  presentation boundary (presentation must not read the core KeetaRepository).
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  analyzer: any
+  custom_lint_builder: any

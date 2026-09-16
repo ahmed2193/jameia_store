@@ -1,45 +1,87 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/data/keeta_repository.dart';
+import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../domain/entities/invite_friends.dart';
+import '../../domain/repositories/marketing_repository.dart';
 
-/// Page-scoped state for the Invite-friends (referral) screen. Built INLINE via
-/// `BlocProvider(create: (_) => InviteFriendsCubit(sl<KeetaRepository>()))` — not
-/// registered in the service locator. Serves dummy referral data (code, reward
-/// tiers, earned summary) and tracks the transient "copied" affordance.
-class InviteFriendsCubit extends Cubit<InviteFriendsState> {
-  InviteFriendsCubit(this._repo) : super(const InviteFriendsState());
+enum InviteFriendsStatus { initial, loading, loaded, error }
 
-  final KeetaRepository _repo;
+/// State for the Invite-friends (referral) screen (`mkt_invite_main`).
+///
+/// Loading → loaded/error. The referral snapshot (code, reward tiers, earned
+/// summary) is loaded through the [MarketingRepository]; [copied] tracks the
+/// transient "copied" affordance on the code box / share CTA.
+class InviteFriendsState extends Equatable {
+  const InviteFriendsState({
+    this.status = InviteFriendsStatus.initial,
+    this.invite,
+    this.copied = false,
+    this.error,
+  });
 
-  /// Dummy referral code derived from the signed-in user (stable, offline).
-  String get referralCode {
-    final id = _repo.user.id.toUpperCase().replaceAll('-', '');
-    final tail = id.length >= 4 ? id.substring(id.length - 4) : id.padLeft(4, '0');
-    return 'KEETA$tail';
+  final InviteFriendsStatus status;
+
+  /// Resolved referral snapshot; null until [InviteFriendsStatus.loaded].
+  final InviteFriends? invite;
+
+  /// Transient "copied" affordance state on the code box / share CTA.
+  final bool copied;
+  final String? error;
+
+  InviteFriendsState copyWith({
+    InviteFriendsStatus? status,
+    InviteFriends? invite,
+    bool? copied,
+    String? error,
+  }) =>
+      InviteFriendsState(
+        status: status ?? this.status,
+        invite: invite ?? this.invite,
+        copied: copied ?? this.copied,
+        error: error ?? this.error,
+      );
+
+  @override
+  List<Object?> get props => [status, invite, copied, error];
+}
+
+/// Page-scoped cubit for the invite-friends referral screen.
+///
+/// Resolved via `sl<InviteFriendsCubit>()`; loads the referral snapshot on
+/// construction directly from the [MarketingRepository] (dummy backend), so the
+/// screen renders from state.
+class InviteFriendsCubit extends Cubit<InviteFriendsState>
+    with SafeCubitMixin<InviteFriendsState> {
+  InviteFriendsCubit(this._repository)
+      : super(const InviteFriendsState()) {
+    load();
   }
 
-  /// Per-referral reward shown in the hero headline + step list (dummy KD value).
-  double get rewardPerFriend => 2.000;
+  final MarketingRepository _repository;
 
-  /// Aggregate earned summary (dummy): friends joined + total KD earned.
-  int get friendsJoined => 7;
-  double get totalEarned => 14.000;
-  double get pendingEarned => 4.000;
+  /// Fetch the referral snapshot. Emits loading → loaded/error; safe to call
+  /// again from the error-state retry button.
+  Future<void> load() async {
+    safeEmit(state.copyWith(status: InviteFriendsStatus.loading));
+    final result = await _repository.getInviteFriends();
+    result.fold(
+      (failure) => safeEmit(state.copyWith(
+        status: InviteFriendsStatus.error,
+        error: failure.message,
+      )),
+      (invite) => safeEmit(state.copyWith(
+        status: InviteFriendsStatus.loaded,
+        invite: invite,
+      )),
+    );
+  }
 
   void markCopied() {
-    emit(state.copyWith(copied: true));
+    safeEmit(state.copyWith(copied: true));
   }
 
   void resetCopied() {
-    if (state.copied) emit(state.copyWith(copied: false));
+    if (state.copied) safeEmit(state.copyWith(copied: false));
   }
-}
-
-class InviteFriendsState {
-  const InviteFriendsState({this.copied = false});
-
-  final bool copied;
-
-  InviteFriendsState copyWith({bool? copied}) =>
-      InviteFriendsState(copied: copied ?? this.copied);
 }

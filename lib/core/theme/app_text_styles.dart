@@ -13,9 +13,12 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
-  static const String fontFamily = 'NotoSans';
+  // KeeTa's Mach screens render almost all text in the KeeTa brand OTF
+  // (KeeTa-Regular/Medium/Bold — confirmed by every bundle.css.json). Noto Sans
+  // + NotoSansArabicUI are fallbacks for glyphs KeeTa lacks (incl. Arabic).
+  static const String fontFamily = 'KeeTa';
   static const String digitFamily = 'MTDigit';
-  static const List<String> _fallback = ['NotoSansArabicUI'];
+  static const List<String> _fallback = ['NotoSans', 'NotoSansArabicUI'];
 
   static const FontWeight regular = FontWeight.w400;
   static const FontWeight medium = FontWeight.w500;
