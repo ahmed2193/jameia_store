@@ -17,7 +17,7 @@
 param(
   [string]$IconPath   = 'C:\Users\Fawaly\Downloads\app_icon.png',
   [string]$SplashPath = 'C:\Users\Fawaly\Downloads\splash.png',
-  [string]$Root       = 'F:\_jam3eia_apps\keeta_clone'
+  [string]$Root       = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 )
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing

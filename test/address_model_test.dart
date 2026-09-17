@@ -1,18 +1,18 @@
-// Smoke test: KeetaAddress JSON round-trip.
+// Smoke test: JameiaAddress JSON round-trip.
 //
 // Verifies toJson()/fromJson() preserve every field — including the
-// schema-driven KeeTa fields (structType / labelType / dropOff) and the KW
+// schema-driven Jameia fields (structType / labelType / dropOff) and the KW
 // addressing parts (block / street / lat / lng) — so user-added addresses
 // survive serialization to shared_preferences and back.
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jameia_mart/core/data/models/address.dart';
-import 'package:jameia_mart/core/utils/keeta_geocode.dart';
+import 'package:jameia_mart/src/core/data/models/address.dart';
+import 'package:jameia_mart/src/core/utils/jameia_geocode.dart';
 
 void main() {
-  test('KeetaAddress.toJson()/fromJson() round-trip preserves all fields', () {
-    const original = KeetaAddress(
+  test('JameiaAddress.toJson()/fromJson() round-trip preserves all fields', () {
+    const original = JameiaAddress(
       id: 'addr_test_1',
       label: 'Work',
       line: 'Block 7, Street 22, Avenue 3, Tower One',
@@ -41,7 +41,7 @@ void main() {
       note: 'Call on arrival',
     );
 
-    final restored = KeetaAddress.fromJson(original.toJson());
+    final restored = JameiaAddress.fromJson(original.toJson());
 
     // Core / legacy flat fields.
     expect(restored.id, original.id);
@@ -77,7 +77,7 @@ void main() {
   });
 
   test('round-trip defaults handToMe drop-off + apartment/home enums', () {
-    const a = KeetaAddress(
+    const a = JameiaAddress(
       id: 'addr_test_2',
       label: 'Home',
       line: '',
@@ -89,7 +89,7 @@ void main() {
       lng: 48.0289,
     );
 
-    final r = KeetaAddress.fromJson(a.toJson());
+    final r = JameiaAddress.fromJson(a.toJson());
     expect(r.structType, StructType.apartment);
     expect(r.labelType, LabelType.home);
     expect(r.dropOff, DropOff.handToMe);

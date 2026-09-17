@@ -8,12 +8,12 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jameia_mart/core/data/keeta_repository.dart';
-import 'package:jameia_mart/core/data/models/models.dart';
-import 'package:jameia_mart/features/cart/data/datasources/cart_local_data_source.dart';
-import 'package:jameia_mart/features/cart/data/models/cart_model.dart';
-import 'package:jameia_mart/features/cart/data/repositories/cart_repository_impl.dart';
-import 'package:jameia_mart/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:jameia_mart/src/core/data/jameia_repository.dart';
+import 'package:jameia_mart/src/core/data/models/models.dart';
+import 'package:jameia_mart/src/features/cart/data/datasources/cart_local_data_source.dart';
+import 'package:jameia_mart/src/features/cart/data/models/cart_model.dart';
+import 'package:jameia_mart/src/features/cart/data/repositories/cart_repository_impl.dart';
+import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
 
 /// In-memory datasource — avoids loading assets / shared_preferences.
 class _FakeLocal implements CartLocalDataSource {
@@ -57,20 +57,26 @@ void main() {
 
     setUp(() {
       local = _FakeLocal();
-      // addLine never touches the catalogue, so an unloaded KeetaRepository is fine.
-      repo = CartRepositoryImpl(local: local, catalog: KeetaRepository());
+      // addLine never touches the catalogue, so an unloaded JameiaRepository is fine.
+      repo = CartRepositoryImpl(local: local, catalog: JameiaRepository());
     });
 
-    test('adding the same line twice increments qty AND changes the snapshot',
-        () async {
-      final s1 = _snap(await repo.addLine(product: _product, shopId: 'jameia'));
-      final s2 = _snap(await repo.addLine(product: _product, shopId: 'jameia'));
+    test(
+      'adding the same line twice increments qty AND changes the snapshot',
+      () async {
+        final s1 = _snap(
+          await repo.addLine(product: _product, shopId: 'jameia'),
+        );
+        final s2 = _snap(
+          await repo.addLine(product: _product, shopId: 'jameia'),
+        );
 
-      expect(s1.items['p1']!.qty, 1);
-      expect(s2.items['p1']!.qty, 2); // second add is NOT swallowed
-      expect(s1 == s2, isFalse); // snapshots differ → Bloc emit fires
-      expect(s2.items['p1']!.lineTotal, closeTo(5.0, 1e-9));
-    });
+        expect(s1.items['p1']!.qty, 1);
+        expect(s2.items['p1']!.qty, 2); // second add is NOT swallowed
+        expect(s1 == s2, isFalse); // snapshots differ → Bloc emit fires
+        expect(s2.items['p1']!.lineTotal, closeTo(5.0, 1e-9));
+      },
+    );
 
     test('qty add param adds N units at once', () async {
       final s = _snap(

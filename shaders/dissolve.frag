@@ -1,7 +1,7 @@
 #version 460 core
 #include <flutter/runtime_effect.glsl>
 
-// Ported from KeeTa's `alpha_fragment.fsh` (Meituan video-effects SDK):
+// Ported from Jameia's `alpha_fragment.fsh` (Meituan video-effects SDK):
 // a straight cross-fade / dissolve between two textures driven by progress.
 precision mediump float;
 

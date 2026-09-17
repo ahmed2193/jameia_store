@@ -1,7 +1,7 @@
 #version 460 core
 #include <flutter/runtime_effect.glsl>
 
-// Ported from KeeTa's `blurry_fragment_horizontal/vertical.fsh` (9-tap gaussian),
+// Ported from Jameia's `blurry_fragment_horizontal/vertical.fsh` (9-tap gaussian),
 // collapsed into a single cross-pass and driven by progress so an image can
 // "focus in" from blurred (progress 0) to sharp (progress 1). Normalised so the
 // total tap weight is 1.

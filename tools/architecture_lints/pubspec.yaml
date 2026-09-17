@@ -1,0 +1,22 @@
+name: architecture_lints
+description: In-repo analyzer plugin (analysis_server_plugin) that makes
+  `flutter analyze` enforce the JameiaMart architecture and UI rules
+  documented in the app's CLAUDE.md.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  # Pinned to the versions that ship inside Dart SDK 3.13.x
+  # (pkg/analyzer 14.1.0-dev, pkg/analysis_server_plugin 0.3.20-dev).
+  # Bump all three together when the Flutter/Dart SDK moves.
+  analysis_server_plugin: 0.3.20
+  analyzer: 14.1.0
+  path: ^1.9.0
+
+dev_dependencies:
+  analyzer_testing: 0.3.4
+  test: ^1.25.0
+  test_reflective_loader: ^0.2.0

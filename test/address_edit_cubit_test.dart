@@ -1,7 +1,7 @@
 // Smoke test: AddressEditCubit create/edit flow.
 //
 // A fresh cubit (initial: null) is in CREATE mode (not editing). The discrete
-// setters update state, save() composes a KeetaAddress and persists it through
+// setters update state, save() composes a JameiaAddress and persists it through
 // the AddressRepository (add on create, update on edit), and validate() flags
 // missing required info appropriately.
 //
@@ -15,12 +15,12 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jameia_mart/core/data/models/models.dart';
-import 'package:jameia_mart/core/error/failures.dart';
-import 'package:jameia_mart/features/address/domain/entities/keeta_address_entity.dart';
-import 'package:jameia_mart/features/address/domain/entities/region_options.dart';
-import 'package:jameia_mart/features/address/domain/repositories/address_repository.dart';
-import 'package:jameia_mart/features/address/presentation/cubit/address_edit_cubit.dart';
+import 'package:jameia_mart/src/core/data/models/models.dart';
+import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/features/address/domain/entities/jameia_address_entity.dart';
+import 'package:jameia_mart/src/features/address/domain/entities/region_options.dart';
+import 'package:jameia_mart/src/features/address/domain/repositories/address_repository.dart';
+import 'package:jameia_mart/src/features/address/presentation/cubit/address_edit_cubit.dart';
 
 /// Configurable fake — records the address book and how many times each write
 /// path was taken, echoing the persisted row back (or a [CacheFailure] when
@@ -30,26 +30,28 @@ import 'package:jameia_mart/features/address/presentation/cubit/address_edit_cub
 class _FakeAddressRepository implements AddressRepository {
   bool failWrites = false;
 
-  final List<KeetaAddress> book = <KeetaAddress>[];
+  final List<JameiaAddress> book = <JameiaAddress>[];
   int addCalls = 0;
   int updateCalls = 0;
 
-  KeetaAddress _upsert(KeetaAddress a) {
+  JameiaAddress _upsert(JameiaAddress a) {
     book.removeWhere((e) => e.id == a.id);
     book.add(a);
     return a;
   }
 
   @override
-  Future<Either<Failure, KeetaAddress>> addAddress(KeetaAddress address) async {
+  Future<Either<Failure, JameiaAddress>> addAddress(
+    JameiaAddress address,
+  ) async {
     addCalls++;
     if (failWrites) return const Left(CacheFailure('add failed'));
     return Right(_upsert(address));
   }
 
   @override
-  Future<Either<Failure, KeetaAddress>> updateAddress(
-    KeetaAddress address,
+  Future<Either<Failure, JameiaAddress>> updateAddress(
+    JameiaAddress address,
   ) async {
     updateCalls++;
     if (failWrites) return const Left(CacheFailure('update failed'));
@@ -58,8 +60,8 @@ class _FakeAddressRepository implements AddressRepository {
 
   // ── Unused by AddressEditCubit — satisfy the interface. ─────────────────────
   @override
-  Future<Either<Failure, List<KeetaAddressEntity>>> getAddresses() async =>
-      const Right(<KeetaAddressEntity>[]);
+  Future<Either<Failure, List<JameiaAddressEntity>>> getAddresses() async =>
+      const Right(<JameiaAddressEntity>[]);
 
   @override
   Future<Either<Failure, Unit>> deleteAddress(String id) async =>
@@ -197,99 +199,105 @@ void main() {
     expect(cubit.isValid, isTrue);
   });
 
-  test('save() composes a KeetaAddress and adds it through the repository',
-      () async {
-    final cubit = newCubit();
-    addTearDown(cubit.close);
+  test(
+    'save() composes a JameiaAddress and adds it through the repository',
+    () async {
+      final cubit = newCubit();
+      addTearDown(cubit.close);
 
-    cubit.setLabel(LabelType.work);
-    cubit.setStructType(StructType.apartment);
-    fillValidApartment(cubit);
+      cubit.setLabel(LabelType.work);
+      cubit.setStructType(StructType.apartment);
+      fillValidApartment(cubit);
 
-    final saved = await cubit.save();
+      final saved = await cubit.save();
 
-    // The composed row carries the entered fields.
-    expect(saved, isNotNull);
-    expect(saved!.id, isNotEmpty);
-    expect(saved.label, 'Work');
-    expect(saved.labelType, LabelType.work);
-    expect(saved.structType, StructType.apartment);
-    expect(saved.area, 'Salmiya');
-    expect(saved.block, '7');
-    expect(saved.street, '22');
-    expect(saved.recipient, 'Ahmed');
-    expect(saved.phone, '50001122');
-    expect(saved.brief, isNotEmpty);
+      // The composed row carries the entered fields.
+      expect(saved, isNotNull);
+      expect(saved!.id, isNotEmpty);
+      expect(saved.label, 'Work');
+      expect(saved.labelType, LabelType.work);
+      expect(saved.structType, StructType.apartment);
+      expect(saved.area, 'Salmiya');
+      expect(saved.block, '7');
+      expect(saved.street, '22');
+      expect(saved.recipient, 'Ahmed');
+      expect(saved.phone, '50001122');
+      expect(saved.brief, isNotEmpty);
 
-    // Create mode routes through addAddress (not updateAddress) and the row was
-    // upserted into the repository's book.
-    expect(repo.addCalls, 1);
-    expect(repo.updateCalls, 0);
-    expect(repo.book.any((a) => a.id == saved.id), isTrue);
+      // Create mode routes through addAddress (not updateAddress) and the row was
+      // upserted into the repository's book.
+      expect(repo.addCalls, 1);
+      expect(repo.updateCalls, 0);
+      expect(repo.book.any((a) => a.id == saved.id), isTrue);
 
-    // On success the form settles into the `saved` status.
-    expect(cubit.state.status, AddressEditStatus.saved);
-  });
+      // On success the form settles into the `saved` status.
+      expect(cubit.state.status, AddressEditStatus.saved);
+    },
+  );
 
-  test('save() on a seeded address routes through updateAddress (edit mode)',
-      () async {
-    const existing = KeetaAddress(
-      id: 'addr_existing_1',
-      label: 'Home',
-      line: 'Block 3, Street 9, Beach Tower',
-      area: 'Mahboula',
-      recipient: 'Sara',
-      phone: '50009988',
-      isDefault: false,
-      lat: 29.1456,
-      lng: 48.1278,
-      structType: StructType.apartment,
-      labelType: LabelType.home,
-      buildingName: 'Beach Tower',
-      aptNumber: '8',
-      unitOrFloor: 'Floor 4',
-      street: '9',
-      block: '3',
-    );
+  test(
+    'save() on a seeded address routes through updateAddress (edit mode)',
+    () async {
+      const existing = JameiaAddress(
+        id: 'addr_existing_1',
+        label: 'Home',
+        line: 'Block 3, Street 9, Beach Tower',
+        area: 'Mahboula',
+        recipient: 'Sara',
+        phone: '50009988',
+        isDefault: false,
+        lat: 29.1456,
+        lng: 48.1278,
+        structType: StructType.apartment,
+        labelType: LabelType.home,
+        buildingName: 'Beach Tower',
+        aptNumber: '8',
+        unitOrFloor: 'Floor 4',
+        street: '9',
+        block: '3',
+      );
 
-    final cubit = newCubit()..seed(existing);
-    addTearDown(cubit.close);
+      final cubit = newCubit()..seed(existing);
+      addTearDown(cubit.close);
 
-    // Seeding an existing address puts the cubit in EDIT mode.
-    expect(cubit.isEditing, isTrue);
-    expect(cubit.state.id, existing.id);
+      // Seeding an existing address puts the cubit in EDIT mode.
+      expect(cubit.isEditing, isTrue);
+      expect(cubit.state.id, existing.id);
 
-    // Change a field and save.
-    cubit.setField(AddrField.recipient, 'Sara Updated');
-    final saved = await cubit.save();
+      // Change a field and save.
+      cubit.setField(AddrField.recipient, 'Sara Updated');
+      final saved = await cubit.save();
 
-    // Edit mode routes through updateAddress (not addAddress), preserving the id.
-    expect(saved, isNotNull);
-    expect(saved!.id, existing.id);
-    expect(saved.recipient, 'Sara Updated');
-    expect(repo.updateCalls, 1);
-    expect(repo.addCalls, 0);
-    expect(repo.book.any((a) => a.id == existing.id), isTrue);
-    expect(cubit.state.status, AddressEditStatus.saved);
-  });
+      // Edit mode routes through updateAddress (not addAddress), preserving the id.
+      expect(saved, isNotNull);
+      expect(saved!.id, existing.id);
+      expect(saved.recipient, 'Sara Updated');
+      expect(repo.updateCalls, 1);
+      expect(repo.addCalls, 0);
+      expect(repo.book.any((a) => a.id == existing.id), isTrue);
+      expect(cubit.state.status, AddressEditStatus.saved);
+    },
+  );
 
-  test('save() surfaces a repository failure (returns null, error status)',
-      () async {
-    repo.failWrites = true;
-    final cubit = newCubit();
-    addTearDown(cubit.close);
+  test(
+    'save() surfaces a repository failure (returns null, error status)',
+    () async {
+      repo.failWrites = true;
+      final cubit = newCubit();
+      addTearDown(cubit.close);
 
-    cubit.setStructType(StructType.apartment);
-    fillValidApartment(cubit);
+      cubit.setStructType(StructType.apartment);
+      fillValidApartment(cubit);
 
-    final saved = await cubit.save();
+      final saved = await cubit.save();
 
-    // A persistence failure is surfaced, not swallowed: null result + error
-    // state carrying the failure message (nothing landed in the book).
-    expect(saved, isNull);
-    expect(repo.addCalls, 1);
-    expect(repo.book, isEmpty);
-    expect(cubit.state.status, AddressEditStatus.error);
-    expect(cubit.state.error, 'add failed');
-  });
+      // A persistence failure is surfaced, not swallowed: null result + error
+      // state carrying the failure message (nothing landed in the book).
+      expect(saved, isNull);
+      expect(repo.addCalls, 1);
+      expect(repo.book, isEmpty);
+      expect(cubit.state.status, AddressEditStatus.error);
+      expect(cubit.state.error, 'add failed');
+    },
+  );
 }

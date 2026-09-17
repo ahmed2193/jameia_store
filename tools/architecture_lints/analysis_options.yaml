@@ -1,0 +1,13 @@
+# The plugin package is analyzed on its own (it must NOT inherit the app's
+# `plugins:` section or the flutter_lints include from the repo root).
+analyzer:
+  language:
+    strict-casts: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    - annotate_overrides
+    - prefer_final_locals
+    - prefer_single_quotes
+    - unawaited_futures

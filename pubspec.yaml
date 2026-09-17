@@ -1,11 +1,11 @@
 name: jameia_mart
-description: "KeeTa clone — Flutter rebuild of Meituan KeeTa (Consumer) on Clean Architecture + Cubit."
+description: "JameiaMart — Flutter app on Clean Architecture + Cubit."
 publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.11.5
+  sdk: ^3.13.3
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Dependencies (mirrors the one_day reference stack)
@@ -18,7 +18,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
+  cupertino_icons: ^1.0.9
 
   # Index-exact scroll for the shop rank sections (jm3eia products_screen flow):
   # ScrollablePositionedList.scrollTo(index) lands a rank flush under the rail
@@ -27,64 +27,66 @@ dependencies:
 
   # State management (Cubit)
   flutter_bloc: ^9.1.1
-  bloc: ^9.0.0
+  bloc: ^9.2.1
 
   # Dependency injection
-  get_it: ^8.0.3
+  get_it: ^9.2.1
 
   # Functional error handling / value equality
   dartz: ^0.10.1
-  equatable: ^2.0.7
+  equatable: ^3.0.0
 
   # Networking
-  dio: ^5.7.0
-  internet_connection_checker_plus: ^2.7.1
+  dio: ^5.11.1
+  internet_connection_checker_plus: ^3.1.2
 
   # Local storage
-  shared_preferences: ^2.3.3
+  shared_preferences: ^2.5.5
 
   # Localization (AR / EN) — easy_localization drives runtime locale + RTL.
-  easy_localization: ^3.0.7
+  easy_localization: ^3.0.8
 
   # Locale-aware number/date/currency formatting (Arabic-Indic digits, grouping,
   # KD ↔ د.ك). Promoted from transitive (pulled by easy_localization) to a direct
   # dependency since Formatters/PriceText now use it directly.
-  intl: ^0.20.2
+  intl: ^0.20.3
 
   # UI/UX fidelity packages (RTL/guardrail-safe)
   flutter_staggered_grid_view: ^0.7.0
-  skeletonizer: ^2.1.3
-  smooth_page_indicator: ^1.2.1
+  skeletonizer: ^3.0.0
+  smooth_page_indicator: ^3.0.0
   # Vector scan-line glyph in the jameia search bar (ported from jm3eia).
-  flutter_svg: ^2.0.10
-  cached_network_image: ^3.4.1
+  flutter_svg: ^2.3.0
+  cached_network_image: ^4.0.0
   # Image stack internals: shared disk cache manager + per-request timeout
   # service + temp-dir cache-info (promoted from transitive to direct deps).
-  flutter_cache_manager: ^3.4.1
+  flutter_cache_manager: ^3.4.3
   path_provider: ^2.1.6
   http: ^1.6.0
   visibility_detector: ^0.4.0+2
   sliver_tools: ^0.2.12
 
-  # Lottie vector animations (real KeeTa splash_lottie_default.json).
-  lottie: ^3.1.3
+  # Lottie vector animations (real Jameia splash_lottie_default.json).
+  lottie: ^3.5.1
 
   # Live maps for order tracking / shop + address map surfaces.
-  google_maps_flutter: ^2.17.0
+  google_maps_flutter: ^2.18.1
 
   # Real reverse-geocoding (native platform Geocoder) — resolves a pinned
   # LatLng to a localized city / area / street / house, matching the app
-  # locale. Falls back to the offline KeetaGeocode when unavailable.
-  geocoding: ^3.0.0
+  # locale. Falls back to the offline JameiaGeocode when unavailable.
+  geocoding: ^5.0.0
 
   # Device current location for the address map-picker initial centre
-  # (KeeTa `SLLocation.getLocation` / `address_..._currentlocation`).
-  geolocator: ^13.0.1
+  # (Jameia `SLLocation.getLocation` / `address_..._currentlocation`).
+  geolocator: ^14.0.3
 
   # Voice search — on-device speech-to-text + runtime microphone permission
   # (search screen mic → VoiceSearchScreen).
-  speech_to_text: ^7.3.0
-  permission_handler: ^12.0.1
+  speech_to_text: ^7.5.0
+  permission_handler: ^13.0.2
+  go_router: ^18.0.1
+  flutter_secure_storage: ^11.2.0
 
 dev_dependencies:
   flutter_test:
@@ -93,17 +95,11 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   bloc_test: ^10.0.0
 
-  # In-repo custom_lint rule enforcing the presentation→core-repo boundary
-  # (see tools/presentation_lints). Runs via `dart run custom_lint`.
-  custom_lint: any
-  presentation_lints:
-    path: tools/presentation_lints
-
   # App-icon + native-splash generation for the JameiaMart re-skin. Config blocks
   # live at the bottom of this file; source art in assets/launcher + assets/images
   # (produced by tool/splash_icon/apply_new_assets.ps1).
   flutter_launcher_icons: ^0.14.4
-  flutter_native_splash: ^2.4.6
+  flutter_native_splash: ^2.4.8
 
 flutter:
   uses-material-design: true
@@ -118,35 +114,35 @@ flutter:
     - assets/launcher/
     # Vector glyphs (jameia search scan-line, ported from jm3eia).
     - assets/svg/
-    # Real KeeTa rasters extracted from the decoded APK (Mach UI bundles),
-    # grouped by screen. Referenced by name via KeetaAssets (core/design).
-    - assets/images/keeta/
-    - assets/images/keeta/osg_home/
-    - assets/images/keeta/home/
-    - assets/images/keeta/shop/
-    - assets/images/keeta/order_status/
-    - assets/images/keeta/order_confirm/
-    - assets/images/keeta/mine/
-    - assets/images/keeta/login/
-    - assets/images/keeta/review/
+    # Real Jameia rasters extracted from the decoded APK (Mach UI bundles),
+    # grouped by screen. Referenced by name via JameiaAssets (core/design).
+    - assets/images/jameia/
+    - assets/images/jameia/osg_home/
+    - assets/images/jameia/home/
+    - assets/images/jameia/shop/
+    - assets/images/jameia/order_status/
+    - assets/images/jameia/order_confirm/
+    - assets/images/jameia/mine/
+    - assets/images/jameia/login/
+    - assets/images/jameia/review/
     # Marketing (invite friends + punctual) rasters from mkt_invite_main / c_punctual.
-    - assets/images/keeta/marketing/
+    - assets/images/jameia/marketing/
     # Home popup / overlay rasters (coupon pop, image-text, vertical banner,
     # bottom overlay, newborn, popup_list) from the mkt_resources_* bundles.
-    - assets/images/keeta/popup/
-    # Real KeeTa animations (brand loader GIF, onboarding slide, splash Lottie, shine).
+    - assets/images/jameia/popup/
+    # Real Jameia animations (brand loader GIF, onboarding slide, splash Lottie, shine).
     - assets/animations/
 
-  # GLSL fragment shaders ported from KeeTa's video-effects SDK (.fsh) to the
+  # GLSL fragment shaders ported from Jameia's video-effects SDK (.fsh) to the
   # Flutter runtime-effect spec. Driven by core/motion/shader_transition.dart.
   shaders:
     - shaders/dissolve.frag
     - shaders/affine_reveal.frag
     - shaders/blur.frag
 
-  # Real KeeTa fonts extracted from the APK (assets/fonts/).
+  # Real Jameia fonts extracted from the APK (assets/fonts/).
   # Brand body face = Noto Sans (+ NotoSansArabicUI for RTL); digits = MT Digital Display;
-  # display/brand = KeeTa OTF; iconfont = KeetaIcon (wm_c_iconfont glyphs).
+  # display/brand = Jameia OTF; iconfont = JameiaIcon (wm_c_iconfont glyphs).
   fonts:
     - family: NotoSans
       fonts:
@@ -168,13 +164,13 @@ flutter:
           weight: 600
         - asset: assets/fonts/NotoSansArabicUI-Bold.ttf
           weight: 700
-    - family: KeeTa
+    - family: Jameia
       fonts:
-        - asset: assets/fonts/KeeTa-Regular.otf
+        - asset: assets/fonts/Jameia-Regular.otf
           weight: 400
-        - asset: assets/fonts/KeeTa-Medium.otf
+        - asset: assets/fonts/Jameia-Medium.otf
           weight: 500
-        - asset: assets/fonts/KeeTa-Bold.otf
+        - asset: assets/fonts/Jameia-Bold.otf
           weight: 700
     - family: MTDigit
       fonts:
@@ -184,7 +180,7 @@ flutter:
           weight: 500
         - asset: assets/fonts/MTDigitalDisplayKT-Bold.ttf
           weight: 700
-    - family: KeetaIcon
+    - family: JameiaIcon
       fonts:
         - asset: assets/fonts/wm_c_iconfont.ttf
 

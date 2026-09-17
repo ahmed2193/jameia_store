@@ -1,9 +1,9 @@
 #version 460 core
 #include <flutter/runtime_effect.glsl>
 
-// Ported (simplified) from KeeTa's `transform_fragment.fsh`: a progress-driven
+// Ported (simplified) from Jameia's `transform_fragment.fsh`: a progress-driven
 // affine settle — the image scales from a slight zoom (1.08) down to 1.0 about
-// its centre while its alpha ramps 0 -> 1. The KeeTa Ken-Burns / image reveal.
+// its centre while its alpha ramps 0 -> 1. The Jameia Ken-Burns / image reveal.
 precision highp float;
 
 uniform vec2 uSize;

@@ -7,8 +7,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:jameia_mart/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/features/checkout/domain/entities/coupon_entity.dart';
+import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:jameia_mart/src/features/checkout/domain/entities/coupon_entity.dart';
 
 /// KD5 off once the cart reaches KD20.
 const _coupon5over20 = CouponEntity(

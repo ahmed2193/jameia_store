@@ -31,7 +31,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- Google Maps SDK (KeeTa map surfaces: order tracking, shop map, address). -->
+        <!-- Google Maps SDK (Jameia map surfaces: order tracking, shop map, address). -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyBCneK38OlPN1pM3DWMzeFPv9-letqw5fY" />

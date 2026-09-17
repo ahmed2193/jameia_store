@@ -2,11 +2,11 @@
  * build_jameia_asset.js — offline transform (run with Node, NOT bundled).
  *
  * Turns the heavy full-fidelity Jameia captures into ONE slim, SKU-keyed asset
- * the Keeta-clone bundles + parses (in an isolate) at boot.
+ * the JameiaMart bundles + parses (in an isolate) at boot.
  *
  *   IN : <repo>/JAMEIA_CATEGORIES_DATA.json        (Mart, isVIP=false)
  *        <repo>/JAMEIA_CATEGORIES_DATA_VIP.json    (VIP, for the VIP price/SKU)
- *   OUT: keeta_clone/assets/data/jameia/jameia_catalog.json
+ *   OUT: jameia_mart/assets/data/jameia/jameia_catalog.json
  *
  * Why slim: the raw Mart file is ~51MB / 9,380 product ROWS but only ~8,352
  * UNIQUE SKUs (the same product is nested under many ranks). We:
@@ -16,7 +16,7 @@
  *   - strip the media domain (re-prepended by the Dart loader).
  * Result: a few MB instead of 50+, parseable off the main thread.
  *
- * Usage:  node keeta_clone/tool/build_jameia_asset.js
+ * Usage:  node jameia_mart/tool/build_jameia_asset.js
  *         (paths are resolved relative to the jm3eia_mobile repo root)
  */
 'use strict';
@@ -24,7 +24,7 @@ const fs = require('fs');
 const path = require('path');
 
 const SRC_DIR = 'F:/_jam3eia_apps/jm3eia_mobile';
-const OUT = 'F:/_jam3eia_apps/keeta_clone/assets/data/jameia/jameia_catalog.json';
+const OUT = path.join(__dirname, '..', 'assets', 'data', 'jameia', 'jameia_catalog.json');
 const MEDIA = 'https://media.jm3eia.com';
 
 const readJson = (p) =>

@@ -9,11 +9,26 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
-# In-repo custom_lint rules (tools/presentation_lints). Runs via
-# `dart run custom_lint`; enforces the presentation→core-repo boundary.
 analyzer:
-  plugins:
-    - custom_lint
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    # The plugin package is analyzed/tested from its own folder
+    # (`cd tools/architecture_lints && dart pub get && dart analyze && dart test`);
+    # its dependencies are not resolved from the app root on a fresh clone.
+    - tools/architecture_lints/**
+
+# In-repo analyzer plugin (new analysis_server_plugin system) that enforces the
+# architecture + UI rules in CLAUDE.md. Its rules are WARNING rules, enabled by
+# default, and report through `dart analyze` (repo root) and the IDE; `flutter analyze` does not show them.
+# Suppress one site with `// ignore: architecture_lints/<rule_name>`.
+# After editing this section (or the plugin sources) restart the analysis
+# server (IDE: "Dart: Restart Analysis Server").
+plugins:
+  architecture_lints:
+    path: tools/architecture_lints
 
 linter:
   # The lint rules applied to this project can be customized in the
