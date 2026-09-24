@@ -498,7 +498,9 @@ class _SendButton extends StatelessWidget {
             child: Icon(
               JameiaIcons.arrowUp,
               size: 20,
-              color: active ? AppColors.black : AppColors.tertiaryText,
+              color: active
+                  ? AppColors.brandForeground
+                  : AppColors.tertiaryText,
             ),
           ),
         );

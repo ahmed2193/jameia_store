@@ -4,6 +4,9 @@ library;
 
 export 'benefit_item_mapper.dart';
 export 'cart_item_mapper.dart';
+export 'catalog_product_mapper.dart';
+export 'catalog_product_query_mapper.dart';
+export 'catalog_taxonomy_mapper.dart';
 export 'coupon_mapper.dart';
 export 'customer_mapper.dart';
 export 'featured_section_mapper.dart';
@@ -20,6 +23,7 @@ export 'jameia_order_mapper.dart';
 export 'kingkong_item_mapper.dart';
 export 'menu_section_mapper.dart';
 export 'order_item_mapper.dart';
+export 'order_mapper.dart';
 export 'product_mapper.dart';
 export 'product_variant_mapper.dart';
 export 'promo_tag_mapper.dart';

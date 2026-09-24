@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../config/theme/app_colors.dart';
 
 /// Ergonomic `context.*` accessors for the Jameia design tokens and common

@@ -1,137 +1,272 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:dartz/dartz.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../config/di/service_locator.dart';
-// TODO(P2.9-boundary): CartState carries the core `CartItem` and `add`/`cart.lines`
-// pass core `Product` / `CartItem` across feature boundaries (shop, product_details,
-// checkout, orders all consume these core types), so this feature deliberately keeps
-// the shared `core/data/models` DTOs instead of a framework-free entity.
-import '../../../../core/data/models/models.dart';
+import '../../../../core/domain/entities/cart_item_request.dart';
+import '../../../../core/domain/entities/cart_line_entity.dart';
+import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../domain/entities/cart_snapshot.dart';
-import '../../domain/repositories/cart_repository.dart';
+import '../../domain/usecases/add_cart_items_usecase.dart';
+import '../../domain/usecases/adjust_cart_line_usecase.dart';
+import '../../domain/usecases/apply_cart_coupon_usecase.dart';
+import '../../domain/usecases/apply_cart_loyalty_usecase.dart';
+import '../../domain/usecases/clear_cart_usecase.dart';
+import '../../domain/usecases/fetch_cart_usecase.dart';
+import '../../domain/usecases/flush_cart_usecase.dart';
+import '../../domain/usecases/remove_cart_coupon_usecase.dart';
+import '../../domain/usecases/remove_cart_line_usecase.dart';
+import '../../domain/usecases/remove_cart_loyalty_usecase.dart';
+import '../../domain/usecases/reset_cart_usecase.dart';
+import '../../domain/usecases/restore_cart_usecase.dart';
+import '../../domain/usecases/set_cart_express_usecase.dart';
+import '../../domain/usecases/set_cart_line_quantity_usecase.dart';
+import '../../domain/usecases/sync_cart_owner_usecase.dart';
+import '../../domain/usecases/watch_cart_usecase.dart';
+import 'cart_state.dart';
 
-/// App-wide cart state. Single active cart scoped to one shop (Jameia replaces the
-/// cart when you start ordering from a different shop). Registered as a long-lived
-/// cubit at the app root.
+/// App-global cart. Taps apply at once (the repository mirrors them to the
+/// server); server-confirmed actions run one at a time ([CartState.isBusy]).
 ///
-/// Lines are keyed by [CartItem.lineKey] (product id, or `productId:variantSku`
-/// when a specific SKU was chosen), so the same product in two sizes is two lines.
-///
-/// The public surface (methods + getters below) is unchanged from the original
-/// bare cubit — the whole clean-arch + persistence rebuild lives behind it, so
-/// no UI screen needed to change.
-class CartState extends Equatable {
-  /// Cart lines keyed by [CartItem.lineKey].
-  final Map<String, CartItem> items;
-  final String? shopId;
-
-  const CartState({this.items = const {}, this.shopId});
-
-  bool get isEmpty => items.isEmpty;
-
-  int get totalQty => items.values.fold(0, (s, i) => s + i.qty);
-
-  double get subtotal => items.values.fold(0.0, (s, i) => s + i.lineTotal);
-
-  /// Quantity of an exact line (use [lineKey]; for a no-variant product that is
-  /// just the product id).
-  int qtyOf(String lineKey) => items[lineKey]?.qty ?? 0;
-
-  /// Total quantity of a product across all of its variant lines — drives the
-  /// stepper badge on a product row when the product has multiple SKUs.
-  int qtyOfProduct(String productId) => items.values
-      .where((i) => i.product.id == productId)
-      .fold(0, (s, i) => s + i.qty);
-
-  List<CartItem> get lines => items.values.toList(growable: false);
-
-  CartState copyWith({Map<String, CartItem>? items, String? shopId}) =>
-      CartState(items: items ?? this.items, shopId: shopId ?? this.shopId);
-
-  @override
-  List<Object?> get props => [items, shopId, totalQty, subtotal];
-}
-
+/// Session-bound: the app root calls [onSignedIn] / [onSignedOut] /
+/// [onGuestSession] from its `AuthSessionCubit` listener and
+/// [onLocaleChanged] when the language flips (line names are localized by
+/// the server).
 class CartCubit extends Cubit<CartState> with SafeCubitMixin<CartState> {
-  final CartRepository _repository;
+  CartCubit({
+    required this._watch,
+    required this._restore,
+    required this._syncOwner,
+    required this._fetch,
+    required this._flush,
+    required this._adjustLine,
+    required this._setLineQuantity,
+    required this._removeLine,
+    required this._addItems,
+    required this._clear,
+    required this._applyCoupon,
+    required this._removeCoupon,
+    required this._applyLoyalty,
+    required this._removeLoyalty,
+    required this._setExpress,
+    required this._reset,
+  }) : super(const CartState());
 
-  /// App-root registration resolves the repository from the service locator.
-  /// (`service_locator.dart` is a protected file we don't edit; its existing
-  /// `registerFactory<CartCubit>(() => CartCubit())` call keeps working through
-  /// this no-arg factory, while the [CartCubit.inject] constructor stays
-  /// available for tests.) The five pass-through use cases were collapsed — the
-  /// cubit now drives [CartRepository] directly.
-  factory CartCubit() => CartCubit.inject(repository: sl<CartRepository>());
+  final WatchCartUseCase _watch;
+  final RestoreCartUseCase _restore;
+  final SyncCartOwnerUseCase _syncOwner;
+  final FetchCartUseCase _fetch;
+  final FlushCartUseCase _flush;
+  final AdjustCartLineUseCase _adjustLine;
+  final SetCartLineQuantityUseCase _setLineQuantity;
+  final RemoveCartLineUseCase _removeLine;
+  final AddCartItemsUseCase _addItems;
+  final ClearCartUseCase _clear;
+  final ApplyCartCouponUseCase _applyCoupon;
+  final RemoveCartCouponUseCase _removeCoupon;
+  final ApplyCartLoyaltyUseCase _applyLoyalty;
+  final RemoveCartLoyaltyUseCase _removeLoyalty;
+  final SetCartExpressUseCase _setExpress;
+  final ResetCartUseCase _reset;
 
-  CartCubit.inject({required CartRepository repository})
-    : _repository = repository,
-      super(const CartState()) {
-    _hydrate();
+  static const String _logName = 'CartCubit';
+  StreamSubscription<CartSnapshot>? _subscription;
+
+  /// Subscribes to the repository and paints the device copy. Idempotent.
+  void start() {
+    if (_subscription != null) return;
+    _subscription = _watch(const NoParams()).listen(_onSnapshot);
+    unawaited(_restore(const NoParams()).then(_logFailure));
   }
 
-  /// Restore the persisted cart at startup (first frame shows the saved cart).
-  Future<void> _hydrate() async => _emit(await _repository.getCart());
-
-  /// Add [qty] units of a product (optionally a specific [variant]) to the cart.
-  void add(
-    Product product,
-    String shopId, {
-    ProductVariant? variant,
-    double? unitPrice,
-    int qty = 1,
-  }) {
-    _run(
-      _repository.addLine(
-        product: product,
-        shopId: shopId,
-        variant: variant,
-        unitPrice: unitPrice,
-        qty: qty,
+  void _onSnapshot(CartSnapshot snapshot) {
+    safeEmit(
+      state.copyWith(
+        cart: snapshot.cart,
+        isRestored: snapshot.isRestored,
+        isSyncing: snapshot.isSyncing,
+        hasPendingChanges: snapshot.hasPendingChanges,
+        isUnsynced: snapshot.isUnsynced,
+        failure: snapshot.failure,
+        failedAction: snapshot.failedAction,
+        quantityByProduct: snapshot.cart.quantityByProduct,
+        revision: snapshot.revision,
       ),
     );
   }
 
-  /// Remove one unit of the line identified by [lineKey] (a product id, or
-  /// `productId:variantSku`). Removes the line when it hits zero.
-  void remove(String lineKey) {
-    final q = state.qtyOf(lineKey);
-    if (q <= 0) return;
-    _run(_repository.updateQty(lineKey: lineKey, qty: q - 1));
+  // ── Session hooks (app root) ─────────────────────────────────────────────
+
+  /// The customer signed in (or the stored session was restored): fetch the
+  /// merged cart and send what the guest had tapped meanwhile.
+  Future<void> onSignedIn(String customerId) async => _logFailure(
+    await _syncOwner(SyncCartOwnerParams(customerId: customerId)),
+  );
+
+  /// No stored session at launch.
+  Future<void> onGuestSession() async =>
+      _logFailure(await _syncOwner(const SyncCartOwnerParams()));
+
+  /// Signed out (or a launch found the session gone): the mirror rebinds
+  /// to the guest, which drops a customer's cart from the device.
+  Future<void> onSignedOut() => onGuestSession();
+
+  /// Line names come resolved for `Accept-Language`.
+  Future<void> onLocaleChanged() async =>
+      _logFailure(await _fetch(const NoParams()));
+
+  /// The order took the cart with it.
+  Future<void> onOrderPlaced() async {
+    _logFailure(await _reset(const NoParams()));
+    _logFailure(await _fetch(const NoParams()));
   }
 
-  /// Remove one unit of any line belonging to [productId] (used by a multi-SKU
-  /// product row's "−", which is not variant-specific).
+  // ── Taps (optimistic) ────────────────────────────────────────────────────
+
+  /// Product tile "+", the product page "add" ([quantity] pieces of the
+  /// chosen [variantId]).
+  void addCatalogProduct(
+    CatalogProductEntity product, {
+    String? variantId,
+    int quantity = 1,
+  }) => _tap(
+    _adjustLine(
+      AdjustCartLineParams(
+        product: product,
+        variantId: variantId,
+        delta: quantity,
+      ),
+    ),
+  );
+
+  /// Product tile "−": one piece less of any line of the product.
   void removeProduct(String productId) {
-    for (final e in state.items.entries) {
-      if (e.value.product.id == productId) {
-        remove(e.key);
-        return;
-      }
+    for (final line in state.cart.lines) {
+      if (line.product.id != productId) continue;
+      decrement(line);
+      return;
     }
   }
 
-  /// Remove an entire line regardless of its quantity (swipe-to-delete etc.).
-  void removeLine(String lineKey) =>
-      _run(_repository.removeLine(lineKey: lineKey));
+  void increment(CartLineEntity line) => _tap(
+    _adjustLine(
+      AdjustCartLineParams(
+        product: line.product,
+        variantId: line.variantId,
+        delta: 1,
+      ),
+    ),
+  );
 
-  void clear() => _run(_repository.clear());
+  void decrement(CartLineEntity line) => _tap(
+    _adjustLine(
+      AdjustCartLineParams(
+        product: line.product,
+        variantId: line.variantId,
+        delta: -1,
+      ),
+    ),
+  );
 
-  /// B2 — resolve a router-resolvable checkout shop id for the active cart,
-  /// routing the catalogue read through the repository so the presentation layer
-  /// (Cart preview → Checkout) never reaches into `core/data/jameia_repository.dart`.
-  String? resolveCheckoutShopId() => _repository.checkoutShopId(state.shopId);
+  void setLineQuantity(CartLineEntity line, int quantity) => _tap(
+    _setLineQuantity(
+      SetCartLineQuantityParams(ref: line.ref, quantity: quantity),
+    ),
+  );
 
-  Future<void> _run(Future<Either<Failure, CartSnapshot>> op) async =>
-      _emit(await op);
+  void removeLine(CartLineEntity line) =>
+      _tap(_removeLine(RemoveCartLineParams(line.ref)));
 
-  void _emit(Either<Failure, CartSnapshot> either) {
-    either.fold(
-      // Offline cart: on the rare persistence failure keep the last good state.
-      (_) {},
-      (snap) => safeEmit(CartState(items: snap.items, shopId: snap.shopId)),
+  void _tap(Either<Failure, Unit> result) => result.fold(
+    (failure) => safeEmit(
+      state.copyWith(failure: failure, failedAction: CartAction.sync),
+    ),
+    (_) {},
+  );
+
+  // ── Server-confirmed actions (one at a time) ─────────────────────────────
+
+  /// Re-reads the server cart. Unlike the write actions this one also runs
+  /// while another is in flight (the repository serializes the lane anyway),
+  /// because checkout asks for it right after a selection re-priced the cart
+  /// — dropping it would leave the old delivery fee on screen.
+  Future<bool> refresh() async {
+    if (state.isBusy) {
+      final result = await _fetch(const NoParams());
+      result.fold(
+        (failure) => safeEmit(
+          state.copyWith(failure: failure, failedAction: CartAction.fetch),
+        ),
+        (_) {},
+      );
+      return result.isRight();
+    }
+    return _busy(CartAction.fetch, () => _fetch(const NoParams()));
+  }
+
+  /// Sends pending taps before checkout; `true` when the server has them all.
+  Future<bool> prepareCheckout() =>
+      _busy(CartAction.sync, () => _flush(const NoParams()));
+
+  /// "Reorder": every line of a past order in one request.
+  Future<bool> addItems(List<CartItemRequest> items) =>
+      _busy(CartAction.addItems, () => _addItems(AddCartItemsParams(items)));
+
+  Future<bool> clear() =>
+      _busy(CartAction.clear, () => _clear(const NoParams()));
+
+  Future<bool> applyCoupon(String code) =>
+      _busy(CartAction.coupon, () => _applyCoupon(ApplyCartCouponParams(code)));
+
+  Future<bool> removeCoupon() =>
+      _busy(CartAction.coupon, () => _removeCoupon(const NoParams()));
+
+  Future<bool> applyLoyalty(int points) => _busy(
+    CartAction.loyalty,
+    () => _applyLoyalty(ApplyCartLoyaltyParams(points)),
+  );
+
+  Future<bool> removeLoyalty() =>
+      _busy(CartAction.loyalty, () => _removeLoyalty(const NoParams()));
+
+  Future<bool> setExpress({required bool enabled}) => _busy(
+    CartAction.express,
+    () => _setExpress(SetCartExpressParams(enabled: enabled)),
+  );
+
+  Future<bool> _busy(
+    CartAction action,
+    Future<Either<Failure, Unit>> Function() operation,
+  ) async {
+    if (state.isBusy) return false;
+    safeEmit(state.copyWith(busyAction: action));
+    final result = await operation();
+    result.fold(
+      (failure) => safeEmit(
+        state.copyWith(
+          busyAction: CartAction.none,
+          failure: failure,
+          failedAction: action,
+        ),
+      ),
+      (_) => safeEmit(state.copyWith(busyAction: CartAction.none)),
     );
+    return result.isRight();
+  }
+
+  void _logFailure(Either<Failure, Unit> result) => result.fold(
+    (failure) => log('session sync: ${failure.message}', name: _logName),
+    (_) {},
+  );
+
+  @override
+  Future<void> close() async {
+    await _subscription?.cancel();
+    _subscription = null;
+    return super.close();
   }
 }

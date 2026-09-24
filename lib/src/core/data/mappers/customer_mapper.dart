@@ -32,6 +32,34 @@ extension CustomerMapper on CustomerModel {
       raw == null ? null : DateTime.tryParse(raw);
 }
 
+/// `AuthCustomerEntity` → `CustomerModel`, for the device copy of the
+/// signed-in customer: the app-global session holds the entity, the device
+/// stores the API shape (`CustomerModel.toJson`).
+extension CustomerEntityMapper on AuthCustomerEntity {
+  CustomerModel toModel() => CustomerModel(
+    id: id,
+    phone: phone,
+    nameEn: nameEn,
+    nameAr: nameAr,
+    email: email,
+    language: language,
+    wallet: walletFils,
+    loyaltyPoints: loyaltyPoints,
+    status: isActive
+        ? CustomerModel.activeStatus
+        : CustomerModel.inactiveStatus,
+    proActive: isPro,
+    proExpiresAt: proExpiresAt?.toIso8601String(),
+    dateOfBirth: switch (dateOfBirth) {
+      final day? => CustomerModel.wireDate(day),
+      null => null,
+    },
+    gender: gender?.wireValue,
+    householdSize: householdSize,
+    marketingPush: marketingPush,
+  );
+}
+
 /// Wire value of a [CustomerGender] for `PATCH /v1/account/profile`.
 extension CustomerGenderWire on CustomerGender {
   String get wireValue => switch (this) {

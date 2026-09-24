@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
+import '../../../../core/responsive/app_size.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../language/presentation/cubit/localization_cubit.dart';
@@ -69,9 +70,9 @@ class LanguageIconButton extends StatelessWidget {
                           width: size * 0.42,
                           height: size * 0.42,
                           child: const CircularProgressIndicator(
-                            strokeWidth: 2.2,
+                            strokeWidth: AppSize.s2_2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.primaryText,
+                              AppColors.brandForeground,
                             ),
                           ),
                         )
@@ -94,7 +95,7 @@ class LanguageIconButton extends StatelessWidget {
                             label,
                             key: ValueKey<String>(label),
                             style: AppTextStyles.captionLarge.copyWith(
-                              color: AppColors.primaryText,
+                              color: AppColors.brandForeground,
                               fontWeight: AppTextStyles.bold,
                             ),
                           ),

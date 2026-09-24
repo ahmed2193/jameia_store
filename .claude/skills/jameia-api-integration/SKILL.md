@@ -25,6 +25,9 @@ Reference files in this skill:
   parsing, signed-out state, syncing an app-global snapshot, fire-and-forget sync.
 - `references/backend-contract.md` — envelope, status codes, data conventions, and which
   features are already on the API.
+- `references/migrating-offline-feature.md` — **read it when the target feature is legacy**
+  (almost all offline ones are): scope, which entity, the id-space trap, contract vs
+  pagination, mutations, screens that outlive a session change.
 - `scripts/openapi_route.js` — prints one route's params / body / `results` from the live spec.
 
 ## 0. What core already does — never rebuild it
@@ -34,7 +37,7 @@ Reference files in this skill:
 | Base URL, timeouts, JSON | `buildApiBaseOptions()` + `AppEnv.apiBaseUrl` | nothing |
 | `Authorization: Bearer`, refresh before expiry, refresh on 401, replay | `AuthInterceptor` | nothing — never set the header |
 | `Accept-Language`, `X-Cart-Token`, `X-Assistant-Guest` | `AppHeadersInterceptor` | nothing |
-| 429 backoff (3 tries) | `RateLimitRetryInterceptor` | nothing |
+| 429 backoff (up to 3 retries = 4 requests, honours `Retry-After`) | `RateLimitRetryInterceptor` | nothing |
 | Request/response trace | `NetworkLogInterceptor` (debug, log name `api`) | read it, don't add logging |
 | `{success,statusCode,statusMessage,results,error}` | `DioConsumer` → returns **`results`** | parse `results` only |
 | HTTP/Dio error → typed `AppException` | `ApiExceptionMapper` | throw only `ParsingException` yourself |
@@ -52,6 +55,7 @@ around it inside a feature.
 ```sh
 node .claude/skills/jameia-api-integration/scripts/openapi_route.js            # all routes by tag
 node .claude/skills/jameia-api-integration/scripts/openapi_route.js orders     # params, body, results
+# Node ≥ 18 (global fetch). Offline: OPENAPI_FILE=<saved /docs/json> node …/openapi_route.js orders
 ```
 
 Then read the matching page under https://docs.jm3eia.store/developers/ for behavior the
@@ -98,12 +102,16 @@ written without it. A streaming route also goes into `EndPoints.streamingPaths`.
 10. **Tests** — see `jameia-api-testing`. Every new mapper, datasource, repository, use case
     and cubit behavior gets one.
 
-**Step 5 — migrating an offline feature.** Keep the repository **contract** and everything above
-it stable; swap the implementation underneath: add the remote datasource, point the repository
-impl at it, delete the `JameiaRepository` read for that operation. If the API shape forces a
-contract change, change the entity/use case deliberately and update the cubit tests — never
-leave a half-offline, half-remote method. Behavior that the API cannot serve yet stays on the
-local datasource and is listed in your report.
+**Step 5 — migrating an offline feature.** When the feature already follows the contract: keep
+the repository **contract** and everything above it stable and swap the implementation
+underneath — add the remote datasource, point the repository impl at it, delete the
+`JameiaRepository` read for that operation. If the API shape forces a contract change, change
+the entity / use case deliberately and update the cubit tests — never leave a half-offline,
+half-remote method. An **independent** operation the API cannot serve yet stays on the local
+datasource and is listed in your report; a list and the screens opened from it by id always
+move together. When the feature is **legacy** (cubit → repository, no `BaseRepositoryMixin`,
+`String? error`, `double` money) follow `references/migrating-offline-feature.md`: refactor the
+slice first (behavior frozen), then swap the datasource.
 
 **Step 6 — verify for real** (`jameia-api-verify`): `dart analyze` from the repo root (0 errors,
 0 warnings in your files), `flutter test`, then run the app against the mock or dev API and
@@ -118,7 +126,9 @@ to success, empty, error, signed-out and offline.
 Do:
 - Depend on `ApiConsumer` (request/response) or `EventStreamClient` (streams). Nothing else.
 - Put every path in `EndPoints`, every header name in `ApiHeaders`, every status code in `ApiStatus`.
-- Branch on `failure.code` (`ApiStatus.*`) or the failure **type**. Show `failure.localizedMessage`.
+- Branch on the failure **type** / `statusCode` (and on `failure.code` once `ApiStatus` is
+  importable from domain / presentation — open core gap, `references/patterns.md` §10), never
+  on the message text. Show `failure.localizedMessage`.
 - Send only what changed on `PATCH` (see `ProfileUpdate.diff` + `toBody()`).
 - Skip one malformed list row instead of failing the page (log it, keep the rest).
 - Guard async results against staleness (generation counter, `isSaving` early return) — a slow

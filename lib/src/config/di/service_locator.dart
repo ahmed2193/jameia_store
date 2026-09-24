@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
+import '../../core/data/datasources/catalog_remote_data_source.dart';
 import '../../core/data/jameia_repository.dart';
 import '../../core/network/api_base_options.dart';
 import '../../core/network/api_consumer.dart';
@@ -32,6 +33,7 @@ import '../../features/marketing/marketing_injection_container.dart';
 import '../../features/notifications/notifications_injection_container.dart';
 import '../../features/orders/orders_injection_container.dart';
 import '../../features/product_details/product_details_injection_container.dart';
+import '../../features/recipes/recipes_injection_container.dart';
 import '../../features/search/search_injection_container.dart';
 import '../../features/shop/shop_injection_container.dart';
 import '../../features/store_mode/store_mode_injection_container.dart';
@@ -67,6 +69,16 @@ Future<void> _initCore() async {
 
   _initSession();
   _initNetwork();
+  _initCatalog();
+}
+
+/// Catalogue reads shared by several features (product list, category tree,
+/// brand list) — see [CatalogRemoteDataSource].
+void _initCatalog() {
+  if (sl.isRegistered<CatalogRemoteDataSource>()) return;
+  sl.registerLazySingleton<CatalogRemoteDataSource>(
+    () => CatalogRemoteDataSourceImpl(sl<ApiConsumer>(), sl<LocaleProvider>()),
+  );
 }
 
 /// Keychain-backed API session (token pair + guest identities) and the
@@ -138,6 +150,7 @@ Future<void> _initFeatures() async {
   initHomeFeature();
   initShopFeature();
   initProductDetailsFeature();
+  initRecipesFeature();
   initOrdersFeature();
   initAddressFeature();
   initSearchFeature();

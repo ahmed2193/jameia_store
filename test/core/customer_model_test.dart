@@ -115,4 +115,92 @@ void main() {
       expect(CustomerGender.female.wireValue, 'female');
     });
   });
+
+  group('toJson (the device copy)', () {
+    final full = {
+      '_id': '507f1f77bcf86cd799439011',
+      'phone': '+96512345678',
+      'name': 'Ahmed',
+      'email': 'ahmed@jm3eia.com',
+      'language': 'ar',
+      'wallet': 1250,
+      'loyaltyPoints': 320,
+      'status': 'inactive',
+      'pro': {'active': true, 'expiresAt': '2027-01-01T00:00:00.000Z'},
+      'dateOfBirth': '1990-05-17',
+      'gender': 'female',
+      'householdSize': 2,
+      'marketingPush': false,
+    };
+
+    test('writes the API shape back, which parses to the same model', () {
+      final model = CustomerModel.fromJson(full);
+      expect(model.toJson(), full);
+      expect(CustomerModel.fromJson(model.toJson()).toJson(), full);
+    });
+
+    test('two different names go out bilingual; no email / language', () {
+      final json = CustomerModel.fromJson({
+        '_id': 'x',
+        'phone': '+9651',
+        'name': {'en': 'Sara', 'ar': 'سارة'},
+      }).toJson();
+
+      expect(json['name'], {'en': 'Sara', 'ar': 'سارة'});
+      expect(json['email'], isNull);
+      expect(json.containsKey('language'), isFalse);
+      expect(CustomerModel.fromJson(json).nameAr, 'سارة');
+    });
+
+    test('entity → model → entity keeps every field', () {
+      final entity = CustomerModel.fromJson(full).toEntity();
+      expect(entity.toModel().toEntity(), entity);
+      expect(entity.toModel().toJson(), full);
+    });
+
+    test('wireDate writes a calendar day', () {
+      expect(CustomerModel.wireDate(DateTime(1990, 5, 7)), '1990-05-07');
+    });
+  });
+
+  group('profile helpers', () {
+    test('the sign-up placeholder (phone as name) needs a real name', () {
+      const placeholder = AuthCustomerEntity(
+        id: 'x',
+        phone: '+96512345678',
+        nameEn: '+96512345678',
+        nameAr: '+96512345678',
+      );
+      expect(placeholder.needsName, isTrue);
+      expect(placeholder.givenName, '');
+      expect(
+        const AuthCustomerEntity(id: 'x', phone: '+9651').needsName,
+        isTrue,
+      );
+
+      const named = AuthCustomerEntity(id: 'x', phone: '+9651', nameEn: 'Ali');
+      expect(named.needsName, isFalse);
+      expect(named.givenName, 'Ali');
+    });
+
+    test('complete details = date of birth + gender + household size', () {
+      final complete = AuthCustomerEntity(
+        id: 'x',
+        phone: '+9651',
+        dateOfBirth: DateTime(1990),
+        gender: CustomerGender.male,
+        householdSize: 3,
+      );
+      expect(complete.hasCompleteDetails, isTrue);
+      expect(
+        AuthCustomerEntity(
+          id: 'x',
+          phone: '+9651',
+          dateOfBirth: DateTime(1990),
+          gender: CustomerGender.male,
+        ).hasCompleteDetails,
+        isFalse,
+      );
+    });
+  });
 }

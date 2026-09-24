@@ -280,7 +280,7 @@ class _LangChip extends StatelessWidget {
         child: Text(
           label,
           style: AppTextStyles.captionLarge.copyWith(
-            color: AppColors.primaryText,
+            color: selected ? AppColors.brandForeground : AppColors.primaryText,
             fontWeight: selected ? AppTextStyles.bold : AppTextStyles.regular,
           ),
         ),
@@ -371,7 +371,7 @@ class _LogoutDialog extends StatelessWidget {
                 AppButton(
                   label: 'settings.logout'.tr(),
                   color: AppColors.primary,
-                  foreground: AppColors.primaryText,
+                  foreground: AppColors.brandForeground,
                   onPressed: () => Navigator.of(context).pop(true),
                 ),
                 const SizedBox(height: AppSpacing.s8),

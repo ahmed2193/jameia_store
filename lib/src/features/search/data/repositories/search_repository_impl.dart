@@ -1,102 +1,61 @@
-import 'dart:async';
-
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/data/datasources/catalog_remote_data_source.dart';
+import '../../../../core/data/mappers/catalog_product_mapper.dart';
+import '../../../../core/data/mappers/catalog_taxonomy_mapper.dart';
+import '../../../../core/data/repositories/base_repository_mixin.dart';
+import '../../../../core/domain/entities/brand_entity.dart';
+import '../../../../core/domain/entities/catalog_category_entity.dart';
+import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/domain/entities/catalog_product_query.dart';
 import '../../../../core/error/failures.dart';
-import '../../domain/entities/shop_entity.dart';
+import '../../domain/entities/recent_searches.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../datasources/search_local_data_source.dart';
-import '../mappers/shop_mapper.dart';
 
-/// Offline search repository — reads the [SearchLocalDataSource] (catalogue +
-/// persisted recents) and wraps each result in `Either<Failure, T>`.
-class SearchRepositoryImpl implements SearchRepository {
-  SearchRepositoryImpl({required this.local});
+class SearchRepositoryImpl
+    with BaseRepositoryMixin
+    implements SearchRepository {
+  const SearchRepositoryImpl(this._catalog, this._local);
 
-  final SearchLocalDataSource local;
+  final CatalogRemoteDataSource _catalog;
+  final SearchLocalDataSource _local;
 
-  /// Most-recent-first cap for the persisted recents (Jameia keeps a short list).
-  static const int _maxRecents = 10;
-
-  @override
-  Future<Either<Failure, List<ShopEntity>>> searchShops(String query) async {
-    try {
-      return Right(local.searchShops(query).toEntities());
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
+  static const int _firstPage = 1;
+  static const int _maxBrands = 100;
 
   @override
-  Future<Either<Failure, List<ShopEntity>>> popularBrands() async {
-    try {
-      return Right(local.popularBrands().toEntities());
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
+  Future<Either<Failure, List<CatalogProductEntity>>> suggestProducts({
+    required String text,
+    required int limit,
+  }) => execute(
+    () async => (await _catalog.getProducts(
+      query: CatalogProductQuery(search: text),
+      page: _firstPage,
+      limit: limit,
+    )).items.toEntities(),
+  );
 
   @override
-  Future<Either<Failure, List<String>>> getSuggestions(String query) async {
-    try {
-      return Right(local.suggestions(query));
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
+  Future<Either<Failure, CatalogCategoryTree>> getCategoryTree() =>
+      execute(() async => (await _catalog.getCategories()).toTree());
 
   @override
-  Future<Either<Failure, List<String>>> hotWords() async {
-    try {
-      return Right(local.hotWords());
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
+  Future<Either<Failure, List<BrandEntity>>> getBrands() => execute(
+    () async => (await _catalog.getBrands(
+      page: _firstPage,
+      limit: _maxBrands,
+    )).toEntities(),
+  );
 
   @override
-  Future<Either<Failure, List<String>>> recentSearches() async {
-    try {
-      return Right(local.recentSearches());
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
+  Either<Failure, RecentSearches> getRecentSearches() =>
+      executeSync(() => RecentSearches(_local.readRecentSearches()));
 
   @override
-  Future<Either<Failure, List<String>>> addRecentSearch(String term) async {
-    try {
-      final t = term.trim();
-      if (t.isEmpty) return Right(local.recentSearches());
-      // Dedup (move-to-front) + cap — relocated from the screen's `_submit`.
-      final current = local.recentSearches();
-      final updated = <String>[t, ...current.where((e) => e != t)];
-      final capped = updated.length > _maxRecents
-          ? updated.sublist(0, _maxRecents)
-          : updated;
-      unawaited(_safeSave(capped));
-      return Right(capped);
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, List<String>>> clearRecentSearches() async {
-    try {
-      unawaited(_safeSave(const []));
-      return const Right([]);
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
-
-  /// Fire-and-forget persist (best-effort — never blocks the UI).
-  Future<void> _safeSave(List<String> terms) async {
-    try {
-      await local.saveRecentSearches(terms);
-    } catch (_) {
-      /* best-effort persistence */
-    }
-  }
+  Future<Either<Failure, Unit>> saveRecentSearches(RecentSearches recents) =>
+      execute(() async {
+        await _local.writeRecentSearches(recents.terms);
+        return unit;
+      });
 }

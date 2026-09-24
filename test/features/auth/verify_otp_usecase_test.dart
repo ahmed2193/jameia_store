@@ -34,6 +34,19 @@ class _RecordingRepo implements AuthRepository {
 
   @override
   Stream<void> watchSessionExpiry() => const Stream<void>.empty();
+
+  @override
+  Future<Either<Failure, AuthCustomerEntity?>> getCachedCustomer() =>
+      throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, Unit>> saveCachedCustomer(
+    AuthCustomerEntity customer,
+  ) => throw UnimplementedError();
+
+  @override
+  Future<Either<Failure, Unit>> clearCachedCustomer() =>
+      throw UnimplementedError();
 }
 
 void main() {

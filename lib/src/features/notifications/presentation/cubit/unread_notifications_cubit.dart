@@ -14,19 +14,22 @@ import 'unread_notifications_state.dart';
 /// App-global unread badge (provided above `MaterialApp.router`):
 ///
 ///   * [start] once signed in — probes the unread counter with a one-item
-///     page, then listens to the live stream (+1 per unread notification);
+///     page, then listens to the live stream (+1 per unread notification)
+///     when the build has one;
 ///   * [stop] on sign-out — drops the stream and resets to zero;
 ///   * [set] from the inbox page, which knows the fresher count.
 ///
 /// A guest is a normal case, not an error: the probe answers
 /// `UnauthorizedFailure`, the badge stays at 0 and no stream is opened, so
 /// nothing throws or retries in a loop.
+///
+/// Without a live source (`watchLive: null`, the default build — see
+/// `AppEnv.liveNotifications`) the badge is the probe's count, refreshed by
+/// the inbox through [set]; no stream is ever opened.
 class UnreadNotificationsCubit extends Cubit<UnreadNotificationsState>
     with SafeCubitMixin<UnreadNotificationsState> {
-  UnreadNotificationsCubit({
-    required this._getNotifications,
-    required this._watchLive,
-  }) : super(const UnreadNotificationsState());
+  UnreadNotificationsCubit({required this._getNotifications, this._watchLive})
+    : super(const UnreadNotificationsState());
 
   /// The smallest page that still carries `unreadCount`.
   static const int probeLimit = 1;
@@ -34,7 +37,7 @@ class UnreadNotificationsCubit extends Cubit<UnreadNotificationsState>
   static const String _logName = 'UnreadNotificationsCubit';
 
   final GetNotificationsUseCase _getNotifications;
-  final WatchLiveNotificationsUseCase _watchLive;
+  final WatchLiveNotificationsUseCase? _watchLive;
 
   StreamSubscription<NotificationEntity>? _live;
   bool _starting = false;
@@ -81,7 +84,9 @@ class UnreadNotificationsCubit extends Cubit<UnreadNotificationsState>
       safeEmit(state.copyWith(unreadCount: count < 0 ? 0 : count));
 
   void _listenLive() {
-    _live = _watchLive(const NoParams()).listen(
+    final watchLive = _watchLive;
+    if (watchLive == null) return;
+    _live = watchLive(const NoParams()).listen(
       (notification) => safeEmit(
         state.copyWith(
           unreadCount: notification.isRead

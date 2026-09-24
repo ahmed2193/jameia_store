@@ -182,4 +182,44 @@ void main() {
 
     expect(watchLive.controller.hasListener, isFalse);
   });
+
+  group('without a live source (the default build)', () {
+    UnreadNotificationsCubit buildWithoutLive() =>
+        UnreadNotificationsCubit(getNotifications: getNotifications);
+
+    blocTest<UnreadNotificationsCubit, UnreadNotificationsState>(
+      'start only probes the count and never goes live',
+      build: buildWithoutLive,
+      act: (cubit) => cubit.start(),
+      expect: () => [const UnreadNotificationsState(unreadCount: 5)],
+      verify: (_) {
+        expect(getNotifications.calls.length, 1);
+        expect(watchLive.listens, 0);
+      },
+    );
+
+    blocTest<UnreadNotificationsCubit, UnreadNotificationsState>(
+      'an offline probe leaves the badge at zero and opens nothing',
+      build: () {
+        getNotifications.result = const Left(NetworkFailure());
+        return buildWithoutLive();
+      },
+      act: (cubit) => cubit.start(),
+      expect: () => <UnreadNotificationsState>[],
+      verify: (_) => expect(watchLive.listens, 0),
+    );
+
+    blocTest<UnreadNotificationsCubit, UnreadNotificationsState>(
+      'the inbox still sets the count',
+      build: buildWithoutLive,
+      act: (cubit) async {
+        await cubit.start();
+        cubit.set(2);
+      },
+      expect: () => [
+        const UnreadNotificationsState(unreadCount: 5),
+        const UnreadNotificationsState(unreadCount: 2),
+      ],
+    );
+  });
 }

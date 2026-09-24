@@ -36,7 +36,7 @@ void main() {
       repo.mapToFailure(
         const NotFoundException('nf', code: 'RESOURCE_NOT_FOUND'),
       ),
-      const ServerFailure('nf', statusCode: 404, code: 'RESOURCE_NOT_FOUND'),
+      const NotFoundFailure('nf', code: 'RESOURCE_NOT_FOUND'),
     );
     expect(
       repo.mapToFailure(

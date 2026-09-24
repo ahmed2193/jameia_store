@@ -1,170 +1,199 @@
-import 'package:equatable/equatable.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// TODO(P2.9-boundary): CartItem is the cart feature's core line type, supplied
-// by CartCubit and passed straight into placeOrder — kept as the core DTO at
-// this cross-feature boundary rather than a checkout entity.
-import '../../../../core/data/models/models.dart' show CartItem;
+import '../../../../core/domain/entities/cart_entity.dart';
+import '../../../../core/domain/entities/order_status.dart';
+import '../../../../core/error/failures.dart';
+import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../domain/entities/branch_entity.dart';
 import '../../domain/entities/checkout_draft.dart';
-import '../../domain/entities/jameia_address_entity.dart';
-import '../../domain/entities/jameia_order_entity.dart';
-import '../../domain/entities/shop_entity.dart';
-import '../../domain/repositories/checkout_repository.dart';
+import '../../domain/entities/delivery_selection_entity.dart';
+import '../../domain/entities/delivery_slot_entity.dart';
+import '../../domain/usecases/get_branches_usecase.dart';
+import '../../domain/usecases/get_delivery_slots_usecase.dart';
+import '../../domain/usecases/place_order_usecase.dart';
+import '../../domain/usecases/select_delivery_address_usecase.dart';
+import '../../domain/usecases/select_pickup_branch_usecase.dart';
+import 'checkout_state.dart';
 
-enum CheckoutStatus { initial, loading, ready, placing, placed, error }
-
-/// State for the `order_confirm_global` checkout screen. Holds the loaded
-/// context (shop / delivery address / available-coupon count), the user's
-/// in-progress [CheckoutDraft] selections, and — once committed — the placed
-/// order for deep-linking to tracking.
-///
-/// Purely-ephemeral UI (dialogs, the on-time promise sheet) stays in the screen;
-/// this cubit owns only the business state.
-class CheckoutState extends Equatable {
-  const CheckoutState({
-    this.status = CheckoutStatus.initial,
-    this.shop,
-    this.address,
-    this.availableCouponCount = 0,
-    this.draft = const CheckoutDraft(),
-    this.placedOrder,
-    this.error,
-  });
-
-  final CheckoutStatus status;
-  final ShopEntity? shop;
-  final JameiaAddressEntity? address;
-  final int availableCouponCount;
-  final CheckoutDraft draft;
-
-  /// The committed order, set once [CheckoutStatus.placed] is reached.
-  final JameiaOrderEntity? placedOrder;
-  final String? error;
-
-  CheckoutState copyWith({
-    CheckoutStatus? status,
-    ShopEntity? shop,
-    JameiaAddressEntity? address,
-    int? availableCouponCount,
-    CheckoutDraft? draft,
-    JameiaOrderEntity? placedOrder,
-    String? error,
-  }) => CheckoutState(
-    status: status ?? this.status,
-    shop: shop ?? this.shop,
-    address: address ?? this.address,
-    availableCouponCount: availableCouponCount ?? this.availableCouponCount,
-    draft: draft ?? this.draft,
-    placedOrder: placedOrder ?? this.placedOrder,
-    error: error ?? this.error,
-  );
-
-  @override
-  List<Object?> get props => [
-    status,
-    shop,
-    address,
-    availableCouponCount,
-    draft,
-    placedOrder,
-    error,
-  ];
-}
-
-/// Page-scoped cubit — resolved via `sl<CheckoutCubit>()` and started with the
-/// shop id (`..start(shopId)`) from the screen. Talks to the [CheckoutRepository]
-/// directly (the pass-through use cases were collapsed). Owns the checkout draft
-/// + place-order commit; the shared cart snapshot is passed into [placeOrder] so
-/// the two cubits stay decoupled.
+/// Page-scoped checkout: loads branches + slots, selects the destination on
+/// the server (one selection at a time; a stale reply is dropped), keeps
+/// the draft, places the order once (double-submit guard).
 class CheckoutCubit extends Cubit<CheckoutState>
     with SafeCubitMixin<CheckoutState> {
-  CheckoutCubit({required CheckoutRepository repository})
-    : _repository = repository,
-      super(const CheckoutState());
+  CheckoutCubit({
+    required this._getBranches,
+    required this._getDeliverySlots,
+    required this._selectDeliveryAddress,
+    required this._selectPickupBranch,
+    required this._placeOrder,
+  }) : super(const CheckoutState());
 
-  final CheckoutRepository _repository;
+  final GetBranchesUseCase _getBranches;
+  final GetDeliverySlotsUseCase _getDeliverySlots;
+  final SelectDeliveryAddressUseCase _selectDeliveryAddress;
+  final SelectPickupBranchUseCase _selectPickupBranch;
+  final PlaceOrderUseCase _placeOrder;
 
-  /// The last shop id passed to [start] — kept so [retry] can re-run the
-  /// context load after a failure without the screen re-supplying it.
-  String? _shopId;
+  int _selectionGeneration = 0;
 
-  /// Load the first-frame context for [shopId] (shop / address / coupon count).
-  Future<void> start(String shopId) async {
-    _shopId = shopId;
-    safeEmit(state.copyWith(status: CheckoutStatus.loading));
-    final result = await _repository.getContext(shopId);
+  /// Loads the choices; [defaultAddressId] (the address book's default) is
+  /// selected right away so the page opens priced.
+  ///
+  /// [expressSelected] is the cart's express flag: express is a flag the
+  /// SERVER holds on the cart, so a customer who switched it on in the cart
+  /// arrives here already paying the surcharge. Opening on "ASAP" would show
+  /// a choice the order does not have.
+  Future<void> start({
+    String? defaultAddressId,
+    bool expressSelected = false,
+  }) async {
+    if (state.status == CheckoutStatus.loading) return; // one load at a time
+    safeEmit(
+      state.copyWith(
+        status: CheckoutStatus.loading,
+        draft: expressSelected
+            ? state.draft.copyWith(timing: DeliveryTiming.express)
+            : state.draft,
+      ),
+    );
+    // Both calls start before either is awaited, so they still run together.
+    final branchesCall = _getBranches(const NoParams());
+    final slotsCall = _getDeliverySlots(const NoParams());
+    final Either<Failure, List<BranchEntity>> branches = await branchesCall;
+    final Either<Failure, List<DeliverySlotDayEntity>> slots = await slotsCall;
+    final failure =
+        branches.fold<Failure?>((failure) => failure, (_) => null) ??
+        slots.fold<Failure?>((failure) => failure, (_) => null);
+    if (failure != null) {
+      safeEmit(
+        state.copyWith(
+          status: CheckoutStatus.error,
+          failure: failure,
+          failedAction: CheckoutAction.load,
+        ),
+      );
+      return;
+    }
+    safeEmit(
+      state.copyWith(
+        status: CheckoutStatus.ready,
+        branches: branches.getOrElse(() => const <BranchEntity>[]),
+        slotDays: slots.getOrElse(() => const <DeliverySlotDayEntity>[]),
+      ),
+    );
+    if (defaultAddressId != null && defaultAddressId.isNotEmpty) {
+      await selectAddress(defaultAddressId);
+    }
+  }
+
+  Future<void> retry({
+    String? defaultAddressId,
+    bool expressSelected = false,
+  }) => start(
+    defaultAddressId: defaultAddressId,
+    expressSelected: expressSelected,
+  );
+
+  Future<void> selectAddress(String addressId) => _select(
+    draft: state.draft.copyWith(
+      mode: FulfillmentMode.delivery,
+      addressId: addressId,
+    ),
+    call: () => _selectDeliveryAddress(SelectDeliveryAddressParams(addressId)),
+  );
+
+  Future<void> selectBranch(String branchId) => _select(
+    draft: state.draft.copyWith(
+      mode: FulfillmentMode.pickup,
+      branchId: branchId,
+    ),
+    call: () => _selectPickupBranch(SelectPickupBranchParams(branchId)),
+  );
+
+  /// Switches the mode; the destination of the other mode is re-selected on
+  /// the server when it is already known.
+  Future<void> setMode(FulfillmentMode mode) async {
+    if (mode == state.draft.mode) return;
+    final draft = state.draft;
+    if (mode == FulfillmentMode.pickup) {
+      final branchId = draft.branchId;
+      if (branchId != null) return selectBranch(branchId);
+      safeEmit(
+        state.copyWith(draft: draft.copyWith(mode: mode), clearSelection: true),
+      );
+      return;
+    }
+    final addressId = draft.addressId;
+    if (addressId != null) return selectAddress(addressId);
+    safeEmit(
+      state.copyWith(draft: draft.copyWith(mode: mode), clearSelection: true),
+    );
+  }
+
+  Future<void> _select({
+    required CheckoutDraft draft,
+    required Future<Either<Failure, DeliverySelectionEntity>> Function() call,
+  }) async {
+    final generation = ++_selectionGeneration;
+    safeEmit(state.copyWith(draft: draft, isSelecting: true));
+    final result = await call();
+    if (generation != _selectionGeneration) return; // a newer choice won
     result.fold(
       (failure) => safeEmit(
-        state.copyWith(status: CheckoutStatus.error, error: failure.message),
-      ),
-      (ctx) => safeEmit(
         state.copyWith(
-          status: CheckoutStatus.ready,
-          shop: ctx.shop,
-          address: ctx.address,
-          availableCouponCount: ctx.availableCouponCount,
+          isSelecting: false,
+          failure: failure,
+          failedAction: CheckoutAction.select,
         ),
       ),
+      (selection) =>
+          safeEmit(state.copyWith(isSelecting: false, selection: selection)),
     );
   }
 
-  /// Re-run [start] with the last shop id after a load failure — backs the
-  /// error-state retry button so the screen needn't re-supply the id.
-  Future<void> retry() async {
-    final id = _shopId;
-    if (id != null) await start(id);
-  }
-
-  // ── Draft selections ────────────────────────────────────────────────────────
-
-  void setDropOff(DropOffOption dropOff) =>
-      safeEmit(state.copyWith(draft: state.draft.copyWith(dropOff: dropOff)));
-
-  void setCutlery(bool cutlery) =>
-      safeEmit(state.copyWith(draft: state.draft.copyWith(cutlery: cutlery)));
-
-  void setTip(double tip) =>
-      safeEmit(state.copyWith(draft: state.draft.copyWith(tip: tip)));
-
-  void setPayment(PaymentMethod method) =>
-      safeEmit(state.copyWith(draft: state.draft.copyWith(payMethod: method)));
-
-  /// Apply the coupon picked on the coupons screen (identified by [couponId]); a
-  /// validation failure leaves the current selection untouched (matches the
-  /// original picker behaviour).
-  Future<void> applyCoupon(String couponId) async {
-    final result = await _repository.applyCoupon(couponId);
-    result.fold(
-      (_) {},
-      (applied) => safeEmit(
-        state.copyWith(draft: state.draft.copyWith(coupon: applied)),
+  void setTiming(DeliveryTiming timing) => safeEmit(
+    state.copyWith(
+      draft: state.draft.copyWith(
+        timing: timing,
+        clearSlot: timing != DeliveryTiming.scheduled,
       ),
-    );
-  }
+    ),
+  );
 
-  // ── Commit ────────────────────────────────────────────────────────────────
+  void setSlot(DeliverySlotEntity slot) => safeEmit(
+    state.copyWith(
+      draft: state.draft.copyWith(timing: DeliveryTiming.scheduled, slot: slot),
+    ),
+  );
 
-  /// Place the order from the current draft + the passed cart snapshot. The
-  /// screen bridges the shared cart (clears it) once [CheckoutStatus.placed].
-  Future<void> placeOrder({
-    required ShopEntity shop,
-    required List<CartItem> lines,
-    required double subtotal,
-  }) async {
-    safeEmit(state.copyWith(status: CheckoutStatus.placing));
-    final result = await _repository.placeOrder(
-      shop: shop,
-      lines: lines,
-      subtotal: subtotal,
-      draft: state.draft,
-    );
+  void setPaymentMethod(OrderPaymentMethod method) => safeEmit(
+    state.copyWith(draft: state.draft.copyWith(paymentMethod: method)),
+  );
+
+  void setNotes(String notes) =>
+      safeEmit(state.copyWith(draft: state.draft.copyWith(notes: notes)));
+
+  /// `POST /v1/orders`; a second tap while placing is ignored.
+  Future<void> placeOrder() async {
+    if (!state.canPlace) return;
+    safeEmit(state.copyWith(isPlacing: true));
+    final result = await _placeOrder(PlaceOrderParams(state.draft));
     result.fold(
       (failure) => safeEmit(
-        state.copyWith(status: CheckoutStatus.error, error: failure.message),
+        state.copyWith(
+          isPlacing: false,
+          failure: failure,
+          failedAction: CheckoutAction.place,
+        ),
       ),
       (order) => safeEmit(
-        state.copyWith(status: CheckoutStatus.placed, placedOrder: order),
+        state.copyWith(
+          status: CheckoutStatus.placed,
+          isPlacing: false,
+          placedOrder: order,
+        ),
       ),
     );
   }

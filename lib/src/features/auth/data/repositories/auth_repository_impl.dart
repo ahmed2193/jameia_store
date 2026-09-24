@@ -67,4 +67,25 @@ class AuthRepositoryImpl with BaseRepositoryMixin implements AuthRepository {
 
   @override
   Stream<void> watchSessionExpiry() => _local.onSessionExpired;
+
+  @override
+  Future<Either<Failure, AuthCustomerEntity?>> getCachedCustomer() =>
+      execute(() async {
+        if (!await _local.hasSession()) return null;
+        return (await _local.readCustomer())?.toEntity();
+      });
+
+  @override
+  Future<Either<Failure, Unit>> saveCachedCustomer(
+    AuthCustomerEntity customer,
+  ) => execute(() async {
+    await _local.saveCustomer(customer.toModel());
+    return unit;
+  });
+
+  @override
+  Future<Either<Failure, Unit>> clearCachedCustomer() => execute(() async {
+    await _local.clearCustomer();
+    return unit;
+  });
 }

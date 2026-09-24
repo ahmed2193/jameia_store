@@ -14,10 +14,12 @@ import 'feature_routes/notifications_routes.dart';
 import 'feature_routes/orders_routes.dart';
 import 'feature_routes/placeholder_routes.dart';
 import 'feature_routes/product_details_routes.dart';
+import 'feature_routes/recipes_routes.dart';
 import 'feature_routes/search_routes.dart';
 import 'feature_routes/shell_routes.dart';
 import 'feature_routes/shop_routes.dart';
 import 'feature_routes/splash_routes.dart';
+import 'feature_routes/store_mode_routes.dart';
 import 'feature_routes/support_routes.dart';
 import 'placeholder_page.dart';
 import 'routes.dart';
@@ -33,6 +35,8 @@ final List<RouteBase> appRoutes = <RouteBase>[
   ...shopRoutes,
   ...checkoutRoutes,
   ...productDetailsRoutes,
+  ...storeModeRoutes,
+  ...recipesRoutes,
   ...ordersRoutes,
   ...addressRoutes,
   ...couponsRoutes,
@@ -64,6 +68,7 @@ GoRouter buildAppRouter({
     navigatorKey: rootNavigatorKey ?? navigatorKey,
     initialLocation: initialLocation,
     routes: appRoutes,
+    observers: [routeObserver],
     errorPageBuilder: (_, state) => JameiaTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,

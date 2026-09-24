@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'geo_point.dart';
+import '../../../../core/domain/entities/geo_point_entity.dart';
 
 /// Framework-free serviceable-region row for the region picker.
 ///

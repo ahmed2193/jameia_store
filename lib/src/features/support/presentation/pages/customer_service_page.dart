@@ -239,7 +239,7 @@ class _SearchHelpFieldState extends State<_SearchHelpField> {
                 textInputAction: TextInputAction.search,
                 onSubmitted: (_) => _submit(),
                 style: AppTextStyles.bodyLarge,
-                cursorColor: AppColors.brandForeground,
+                cursorColor: AppColors.primaryText,
                 decoration: InputDecoration(
                   isDense: true,
                   border: InputBorder.none,

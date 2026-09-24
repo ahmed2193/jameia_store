@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../cubit/profile_cubit.dart';
 import '../../cubit/profile_state.dart';
+import 'profile_about_header.dart';
+import 'profile_complete_banner.dart';
+import 'profile_date_of_birth_field.dart';
 import 'profile_email_field.dart';
 import 'profile_gender_selector.dart';
+import 'profile_household_field.dart';
 import 'profile_name_field.dart';
 import 'profile_save_button.dart';
+import 'profile_section_card.dart';
 
-/// The form: name, email, gender, save. Owns the text controllers and re-seeds
+/// The form: name + email, the optional "About you" details (date of birth,
+/// gender, household size), save. Owns the text controllers and re-seeds
 /// them whenever the cubit REPLACES the draft (the server refresh of an
 /// untouched form, or a successful save) — never while the user is typing.
 class ProfileForm extends StatefulWidget {
@@ -57,28 +62,33 @@ class _ProfileFormState extends State<ProfileForm> {
           vertical: AppSpacing.s16,
         ),
         children: [
+          const ProfileCompleteBanner(),
           StaggerEntrance(
             index: 0,
-            child: Container(
-              padding: const EdgeInsets.all(AppSpacing.s16),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(AppRadius.card),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ProfileNameField(controller: _name),
-                  const SizedBox(height: AppSpacing.s16),
-                  ProfileEmailField(controller: _email),
-                  const SizedBox(height: AppSpacing.s16),
-                  const ProfileGenderSelector(),
-                ],
-              ),
+            child: ProfileSectionCard(
+              children: [
+                ProfileNameField(controller: _name),
+                const SizedBox(height: AppSpacing.s16),
+                ProfileEmailField(controller: _email),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s16),
+          const StaggerEntrance(
+            index: 1,
+            child: ProfileSectionCard(
+              children: [
+                ProfileAboutHeader(),
+                ProfileDateOfBirthField(),
+                SizedBox(height: AppSpacing.s16),
+                ProfileGenderSelector(),
+                SizedBox(height: AppSpacing.s16),
+                ProfileHouseholdField(),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.s24),
-          const StaggerEntrance(index: 1, child: ProfileSaveButton()),
+          const StaggerEntrance(index: 2, child: ProfileSaveButton()),
         ],
       ),
     );

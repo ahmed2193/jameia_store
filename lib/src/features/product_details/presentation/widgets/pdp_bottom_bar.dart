@@ -1,89 +1,110 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/motion/fly_to_cart.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
-import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/widgets/core_widgets.dart';
+import '../../../../core/motion/fly_to_cart.dart';
+import '../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../core/responsive/app_size.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/jameia_card_image.dart';
+import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../cubit/product_detail_cubit.dart';
+import '../cubit/product_detail_state.dart';
+import 'pdp_quantity_stepper.dart';
 
-/// Sticky product-detail action bar: a "{n}% off" badge over the (animated)
-/// price with its struck original, and a green "Add to cart" CTA that adds the
-/// chosen variant × quantity to the unified cart and arcs the product image into
-/// the cart badge.
+/// Sticky buy bar of the product page: quantity + "Add · total". Disabled with
+/// the reason as its label when the selection cannot be bought. Hidden until
+/// the product is loaded (the preview has no stock / variant truth yet).
 class PdpBottomBar extends StatelessWidget {
   const PdpBottomBar({super.key});
 
   void _add(BuildContext context, ProductDetailState state) {
-    context.read<ProductDetailCubit>().addToCart(context.read<CartCubit>());
+    final detail = state.detail;
+    if (detail == null || !state.canAdd) return;
+    HapticFeedback.selectionClick();
     FlyToCart.flyFrom(
       context,
       thumbnail: JameiaCardImage(
-        url: state.heroImage,
-        width: 56,
-        height: 56,
+        url: detail.product.image,
+        width: AppSize.s56,
+        height: AppSize.s56,
         radius: AppRadius.r4,
       ),
     );
+    context.read<CartCubit>().addCatalogProduct(
+      detail.product,
+      variantId: state.selectedVariant?.id,
+      quantity: state.quantity,
+    );
+    showJameiaSnackBar(context, 'product.added_to_cart'.tr());
   }
 
   @override
   Widget build(BuildContext context) {
+    final isPro = context.select<AuthSessionCubit, bool>(
+      (session) => session.state.customer?.isPro ?? false,
+    );
     return BlocBuilder<ProductDetailCubit, ProductDetailState>(
+      buildWhen: (previous, current) =>
+          previous.detail != current.detail ||
+          previous.quantity != current.quantity ||
+          previous.selectedVariantId != current.selectedVariantId,
       builder: (context, state) {
-        if (state.status != ProductDetailStatus.loaded) {
-          return const SizedBox.shrink();
-        }
-        return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.white,
-            border: Border(
-              top: BorderSide(color: AppColors.divider, width: 0.5),
+        final detail = state.detail;
+        if (detail == null) return const SizedBox.shrink();
+        final cubit = context.read<ProductDetailCubit>();
+        final totalKd = detail.lineTotalKd(
+          variant: state.selectedVariant,
+          pro: isPro,
+          quantity: state.quantity,
+        );
+        final label = state.canAdd
+            ? 'product.add_with_total'.tr(
+                namedArgs: {'total': Formatters.price(totalKd)},
+              )
+            : detail.needsVariant && state.selectedVariant == null
+            ? 'catalog.choose_options'.tr()
+            : 'catalog.out_of_stock'.tr();
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.pageMargin,
+              AppSpacing.s6,
+              AppSpacing.pageMargin,
+              AppSpacing.s8,
             ),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AppSpacing.s16,
-                AppSpacing.s10,
-                AppSpacing.s16,
-                AppSpacing.s10,
+            child: Container(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AppSpacing.s10,
+                vertical: AppSpacing.s8,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(AppRadius.card),
+                boxShadow: AppShadows.high,
               ),
               child: Row(
                 children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (state.discountPercent > 0) ...[
-                        _OffBadge(percent: state.discountPercent),
-                        const SizedBox(height: AppSpacing.s2),
-                      ],
-                      PriceText(
-                        price: state.unitPrice,
-                        originalPrice: state.oldPrice,
-                        size: 20,
-                        animate: true,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: AppSpacing.s16),
+                  if (state.canAdd) ...[
+                    PdpQuantityStepper(
+                      quantity: state.quantity,
+                      onIncrement: cubit.increment,
+                      onDecrement: cubit.decrement,
+                    ),
+                    const SizedBox(width: AppSpacing.s12),
+                  ],
                   Expanded(
                     child: AppButton(
-                      label: state.canAdd
-                          ? 'product.add_to_cart'.tr()
-                          : 'shop.out_of_stock'.tr(),
-                      onPressed: state.canAdd
-                          ? () => _add(context, state)
-                          : null,
-                      color: AppColors.martGreen,
-                      foreground: AppColors.white,
-                      height: 48,
-                      radius: AppRadius.r1,
+                      label: label,
+                      enabled: state.canAdd,
+                      onPressed: () => _add(context, state),
                     ),
                   ),
                 ],
@@ -92,33 +113,6 @@ class PdpBottomBar extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-/// Small red "{n}% off" badge shown above the sticky price.
-class _OffBadge extends StatelessWidget {
-  const _OffBadge({required this.percent});
-  final int percent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsetsDirectional.symmetric(
-        horizontal: 5,
-        vertical: 1,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.finalPrice,
-        borderRadius: BorderRadius.circular(AppRadius.r7),
-      ),
-      child: Text(
-        'home.percent_off'.tr(namedArgs: {'percent': '$percent'}),
-        style: AppTextStyles.captionSmall.copyWith(
-          color: AppColors.white,
-          fontWeight: AppTextStyles.bold,
-        ),
-      ),
     );
   }
 }

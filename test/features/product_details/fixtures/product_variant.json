@@ -1,0 +1,104 @@
+{
+ "_id": "6aa6010d06da786e3f5658f4",
+ "name": "KDD Full Cream Milk",
+ "slug": "kdd-full-cream-milk",
+ "type": "variant",
+ "price": 0,
+ "proPrice": null,
+ "compareAt": 100,
+ "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop",
+ "stock": 32,
+ "tags": [
+  "6aa5ffb85233feadc5c41502",
+  "fresh",
+  "best-seller"
+ ],
+ "unitOfSale": "l",
+ "ratingAverage": 0,
+ "ratingCount": 0,
+ "description": "Rich full-cream milk from Kuwait Dairy Company.",
+ "galleryUrls": [
+  "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop"
+ ],
+ "brand": {
+  "_id": "6aa5ffb85233feadc5c414fe",
+  "name": "KDD",
+  "slug": "kdd",
+  "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&h=200&fit=crop"
+ },
+ "category": {
+  "_id": "6aa5ffb85233feadc5c41514",
+  "name": "Milk & Cream",
+  "slug": "fresh-milk",
+  "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=400&fit=crop",
+  "parentId": "6aa5ffb85233feadc5c41513",
+  "sortOrder": 0,
+  "productCount": 4
+ },
+ "variants": [
+  {
+   "id": "v1",
+   "name": "1 Liter",
+   "price": 499,
+   "proPrice": null,
+   "compareAt": 550,
+   "compareAtExpiresAt": null,
+   "stock": 18,
+   "enabled": true,
+   "optionValues": {
+    "6aa5ffb85233feadc5c41532": "1l"
+   }
+  },
+  {
+   "id": "v2",
+   "name": "2 Liter",
+   "price": 899,
+   "proPrice": null,
+   "compareAt": null,
+   "compareAtExpiresAt": null,
+   "stock": 24,
+   "enabled": true,
+   "optionValues": {
+    "6aa5ffb85233feadc5c41532": "2l"
+   }
+  }
+ ],
+ "bundleItems": [],
+ "related": [],
+ "recipes": [
+  {
+   "_id": "6aa72210da383e2755e08d96",
+   "slug": "margoog",
+   "title": "Margoog (Vegetable Stew)",
+   "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+   "prepMinutes": 25,
+   "cookMinutes": 70,
+   "servings": 4,
+   "cuisine": {
+    "slug": "kuwaiti",
+    "name": "Kuwaiti"
+   },
+   "diet": {
+    "slug": "halal",
+    "name": "Halal"
+   }
+  },
+  {
+   "_id": "6aa72210da383e2755e08d99",
+   "slug": "kuwaiti-egg-breakfast",
+   "title": "Kuwaiti Egg & Bread Breakfast",
+   "imageUrl": "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800&q=80",
+   "prepMinutes": 5,
+   "cookMinutes": 10,
+   "servings": 2,
+   "cuisine": {
+    "slug": "kuwaiti",
+    "name": "Kuwaiti"
+   },
+   "diet": {
+    "slug": "vegetarian",
+    "name": "Vegetarian"
+   }
+  }
+ ]
+}

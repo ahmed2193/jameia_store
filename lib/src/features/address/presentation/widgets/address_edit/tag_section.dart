@@ -2,41 +2,43 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/design/jameia_assets.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/domain/entities/address_label.dart';
 import '../../cubit/address_edit_cubit.dart';
+import '../../cubit/address_edit_state.dart';
 import 'label_chip.dart';
 import 'section_header.dart';
 
-/// Tag / label — Home | Work | Hangout | Other (labelType, RE §3.4).
+/// Tag — Home | Work | Gathering | Other (sent as the address `label`).
 class TagSection extends StatelessWidget {
   const TagSection({super.key});
 
-  // The four user-facing label tags + their Jameia glyphs. [labelKey] is the
-  // i18n key resolved with .tr() at build time (a const list can't call .tr()).
-  static const List<({LabelType type, String labelKey, String icon})> _tags = [
-    (
-      type: LabelType.home,
-      labelKey: 'addr.tag.home',
-      icon: JameiaAssets.labelHome,
-    ),
-    (
-      type: LabelType.work,
-      labelKey: 'addr.tag.work',
-      icon: JameiaAssets.labelOffice,
-    ),
-    (
-      type: LabelType.hangout,
-      labelKey: 'addr.tag.gathering',
-      icon: JameiaAssets.labelGathering,
-    ),
-    (
-      type: LabelType.other,
-      labelKey: 'addr.tag.other',
-      icon: JameiaAssets.labelOther,
-    ),
-  ];
+  // [textKey] is resolved with .tr() at build time (a const list can't).
+  static const List<({AddressLabel label, String textKey, String icon})> _tags =
+      [
+        (
+          label: AddressLabel.home,
+          textKey: 'addr.tag.home',
+          icon: JameiaAssets.labelHome,
+        ),
+        (
+          label: AddressLabel.work,
+          textKey: 'addr.tag.work',
+          icon: JameiaAssets.labelOffice,
+        ),
+        (
+          label: AddressLabel.gathering,
+          textKey: 'addr.tag.gathering',
+          icon: JameiaAssets.labelGathering,
+        ),
+        (
+          label: AddressLabel.other,
+          textKey: 'addr.tag.other',
+          icon: JameiaAssets.labelOther,
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -53,25 +55,26 @@ class TagSection extends StatelessWidget {
               end: AppSpacing.s12,
               bottom: AppSpacing.s14,
             ),
-            child: BlocSelector<AddressEditCubit, AddressEditState, LabelType>(
-              selector: (s) => s.label,
-              builder: (context, active) {
-                final cubit = context.read<AddressEditCubit>();
-                return Wrap(
-                  spacing: AppSpacing.s8,
-                  runSpacing: AppSpacing.s8,
-                  children: [
-                    for (final t in _tags)
-                      LabelChip(
-                        label: t.labelKey.tr(),
-                        iconAsset: t.icon,
-                        selected: t.type == active,
-                        onTap: () => cubit.setLabel(t.type),
-                      ),
-                  ],
-                );
-              },
-            ),
+            child:
+                BlocSelector<AddressEditCubit, AddressEditState, AddressLabel>(
+                  selector: (state) => state.draft.label,
+                  builder: (context, active) {
+                    final cubit = context.read<AddressEditCubit>();
+                    return Wrap(
+                      spacing: AppSpacing.s8,
+                      runSpacing: AppSpacing.s8,
+                      children: [
+                        for (final tag in _tags)
+                          LabelChip(
+                            label: tag.textKey.tr(),
+                            iconAsset: tag.icon,
+                            selected: tag.label == active,
+                            onTap: () => cubit.labelChanged(tag.label),
+                          ),
+                      ],
+                    );
+                  },
+                ),
           ),
         ],
       ),

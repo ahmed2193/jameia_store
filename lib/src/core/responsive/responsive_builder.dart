@@ -2,13 +2,12 @@ import 'package:flutter/widgets.dart';
 
 import 'breakpoints.dart';
 
-typedef ResponsiveWidgetBuilder =
-    Widget Function(
-      BuildContext context,
-      Breakpoint breakpoint,
-      Size size,
-      TextScaler textScaler,
-    );
+typedef ResponsiveWidgetBuilder = Widget Function(
+  BuildContext context,
+  Breakpoint breakpoint,
+  Size size,
+  TextScaler textScaler,
+);
 
 class ResponsiveBuilder extends StatelessWidget {
   final ResponsiveWidgetBuilder builder;

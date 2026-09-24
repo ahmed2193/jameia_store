@@ -16,19 +16,25 @@ class ProfileState extends Equatable {
     this.name = '',
     this.email = '',
     this.gender,
+    this.dateOfBirth,
+    this.householdSize,
     this.showErrors = false,
+    this.bonusEarned = 0,
     this.failure,
   });
 
   /// Seeds the draft from a customer already known to the app (instant form,
-  /// refreshed from the server afterwards).
+  /// refreshed from the server afterwards). The sign-up placeholder name (the
+  /// phone number) is never offered as the name.
   factory ProfileState.fromCustomer(AuthCustomerEntity customer) =>
       ProfileState(
         status: ProfileStatus.ready,
         customer: customer,
-        name: customer.anyName,
+        name: customer.givenName,
         email: customer.email,
         gender: customer.gender,
+        dateOfBirth: customer.dateOfBirth,
+        householdSize: customer.householdSize,
       );
 
   final ProfileStatus status;
@@ -36,9 +42,15 @@ class ProfileState extends Equatable {
   final String name;
   final String email;
   final CustomerGender? gender;
+  final DateTime? dateOfBirth;
+  final int? householdSize;
 
   /// Set after a failed submit so the fields show their inline errors.
   final bool showErrors;
+
+  /// Transient, set together with [ProfileStatus.saved]: the points that
+  /// save earned through the profile bonus (0 when none).
+  final int bonusEarned;
 
   /// Transient — cleared on every [copyWith]; the page localizes it.
   final Failure? failure;
@@ -55,6 +67,9 @@ class ProfileState extends Equatable {
 
   bool get showEmailError => showErrors && !isEmailValid;
 
+  /// The account still has no real name: the form asks for one first.
+  bool get needsName => customer?.needsName ?? false;
+
   /// The changes the form holds against the last known customer.
   ProfileUpdate get update {
     final current = customer;
@@ -64,6 +79,8 @@ class ProfileState extends Equatable {
       name: name,
       email: email,
       gender: gender,
+      dateOfBirth: dateOfBirth,
+      householdSize: householdSize,
     );
   }
 
@@ -77,6 +94,9 @@ class ProfileState extends Equatable {
 
   bool get canSave => customer != null && !isSaving && isDirty;
 
+  bool get canAddPerson =>
+      (householdSize ?? 0) < ProfileUpdate.maxHouseholdSize;
+
   ProfileState copyWith({
     ProfileStatus? status,
     AuthCustomerEntity? customer,
@@ -84,7 +104,12 @@ class ProfileState extends Equatable {
     String? email,
     CustomerGender? gender,
     bool clearGender = false,
+    DateTime? dateOfBirth,
+    bool clearDateOfBirth = false,
+    int? householdSize,
+    bool clearHouseholdSize = false,
     bool? showErrors,
+    int? bonusEarned,
     Failure? failure,
   }) => ProfileState(
     status: status ?? this.status,
@@ -92,7 +117,12 @@ class ProfileState extends Equatable {
     name: name ?? this.name,
     email: email ?? this.email,
     gender: clearGender ? null : (gender ?? this.gender),
+    dateOfBirth: clearDateOfBirth ? null : (dateOfBirth ?? this.dateOfBirth),
+    householdSize: clearHouseholdSize
+        ? null
+        : (householdSize ?? this.householdSize),
     showErrors: showErrors ?? this.showErrors,
+    bonusEarned: bonusEarned ?? 0,
     failure: failure,
   );
 
@@ -103,7 +133,10 @@ class ProfileState extends Equatable {
     name,
     email,
     gender,
+    dateOfBirth,
+    householdSize,
     showErrors,
+    bonusEarned,
     failure,
   ];
 }

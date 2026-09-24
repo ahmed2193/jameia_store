@@ -2,8 +2,9 @@
 //
 // Verifies:
 // - lossless round-trips for every entity that flows back into a
-//   JameiaRepository write API / local persistence (address, order, cart line,
-//   product, variant);
+//   JameiaRepository write API / local persistence (order, cart line,
+//   product, variant); the offline address maps one way onto the API-shaped
+//   address entity;
 // - the pure `nameFor(languageCode)` family picks exactly what the DTO
 //   `display*` getters pick under `Intl.defaultLocale` (en / ar / blank-ar);
 // - pricing + dummy-backend getters are verbatim ports of the DTO getters;
@@ -40,9 +41,9 @@ void main() {
   late JameiaCatalog catalog;
 
   setUpAll(() {
-    jameiaData =
-        json.decode(File('assets/data/jameia_data.json').readAsStringSync())
-            as Map<String, dynamic>;
+    jameiaData = json.decode(
+      File('assets/data/jameia_data.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
     catalog = parseJameiaCatalog(
       File('assets/data/jameia/jameia_catalog.json').readAsStringSync(),
     );
@@ -307,33 +308,47 @@ void main() {
       note: 'Call on arrival',
     );
 
-    test('toEntity().toModel() is lossless (every persisted field)', () {
+    // The entity is shaped like the API row (`/v1/account/addresses`); the
+    // offline DTO maps onto it one way, keeping every field the API has.
+    test('toEntity() maps each offline field to its API name', () {
       final entity = full.toEntity();
-      expect(entity.structTypeCode, StructType.office.code);
-      expect(entity.labelTypeCode, LabelType.work.code);
-      expect(entity.dropOffLeaveAtSpot, isTrue);
-
-      final back = entity.toModel();
-      expect(back.toJson(), full.toJson());
-      expect(back.structType, StructType.office);
-      expect(back.labelType, LabelType.work);
-      expect(back.dropOff, DropOff.leaveAtSpot);
+      expect(entity.id, 'addr_1');
+      expect(entity.label, 'Work');
+      expect(entity.labelKind, AddressLabel.work);
+      expect(entity.city, 'Salmiya');
+      expect(entity.block, '7');
+      expect(entity.street, '22');
+      expect(entity.building, 'Tower One');
+      expect(entity.floor, 'Floor 12');
+      expect(entity.apartment, '1204');
+      expect(entity.phone, '+96550001122');
+      expect(entity.notes, 'Call on arrival');
+      expect(entity.location, const GeoPointEntity(lat: 29.3340, lng: 48.0780));
+      expect(entity.isDefault, isTrue);
+      expect(entity.governorateNo, isEmpty);
+      expect(entity.areaId, isEmpty);
     });
 
-    test('seed addresses round-trip + display getters match the DTO', () {
-      final seeds = rows(jameiaData['addresses']).map(JameiaAddress.fromJson);
-      for (final a in [...seeds, full, JameiaAddress.empty]) {
-        final e = a.toEntity();
-        expect(e.toModel().toJson(), a.toJson(), reason: a.id);
-        expect(e.fullText, a.fullText, reason: a.id);
-        expect(e.displayTitle, a.displayTitle, reason: a.id);
-      }
+    test('every seed address maps without throwing and keeps its id', () {
+      final seeds = rows(jameiaData['addresses'])
+          .map(JameiaAddress.fromJson)
+          .toList();
+      final entities = seeds.toEntities();
+      expect(entities.map((e) => e.id), seeds.map((a) => a.id));
+      expect(JameiaAddress.empty.toEntity().id, isEmpty);
     });
 
-    test('entity defaults mirror JameiaAddress.fromJson defaults', () {
-      const slim = JameiaAddressEntity(id: 'x', label: 'Home');
-      final fromJson = JameiaAddress.fromJson(const {'id': 'x'});
-      expect(slim.toModel().toJson(), fromJson.toJson());
+    test('labels map to tags; a custom label stays readable', () {
+      JameiaAddressEntity withLabel(String label) =>
+          JameiaAddressEntity(id: 'x', label: label);
+      expect(withLabel('home').labelKind, AddressLabel.home);
+      expect(withLabel(' WORK ').labelKind, AddressLabel.work);
+      expect(withLabel('Hangout').labelKind, AddressLabel.gathering);
+      expect(withLabel('Other').labelKind, AddressLabel.other);
+      expect(withLabel('Other').customLabel, isNull);
+      expect(withLabel("Mom's house").labelKind, AddressLabel.other);
+      expect(withLabel("Mom's house").customLabel, "Mom's house");
+      expect(withLabel('Home').customLabel, isNull);
     });
   });
 

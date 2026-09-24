@@ -55,6 +55,10 @@ mixin BaseRepositoryMixin {
       ForbiddenException(:final message) => ForbiddenFailure(message),
       RateLimitedException(:final message, :final retryAfter) =>
         RateLimitedFailure(message, retryAfter: retryAfter),
+      NotFoundException(:final message, :final code) => NotFoundFailure(
+        message,
+        code: code,
+      ),
       ServerException(:final message, :final statusCode, :final code) =>
         ServerFailure(message, statusCode: statusCode, code: code),
       RequestTimeoutException(:final message) => TimeoutFailure(message),

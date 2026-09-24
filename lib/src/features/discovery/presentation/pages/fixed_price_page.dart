@@ -1,3 +1,5 @@
+import '../../../cart/presentation/cubit/cart_state.dart';
+
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -18,7 +20,6 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/core_widgets.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
-import '../../../cart/presentation/widgets/quick_add.dart';
 import '../cubit/fixed_price_cubit.dart';
 import '../util/shop_model_bridge.dart';
 
@@ -257,12 +258,16 @@ class _CountdownPillState extends State<_CountdownPill> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(JameiaIcons.time, size: 12, color: AppColors.white),
+            const Icon(
+              JameiaIcons.time,
+              size: 12,
+              color: AppColors.brandForeground,
+            ),
             const SizedBox(width: AppSpacing.s4),
             Text(
               'discovery.ends_in'.tr(namedArgs: {'time': _formatted}),
               style: AppTextStyles.captionMedium.copyWith(
-                color: AppColors.white,
+                color: AppColors.brandForeground,
                 fontWeight: AppTextStyles.bold,
               ),
             ),
@@ -485,7 +490,7 @@ class _FlashCard extends StatelessWidget {
                 product: product,
                 qty: cart.qtyOfProduct(product.id),
                 width: double.infinity,
-                onAdd: () => quickAddToCart(context, product: product),
+                onAdd: () => context.push(Routes.shop, extra: shop.id),
                 onRemove: () => cubit.removeProduct(product.id),
                 onTap: () => context.push(Routes.shop, extra: shop.id),
               );
@@ -549,11 +554,9 @@ class _CartBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CartCubit, CartState>(
       buildWhen: (a, b) =>
-          a.totalQty != b.totalQty ||
-          a.subtotal != b.subtotal ||
-          a.shopId != b.shopId,
+          a.totalQty != b.totalQty || a.subtotalKd != b.subtotalKd,
       builder: (context, cart) {
-        final active = !cart.isEmpty && cart.shopId == shop.id;
+        final active = !cart.isEmpty;
         return SafeArea(
           child: AnimatedContainer(
             duration: MotionGuard.duration(context, AppMotion.medium),
@@ -592,7 +595,7 @@ class _CartBar extends StatelessWidget {
                           child: Text(
                             '${cart.totalQty}',
                             style: AppTextStyles.captionSmall.copyWith(
-                              color: AppColors.black,
+                              color: AppColors.brandForeground,
                               fontWeight: AppTextStyles.bold,
                             ),
                           ),
@@ -604,7 +607,7 @@ class _CartBar extends StatelessWidget {
                 Expanded(
                   child: Text(
                     active
-                        ? Formatters.price(cart.subtotal)
+                        ? Formatters.price(cart.subtotalKd)
                         : 'discovery.add_flash_deals_to_start'.tr(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -631,7 +634,7 @@ class _CartBar extends StatelessWidget {
                       'discovery.checkout'.tr(),
                       style: AppTextStyles.headingSmall.copyWith(
                         color: active
-                            ? AppColors.black
+                            ? AppColors.brandForeground
                             : AppColors.tertiaryText,
                         fontWeight: AppTextStyles.bold,
                       ),

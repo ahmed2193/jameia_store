@@ -49,9 +49,16 @@ class _Visitor extends SimpleAstVisitor<void> {
   final RepositoryImplUsesBaseMixin rule;
   final RuleContext context;
 
+  /// A repository impl implements its own contract; a helper class in the
+  /// same file (a marker exception, a small value type) does not.
+  static bool _implementsRepository(ImplementsClause clause) =>
+      clause.interfaces.any((type) => type.name.lexeme.endsWith('Repository'));
+
   @override
   void visitClassDeclaration(ClassDeclaration node) => guarded(() {
-    if (node.implementsClause == null) return;
+    final implementsClause = node.implementsClause;
+    if (implementsClause == null) return;
+    if (!_implementsRepository(implementsClause)) return;
     if (node.abstractKeyword != null) return;
     final file = FileInfo.of(context);
     if (!file.isInLibSrc || !file.relPath.contains('/data/repositories/')) {

@@ -6,8 +6,11 @@ import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
 import 'package:jameia_mart/src/features/auth/domain/entities/otp_challenge.dart';
 import 'package:jameia_mart/src/features/auth/domain/entities/phone_number.dart';
+import 'package:jameia_mart/src/features/auth/domain/usecases/clear_cached_customer_usecase.dart';
+import 'package:jameia_mart/src/features/auth/domain/usecases/get_cached_customer_usecase.dart';
 import 'package:jameia_mart/src/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:jameia_mart/src/features/auth/domain/usecases/restore_session_usecase.dart';
+import 'package:jameia_mart/src/features/auth/domain/usecases/save_cached_customer_usecase.dart';
 import 'package:jameia_mart/src/features/auth/domain/usecases/send_otp_usecase.dart';
 import 'package:jameia_mart/src/features/auth/domain/usecases/verify_otp_usecase.dart';
 import 'package:jameia_mart/src/features/auth/domain/usecases/watch_session_expiry_usecase.dart';
@@ -73,9 +76,48 @@ class FakeRestoreSessionUseCase implements RestoreSessionUseCase {
 
   Either<Failure, AuthCustomerEntity?> result;
 
+  /// While set, the reply waits for it (a restore still in flight).
+  Completer<void>? gate;
+
+  @override
+  Future<Either<Failure, AuthCustomerEntity?>> call(NoParams params) async {
+    await gate?.future;
+    return result;
+  }
+}
+
+/// The device copy of the customer; nothing saved by default.
+class FakeGetCachedCustomerUseCase implements GetCachedCustomerUseCase {
+  FakeGetCachedCustomerUseCase([this.result = const Right(null)]);
+
+  Either<Failure, AuthCustomerEntity?> result;
+
   @override
   Future<Either<Failure, AuthCustomerEntity?>> call(NoParams params) async =>
       result;
+}
+
+class FakeSaveCachedCustomerUseCase implements SaveCachedCustomerUseCase {
+  FakeSaveCachedCustomerUseCase([this.result = const Right(unit)]);
+
+  Either<Failure, Unit> result;
+  final List<AuthCustomerEntity> saved = [];
+
+  @override
+  Future<Either<Failure, Unit>> call(SaveCachedCustomerParams params) async {
+    saved.add(params.customer);
+    return result;
+  }
+}
+
+class FakeClearCachedCustomerUseCase implements ClearCachedCustomerUseCase {
+  int calls = 0;
+
+  @override
+  Future<Either<Failure, Unit>> call(NoParams params) async {
+    calls++;
+    return const Right(unit);
+  }
 }
 
 class FakeWatchSessionExpiryUseCase implements WatchSessionExpiryUseCase {

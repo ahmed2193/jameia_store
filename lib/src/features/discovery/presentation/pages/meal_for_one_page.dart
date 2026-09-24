@@ -143,7 +143,7 @@ class _BannerHeader extends StatelessWidget {
       pinned: true,
       expandedHeight: 168,
       backgroundColor: AppColors.primary,
-      foregroundColor: AppColors.primaryText,
+      foregroundColor: AppColors.brandForeground,
       surfaceTintColor: AppColors.primary,
       elevation: 0,
       leading: IconButton(
@@ -153,6 +153,7 @@ class _BannerHeader extends StatelessWidget {
       title: Text(
         title,
         style: AppTextStyles.headingLarge.copyWith(
+          color: AppColors.brandForeground,
           fontWeight: AppTextStyles.bold,
         ),
       ),
@@ -342,7 +343,9 @@ class _FilterChip extends StatelessWidget {
             label,
             style: AppTextStyles.captionLarge.copyWith(
               fontWeight: selected ? AppTextStyles.bold : AppTextStyles.regular,
-              color: AppColors.primaryText,
+              color: selected
+                  ? AppColors.brandForeground
+                  : AppColors.primaryText,
             ),
           ),
         ),

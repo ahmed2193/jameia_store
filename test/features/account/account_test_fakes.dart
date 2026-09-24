@@ -4,6 +4,11 @@ import 'package:dartz/dartz.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
+import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
+import 'package:jameia_mart/src/features/account/domain/entities/ledger_entry.dart';
+import 'package:jameia_mart/src/features/account/domain/entities/loyalty_program.dart';
+import 'package:jameia_mart/src/features/account/domain/usecases/get_ledger_usecase.dart';
+import 'package:jameia_mart/src/features/account/domain/usecases/get_loyalty_program_usecase.dart';
 import 'package:jameia_mart/src/features/account/domain/usecases/get_profile_usecase.dart';
 import 'package:jameia_mart/src/features/account/domain/usecases/update_profile_usecase.dart';
 
@@ -50,6 +55,35 @@ class FakeUpdateProfileUseCase implements UpdateProfileUseCase {
   ) async {
     calls.add(params);
     await gate?.future;
+    return result;
+  }
+}
+
+/// Answers every page request through [handler] (hold one on a gate there to
+/// build an in-flight race); records the params.
+class FakeGetLedgerUseCase<T extends LedgerEntry>
+    implements GetLedgerUseCase<T> {
+  FakeGetLedgerUseCase(this.handler);
+
+  Future<Either<Failure, Ledger<T>>> Function(GetLedgerParams params) handler;
+  final List<GetLedgerParams> calls = [];
+
+  @override
+  Future<Either<Failure, Ledger<T>>> call(GetLedgerParams params) {
+    calls.add(params);
+    return handler(params);
+  }
+}
+
+class FakeGetLoyaltyProgramUseCase implements GetLoyaltyProgramUseCase {
+  FakeGetLoyaltyProgramUseCase(this.result);
+
+  Either<Failure, LoyaltyProgram> result;
+  int calls = 0;
+
+  @override
+  Future<Either<Failure, LoyaltyProgram>> call(NoParams params) async {
+    calls++;
     return result;
   }
 }

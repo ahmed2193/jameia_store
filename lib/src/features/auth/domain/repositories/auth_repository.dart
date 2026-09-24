@@ -34,4 +34,15 @@ abstract class AuthRepository {
 
   /// Fires when the network layer gave up refreshing an expired session.
   Stream<void> watchSessionExpiry();
+
+  /// The device copy of the signed-in customer — `Right(null)` when none is
+  /// saved, and also when no session is stored: a copy without a session is
+  /// never shown.
+  Future<Either<Failure, AuthCustomerEntity?>> getCachedCustomer();
+
+  /// Replaces the device copy with [customer].
+  Future<Either<Failure, Unit>> saveCachedCustomer(AuthCustomerEntity customer);
+
+  /// Removes the device copy (the session ended).
+  Future<Either<Failure, Unit>> clearCachedCustomer();
 }

@@ -25,6 +25,15 @@ abstract final class AppEnv {
   /// masked by default. Debug builds only — release carries no trace.
   static const bool apiLogSecrets = bool.fromEnvironment('API_LOG_SECRETS');
 
+  /// `--dart-define=LIVE_NOTIFICATIONS=true` opens the live notifications
+  /// stream (`GET /v1/notifications/sse`). Off by default: the proxy in front
+  /// of the live host closes an idle stream after about 60 s (the backend
+  /// sends no heartbeat), so the app reconnected every minute. Without it the
+  /// unread badge loads on sign-in and the inbox loads on open / refresh.
+  static const bool liveNotifications = bool.fromEnvironment(
+    'LIVE_NOTIFICATIONS',
+  );
+
   /// `true` when the base URL came from `--dart-define`. A release built
   /// without one would silently point at localhost — assert on this in CI.
   static const bool hasExplicitApiBaseUrl = bool.hasEnvironment('API_BASE_URL');

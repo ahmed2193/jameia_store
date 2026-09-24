@@ -398,7 +398,11 @@ class _RadioDot extends StatelessWidget {
       child: PopScale(
         popKey: selected,
         child: selected
-            ? const Icon(JameiaIcons.confirm, size: 14, color: AppColors.black)
+            ? const Icon(
+                JameiaIcons.confirm,
+                size: 14,
+                color: AppColors.brandForeground,
+              )
             : const SizedBox.shrink(),
       ),
     );

@@ -1,105 +1,75 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../../core/design/jameia_icons.dart';
-import '../../../../../config/theme/app_colors.dart';
+import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
-import '../../../domain/entities/order.dart';
-import 'chat_icon_button.dart';
-import 'order_pill_button.dart';
-import 'review_stars.dart';
+import '../../../../../core/domain/entities/order_entity.dart';
+import '../../../../../core/navigation/navigation.dart';
+import '../../../../../core/widgets/app_outline_button.dart';
+import '../../../../cart/presentation/cubit/cart_cubit.dart';
+import '../../../../cart/presentation/cubit/cart_state.dart';
+import '../../../domain/entities/cancel_order_request.dart';
+import '../../cubit/orders_cubit.dart';
+import 'cancel_order_sheet.dart';
 
+/// What the customer can do with an order from the list: cancel (while the
+/// API allows), rate a delivered order, reorder any past order.
 class OrderActions extends StatelessWidget {
-  const OrderActions({
-    super.key,
-    required this.order,
-    required this.onTrack,
-    required this.onChat,
-    required this.onCancelOrder,
-    required this.onReview,
-    required this.onReorder,
-    required this.onRefundStatus,
-  });
+  const OrderActions({super.key, required this.order});
 
   final OrderEntity order;
-  final VoidCallback onTrack;
-  final VoidCallback onChat;
-  final VoidCallback onCancelOrder;
-  final VoidCallback onReview;
-  final VoidCallback onReorder;
-  final VoidCallback onRefundStatus;
+
+  Future<void> _cancel(BuildContext context) async {
+    final cubit = context.read<OrdersCubit>();
+    final request = await showJameiaBottomSheet<CancelOrderRequest>(
+      context,
+      isScrollControlled: true,
+      builder: (_) => CancelOrderSheet(orderId: order.id),
+    );
+    if (request != null) await cubit.cancel(request);
+  }
+
+  Future<void> _reorder(BuildContext context) async {
+    final added = await context.read<CartCubit>().addItems(order.reorderItems);
+    if (added && context.mounted) {
+      showJameiaSnackBar(context, 'orders.reorder_done'.tr());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (order.isActive) {
-      // Bundle: active card row — [chat-icon][cancel-text]···[Track order pill]
-      // chat icon = 40×40dp rounded-square (r13), cancel = text red, track = filled yellow pill
-      return Row(
-        children: [
-          // ── Rider IM chat icon (40×40dp, #F0F1F5 bg, r13) ──────────────
-          ChatIconButton(onPressed: onChat),
-          const SizedBox(width: AppSpacing.s8),
-          // ── Cancel order (Jameia-Regular 14dp error red, no bg) ──────────
-          GestureDetector(
-            onTap: onCancelOrder,
-            child: Text(
-              'orders.cancel_order'.tr(),
-              style: AppTextStyles.headingSmall.copyWith(
-                color: AppColors.error,
-                fontWeight: AppTextStyles.regular,
-              ),
-            ),
-          ),
-          const Spacer(),
-          // ── Track order (yellow pill, 48dp height, 24dp radius) ─────────
-          OrderPillButton(
-            label: 'orders.track_order'.tr(),
-            icon: JameiaIcons.delivery,
-            filled: true,
-            onPressed: onTrack,
-          ),
-        ],
-      );
-    }
-    // Cancelled → refund lifecycle jump (Jameia order_list → refund_detail)
-    if (order.status == 'cancelled') {
-      return Align(
-        alignment: AlignmentDirectional.centerEnd,
-        child: OrderPillButton(
-          label: 'orders.refund_status'.tr(),
-          icon: JameiaIcons.refund,
-          filled: true,
-          onPressed: onRefundStatus,
+    final cancelling = context.select<OrdersCubit, bool>(
+      (cubit) => cubit.state.isCancelling(order.id),
+    );
+    final reordering = context.select<CartCubit, bool>(
+      (cubit) => cubit.state.busyAction == CartAction.addItems,
+    );
+    final buttons = <Widget>[
+      if (order.canCancel)
+        AppOutlineButton(
+          label: 'orders.cancel_order'.tr(),
+          onPressed: cancelling ? null : () => _cancel(context),
         ),
-      );
-    }
-    // Completed → tappable review-star row + [Review outline] + [Reorder filled]
-    // Bundle: completed cards surface a `order_evaluate_star*` rating row that
-    // routes into order_review on tap. We render 5 stars (JameiaIcons.star) and
-    // keep the Review pill as the explicit CTA fallback.
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      if (order.canReview)
+        AppOutlineButton(
+          label: 'orders.review'.tr(),
+          onPressed: () => context.push(Routes.orderReview, extra: order.id),
+        ),
+      if (order.isTerminal)
+        AppOutlineButton(
+          label: 'orders.reorder'.tr(),
+          onPressed: reordering ? null : () => _reorder(context),
+        ),
+    ];
+    if (buttons.isEmpty) return const SizedBox.shrink();
+    return Row(
       children: [
-        ReviewStars(onTap: onReview),
-        const SizedBox(height: AppSpacing.s12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            OrderPillButton(
-              label: 'orders.review'.tr(),
-              icon: JameiaIcons.star,
-              onPressed: onReview,
-            ),
-            const SizedBox(width: AppSpacing.s8),
-            OrderPillButton(
-              label: 'orders.reorder'.tr(),
-              icon: JameiaIcons.orderAgain,
-              filled: true,
-              onPressed: onReorder,
-            ),
-          ],
-        ),
+        for (var i = 0; i < buttons.length; i++) ...[
+          if (i > 0) const SizedBox(width: AppSpacing.s8),
+          Expanded(child: buttons[i]),
+        ],
       ],
     );
   }

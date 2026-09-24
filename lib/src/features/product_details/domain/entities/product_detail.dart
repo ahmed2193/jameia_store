@@ -1,154 +1,155 @@
 import 'package:equatable/equatable.dart';
 
-// TODO(P2.9-boundary): the core [Product] catalogue DTO is carried here rather
-// than a framework-free `ProductEntity` because every product in this feature
-// is consumed by ANOTHER feature's API — `cart.add` / `quickAddToCart` /
-// `showProductSku` all require the core `Product`/`ProductVariant`, and
-// home/shop/search push `ProductDetailPage(product: <core Product>)`. Minting
-// an entity would force a DTO round-trip at each of those cross-feature call
-// sites, which the boundary rule forbids. The framework coupling that CAN be
-// removed (the locale-live display getters) has been moved to
-// `presentation/util/product_detail_display.dart`.
-import '../../../../core/data/models/models.dart';
+import '../../../../core/domain/entities/brand_entity.dart';
+import '../../../../core/domain/entities/catalog_category_entity.dart';
+import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/domain/entities/catalog_variant_entity.dart';
+import '../../../../core/domain/entities/recipe_summary_entity.dart';
 
-/// The fully-resolved product-detail aggregate (KeeMart PDP). Built once by the
-/// data source and carried through the use case into the cubit; the ordered
-/// sections are rendered by the screen. Reuses the core [Product] catalogue type
-/// for the hero + similar/explore grids rather than re-declaring it.
+/// One product of a bundle: what it is, how many, and what it costs inside the
+/// bundle.
+class ProductBundleItem extends Equatable {
+  const ProductBundleItem({
+    required this.product,
+    this.quantity = 1,
+    this.unitPriceFils = 0,
+  });
+
+  final CatalogProductEntity product;
+  final int quantity;
+  final int unitPriceFils;
+
+  double get unitPriceKd => unitPriceFils / CatalogProductEntity.filsPerDinar;
+
+  @override
+  List<Object?> get props => [product, quantity, unitPriceFils];
+}
+
+/// The product page as `GET /v1/products/:slug` sends it. Owns the buying
+/// rules of the page, so the cubit and the widgets only ask.
 class ProductDetail extends Equatable {
   const ProductDetail({
     required this.product,
-    required this.gallery,
-    required this.kcal,
-    required this.storage,
-    required this.weight,
-    required this.prepMinutes,
-    required this.brand,
-    required this.deals,
-    required this.similar,
-    required this.recipes,
-    required this.exploreMore,
+    this.description = '',
+    this.galleryUrls = const <String>[],
+    this.brand,
+    this.category,
+    this.variants = const <CatalogVariantEntity>[],
+    this.bundleItems = const <ProductBundleItem>[],
+    this.related = const <CatalogProductEntity>[],
+    this.recipes = const <RecipeSummaryEntity>[],
   });
 
-  /// Hero product (seeded with a discount / gallery / storage for the reference
-  /// look). Drives the title, price, sticky bar and add-to-cart.
-  final Product product;
+  final CatalogProductEntity product;
+  final String description;
+  final List<String> galleryUrls;
+  final BrandEntity? brand;
+  final CatalogCategoryEntity? category;
 
-  /// Gallery image URLs (≥ 1). When > 1 the pager shows an "Image i/n" counter.
-  final List<String> gallery;
+  /// Every option of a variant product, available or not (an unavailable one
+  /// is shown but cannot be chosen).
+  final List<CatalogVariantEntity> variants;
+  final List<ProductBundleItem> bundleItems;
+  final List<CatalogProductEntity> related;
+  final List<RecipeSummaryEntity> recipes;
 
-  /// Calories for the nutrition panel (0 → the Nutrition segment is hidden).
-  final int kcal;
+  /// The pager always has at least one page: the gallery, else the card image.
+  List<String> get gallery => galleryUrls.isNotEmpty
+      ? galleryUrls
+      : <String>[if (product.image.isNotEmpty) product.image];
 
-  /// Storage spec value shown in "Product details" (e.g. "Frozen"). '' → hidden.
-  final String storage;
+  /// A variant product is bought through one of its [variants].
+  bool get needsVariant => product.isVariant && variants.isNotEmpty;
 
-  /// Pack size shown in "Product details" (e.g. "400 g"). '' → hidden.
-  final String weight;
+  /// Pre-selected option: the first one that can be bought.
+  CatalogVariantEntity? get defaultVariant {
+    for (final variant in variants) {
+      if (variant.isAvailable) return variant;
+    }
+    return null;
+  }
 
-  /// Preparation minutes for the delivery ETA row.
-  final int prepMinutes;
+  CatalogVariantEntity? variantById(String? id) {
+    if (id == null) return null;
+    for (final variant in variants) {
+      if (variant.id == id) return variant;
+    }
+    return null;
+  }
 
-  /// Brand-floor link ("Explore all products").
-  final BrandInfo brand;
+  /// Whether [variant] (or the product itself) can go into the cart.
+  bool canAdd(CatalogVariantEntity? variant) => needsVariant
+      ? variant != null && variant.isAvailable
+      : product.inStock && product.hasListPrice;
 
-  /// "Super deals" coupon cards.
-  final List<DealVM> deals;
+  /// How many units can still be bought.
+  int stockOf(CatalogVariantEntity? variant) =>
+      needsVariant ? variant?.stock ?? 0 : product.stock;
 
-  /// "Similar Products" grid.
-  final List<Product> similar;
+  int unitPriceFils({
+    required CatalogVariantEntity? variant,
+    required bool pro,
+  }) => needsVariant
+      ? variant?.priceFilsFor(pro: pro) ?? 0
+      : product.priceFilsFor(pro: pro);
 
-  /// "Recommended Recipes" rail.
-  final List<RecipeVM> recipes;
+  /// What [quantity] units of the selection cost, in KD (the buy bar's total).
+  double lineTotalKd({
+    required CatalogVariantEntity? variant,
+    required bool pro,
+    required int quantity,
+  }) =>
+      unitPriceFils(variant: variant, pro: pro) *
+      quantity /
+      CatalogProductEntity.filsPerDinar;
 
-  /// "Explore More" grid.
-  final List<Product> exploreMore;
+  /// The struck price valid at [now], or `null`.
+  int? compareAtFils({
+    required CatalogVariantEntity? variant,
+    required DateTime now,
+  }) => needsVariant
+      ? variant?.compareAtFilsAt(now)
+      : (product.hasDiscount ? product.compareAtFils : null);
 
-  bool get hasNutrition => kcal > 0;
+  /// Whole percent off the struck price valid at [now]; `0` without one.
+  int discountPercent({
+    required CatalogVariantEntity? variant,
+    required DateTime now,
+  }) => needsVariant
+      ? variant?.discountPercentAt(now) ?? 0
+      : product.discountPercent;
+
+  /// The regular price when [pro] pays less than it (the "instead of" hint).
+  int? regularPriceFilsWhenPro({
+    required CatalogVariantEntity? variant,
+    required bool pro,
+  }) {
+    if (!pro) return null;
+    final hasProPrice = needsVariant
+        ? variant?.hasProPrice ?? false
+        : product.hasProPrice;
+    if (!hasProPrice) return null;
+    return needsVariant ? variant!.priceFils : product.priceFils;
+  }
+
+  /// The Pro price a non-member could get, or `null`.
+  int? proPriceFilsHint({required CatalogVariantEntity? variant}) {
+    if (needsVariant) {
+      return (variant?.hasProPrice ?? false) ? variant!.proPriceFils : null;
+    }
+    return product.hasProPrice ? product.proPriceFils : null;
+  }
 
   @override
   List<Object?> get props => [
-    product.id,
-    gallery,
-    kcal,
-    storage,
-    weight,
-    prepMinutes,
+    product,
+    description,
+    galleryUrls,
     brand,
-    deals,
-    similar,
+    category,
+    variants,
+    bundleItems,
+    related,
     recipes,
-    exploreMore,
   ];
-}
-
-/// Brand-row link data (logo tile + name + "Explore all products" → category).
-class BrandInfo extends Equatable {
-  const BrandInfo({
-    required this.name,
-    required this.logo,
-    required this.categoryId,
-  });
-
-  final String name;
-  final String logo;
-  final String categoryId;
-
-  @override
-  List<Object?> get props => [name, logo, categoryId];
-}
-
-/// A "Super deals" coupon. Raw EN/AR copy (locale-resolved live via the
-/// `DealDisplay` extension in `presentation/util/product_detail_display.dart`) +
-/// spend threshold + a live-countdown deadline. [percent] drives the bold
-/// "{n}% off" lead when the coupon has no explicit title.
-class DealVM extends Equatable {
-  const DealVM({
-    required this.percent,
-    required this.title,
-    required this.titleAr,
-    required this.subtitle,
-    required this.subtitleAr,
-    required this.minSpend,
-    required this.deadline,
-  });
-
-  final int percent;
-  final String title;
-  final String titleAr;
-  final String subtitle;
-  final String subtitleAr;
-  final double minSpend;
-  final DateTime deadline;
-
-  @override
-  List<Object?> get props => [
-    percent,
-    title,
-    titleAr,
-    subtitle,
-    subtitleAr,
-    minSpend,
-    deadline,
-  ];
-}
-
-/// A "Recommended Recipes" card (image + calories + title + cook time).
-class RecipeVM extends Equatable {
-  const RecipeVM({
-    required this.image,
-    required this.title,
-    required this.titleAr,
-    required this.kcal,
-    required this.minutes,
-  });
-
-  final String image;
-  final String title;
-  final String titleAr;
-  final int kcal;
-  final int minutes;
-
-  @override
-  List<Object?> get props => [image, title, titleAr, kcal, minutes];
 }

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
 import '../motion/motion.dart';
 import '../motion/motion_widgets.dart';
 import '../../config/theme/app_colors.dart';
@@ -19,12 +20,17 @@ class QtyStepper extends StatelessWidget {
     required this.onAdd,
     required this.onRemove,
     this.size = 28,
+    this.canAdd = true,
   });
 
   final int qty;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
   final double size;
+
+  /// `false` when the line is already at everything the branch has left:
+  /// the "+" is dimmed instead of silently ignoring the tap.
+  final bool canAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +53,7 @@ class QtyStepper extends StatelessWidget {
                 size: size,
                 label: 'home.add_to_cart'.tr(),
                 onTap: onAdd,
+                enabled: canAdd,
               )
             : Row(
                 key: const ValueKey<String>('stepper'),
@@ -82,6 +89,7 @@ class QtyStepper extends StatelessWidget {
                     size: size,
                     label: 'home.increase_quantity'.tr(),
                     onTap: onAdd,
+                    enabled: canAdd,
                   ),
                 ],
               ),

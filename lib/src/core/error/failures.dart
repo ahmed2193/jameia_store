@@ -38,6 +38,16 @@ class ForbiddenFailure extends Failure {
   const ForbiddenFailure([super.message = 'Forbidden']);
 }
 
+/// The route answered `404` (`RESOURCE_NOT_FOUND`): the thing is gone, so a
+/// screen shows its "not found" state instead of an error + retry. Kept as a
+/// type so no feature has to compare `statusCode` to a literal.
+class NotFoundFailure extends ServerFailure {
+  const NotFoundFailure(super.message, {super.code})
+    : super(statusCode: notFoundStatus);
+
+  static const int notFoundStatus = 404;
+}
+
 /// Rate limited after the automatic backoff retries were exhausted.
 class RateLimitedFailure extends Failure {
   const RateLimitedFailure(super.message, {this.retryAfter});
@@ -62,6 +72,12 @@ class CacheFailure extends Failure {
 
 class ParsingFailure extends Failure {
   const ParsingFailure([super.message = 'Could not parse data']);
+}
+
+/// A use case rejected the input before any request went out (a coupon code
+/// outside 2..32 characters, zero loyalty points, a note over the limit).
+class ValidationFailure extends Failure {
+  const ValidationFailure([super.message = 'Invalid input']);
 }
 
 class UnexpectedFailure extends Failure {

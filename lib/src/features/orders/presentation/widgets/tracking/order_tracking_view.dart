@@ -1,13 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/widgets/brand_moment.dart';
-import '../../../../../core/widgets/state_views.dart';
+import '../../../../../core/navigation/navigation.dart';
+import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/widgets/app_loader.dart';
+import '../../../../../core/widgets/error_view.dart';
+import '../../../../../core/widgets/signed_out_view.dart';
 import '../../cubit/order_tracking_cubit.dart';
-import 'tracking_loaded_view.dart';
+import '../../cubit/order_tracking_state.dart';
+import 'tracking_body.dart';
 
+/// Owns the visibility of the tracking page: it subscribes to the router's
+/// [routeObserver] (covered by another page) and to the app lifecycle
+/// (backgrounded), and tells the cubit when to poll.
 class OrderTrackingView extends StatefulWidget {
   const OrderTrackingView({super.key});
 
@@ -15,62 +24,110 @@ class OrderTrackingView extends StatefulWidget {
   State<OrderTrackingView> createState() => _OrderTrackingViewState();
 }
 
-class _OrderTrackingViewState extends State<OrderTrackingView> {
-  // Drives the one-shot "delivered" brand moment overlay.
-  bool _showDeliveredMoment = false;
+class _OrderTrackingViewState extends State<OrderTrackingView>
+    with RouteAware, WidgetsBindingObserver {
+  bool _onTop = true;
+  bool _foreground = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is ModalRoute<void>) routeObserver.subscribe(this, route);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didPushNext() => _setVisible(onTop: false);
+
+  @override
+  void didPopNext() => _setVisible(onTop: true);
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) =>
+      _setVisible(foreground: state == AppLifecycleState.resumed);
+
+  void _setVisible({bool? onTop, bool? foreground}) {
+    _onTop = onTop ?? _onTop;
+    _foreground = foreground ?? _foreground;
+    if (!mounted) return;
+    context.read<OrderTrackingCubit>().setVisible(_onTop && _foreground);
+  }
+
+  void _onCancelled(BuildContext context, OrderTrackingState state) =>
+      showJameiaSnackBar(context, 'orders.cancelled_done'.tr());
+
+  void _onFailure(BuildContext context, OrderTrackingState state) {
+    final failure = state.failure;
+    if (failure == null || state.loadFailure != null) return;
+    if (state.isSignedOut) {
+      context.go(Routes.login);
+      return;
+    }
+    showJameiaSnackBar(context, failure.localizedMessage);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.mediumBackground,
-      // Celebrate the natural confirm point: when the live simulation reaches
-      // "Delivered" (statusStep 5) we flash the Jameia pay-success tick once.
-      body: BlocListener<OrderTrackingCubit, OrderTrackingState>(
-        listenWhen: (prev, next) =>
-            prev.status == OrderTrackingStatus.loaded &&
-            next.status == OrderTrackingStatus.loaded &&
-            (prev.order?.statusStep ?? 0) < 5 &&
-            (next.order?.statusStep ?? 0) >= 5,
-        listener: (context, state) =>
-            setState(() => _showDeliveredMoment = true),
-        child: Stack(
-          children: [
-            BlocBuilder<OrderTrackingCubit, OrderTrackingState>(
-              builder: (context, state) {
-                return switch (state.status) {
-                  OrderTrackingStatus.initial ||
-                  OrderTrackingStatus.loading => const AppLoader(),
-                  OrderTrackingStatus.error => ErrorView(
-                    message: 'map.order_not_found'.tr(),
-                    onRetry: () => Navigator.maybePop(context),
-                  ),
-                  OrderTrackingStatus.loaded => TrackingLoadedView(
-                    order: state.order!,
-                    address: state.address!,
-                  ),
-                };
-              },
-            ),
-            if (_showDeliveredMoment)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: ColoredBox(
-                    color: AppColors.black.withValues(alpha: 0.04),
-                    child: Center(
-                      child: BrandMoment(
-                        kind: BrandMomentKind.paySuccess,
-                        size: 96,
-                        onComplete: () {
-                          if (mounted) {
-                            setState(() => _showDeliveredMoment = false);
-                          }
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<OrderTrackingCubit, OrderTrackingState>(
+          listenWhen: (previous, current) =>
+              !previous.cancelled && current.cancelled,
+          listener: _onCancelled,
+        ),
+        BlocListener<OrderTrackingCubit, OrderTrackingState>(
+          listenWhen: (previous, current) =>
+              current.failure != null && previous != current,
+          listener: _onFailure,
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: AppColors.mediumBackground,
+        appBar: AppBar(
+          title: Text('orders.tracking_title'.tr()),
+          backgroundColor: AppColors.white,
+          surfaceTintColor: AppColors.white,
+          elevation: 0,
+        ),
+        body: BlocBuilder<OrderTrackingCubit, OrderTrackingState>(
+          buildWhen: (previous, current) =>
+              previous.status != current.status ||
+              previous.order != current.order ||
+              previous.loadFailure != current.loadFailure,
+          builder: (context, state) {
+            final order = state.order;
+            if (order != null) return TrackingBody(order: order);
+            switch (state.status) {
+              case OrderTrackingStatus.initial:
+              case OrderTrackingStatus.loading:
+                return const AppLoader();
+              case OrderTrackingStatus.error:
+                if (state.isSignedOut) {
+                  return SignedOutView(message: 'orders.sign_in_required'.tr());
+                }
+                return ErrorView(
+                  message: state.isNotFound
+                      ? 'orders.not_found'.tr()
+                      : state.loadFailure?.localizedMessage,
+                  onRetry: context.read<OrderTrackingCubit>().refresh,
+                );
+              case OrderTrackingStatus.loaded:
+                return const AppLoader();
+            }
+          },
         ),
       ),
     );

@@ -15,6 +15,7 @@ extension FailureMessage on Failure {
     RateLimitedFailure(:final message) => message,
     NetworkFailure() => 'core.no_internet'.tr(),
     TimeoutFailure() => 'core.request_timeout'.tr(),
+    ValidationFailure() => 'core.invalid_input'.tr(),
     _ => 'core.something_went_wrong'.tr(),
   };
 }

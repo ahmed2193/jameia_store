@@ -12,8 +12,9 @@ import '../../domain/usecases/mark_notification_read_usecase.dart';
 import '../../domain/usecases/watch_live_notifications_usecase.dart';
 import 'notifications_state.dart';
 
-/// Page-scoped inbox cubit: paged loading, optimistic read marks and a live
-/// (SSE) subscription that prepends new notifications while the page is open.
+/// Page-scoped inbox cubit: paged loading, optimistic read marks and — when
+/// the build has a live source (`AppEnv.liveNotifications`) — a live (SSE)
+/// subscription that prepends new notifications while the page is open.
 /// All list arithmetic lives in `NotificationsFeed`; this only sequences calls.
 class NotificationsCubit extends Cubit<NotificationsState>
     with SafeCubitMixin<NotificationsState> {
@@ -21,7 +22,7 @@ class NotificationsCubit extends Cubit<NotificationsState>
     required this._getNotifications,
     required this._markRead,
     required this._markAllRead,
-    required this._watchLive,
+    this._watchLive,
   }) : super(const NotificationsState());
 
   static const int pageSize = 20;
@@ -31,7 +32,7 @@ class NotificationsCubit extends Cubit<NotificationsState>
   final GetNotificationsUseCase _getNotifications;
   final MarkNotificationReadUseCase _markRead;
   final MarkAllNotificationsReadUseCase _markAllRead;
-  final WatchLiveNotificationsUseCase _watchLive;
+  final WatchLiveNotificationsUseCase? _watchLive;
 
   StreamSubscription<NotificationEntity>? _live;
   bool _markingAll = false;
@@ -149,8 +150,9 @@ class NotificationsCubit extends Cubit<NotificationsState>
   }
 
   void _listenLive() {
-    if (_live != null) return;
-    _live = _watchLive(const NoParams()).listen(
+    final watchLive = _watchLive;
+    if (_live != null || watchLive == null) return;
+    _live = watchLive(const NoParams()).listen(
       (notification) =>
           safeEmit(state.copyWith(feed: state.feed.prepend(notification))),
       onError: (Object error) {

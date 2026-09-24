@@ -109,13 +109,14 @@ class WalletEntryModel {
   });
 
   static const String idKey = '_id';
+  static const String altIdKey = 'id';
   static const String typeKey = 'type';
   static const String amountKey = 'amount';
   static const String noteKey = 'note';
   static const String createdAtKey = 'createdAt';
 
   factory WalletEntryModel.fromJson(Map<String, dynamic> json) {
-    final id = json[idKey];
+    final id = json[idKey] ?? json[altIdKey]; // `_id` on the wire; tolerate `id`
     if (id is! String || id.isEmpty) {
       throw const ParsingException('wallet entry: missing id');
     }
@@ -268,6 +269,9 @@ class WalletRemoteDataSourceImpl implements WalletRemoteDataSource {
   }
 }
 ```
+
+`ApiPayload.asMap(results, label)`: the label only names the route in the `ParsingException`
+message — the `EndPoints` constant or a short name, both are used in the repo.
 
 `ApiConsumer` surface: `get / post / put / patch / delete(path, {body, queryParameters, headers})`
 → `Future<dynamic>` = the decoded **`results`**. A mutation that returns nothing useful:
@@ -477,11 +481,22 @@ class WalletPage extends StatelessWidget {
 }
 ```
 
-- Body switches on state: loading → loader; `isSignedOut` → sign-in prompt (button →
-  `context.push(Routes.login)`); error → `state.failure?.localizedMessage` + retry;
-  `isEmpty` → empty view; loaded → list.
+- Body switches on state with the shared state views from `core/widgets` (never hand-rolled):
+  loading → `AppLoader`; `isSignedOut` → `EmptyStateView(message:, icon:, actionLabel:
+  'auth.log_in_or_sign_up'.tr(), onAction: () => context.go(Routes.login))`; error →
+  `ErrorView(message: state.failure?.localizedMessage, onRetry: cubit.load)`; `isEmpty` →
+  `EmptyStateView` inside `BrandedRefresh`; loaded → list inside `BrandedRefresh`.
+  Copy `features/notifications/presentation/widgets/notifications_body.dart`.
+  "Offline" is not a separate state: it is the error view showing `core.no_internet`.
+- **Login is reached with `context.go`, never `push`.** Every auth transition in the app
+  replaces the stack (`go(Routes.login)`, then `go(Routes.shell)` after OTP, expiry in
+  `app.dart`), so pages and their cubits are rebuilt for the new session. A pushed login would
+  leave the old page — and its cubit holding the signed-out state or the previous customer's
+  data — alive underneath.
 - One-shot failures (refresh, load-more, a mutation) → `BlocListener` with `listenWhen` on
-  `failure != null` → snack bar with `failure.localizedMessage`.
+  `failure != null` → `showJameiaSnackBar(context, failure.localizedMessage)`
+  (`core/navigation/jameia_snack_bar.dart` — the one way to show a transient message; no raw
+  `ScaffoldMessenger`).
 - Lists: `ListView.builder`, rows keyed by id + `findChildIndexCallback`, load-more footer that
   shows a loader unless `loadMoreFailed` (then a retry), pull-to-refresh → `cubit.refresh()`.
 - Money text: `Formatters.price(entity.amountKd)` (`core/utils/formatters.dart`), never string

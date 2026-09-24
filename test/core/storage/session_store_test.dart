@@ -127,9 +127,8 @@ void main() {
         // Persisted, not just memoized: a fresh store over the same keychain
         // reads it back (cold start).
         expect(
-          await SecureSessionStore(
-            const FlutterSecureStorage(),
-          ).readAccessTokenExpiry(),
+          await SecureSessionStore(const FlutterSecureStorage())
+              .readAccessTokenExpiry(),
           fixedNow.add(const Duration(seconds: 900)),
         );
 

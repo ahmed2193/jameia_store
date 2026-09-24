@@ -13,6 +13,7 @@ class QtyStepperRoundButton extends StatelessWidget {
     required this.size,
     required this.label,
     required this.onTap,
+    this.enabled = true,
   });
 
   final IconData icon;
@@ -22,24 +23,34 @@ class QtyStepperRoundButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
+  /// A disabled button is dimmed and takes no tap, so a control that would
+  /// do nothing (a line already at its maximum) does not look live.
+  final bool enabled;
+
+  static const double _disabledOpacity = 0.4;
+
   @override
   Widget build(BuildContext context) {
+    final button = Material(
+      color: bg,
+      shape: const CircleBorder(),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: Icon(icon, size: size * 0.62, color: fg),
+      ),
+    );
     return Semantics(
       button: true,
+      enabled: enabled,
       label: label,
-      child: PressScale(
-        onTap: onTap,
-        haptic: HapticKind.selection,
-        child: Material(
-          color: bg,
-          shape: const CircleBorder(),
-          child: SizedBox(
-            width: size,
-            height: size,
-            child: Icon(icon, size: size * 0.62, color: fg),
-          ),
-        ),
-      ),
+      child: enabled
+          ? PressScale(
+              onTap: onTap,
+              haptic: HapticKind.selection,
+              child: button,
+            )
+          : Opacity(opacity: _disabledOpacity, child: button),
     );
   }
 }

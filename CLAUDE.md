@@ -21,8 +21,9 @@ before touching anything that talks to the jm3eia backend** (§3.1, §3.2):
   the offline catalogue. `references/layer-templates.md` (copyable code per layer),
   `references/patterns.md` (pagination, partial `PATCH`, optimistic update, race guards,
   signed-out state …), `references/backend-contract.md` (envelope, codes, conventions,
-  **which features are on the API**), `scripts/openapi_route.js` (one route's params / body /
-  `results` from the live spec).
+  **which features are on the API**), `references/migrating-offline-feature.md` (rules for a
+  legacy target: scope, entity choice, id-space trap, mutations), `scripts/openapi_route.js`
+  (one route's params / body / `results` from the live spec).
 - `jameia-api-session` — tokens, automatic Bearer + refresh, expiry, guest ids, sign-in state.
 - `jameia-api-streaming` — `text/event-stream` routes through `EventStreamClient`.
 - `jameia-api-testing` — the network fakes and the per-layer test recipe.
@@ -94,6 +95,7 @@ lib/
     ├── app.dart                  # root widget: MaterialApp.router + app-global BlocProviders
     ├── config/
     │   ├── di/service_locator.dart          # GetIt `sl` + setupServiceLocator() (composition root)
+    │   ├── di/app_global_cubits.dart        # AppGlobalCubits.* — factories app.dart uses for the app-global cubits
     │   ├── routes/
     │   │   ├── routes.dart                  # class Routes — every path constant
     │   │   ├── app_router.dart              # final GoRouter appRouter
@@ -146,8 +148,8 @@ Nothing else is allowed inside a feature: no `screens/`, `util/`, `utils/`, `pop
 `helpers/`, `models/` outside `data/`, and no files at the presentation root.
 
 Features: account, address, auth, cart, checkout, coupons, discovery, home, language,
-marketing, notifications, orders, product_details, search, shell, shop, splash, store_mode,
-support.
+marketing, notifications, orders, product_details, recipes, search, shell, shop, splash,
+store_mode, support.
 `shell` and `splash` have no data dependency, so they may contain only `presentation/`.
 
 ---
@@ -179,16 +181,17 @@ Errors:  DataSource throws AppException → BaseRepositoryMixin maps it to Failu
 | API session | `SessionStore` (keychain: token pair, `X-Cart-Token`, `X-Assistant-Guest`), used **only from a datasource**; Bearer, the pre-flight refresh (token about to expire) and the 401 refresh are automatic (`AuthInterceptor`) | tokens in `LocalStorage`/prefs; manual `Authorization` headers; refresh logic in features |
 | API streams (SSE) | `EventStreamClient.connect(path)` in a datasource → repository `guardStream(...)` → `StreamUseCase` → the cubit owns the subscription and cancels it in `close()`; ONE shared connection per route | a stream route through `ApiConsumer`; a retry loop / timer around the client; one connection per listener |
 | API payload shape | `ApiPayload.asMap(results, route)`; DTO `fromJson` with key constants, `is` checks, `ParsingException` on a missing identity field, a bad list row skipped | `as` casts on JSON; one malformed row failing the whole page |
-| Error text for the user | `failure.localizedMessage` (`core/utils/failure_message.dart`): backend text as sent, transport failures → `core.*` i18n keys | showing `failure.message` of a transport failure; building error strings in a cubit |
+| Error text for the user | `failure.localizedMessage` (`core/utils/failure_message.dart`): backend text as sent, transport failures → `core.*` i18n keys. API-backed states hold the `Failure`, the page / widget resolves the text | showing the raw `failure.message` of a transport failure (English fallback); new error-string logic in a cubit |
 | Offline catalogue | `JameiaRepository`, **only inside a datasource** | reading it from a repo impl, cubit, page or widget |
 | Exceptions | `AppException` → `ServerException` (`BadRequestException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `RateLimitedException`; all carry `code` = backend `statusMessage`), `NetworkException` (`NoInternetConnectionException`, `RequestTimeoutException`, `RequestCancelledException`), `CacheException`, `ParsingException` | throwing strings or raw `Exception`; importing exceptions outside `data/` |
-| Failures | `ServerFailure` (`statusCode`, `code`), `UnauthorizedFailure`, `ForbiddenFailure`, `RateLimitedFailure`, `NetworkFailure`, `TimeoutFailure`, `CacheFailure`, `ParsingFailure`, `UnexpectedFailure` | exposing exceptions to the UI; branching on `failure.message` text (branch on `code`) |
+| Failures | `ServerFailure` (`statusCode`, `code`), `NotFoundFailure` (404), `UnauthorizedFailure`, `ForbiddenFailure`, `RateLimitedFailure`, `NetworkFailure`, `TimeoutFailure`, `CacheFailure`, `ParsingFailure`, `UnexpectedFailure` | exposing exceptions to the UI; branching on `failure.message` text (branch on `code`) |
 | Repository errors | `with BaseRepositoryMixin` + `execute(() => …)` / `executeSync(() => …)` | a hand-written `try/catch → Left(...)` |
 | Use cases | `UseCase<T, P>` (async), `SyncUseCase<T, P>` (same-frame taps), `StreamUseCase<T, P>`, `NoParams` | a cubit calling a repository |
 | DI | GetIt `sl`; datasource/repo/use case → `registerLazySingleton<Interface>`, cubit → `registerFactory` | `sl` inside classes (constructor injection only) |
 | Navigation | GoRouter: `context.push / go / pushReplacement / pop` + `Routes.*` + `extra:` | `Navigator.push*`, `pushNamed`, `MaterialPageRoute` |
 | Transitions | `JameiaTransitionPage` / `JameiaSlideUpTransitionPage` in `pageBuilder:` | `GoRoute(builder:)` (go_router 18 falls back to no transition) |
 | Dialogs / sheets | `showJameiaDialog` / `showJameiaBottomSheet` | raw `showDialog` / `showModalBottomSheet` |
+| Transient messages / screen states | `showJameiaSnackBar(context, text)` (`core/navigation/jameia_snack_bar.dart`); `AppLoader`, `ErrorView(message:, onRetry:)`, `EmptyStateView(...)`, `BrandedRefresh` from `core/widgets` | raw `ScaffoldMessenger`; hand-rolled loader / error / empty views per feature |
 | State | Cubit + one immutable Equatable state + `SafeCubitMixin` (`safeEmit`) | multiple state classes per screen, `emit` after close |
 | Logging | `log()` from `dart:developer` | `print`, `debugPrint` |
 
@@ -225,8 +228,9 @@ Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/d
 3. **Build bottom-up** (§0.2). The remote datasource depends on `ApiConsumer` only, returns
    DTOs, throws `AppException`; the repository wraps every call in `execute`.
 4. **Behaviors every API screen has:** loading, loaded, empty, error + retry, **signed-out**
-   (`UnauthorizedFailure` on a customer route → sign-in prompt, never a pre-check of the
-   session), offline. Pagination guards re-entry and drops a stale page (generation counter).
+   (`UnauthorizedFailure` on a customer route → sign-in prompt → `context.go(Routes.login)`;
+   always `go`, never `push`, so page cubits are rebuilt for the new session; never a
+   pre-check of the session), offline (= the error view with `core.no_internet`). Pagination guards re-entry and drops a stale page (generation counter).
    A submit cannot fire twice and a background reload never overwrites a draft or an in-flight save.
    `PATCH` sends only the changed fields (`null` = clear, absent = unchanged).
 5. **Shared customer snapshot:** any reply that carries the customer object goes back to
@@ -241,8 +245,18 @@ Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/d
 8. **Record it:** the feature's row in `docs/api_integration.md` §6.1 and in the skill's
    `references/backend-contract.md` (integration status).
 
-On the API today: **auth**, **account profile**, **language**, **notifications**. Every other
-feature still reads the offline catalogue / local persistence (§12).
+On the API today: **auth**, **account profile**, **language**, **notifications**,
+**addresses**, **cart**, **checkout** (delivery selection + place order), **orders**
+(list, tracking, cancel, reorder, reviews), and the whole catalogue — **home**, **shop**
+(categories / listings / brands), **product_details**, **search**, **recipes**, **marketing**
+(offers, content pages) and **store_mode** (Jm3eia Pro). The coupon wallet, discovery, support
+and wallet / loyalty / wishlist still read the offline catalogue / local persistence (§12).
+The cart is a **local mirror of the server cart** (`features/cart`): the UI edits a local
+projection and emits at once, the repository coalesces the pending deltas per line, keeps one
+request in flight, rebases what was tapped meanwhile, drops stale replies by generation,
+retries transport failures and persists the mirror in `LocalStorage` (`cart.mirror.v1`).
+One cart per customer (or per `X-Cart-Token` while signed out); the app root re-owns it on
+sign-in / sign-out and refetches on a locale change.
 
 ---
 
@@ -271,6 +285,11 @@ feature still reads the offline catalogue / local persistence (§12).
   (the signed-in customer as the API returns it: wallet in fils, loyalty, pro, language,
   gender …; DTO + mapper shared in `core/data/models/customer_model.dart` /
   `core/data/mappers/customer_mapper.dart`).
+  The backend catalogue has its own family in `core/domain/entities/`, shaped like the API
+  rows (money in fils, names already resolved for the request language): `CatalogProductEntity`,
+  `CatalogVariantEntity`, `CatalogCategoryEntity` + `CatalogCategoryTree`, `BrandEntity`,
+  `RecipeSummaryEntity`, `CatalogProductsPage`, `CatalogProductQuery`. It lives beside the
+  offline `ProductEntity` family until cart, checkout and orders move to the API.
   **Never re-declare these inside a feature.** Only feature-specific view aggregates live
   in `features/<f>/domain/entities/` (e.g. `HomeFeed`, `CheckoutDraft`, `OrdersView`,
   `CouponBuckets`, `ProductDetail`).
@@ -294,7 +313,9 @@ feature still reads the offline catalogue / local persistence (§12).
   skipped. Write bodies come from a `toBody()` mapper on the domain input object and carry
   only the changed fields.
 - Mappers are extensions: `extension XMapper on XModel { XEntity toEntity() }`, list helpers
-  `toEntities()`, and reverse `toModel()` only for write paths. Shared mappers live in
+  `toEntities()`, and for write paths only a reverse `toModel()` (offline) / `toBody()` on the
+  domain input object (API JSON body; a one- or two-scalar body may be an inline map of named
+  field constants in the datasource). Shared mappers live in
   `core/data/mappers/` (`mappers.dart` barrel).
 - Repository impls: `class XRepositoryImpl with BaseRepositoryMixin implements XRepository`,
   and every method is `execute(() => …)` / `executeSync(() => …)` that maps DTO → entity.
@@ -336,8 +357,10 @@ class CouponsLocalDataSourceImpl implements CouponsLocalDataSource {
   List<Coupon> getCoupons() => _catalog.coupons; // throw CacheException on bad state
 }
 
-// data/datasources/notifications_remote_data_source.dart — the API shape
-// (every layer, with pagination + PATCH + stream: jameia-api-integration/references/layer-templates.md)
+// A REMOTE datasource — trimmed from features/notifications/data/datasources/
+// notifications_remote_data_source.dart (the real one also takes an EventStreamClient).
+// Every layer of a paginated API feature: jameia-api-integration/references/layer-templates.md;
+// partial PATCH / optimistic update: references/patterns.md; streams: jameia-api-streaming.
 abstract class NotificationsRemoteDataSource {
   /// `GET /v1/notifications?page&limit`.
   Future<NotificationsPageModel> getNotifications({required int page, required int limit});
@@ -346,6 +369,9 @@ abstract class NotificationsRemoteDataSource {
 class NotificationsRemoteDataSourceImpl implements NotificationsRemoteDataSource {
   const NotificationsRemoteDataSourceImpl(this._api);
   final ApiConsumer _api;
+
+  static const String pageField = 'page'; // wire names are constants, never inline literals
+  static const String limitField = 'limit';
 
   @override
   Future<NotificationsPageModel> getNotifications({required int page, required int limit}) async {
@@ -381,6 +407,10 @@ class GetCouponsUseCase implements UseCase<CouponBuckets, NoParams> {
 }
 
 // presentation/cubit/coupons_state.dart
+// (offline feature: a `String? errorMessage` is enough. An API-backed state keeps the
+//  `Failure? failure` itself — transient, cleared on every copyWith — so the page can show
+//  `failure.localizedMessage` and tell `UnauthorizedFailure` (sign-in prompt) from an error;
+//  see NotificationsState and the jameia-api-integration layer templates.)
 enum CouponsStatus { initial, loading, loaded, empty, error }
 
 class CouponsState extends Equatable {
@@ -636,24 +666,29 @@ don't copy it, and migrate it when you own the file.
 - `core/widgets` taking DTOs (`ShopCard`, `ProductCard`, `PromoRibbon`, `BannerCarousel`) → take core entities.
 - Route extras that are still DTOs (`Product`, `JameiaAddress`, `KingKongItem`) → entities.
 - `core/utils/lbs_service.dart` using `package:http` → an address remote datasource on `ApiConsumer`.
-- **Offline → API.** Only auth, account profile, language and notifications call the jm3eia
-  backend. home / discovery / shop / product_details / search (Catalog, `init`, `home`), cart +
-  coupons (Cart), checkout (Delivery, Orders), orders, address (`account/addresses`, Delivery),
+- **Offline → API.** Auth, account profile, language, notifications, addresses, cart,
+  checkout, orders and the whole catalogue (home, shop, product_details, search, recipes,
+  marketing, Jm3eia Pro) call the jm3eia backend. The coupon wallet, discovery,
   support, wallet / loyalty / wishlist still read `JameiaRepository` or local persistence →
   migrate with the `jameia-api-integration` skill: keep the repository contract, swap the
-  datasource underneath, one operation at a time. Open core gaps to close on the way:
-  per-customer local state (cart, addresses) is not dropped on sign-out; `ServerFailure` has
-  no field-level validation `details`; `EventStreamClient` is `GET` only (assistant replies
+  datasource underneath (rules for a legacy target:
+  `jameia-api-integration/references/migrating-offline-feature.md`). Open core gaps to close
+  on the way: `ApiStatus` lives in `core/network`, which domain and presentation may not
+  import, so no cubit / use case can branch on a backend code yet (move it under `core/error/`
+  and re-export from `failures.dart`); `LocalizationCubit` still takes a `BuildContext`
+  (`context.setLocale`) — mirror only its data / domain layers and `syncToServer`;
+  `ServerFailure` has no field-level validation `details` (a 404 does have its own type,
+  `NotFoundFailure`, so no screen compares `statusCode` to `404`); `EventStreamClient` is `GET` only (assistant replies
   stream from a `POST`); no FCM / APNs token source calls `RegisterPushTokenUseCase`; no
   router guard for signed-in-only routes.
 - Multi-widget files, `_buildX()` helpers, inline numeric literals, and `sl<…>()` in widgets/cubits.
 - `core/storage/storage_injection.dart` registers DI outside `config/di` → move it into `config/di`.
 - **Review-found legacy** (details + file:line in `docs/architecture_review.md`; lints can't see these):
-  - Datasources that translate text, use motion tokens, compute business rules or invent demo data, and return domain aggregates (`orders_local_data_source`, `product_details_dummy_data_source`) → datasources return DTOs; rules move to use cases/entities; strings resolve in widgets.
-  - Pricing/VAT/fee/line-total maths in widgets or cubit state (orders invoice/summary/refund) → one domain price-breakdown value object.
+  - Datasources that translate text, use motion tokens, compute business rules or invent demo data, and return domain aggregates (`product_details_dummy_data_source`; `orders_local_data_source` is gone) → datasources return DTOs; rules move to use cases/entities; strings resolve in widgets.
+  - Pricing/VAT/fee/line-total maths in widgets or cubit state → one domain price-breakdown value object. (Orders / cart / checkout are done: every total is the server’s, in fils, on the entity.)
   - Pages with no cubit that read repositories through `sl` and reshape DTOs in `State` (`ShopPage`, `ShopMapPage`) and god `State`s calling infrastructure (`AddressEditPage` → `JameiaLbs` / `JameiaLocation` / `JameiaGeocode`) → cubit + use cases + datasources.
   - `core/utils/jameia_geocode.dart` (541 lines: enums, form schema, DTO, geometry, `LatLng`) → split into address domain entities, a data geometry service and presentation helpers.
-  - Mutations whose `Either` is ignored with success UI shown anyway (orders review/refund), and form input never submitted → cubit emits error/success; page listens.
+  - Mutations whose `Either` is ignored with success UI shown anyway, and form input never submitted → cubit emits error/success; page listens. (The old orders review / refund offenders are gone.)
   - Validation / label / pricing rules duplicated across cubit, state and widgets (address has 5 disagreeing validity checks; SKU/variant pricing in both `ShopSkuCubit` and `ProductDetailCubit`) → single use case or entity method.
   - Cross-feature widget reuse (`shop/…/product_sku_sheet.dart` used by product_details; PDP card copies home rail add/stepper controls) → `core/widgets` (+ shared cubit/use case).
   - Multi-value route args packed in strings (`catId~subId~rankId` built in the home data layer, parsed in `shop_page`) → a `route_args` class.

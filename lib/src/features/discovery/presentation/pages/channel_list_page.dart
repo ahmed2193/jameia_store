@@ -258,7 +258,7 @@ class _FilterChip extends StatelessWidget {
                   child: Icon(
                     JameiaIcons.filter,
                     size: 12,
-                    color: AppColors.primaryText,
+                    color: AppColors.brandForeground,
                   ),
                 ),
               Text(
@@ -267,7 +267,9 @@ class _FilterChip extends StatelessWidget {
                   fontWeight: selected
                       ? AppTextStyles.bold
                       : AppTextStyles.regular,
-                  color: AppColors.primaryText,
+                  color: selected
+                      ? AppColors.brandForeground
+                      : AppColors.primaryText,
                 ),
               ),
             ],

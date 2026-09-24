@@ -1,0 +1,168 @@
+{
+ "store": {
+  "name": "Jm3eia",
+  "tagline": "Fresh groceries delivered across Kuwait",
+  "defaultLocale": "en",
+  "maintenanceMode": false,
+  "maintenanceMessage": "",
+  "payment": {
+   "codEnabled": true,
+   "onlinePaymentsEnabled": false,
+   "knetEnabled": false,
+   "cardEnabled": false,
+   "applePayEnabled": false,
+   "testMode": true,
+   "defaultMethod": "cod"
+  },
+  "loyalty": {
+   "enabled": true,
+   "pointsPerKwd": 10,
+   "redemptionPerPoint": 1,
+   "minRedeemPoints": 100,
+   "pointsExpireMonths": 12,
+   "welcomeBonusPoints": 100,
+   "profileBonusPoints": 50
+  },
+  "pro": {
+   "enabled": true,
+   "perks": {
+    "freeDelivery": true,
+    "pointsMultiplier": 2,
+    "discountPercent": 5
+   }
+  },
+  "assistant": {
+   "enabled": true,
+   "allowGuests": true
+  },
+  "featureFlags": {
+   "assistant": true
+  },
+  "supportContact": {
+   "email": "support@jm3eia.com",
+   "phone": "+96550000000",
+   "whatsapp": ""
+  },
+  "socialMedia": {
+   "instagram": "",
+   "facebook": "",
+   "twitter": "",
+   "tiktok": "",
+   "snapchat": ""
+  }
+ },
+ "user": null,
+ "wishlistProductIds": [],
+ "cart": {
+  "offers": [
+   {
+    "_id": "6aa601198a2745ca86163649",
+    "name": "Free delivery over 5 KWD",
+    "status": "active",
+    "trigger": {
+     "type": "cart_subtotal",
+     "min": 5000
+    },
+    "reward": {
+     "type": "free_delivery"
+    },
+    "priority": 10,
+    "stackable": true,
+    "branchIds": [],
+    "startsAt": "2025-01-01T00:00:00.000Z",
+    "endsAt": "2027-12-31T23:59:59.000Z",
+    "description": "Spend 5 KWD or more to unlock free delivery."
+   },
+   {
+    "_id": "6aa601198a2745ca8616364a",
+    "name": "10% off over 15 KWD",
+    "status": "active",
+    "trigger": {
+     "type": "cart_subtotal",
+     "min": 15000
+    },
+    "reward": {
+     "type": "percentage_discount",
+     "percent": 10,
+     "maxDiscount": 3000
+    },
+    "priority": 20,
+    "stackable": true,
+    "branchIds": [
+     "6aa5ffb85233feadc5c4152c",
+     "6aa5ffb85233feadc5c4152d"
+    ],
+    "startsAt": "2025-01-01T00:00:00.000Z",
+    "endsAt": "2027-12-31T23:59:59.000Z",
+    "description": "Automatic 10% off when your cart reaches 15 KWD."
+   },
+   {
+    "_id": "6aa601198a2745ca8616364b",
+    "name": "2 KWD off dairy (3 items)",
+    "status": "active",
+    "trigger": {
+     "type": "category_quantity",
+     "categoryId": "6aa5ffb85233feadc5c41513",
+     "minQuantity": 3
+    },
+    "reward": {
+     "type": "fixed_discount",
+     "amount": 2000
+    },
+    "priority": 30,
+    "stackable": true,
+    "branchIds": [],
+    "startsAt": "2025-01-01T00:00:00.000Z",
+    "endsAt": "2027-12-31T23:59:59.000Z",
+    "description": "Add 3 items from Dairy & Eggs for 2 KWD off."
+   },
+   {
+    "_id": "6aa601198a2745ca8616364c",
+    "name": "Scheduled summer offer",
+    "status": "active",
+    "trigger": {
+     "type": "cart_subtotal",
+     "min": 20000
+    },
+    "reward": {
+     "type": "fixed_discount",
+     "amount": 1000
+    },
+    "priority": 40,
+    "stackable": false,
+    "branchIds": [],
+    "startsAt": "2026-06-15T00:00:00.000Z",
+    "endsAt": "2027-12-31T23:59:59.000Z"
+   }
+  ]
+ },
+ "delivery": {
+  "mode": "delivery",
+  "branch": {
+   "_id": "6aa5ffb85233feadc5c4152c",
+   "name": "Salmiya",
+   "code": "SLM-01",
+   "lat": 29.333,
+   "lng": 48.056,
+   "services": {
+    "delivery": true,
+    "pickup": true,
+    "express": true
+   }
+  },
+  "zone": {
+   "_id": "6aa5ffb85233feadc5c4152e",
+   "name": "Salmiya & Sharq",
+   "deliveryFee": 650,
+   "minOrder": 2500,
+   "etaMinutes": 40,
+   "expressAvailable": true,
+   "expressSurcharge": 1500,
+   "expressEtaMinutes": 60
+  },
+  "addressId": null
+ },
+ "content": {
+  "popups": []
+ }
+}

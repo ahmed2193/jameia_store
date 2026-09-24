@@ -216,9 +216,8 @@ class JameiaLbs {
           if (near != null) 'location': '${near.latitude},${near.longitude}',
           if (near != null) 'radius': '40000',
         };
-        final uri = Uri.parse(
-          '$_placesBase/textsearch/json',
-        ).replace(queryParameters: params);
+        final uri = Uri.parse('$_placesBase/textsearch/json')
+            .replace(queryParameters: params);
         final res = await http.get(uri).timeout(const Duration(seconds: 6));
         final body = jsonDecode(res.body) as Map<String, dynamic>;
         if (body['status'] == 'OK') {

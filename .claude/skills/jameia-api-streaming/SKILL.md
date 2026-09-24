@@ -33,6 +33,11 @@ description: Consume a jm3eia text/event-stream (SSE) route in JameiaMart throug
   server heartbeat — a **backend** fix (heartbeat comment every ≤ 25 s; `proxy_buffering off`
   and a long `proxy_read_timeout` on the route), not something the app can prevent.
 - **Ends with an error only** on 401 (after the automatic refresh), 403, 404.
+- **The notifications stream is opt-in**: `AppEnv.liveNotifications`
+  (`--dart-define=LIVE_NOTIFICATIONS=true`). By default `notifications_injection_container.dart`
+  hands both cubits a `null` live source, so no `GET …/sse` is made (the production proxy
+  drops the idle stream every ~60 s and sends no heartbeat). Build with the flag to test the
+  live path (the mock API heartbeats every 15 s).
 - Connects on first listen; cancelling the subscription cancels the HTTP request.
 
 Do not add your own retry loop, timer, or `Dio` call around it.
@@ -99,5 +104,8 @@ Do not add your own retry loop, timer, or `Dio` call around it.
 `FakeEventStreamClient` (`test/features/notifications/notifications_test_fakes.dart`) scripts
 frames and errors. Cover: event-name filter, malformed frame dropped, ONE upstream for two
 listeners, upstream cancelled when the last listener leaves, error → `Failure` in the
-repository, cubit cancels on `close()`. Client-level behavior (parser, backoff, watchdog,
-terminal statuses) is pinned by `test/core/network/event_stream_client_test.dart`.
+repository, cubit cancels on `close()`. Client-level behavior is pinned by
+`test/core/network/event_stream_client_test.dart`: parser, backoff schedule + escalation for
+short-lived connections + reset after a healthy one, idle watchdog, heartbeats, mid-stream
+break, 5xx rides out, 401 ends the stream (403 / 404 share that code path but have no test
+of their own yet — add one if you touch it).

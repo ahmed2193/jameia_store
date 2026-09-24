@@ -41,6 +41,8 @@ under **`sse`**. Secrets (keys containing `authorization`, `token`, `secret`, `p
 dart run .claude/skills/jameia-api-verify/scripts/vm_log_tail.dart http://127.0.0.1:PORT/TOKEN=/ 120 api,auth,sse
 ```
 
+  (drop the name filter to also see feature logs such as a skipped malformed row — those
+  use the class name, e.g. `NotificationsPageModel`)
   or, when the `flutter-mcp-toolkit` / `dart` MCP servers are connected, read runtime logs
   through them. Do **not** add `print` / `debugPrint` to see traffic — the rule forbids it and
   the lint fails the build.
@@ -71,8 +73,16 @@ node .claude/skills/jameia-api-verify/scripts/mock_api/server.js     # run in th
 ```
 
 Implemented: `auth/send-otp`, `auth/verify-otp`, `auth/refresh` (rotating), `auth/logout`,
-`account/me`, `account/profile` (PATCH), `notifications` (list / `:id/read` / `read-all` /
-`sse`), `push/register`, `init`. Any phone signs in with the OTP. Every request is printed to
+`account/me`, `account/profile` (PATCH; credits the one-time profile bonus of 50 points
+once `dateOfBirth` + `gender` + `householdSize` are set), `account/wallet` and
+`account/loyalty` (24 seeded rows each, paged), `notifications` (list / `:id/read` / `read-all` /
+`sse`), `push/register`, `init` (with `store.loyalty`), `account/addresses` (GET / POST, `:id` PATCH / DELETE, spec
+limits validated, one default address), `cart` (GET, `items` POST batch / `:key` PATCH / `:key`
+DELETE / clear, `coupon`, `loyalty`, `express`), `delivery` (`branches`, `slots`,
+`select-branch`, `select-address`), `orders` (list with `status` filter + paging, `:id`,
+`:id/cancel`) and `reviews` (POST). The commerce state is in `mock_api/commerce.js`
+(5 products, 3 branches, free delivery over 10.000 KWD, an express surcharge, a min order,
+offer progress, wallet payment and the full order status flow). Any phone signs in with the OTP. Every request is printed to
 the server's stdout (method, path, short auth, language, guest id, body).
 
 Failure knobs (all `POST` unless noted):
@@ -86,6 +96,19 @@ Failure knobs (all `POST` unless noted):
 | `/__admin/notify` `{type,title,body,orderId}` | creates an unread notification and pushes it over SSE |
 | `GET /__admin/log` | the request log as JSON |
 | `GET /v1/account/me?expire=1` | always 401 `TOKEN_EXPIRED` |
+| `/__admin/addresses/seed/2` | adds 2 sample addresses to the signed-in customer (the first one ever is the default) |
+| `/__admin/addresses/fail/500/1` | the next address request answers 500 `INTERNAL_ERROR` (any status: 404 → `RESOURCE_NOT_FOUND` …) |
+| `/__admin/addresses/delay/3000` | address replies wait 3 s → in-flight UI, double tap sends ONE request (`0` turns it off) |
+| `/__admin/ledger/fail/500/1` | the next wallet / loyalty request answers 500 (any status) → error view / load-more retry |
+| `/__admin/profile/reset` | the customer is back in the sign-up state (name = phone, no date of birth / gender / household, bonus not paid) → "Complete your profile" + the bonus hint |
+| `/__admin/cart/out-of-stock/<productId>` | that product answers `400 OUT_OF_STOCK` on add / update |
+| `/__admin/cart/stock/<productId>/3` | caps the stock → the line comes back with `quantityReduced` and `blocksCheckout` |
+| `/__admin/cart/delay/800` | cart replies wait 800 ms → watch the coalescing: fast taps still send ONE request (`0` off) |
+| `/__admin/cart/closed/1` | the branch is closed → `canCheckout:false`, checkout blocked |
+| `/__admin/cart/capacity/1` | no delivery capacity → slots come back unbookable |
+| `/__admin/orders/advance/<orderId>` | pushes the order one status forward (placed → … → delivered) |
+| `/__admin/orders/fail/<orderId>` | marks it `delivery_failed` with a reason |
+| `GET /__admin/orders` | every order as JSON |
 
 ```sh
 curl -s -X POST http://127.0.0.1:5055/__admin/notify -H "Content-Type: application/json" \
@@ -112,15 +135,24 @@ Run the ones that apply and quote the trace lines in your report.
 - [ ] `expire-access` → one `POST /v1/auth/refresh`, then the original call replayed, UI never notices.
 - [ ] `expires-in/50`, wait → refresh happens **before** the call.
 - [ ] `revoke-refresh` → login page with the expired notice; feature state is gone.
-- [ ] `rate-limit/2` → retried silently; after 3 failed tries the UI shows the rate-limit message.
+- [ ] `rate-limit/2` → retried silently (the interceptor allows 3 retries = 4 requests);
+      `rate-limit/4` → the retries run out and the UI shows the server's rate-limit message.
 - [ ] Offline (airplane mode) → `core.no_internet` text + retry works when back online.
 - [ ] Empty list, last page (`hasMore:false`), pull-to-refresh during load-more.
 - [ ] `PATCH` sends only changed fields; an unchanged form sends nothing.
 - [ ] Double tap on a submit button → ONE request in the trace.
-- [ ] Stream: ONE `GET …/sse` for the whole app; `notify` updates the open screen and the
+- [ ] Stream (build with `--dart-define=LIVE_NOTIFICATIONS=true`; without it there is NO
+      `GET …/sse` at all): ONE `GET …/sse` for the whole app; `notify` updates the open screen and the
       badge; leaving the screen does not drop the app-global subscription; sign-out closes it.
 - [ ] Arabic / RTL and reduced motion still fine on the new screens.
 - [ ] Cold start restores the session (keychain) and the feature loads without a login.
+- [ ] Cart: fast ± taps render instantly and collapse into ONE request per line; killing the
+      app mid-queue and reopening it replays the queue; a signed-out cart carries
+      `X-Cart-Token`, and signing in re-owns the mirror.
+- [ ] Checkout: a selection re-prices from the server; a double tap on Place order sends ONE
+      `POST /v1/orders`; success replaces the page with tracking.
+- [ ] Tracking: `GET /v1/orders/:id` repeats every 30 s while the page is on top, stops when
+      another page covers it / the app is backgrounded / the status is terminal.
 
 Driving the UI: with `flutter run --debug` up, the `flutter-mcp-toolkit` tools (`fmt_*`: semantic
 snapshot, tap, enter text, screenshots, hot reload) work from a fresh session; otherwise

@@ -417,7 +417,8 @@ class _ConfirmBar extends StatelessWidget {
               radius: 25, // RE §4.3 pill
               // Enabled `#ffe41f` (AppColors.primary) / disabled `#cacaca`.
               color: AppColors.primary,
-              foreground: AppColors.white, // label white bold 16dp (RE §4.3)
+              foreground:
+                  AppColors.brandForeground, // label white bold 16dp (RE §4.3)
               enabled: canConfirm,
               onPressed: canConfirm ? () => _onConfirm(context) : null,
             ),

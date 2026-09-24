@@ -1,47 +1,49 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/data/models/models.dart';
+import '../../../../core/domain/entities/jameia_address_entity.dart';
 import '../../../../core/error/failures.dart';
-import '../entities/jameia_address_entity.dart';
-import '../entities/region_options.dart';
+import '../entities/address_draft.dart';
+import '../entities/address_update.dart';
+import '../entities/cached_address_book.dart';
 
-/// Read + persist boundary for the saved-address book and the serviceable-region
-/// picker. Offline, every method resolves against the in-memory
-/// [JameiaRepository] (which owns the `shared_preferences`-backed address book +
-/// the active-address / active-region notifiers); results are still wrapped in
-/// `Either<Failure, T>` so the presentation layer handles failure uniformly.
+/// The customer's address book on the jm3eia API plus its copy on this
+/// device. Every API route is customer-only: a guest gets
+/// `Left(UnauthorizedFailure)`.
 ///
-/// READS return framework-free entities ([JameiaAddressEntity] / [RegionOptions]).
-/// The WRITE methods still take/return the core [JameiaAddress] DTO: the editor
-/// composes a fully-formed persistable row and the same row flows back out to
-/// the list picker / checkout — a deliberate P2.9 boundary (the DTO is the
-/// persistence payload, not an internal domain value).
+/// The API calls never touch the device copy; the caller that owns the book
+/// (`AddressBookCubit`) decides what to cache, so a reply that arrives after
+/// sign-out can never be written back.
+///
+/// Reference: https://docs.jm3eia.store/developers/account.html
 abstract class AddressRepository {
-  /// The saved-address book, default address hoisted to the top (Jameia ordering).
-  Future<Either<Failure, List<JameiaAddressEntity>>> getAddresses();
+  /// The copy saved on this device and whose it is;
+  /// [CachedAddressBook.none] when there is none.
+  Future<Either<Failure, CachedAddressBook>> getCachedAddresses();
 
-  /// Insert a new saved address (`saveOrUpdateV2`) — persists + records its
-  /// coordinate. Returns the saved row.
-  // TODO(P2.9-boundary): JameiaAddress DTO in/out — composed persistence payload
-  // shared with the editor pop + list picker (checkout/home consume the core row).
-  Future<Either<Failure, JameiaAddress>> addAddress(JameiaAddress address);
+  /// Replaces the device copy with [addresses] (stored as the API rows) saved
+  /// for the customer [ownerId] (`null` when not known yet).
+  Future<Either<Failure, Unit>> saveCachedAddresses(
+    List<JameiaAddressEntity> addresses, {
+    String? ownerId,
+  });
 
-  /// Update an existing saved address (`UPDATEUSERADDRESS`) — persists + records
-  /// its coordinate. Returns the saved row.
-  // TODO(P2.9-boundary): JameiaAddress DTO in/out — composed persistence payload.
-  Future<Either<Failure, JameiaAddress>> updateAddress(JameiaAddress address);
+  /// Removes the device copy (sign-out, session expiry).
+  Future<Either<Failure, Unit>> clearCachedAddresses();
 
-  /// Delete a saved address by id (`DELUSERADDRESS`) — persists + clears the
-  /// active selection when it pointed at the deleted row.
+  /// `GET /v1/account/addresses` — every saved address.
+  Future<Either<Failure, List<JameiaAddressEntity>>> fetchAddresses();
+
+  /// `POST /v1/account/addresses` — the created address.
+  Future<Either<Failure, JameiaAddressEntity>> addAddress(AddressDraft draft);
+
+  /// `PATCH /v1/account/addresses/:addressId` with the changed fields only —
+  /// the updated address.
+  Future<Either<Failure, JameiaAddressEntity>> updateAddress(
+    String id,
+    AddressUpdate update,
+  );
+
+  /// `DELETE /v1/account/addresses/:addressId`. An address the server no
+  /// longer has (404) counts as deleted.
   Future<Either<Failure, Unit>> deleteAddress(String id);
-
-  /// Select the active delivery address (`homeSelectedUserAddress` + broadcast) —
-  /// updates the active-address notifier + records its coordinate.
-  Future<Either<Failure, Unit>> setPrimaryAddress(String id);
-
-  /// The serviceable-region anchors + the currently-active region code.
-  Future<Either<Failure, RegionOptions>> getServiceRegions();
-
-  /// Commit a region switch (`switchRegion` + `com.jameia.changed.region`).
-  Future<Either<Failure, Unit>> switchRegion(String region);
 }

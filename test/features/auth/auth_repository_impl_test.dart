@@ -86,6 +86,26 @@ class _FakeLocal implements AuthLocalDataSource {
 
   @override
   Stream<void> get onSessionExpired => const Stream<void>.empty();
+
+  CustomerModel? customer;
+  Object? customerError;
+  final List<CustomerModel> savedCustomers = [];
+  int clearCustomerCalls = 0;
+
+  @override
+  Future<CustomerModel?> readCustomer() async {
+    if (customerError != null) throw customerError!;
+    return customer;
+  }
+
+  @override
+  Future<void> saveCustomer(CustomerModel customer) async {
+    if (customerError != null) throw customerError!;
+    savedCustomers.add(customer);
+  }
+
+  @override
+  Future<void> clearCustomer() async => clearCustomerCalls++;
 }
 
 void main() {
@@ -233,6 +253,66 @@ void main() {
         const Left<Failure, Object?>(NetworkFailure('No internet connection')),
       );
       expect(local.clearCalls, 0);
+    });
+  });
+
+  group('device copy of the customer', () {
+    const saved = CustomerModel(
+      id: '507f1f77bcf86cd799439011',
+      phone: '+96512345678',
+      nameEn: 'Ahmed',
+      nameAr: 'أحمد',
+    );
+
+    test('no stored session → no copy, even when one is on disk', () async {
+      local.customer = saved;
+      expect(
+        await repository.getCachedCustomer(),
+        const Right<Failure, Object?>(null),
+      );
+    });
+
+    test('a stored session → the saved customer as the entity', () async {
+      local
+        ..stored = true
+        ..customer = saved;
+      expect(
+        await repository.getCachedCustomer(),
+        const Right<Failure, Object?>(kCustomer),
+      );
+    });
+
+    test('an unreadable copy → CacheFailure', () async {
+      local
+        ..stored = true
+        ..customerError = const CacheException('corrupt');
+      expect(
+        await repository.getCachedCustomer(),
+        const Left<Failure, Object?>(CacheFailure('corrupt')),
+      );
+    });
+
+    test('save writes the API shape of the entity', () async {
+      final result = await repository.saveCachedCustomer(kCustomer);
+
+      expect(result, const Right<Failure, Unit>(unit));
+      expect(local.savedCustomers.single.toJson(), saved.toJson());
+    });
+
+    test('a refused save → CacheFailure', () async {
+      local.customerError = const CacheException('refused');
+      expect(
+        await repository.saveCachedCustomer(kCustomer),
+        const Left<Failure, Unit>(CacheFailure('refused')),
+      );
+    });
+
+    test('clear removes the copy', () async {
+      expect(
+        await repository.clearCachedCustomer(),
+        const Right<Failure, Unit>(unit),
+      );
+      expect(local.clearCustomerCalls, 1);
     });
   });
 }

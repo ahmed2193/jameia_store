@@ -1,92 +1,49 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/data/models/models.dart';
+import '../../../../core/data/mappers/order_mapper.dart';
+import '../../../../core/data/repositories/base_repository_mixin.dart';
+import '../../../../core/domain/entities/order_entity.dart';
 import '../../../../core/error/failures.dart';
-import '../../domain/entities/checkout_context.dart';
+import '../../domain/entities/branch_entity.dart';
 import '../../domain/entities/checkout_draft.dart';
-import '../../domain/entities/coupon_entity.dart';
-import '../../domain/entities/jameia_order_entity.dart';
-import '../../domain/entities/shop_entity.dart';
+import '../../domain/entities/delivery_selection_entity.dart';
+import '../../domain/entities/delivery_slot_entity.dart';
 import '../../domain/repositories/checkout_repository.dart';
-import '../datasources/checkout_local_data_source.dart';
-import '../mappers/address_mapper.dart';
-import '../mappers/coupon_mapper.dart';
-import '../mappers/order_mapper.dart';
-import '../mappers/shop_mapper.dart';
+import '../datasources/checkout_remote_data_source.dart';
+import '../datasources/delivery_remote_data_source.dart';
+import '../mappers/checkout_mapper.dart';
 
-/// Offline checkout repository — reads the [CheckoutLocalDataSource] DTOs, maps
-/// them to framework-free entities, and wraps each result in
-/// `Either<Failure, T>`, mapping any error to [CacheFailure].
-class CheckoutRepositoryImpl implements CheckoutRepository {
-  CheckoutRepositoryImpl({required this.local});
+class CheckoutRepositoryImpl
+    with BaseRepositoryMixin
+    implements CheckoutRepository {
+  const CheckoutRepositoryImpl(this._delivery, this._checkout);
 
-  final CheckoutLocalDataSource local;
+  final DeliveryRemoteDataSource _delivery;
+  final CheckoutRemoteDataSource _checkout;
 
   @override
-  Future<Either<Failure, CheckoutContext>> getContext(String shopId) async {
-    try {
-      return Right(
-        CheckoutContext(
-          shop: local.shopById(shopId).toEntity(),
-          address: local.defaultAddress().toEntity(),
-          availableCouponCount: local.availableCoupons().length,
-        ),
+  Future<Either<Failure, List<BranchEntity>>> getBranches() =>
+      execute(() async => (await _delivery.getBranches()).toEntities());
+
+  @override
+  Future<Either<Failure, List<DeliverySlotDayEntity>>> getDeliverySlots() =>
+      execute(() async => (await _delivery.getSlots()).toEntities());
+
+  @override
+  Future<Either<Failure, DeliverySelectionEntity>> selectDeliveryAddress(
+    String addressId,
+  ) => execute(
+    () async => (await _delivery.selectAddress(addressId)).toEntity(),
+  );
+
+  @override
+  Future<Either<Failure, DeliverySelectionEntity>> selectPickupBranch(
+    String branchId,
+  ) => execute(() async => (await _delivery.selectBranch(branchId)).toEntity());
+
+  @override
+  Future<Either<Failure, OrderEntity>> placeOrder(CheckoutDraft draft) =>
+      execute(
+        () async => (await _checkout.placeOrder(draft.toBody())).toEntity(),
       );
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, CouponEntity>> applyCoupon(String couponId) async {
-    try {
-      for (final c in local.coupons()) {
-        if (c.id == couponId && !c.used) return Right(c.toEntity());
-      }
-      return const Left(CacheFailure('Coupon is no longer available'));
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
-
-  @override
-  Future<Either<Failure, JameiaOrderEntity>> placeOrder({
-    required ShopEntity shop,
-    required List<CartItem> lines,
-    required double subtotal,
-    required CheckoutDraft draft,
-  }) async {
-    try {
-      final total = draft.totalFor(subtotal, shop.effectiveDeliveryFee);
-      final items = lines
-          .map(
-            (l) =>
-                OrderItem(name: l.displayName, qty: l.qty, price: l.unitPrice),
-          )
-          .toList(growable: false);
-      final now = DateTime.now();
-      final hh = now.hour.toString().padLeft(2, '0');
-      final mm = now.minute.toString().padLeft(2, '0');
-      final order = JameiaOrder(
-        id: local.nextOrderId(),
-        shopName: shop.name,
-        shopNameAr: shop.nameAr,
-        shopId: shop.id,
-        shopLogo: shop.logo,
-        status: 'preparing',
-        statusStep: 1,
-        total: total,
-        date: 'Today, $hh:$mm',
-        items: items,
-        rider: const Rider(
-          name: 'Yousef A.',
-          phone: '+965 5012 3456',
-          vehicle: 'motorbike',
-        ),
-      );
-      return Right(local.addOrder(order).toEntity());
-    } catch (e) {
-      return Left(CacheFailure(e.toString()));
-    }
-  }
 }

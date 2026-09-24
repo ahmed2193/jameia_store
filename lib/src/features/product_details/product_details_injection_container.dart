@@ -1,29 +1,42 @@
 import '../../config/di/service_locator.dart';
-import '../../core/data/jameia_repository.dart';
-import 'data/datasources/product_details_dummy_data_source.dart';
+import '../../config/routes/route_args/product_detail_args.dart';
+import '../../core/network/api_consumer.dart';
+import 'data/datasources/product_details_remote_data_source.dart';
 import 'data/repositories/product_details_repository_impl.dart';
 import 'domain/repositories/product_details_repository.dart';
+import 'domain/usecases/get_product_detail_usecase.dart';
+import 'domain/usecases/get_product_reviews_usecase.dart';
+import 'presentation/cubit/product_detail_cubit.dart';
+import 'presentation/cubit/product_reviews_cubit.dart';
 
-/// Product-details feature DI — mirrors the shop/cart templates (offline chain).
-///
-/// Called from `main.dart` after [setupServiceLocator] (which registers the
-/// loaded [JameiaRepository]). The datasource / repository are
-/// `registerLazySingleton`. The page cubit ([ProductDetailCubit]) is NOT
-/// registered here — it needs a runtime `Product` arg, so it is built inline in
-/// the screen's `BlocProvider` (the `ShopSkuCubit` precedent), pulling
-/// [ProductDetailsRepository] + [StoreModeRepository] from `sl`. The
-/// pass-through `GetProductDetailsUseCase` was collapsed into a direct
-/// repository call.
+/// Product page DI — the jm3eia backend (`GET /v1/products/:slug`,
+/// `GET /v1/products/:slug/reviews`). Called from `setupServiceLocator`.
 void initProductDetailsFeature() {
   if (sl.isRegistered<ProductDetailsRepository>()) return; // idempotent
-
-  // Data
-  sl.registerLazySingleton<ProductDetailsDummyDataSource>(
-    () => ProductDetailsDummyDataSourceImpl(sl<JameiaRepository>()),
-  );
-  sl.registerLazySingleton<ProductDetailsRepository>(
-    () => ProductDetailsRepositoryImpl(
-      local: sl<ProductDetailsDummyDataSource>(),
-    ),
-  );
+  sl
+    ..registerLazySingleton<ProductDetailsRemoteDataSource>(
+      () => ProductDetailsRemoteDataSourceImpl(sl<ApiConsumer>()),
+    )
+    ..registerLazySingleton<ProductDetailsRepository>(
+      () => ProductDetailsRepositoryImpl(sl<ProductDetailsRemoteDataSource>()),
+    )
+    ..registerLazySingleton(
+      () => GetProductDetailUseCase(sl<ProductDetailsRepository>()),
+    )
+    ..registerLazySingleton(
+      () => GetProductReviewsUseCase(sl<ProductDetailsRepository>()),
+    )
+    // param1 = the route args (slug + the tapped card as a preview).
+    ..registerFactoryParam<ProductDetailCubit, ProductDetailArgs, void>(
+      (args, _) => ProductDetailCubit(
+        sl<GetProductDetailUseCase>(),
+        slug: args.slug,
+        preview: args.preview,
+      ),
+    )
+    // param1 = the product slug.
+    ..registerFactoryParam<ProductReviewsCubit, String, void>(
+      (slug, _) =>
+          ProductReviewsCubit(sl<GetProductReviewsUseCase>(), slug: slug),
+    );
 }

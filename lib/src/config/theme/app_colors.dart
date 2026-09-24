@@ -22,8 +22,8 @@ class AppColors {
     0xFF16A34A,
   ); // green-600 (pressed/border)
   static const Color brandForeground = Color(
-    0xFF000000,
-  ); // dark ink (7:1 on green)
+    0xFFFFFFFF,
+  ); // shiny white — text / icons on any primary-green fill
   static const Color brandDarkBg = Color(0xFF4ADE80); // green-400 brand tint
   static const Color brandLightBg = Color(0xFFDCFCE7); // green-100 brand tint
 
@@ -63,6 +63,14 @@ class AppColors {
   static const Color accent4Dark = Color(0xFFFFF185); // yellow.c4
   static const Color accent4Light = Color(0xFFFFFDE0); // yellow.c1
   static const Color accent4Foreground = Color(0xFF6F2C03); // orange.c14
+
+  // ── Backend accent families the palette above lacks ───────────────────────
+  // The jm3eia backend tints home blocks with one of seven families (emerald,
+  // amber, rose, violet, sky, orange, zinc). Five map onto existing tokens;
+  // violet and the light sky wash had no counterpart.
+  static const Color accentViolet = Color(0xFF7C3AED);
+  static const Color accentVioletLight = Color(0xFFF3EEFF);
+  static const Color accentSkyLight = Color(0xFFE8F1FD);
 
   // ── System states ─────────────────────────────────────────────────────────
   static const Color link = Color(0xFF1963CC); // blue.c9
@@ -506,7 +514,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
 
   static const JameiaColors light = JameiaColors(
     brandPrimary: Color(0xFF22C55E),
-    brandForeground: Color(0xFF000000),
+    brandForeground: Color(0xFFFFFFFF),
     primaryText: Color(0xFF111827),
     secondaryText: Color(0xFF808080),
     tertiaryText: Color(0xFF999999),

@@ -2,16 +2,22 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/design/jameia_icons.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/responsive/app_size.dart';
 import '../../cubit/address_edit_cubit.dart';
+import '../../cubit/address_edit_state.dart';
 
-/// Delivery address — resolved area + "Edit" → SELECT.
+/// Delivery address — the pinned area + "Edit" → back to the map.
 class DeliveryAddressCard extends StatelessWidget {
   const DeliveryAddressCard({super.key, required this.onEdit});
+
   final VoidCallback onEdit;
+
+  static const Size _editButtonMinSize = Size(0, AppSize.s36);
+  static const int _maxLines = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +31,7 @@ class DeliveryAddressCard extends StatelessWidget {
         children: [
           const Icon(
             JameiaIcons.location,
-            size: 20,
+            size: AppSize.s20,
             color: AppColors.primaryText,
           ),
           const SizedBox(width: AppSpacing.s10),
@@ -41,11 +47,10 @@ class DeliveryAddressCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.s2),
                 BlocSelector<AddressEditCubit, AddressEditState, String>(
-                  selector: (s) =>
-                      s.briefLine.isNotEmpty ? s.briefLine : s.area,
-                  builder: (context, line) => Text(
-                    line.trim().isEmpty ? 'addr.pinned_location'.tr() : line,
-                    maxLines: 2,
+                  selector: (state) => state.draft.city.trim(),
+                  builder: (context, city) => Text(
+                    city.isEmpty ? 'addr.pinned_location'.tr() : city,
+                    maxLines: _maxLines,
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.headingSmall.copyWith(
                       fontWeight: AppTextStyles.bold,
@@ -65,7 +70,7 @@ class DeliveryAddressCard extends StatelessWidget {
                 horizontal: AppSpacing.s14,
                 vertical: AppSpacing.s6,
               ),
-              minimumSize: const Size(0, 36),
+              minimumSize: _editButtonMinSize,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AppRadius.pill),
               ),

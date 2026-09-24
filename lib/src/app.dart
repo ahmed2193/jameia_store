@@ -7,13 +7,13 @@ import 'config/routes/app_router.dart';
 import 'config/routes/routes.dart';
 import 'config/theme/app_theme.dart';
 import 'features/account/presentation/cubit/setting_cubit.dart';
+import 'features/address/presentation/cubit/address_book_cubit.dart';
 import 'features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'features/auth/presentation/cubit/auth_session_state.dart';
 import 'features/cart/presentation/cubit/cart_cubit.dart';
 import 'features/language/presentation/cubit/localization_cubit.dart';
 import 'features/language/presentation/cubit/localization_state.dart';
 import 'features/notifications/presentation/cubit/unread_notifications_cubit.dart';
-import 'features/store_mode/presentation/cubit/store_mode_cubit.dart';
 
 /// App root: the app-global cubits above a [MaterialApp.router] driven by the
 /// single [appRouter] (GoRouter).
@@ -33,8 +33,11 @@ class _JameiaAppState extends State<JameiaApp> {
   bool _localeInitStarted = false;
 
   void _syncAccountLanguage(BuildContext context) {
-    final customer = context.read<AuthSessionCubit>().state.customer;
-    if (customer == null) return;
+    final session = context.read<AuthSessionCubit>().state;
+    final customer = session.customer;
+    // Only the backend's record counts: the device copy shown at launch may
+    // predate the last language switch.
+    if (!session.isVerified || customer == null) return;
     context.read<LocalizationCubit>().syncIfAccountDiffers(customer.language);
   }
 
@@ -46,9 +49,6 @@ class _JameiaAppState extends State<JameiaApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider<CartCubit>(create: (_) => AppGlobalCubits.cart()),
-        BlocProvider<StoreModeCubit>(
-          create: (_) => AppGlobalCubits.storeMode(),
-        ),
         BlocProvider<LocalizationCubit>(
           create: (_) => AppGlobalCubits.localization(),
         ),
@@ -59,9 +59,61 @@ class _JameiaAppState extends State<JameiaApp> {
         BlocProvider<UnreadNotificationsCubit>(
           create: (_) => AppGlobalCubits.unreadNotifications(),
         ),
+        BlocProvider<AddressBookCubit>(
+          create: (_) => AppGlobalCubits.addressBook(),
+        ),
       ],
       child: MultiBlocListener(
         listeners: [
+          // The saved-address book follows the session: device copy + a sync
+          // on sign-in (OTP or launch restore) and whenever the signed-in
+          // customer changes; wiped from memory and disk on sign-out / expiry
+          // — also when a launch finds the session gone.
+          BlocListener<AuthSessionCubit, AuthSessionState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status ||
+                previous.customer?.id != current.customer?.id,
+            listener: (context, state) {
+              final addressBook = context.read<AddressBookCubit>();
+              switch (state.status) {
+                case AuthSessionStatus.signedIn:
+                  addressBook.start(customerId: state.customer?.id);
+                case AuthSessionStatus.signedOut:
+                  addressBook.stop();
+                case AuthSessionStatus.unknown:
+                  break;
+              }
+            },
+          ),
+          // The cart mirror follows the session: a sign-in (OTP or launch
+          // restore) fetches the merged server cart and sends the guest's
+          // unsent taps; a sign-out wipes the customer's cart from the device;
+          // a launch without a session binds the mirror to the guest.
+          BlocListener<AuthSessionCubit, AuthSessionState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status ||
+                previous.customer?.id != current.customer?.id,
+            listener: (context, state) {
+              final cart = context.read<CartCubit>();
+              switch (state.status) {
+                case AuthSessionStatus.signedIn:
+                  cart.onSignedIn(state.customer?.id ?? '');
+                case AuthSessionStatus.signedOut:
+                  cart.onSignedOut();
+                case AuthSessionStatus.unknown:
+                  break;
+              }
+            },
+          ),
+          // Cart line names arrive resolved for the request language.
+          BlocListener<LocalizationCubit, LocalizationState>(
+            listenWhen: (previous, current) =>
+                previous.isInitialized &&
+                current.isInitialized &&
+                previous.locale != current.locale,
+            listener: (context, _) =>
+                context.read<CartCubit>().onLocaleChanged(),
+          ),
           // The unread badge + its live (SSE) stream follow the session:
           // start on sign-in (OTP or launch restore), stop on sign-out / expiry.
           BlocListener<AuthSessionCubit, AuthSessionState>(
@@ -83,11 +135,13 @@ class _JameiaAppState extends State<JameiaApp> {
           // disagrees. Two triggers, because at launch the session restore and
           // the locale restore race: whichever lands second performs the check
           // (the cubit refuses to sync before its locale is initialized, so the
-          // default `en` can never overwrite an Arabic account).
+          // default `en` can never overwrite an Arabic account). The session
+          // side fires once the backend confirmed the customer (OTP or the
+          // launch `GET /v1/account/me`), never on the device copy.
           BlocListener<AuthSessionCubit, AuthSessionState>(
             listenWhen: (previous, current) =>
-                !previous.isSignedIn &&
-                current.isSignedIn &&
+                !previous.isVerified &&
+                current.isVerified &&
                 current.customer != null,
             listener: (context, _) => _syncAccountLanguage(context),
           ),

@@ -14,6 +14,16 @@ import 'package:flutter/widgets.dart';
 ///
 /// Original glyph names (pinyin/english from the font's `post` table) are noted
 /// in comments so feature code can trace each constant back to the source glyph.
+///
+/// Four glyphs of this font are not icons at all but the Chinese WORDS they
+/// label — 0xe014 `賞` (in a ring), 0xe057 `地址`, 0xe058 `店铺`, 0xe05a
+/// `商品` — so they are not declared here. An address uses [locationOutline],
+/// a shop uses [store], and a reward / coupon has no glyph in this font at all:
+/// use Material's `Icons.confirmation_number_outlined` / `Icons.card_giftcard`.
+///
+/// The money glyphs [pay], [refund], [fastRefund] and [findRider] draw a **¥**
+/// sign — the font came from a Chinese app. Anywhere the customer reads it as
+/// the currency, reach for a Material wallet / cash icon instead.
 class JameiaIcons {
   JameiaIcons._();
 
@@ -54,9 +64,6 @@ class JameiaIcons {
     0xe03d,
     fontFamily: fontFamily,
   );
-
-  /// address (`wm_c_iconfont_dizhi`)
-  static const IconData address = IconData(0xe057, fontFamily: fontFamily);
 
   // ── Chat / contact ──────────────────────────────────────────────────────────
   /// chat / IM (`wm_c_iconfont_28im`)
@@ -137,9 +144,6 @@ class JameiaIcons {
   /// share (`wm_c_iconfont_13fenxiang`)
   static const IconData share = IconData(0xe00a, fontFamily: fontFamily);
 
-  /// reward / tip (`wm_c_iconfont_24dashang`)
-  static const IconData reward = IconData(0xe014, fontFamily: fontFamily);
-
   // ── Rating / favorite ───────────────────────────────────────────────────────
   /// star selected (`wm_c_iconfont_star_select`)
   static const IconData star = IconData(0xe038, fontFamily: fontFamily);
@@ -160,25 +164,19 @@ class JameiaIcons {
   /// shopping cart (`wm_c_iconfont_3gouwuche`)
   static const IconData cart = IconData(0xe033, fontFamily: fontFamily);
 
-  /// product (`wm_c_iconfont_s01-shangpin`)
-  static const IconData product = IconData(0xe05a, fontFamily: fontFamily);
-
   /// store (`wm_c_iconfont_store`)
   static const IconData store = IconData(0xe03e, fontFamily: fontFamily);
-
-  /// shop / merchant (`wm_c_iconfont_dianpu`)
-  static const IconData shop = IconData(0xe058, fontFamily: fontFamily);
 
   /// merchant alt (`wm_c_iconfont_47shangjia`)
   static const IconData merchant = IconData(0xe026, fontFamily: fontFamily);
 
-  /// pay (`wm_c_iconfont_20fukuan`)
+  /// pay — draws a **¥** sign (`wm_c_iconfont_20fukuan`)
   static const IconData pay = IconData(0xe011, fontFamily: fontFamily);
 
-  /// refund (`wm_c_iconfont_21tuikuan`)
+  /// refund — draws a **¥** sign (`wm_c_iconfont_21tuikuan`)
   static const IconData refund = IconData(0xe012, fontFamily: fontFamily);
 
-  /// fast refund (`wm_c_iconfont_25jisutuikuan`)
+  /// fast refund — draws a **¥** sign (`wm_c_iconfont_25jisutuikuan`)
   static const IconData fastRefund = IconData(0xe015, fontFamily: fontFamily);
 
   /// orders (`wm_c_iconfont_45dingdan`)

@@ -8,7 +8,7 @@ import 'shop.dart';
 ///
 /// Immutable + value-equal: a quantity change returns a **new** instance via
 /// [copyWith]. This is deliberate — the old in-place `qty++` mutation aliased
-/// the same object between the previous and next [CartState], so Equatable saw
+/// the same object between the previous and next `CartState`, so Equatable saw
 /// no change and Bloc swallowed the `emit` (the second same-line add never
 /// reached the UI). Value equality over identity fields + qty fixes that.
 class CartItem extends Equatable {

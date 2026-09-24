@@ -233,12 +233,10 @@ void main() {
 
       final results = await Future.wait([
         consumer.get('/v1/account/me'),
-        Future<void>.delayed(
-          const Duration(milliseconds: 2),
-        ).then((_) => consumer.get('/v1/orders')),
-        Future<void>.delayed(
-          const Duration(milliseconds: 4),
-        ).then((_) => consumer.get('/v1/notifications')),
+        Future<void>.delayed(const Duration(milliseconds: 2))
+            .then((_) => consumer.get('/v1/orders')),
+        Future<void>.delayed(const Duration(milliseconds: 4))
+            .then((_) => consumer.get('/v1/notifications')),
       ]);
 
       expect(results, hasLength(3));

@@ -1,33 +1,50 @@
 import '../../config/di/service_locator.dart';
-import '../../core/data/jameia_repository.dart';
+import '../../core/network/api_consumer.dart';
+import '../../core/storage/local_storage.dart';
 import 'data/datasources/home_local_data_source.dart';
+import 'data/datasources/home_remote_data_source.dart';
 import 'data/repositories/home_repository_impl.dart';
 import 'domain/repositories/home_repository.dart';
-import 'domain/usecases/select_home_filter_usecase.dart';
+import 'domain/usecases/compose_home_feed_usecase.dart';
+import 'domain/usecases/get_home_bootstrap_usecase.dart';
+import 'domain/usecases/get_home_feed_usecase.dart';
+import 'domain/usecases/mark_home_popups_shown_usecase.dart';
+import 'domain/usecases/select_due_home_popups_usecase.dart';
 import 'presentation/cubit/home_cubit.dart';
 
-/// Home feature DI — mirrors the cart/support templates (offline local chain).
-///
-/// Called from `main.dart` after [setupServiceLocator] (which registers the
-/// loaded [JameiaRepository]). The page cubit is `registerFactory` (fresh per
-/// screen); use cases / repository / datasource are `registerLazySingleton`.
+/// Home feature DI — the jm3eia backend (`GET /v1/home`, `GET /v1/init`) plus
+/// local popup stamps. Called from `setupServiceLocator`.
 void initHomeFeature() {
   if (sl.isRegistered<HomeRepository>()) return; // idempotent
-
-  // Data
-  sl.registerLazySingleton<HomeLocalDataSource>(
-    () => HomeLocalDataSourceImpl(sl<JameiaRepository>()),
-  );
-  sl.registerLazySingleton<HomeRepository>(
-    () => HomeRepositoryImpl(local: sl<HomeLocalDataSource>()),
-  );
-
-  // Domain (use cases) — the pass-through GetHomeFeedUseCase was collapsed; the
-  // cubit now reads the repository directly.
-  sl.registerLazySingleton(() => const SelectHomeFilterUseCase());
-
-  // Presentation (page-scoped cubit)
-  sl.registerFactory(
-    () => HomeCubit(sl<HomeRepository>(), sl<SelectHomeFilterUseCase>()),
-  );
+  sl
+    ..registerLazySingleton<HomeRemoteDataSource>(
+      () => HomeRemoteDataSourceImpl(sl<ApiConsumer>()),
+    )
+    ..registerLazySingleton<HomeLocalDataSource>(
+      () => HomeLocalDataSourceImpl(sl<LocalStorage>()),
+    )
+    ..registerLazySingleton<HomeRepository>(
+      () => HomeRepositoryImpl(
+        sl<HomeRemoteDataSource>(),
+        sl<HomeLocalDataSource>(),
+      ),
+    )
+    ..registerLazySingleton(() => GetHomeFeedUseCase(sl<HomeRepository>()))
+    ..registerLazySingleton(ComposeHomeFeedUseCase.new)
+    ..registerLazySingleton(() => GetHomeBootstrapUseCase(sl<HomeRepository>()))
+    ..registerLazySingleton(
+      () => SelectDueHomePopupsUseCase(sl<HomeRepository>()),
+    )
+    ..registerLazySingleton(
+      () => MarkHomePopupsShownUseCase(sl<HomeRepository>()),
+    )
+    ..registerFactory(
+      () => HomeCubit(
+        sl<GetHomeFeedUseCase>(),
+        sl<ComposeHomeFeedUseCase>(),
+        sl<GetHomeBootstrapUseCase>(),
+        sl<SelectDueHomePopupsUseCase>(),
+        sl<MarkHomePopupsShownUseCase>(),
+      ),
+    );
 }

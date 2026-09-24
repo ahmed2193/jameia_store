@@ -81,7 +81,7 @@ void main() {
     expect(
       result,
       const Left<Failure, NotificationEntity>(
-        ServerFailure('Gone', statusCode: 404, code: 'NOT_FOUND'),
+        NotFoundFailure('Gone', code: 'NOT_FOUND'),
       ),
     );
   });

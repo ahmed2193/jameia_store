@@ -156,50 +156,47 @@ void main() {
   });
 
   group('watchLive', () {
-    test(
-      'connects to the SSE route and yields only well-formed notification frames',
-      () async {
-        dataSource = build(FakeHttpClientAdapter((_, _) => okBody(null)));
+    test('connects to the SSE route and yields only well-formed notification frames', () async {
+      dataSource = build(FakeHttpClientAdapter((_, _) => okBody(null)));
 
-        final received = <String>[];
-        final subscription = dataSource.watchLive().listen(
-          (model) => received.add(model.id),
+      final received = <String>[];
+      final subscription = dataSource.watchLive().listen(
+        (model) => received.add(model.id),
+      );
+      events.controller
+        ..add(
+          ServerSentEvent(
+            event: 'notification',
+            data: jsonEncode(notificationJson(id: 'live-1')),
+          ),
+        )
+        ..add(const ServerSentEvent(data: 'ping')) // default `message` event
+        ..add(
+          ServerSentEvent(
+            event: 'other',
+            data: jsonEncode(notificationJson(id: 'ignored')),
+          ),
+        )
+        ..add(const ServerSentEvent(event: 'notification', data: 'not json'))
+        ..add(
+          ServerSentEvent(
+            event: 'notification',
+            data: jsonEncode(notificationJson(id: 'live-2')..remove('type')),
+          ),
+        )
+        ..add(
+          ServerSentEvent(
+            event: 'notification',
+            data: jsonEncode(notificationJson(id: 'live-3')),
+          ),
         );
-        events.controller
-          ..add(
-            ServerSentEvent(
-              event: 'notification',
-              data: jsonEncode(notificationJson(id: 'live-1')),
-            ),
-          )
-          ..add(const ServerSentEvent(data: 'ping')) // default `message` event
-          ..add(
-            ServerSentEvent(
-              event: 'other',
-              data: jsonEncode(notificationJson(id: 'ignored')),
-            ),
-          )
-          ..add(const ServerSentEvent(event: 'notification', data: 'not json'))
-          ..add(
-            ServerSentEvent(
-              event: 'notification',
-              data: jsonEncode(notificationJson(id: 'live-2')..remove('type')),
-            ),
-          )
-          ..add(
-            ServerSentEvent(
-              event: 'notification',
-              data: jsonEncode(notificationJson(id: 'live-3')),
-            ),
-          );
-        await Future<void>.delayed(Duration.zero);
-        await subscription.cancel();
+      await Future<void>.delayed(Duration.zero);
+      await subscription.cancel();
 
-        expect(events.paths, [EndPoints.notificationsSse]);
-        expect(received, ['live-1', 'live-3']);
-        expect(adapter.requests, isEmpty, reason: 'SSE never uses ApiConsumer');
-      },
-    );
+      expect(events.paths, [EndPoints.notificationsSse]);
+      expect(received, ['live-1', 'live-3']);
+      expect(adapter.requests, isEmpty, reason: 'SSE never uses ApiConsumer');
+    });
 
     test('a server rejection propagates as the stream error', () async {
       dataSource = build(FakeHttpClientAdapter((_, _) => okBody(null)));

@@ -1,41 +1,48 @@
 import '../../config/di/service_locator.dart';
-import '../../core/data/jameia_repository.dart';
+import '../../core/data/datasources/catalog_remote_data_source.dart';
 import '../../core/storage/local_storage.dart';
 import 'data/datasources/search_local_data_source.dart';
 import 'data/repositories/search_repository_impl.dart';
 import 'domain/repositories/search_repository.dart';
-import 'domain/usecases/search_usecase.dart';
+import 'domain/usecases/get_recent_searches_usecase.dart';
+import 'domain/usecases/get_search_discover_usecase.dart';
+import 'domain/usecases/save_recent_searches_usecase.dart';
+import 'domain/usecases/suggest_products_usecase.dart';
 import 'presentation/cubit/search_cubit.dart';
 
-/// Search feature DI — mirrors the cart/support templates (offline local chain).
-///
-/// Called from `main.dart` after [setupServiceLocator] (which registers the
-/// loaded [JameiaRepository]) and after `initCoreStorage` (which registers the
-/// shared [LocalStorage] singleton the recents datasource resolves lazily).
-/// [SearchCubit] is `registerFactory` (fresh per screen — the discover screen
-/// and the results screen each provide their own instance); the kept use case /
-/// repository / datasource are `registerLazySingleton`. The five former
-/// pass-through use cases (hot words / recents / suggestions) were collapsed —
-/// the cubit now calls [SearchRepository] directly.
+/// Search feature DI — product matches, categories and brands from the jm3eia
+/// backend (the shared `CatalogRemoteDataSource`), recent terms on the device.
+/// Called from `setupServiceLocator`.
 void initSearchFeature() {
   if (sl.isRegistered<SearchRepository>()) return; // idempotent
-
-  // Data
-  sl.registerLazySingleton<SearchLocalDataSource>(
-    () => SearchLocalDataSourceImpl(sl<JameiaRepository>(), sl<LocalStorage>()),
-  );
-  sl.registerLazySingleton<SearchRepository>(
-    () => SearchRepositoryImpl(local: sl<SearchLocalDataSource>()),
-  );
-
-  // Domain (with-logic use case only)
-  sl.registerLazySingleton(() => SearchUseCase(sl<SearchRepository>()));
-
-  // Presentation (page-scoped cubit — one instance per screen)
-  sl.registerFactory(
-    () => SearchCubit(
-      search: sl<SearchUseCase>(),
-      repository: sl<SearchRepository>(),
-    ),
-  );
+  sl
+    ..registerLazySingleton<SearchLocalDataSource>(
+      () => SearchLocalDataSourceImpl(sl<LocalStorage>()),
+    )
+    ..registerLazySingleton<SearchRepository>(
+      () => SearchRepositoryImpl(
+        sl<CatalogRemoteDataSource>(),
+        sl<SearchLocalDataSource>(),
+      ),
+    )
+    ..registerLazySingleton(
+      () => GetSearchDiscoverUseCase(sl<SearchRepository>()),
+    )
+    ..registerLazySingleton(
+      () => SuggestProductsUseCase(sl<SearchRepository>()),
+    )
+    ..registerLazySingleton(
+      () => GetRecentSearchesUseCase(sl<SearchRepository>()),
+    )
+    ..registerLazySingleton(
+      () => SaveRecentSearchesUseCase(sl<SearchRepository>()),
+    )
+    ..registerFactory(
+      () => SearchCubit(
+        sl<GetSearchDiscoverUseCase>(),
+        sl<SuggestProductsUseCase>(),
+        sl<GetRecentSearchesUseCase>(),
+        sl<SaveRecentSearchesUseCase>(),
+      ),
+    );
 }

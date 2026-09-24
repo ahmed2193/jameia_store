@@ -69,9 +69,11 @@ One success test (DTO → entity) + the mapping table you rely on:
 `ServerException(code: …) → ServerFailure` **with the same `code`**. Streams: an upstream error
 reaches the listener as a `Failure` (`guardStream`).
 
-### Use case — only when it holds a rule
-Validation that returns `Left` without calling the repository (assert the fake saw 0 calls),
-aggregation / sorting / defaults. A pure pass-through needs no dedicated test.
+### Use case — every one (`CLAUDE.md` §8)
+A use case that holds a rule: validation that returns `Left` without calling the repository
+(assert the fake saw 0 calls), aggregation / sorting / defaults. A pure pass-through still
+gets a short test: the params reach the repository unchanged and the repository's `Either`
+comes back untouched (both `Right` and `Left`).
 
 ### Cubit — `<x>_cubit_test.dart` with `bloc_test`
 Fake use cases = small classes implementing the use case, with a mutable `result`, recorded

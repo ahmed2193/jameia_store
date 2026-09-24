@@ -1,79 +1,126 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/domain/entities/order_entity.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
-import '../../domain/entities/order.dart';
-import '../../domain/repositories/orders_repository.dart';
+import '../../domain/entities/cancel_order_request.dart';
+import '../../domain/usecases/cancel_order_usecase.dart';
+import '../../domain/usecases/get_order_usecase.dart';
+import '../../domain/usecases/get_orders_usecase.dart';
+import 'orders_state.dart';
 
-enum OrdersStatus { initial, loading, loaded, error }
-
-/// State for the orders list (`mach_pro_sailor_c_order_list`) — the two tabs
-/// (In progress / History) resolved through [OrdersRepository]. The active /
-/// history bucketing that used to live inline in the screen's `build` now
-/// arrives pre-split via `OrdersView`.
-class OrdersState extends Equatable {
-  const OrdersState({
-    this.status = OrdersStatus.initial,
-    this.active = const [],
-    this.history = const [],
-    this.error,
-  });
-
-  final OrdersStatus status;
-  final List<OrderEntity> active;
-  final List<OrderEntity> history;
-  final String? error;
-
-  OrdersState copyWith({
-    OrdersStatus? status,
-    List<OrderEntity>? active,
-    List<OrderEntity>? history,
-    String? error,
-  }) => OrdersState(
-    status: status ?? this.status,
-    active: active ?? this.active,
-    history: history ?? this.history,
-    error: error ?? this.error,
-  );
-
-  @override
-  List<Object?> get props => [status, active, history, error];
-}
-
-/// Page-scoped cubit — resolved via `sl<OrdersCubit>()`; loads the order list on
-/// construction and exposes [cancel] (wired to [OrdersRepository.cancelOrder]).
+/// The orders list: first page, pull-to-refresh, "load more" guarded against
+/// re-entry and stale pages (a refresh started after a load-more drops the
+/// older reply), one cancel at a time, and single-order refreshes when the
+/// customer comes back from tracking.
 class OrdersCubit extends Cubit<OrdersState> with SafeCubitMixin<OrdersState> {
-  OrdersCubit(this._repository) : super(const OrdersState()) {
-    load();
-  }
+  OrdersCubit({
+    required this._getOrders,
+    required this._getOrder,
+    required this._cancelOrder,
+  }) : super(OrdersState());
 
-  final OrdersRepository _repository;
+  final GetOrdersUseCase _getOrders;
+  final GetOrderUseCase _getOrder;
+  final CancelOrderUseCase _cancelOrder;
+
+  int _generation = 0;
 
   Future<void> load() async {
     safeEmit(state.copyWith(status: OrdersStatus.loading));
-    final result = await _repository.getOrders();
+    await _loadFirstPage(OrdersAction.load);
+  }
+
+  Future<void> refresh() async {
+    if (state.isRefreshing) return;
+    safeEmit(state.copyWith(isRefreshing: true));
+    await _loadFirstPage(OrdersAction.refresh);
+  }
+
+  Future<void> _loadFirstPage(OrdersAction action) async {
+    final generation = ++_generation;
+    final result = await _getOrders(const GetOrdersParams());
+    if (generation != _generation) return;
     result.fold(
       (failure) => safeEmit(
-        state.copyWith(status: OrdersStatus.error, error: failure.message),
+        state.copyWith(
+          status: state.feed.isEmpty ? OrdersStatus.error : OrdersStatus.loaded,
+          isRefreshing: false,
+          isLoadingMore: false,
+          failure: failure,
+          failedAction: action,
+        ),
       ),
-      (view) => safeEmit(
+      (page) => safeEmit(
         state.copyWith(
           status: OrdersStatus.loaded,
-          active: view.active,
-          history: view.history,
+          feed: state.feed.replace(page),
+          isRefreshing: false,
+          isLoadingMore: false,
         ),
       ),
     );
   }
 
-  /// Cancel [orderId] (optionally with the chosen [reason]) then refresh the
-  /// list so any local status change is reflected. Offline the catalogue has no
-  /// cancel mutation, so the reload returns the same list (sheet just closes).
-  Future<void> cancel(String orderId, {String? reason}) async {
-    final result = await _repository.cancelOrder(
-      orderId: orderId,
-      reason: reason,
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || state.isRefreshing || !state.feed.hasMore) {
+      return;
+    }
+    final generation = _generation;
+    safeEmit(state.copyWith(isLoadingMore: true));
+    final result = await _getOrders(GetOrdersParams(page: state.feed.page + 1));
+    if (generation != _generation) return; // a refresh replaced the feed
+    result.fold(
+      (failure) => safeEmit(
+        state.copyWith(
+          isLoadingMore: false,
+          failure: failure,
+          failedAction: OrdersAction.loadMore,
+        ),
+      ),
+      (page) => safeEmit(
+        state.copyWith(isLoadingMore: false, feed: state.feed.merge(page)),
+      ),
     );
-    result.fold((_) {}, (_) => load());
   }
+
+  /// Cancels one order; a second request while one is in flight is ignored.
+  Future<bool> cancel(CancelOrderRequest request) async {
+    if (state.cancellingId != null) return false;
+    safeEmit(state.copyWith(cancellingId: request.orderId));
+    final result = await _cancelOrder(CancelOrderParams(request));
+    result.fold(
+      (failure) => safeEmit(
+        state.copyWith(
+          clearCancelling: true,
+          failure: failure,
+          failedAction: OrdersAction.cancel,
+        ),
+      ),
+      (order) => safeEmit(
+        state.copyWith(
+          clearCancelling: true,
+          feed: state.feed.withOrder(order),
+        ),
+      ),
+    );
+    return result.isRight();
+  }
+
+  /// One order may have moved while its tracking page was open.
+  Future<void> refreshOrder(String orderId) async {
+    final result = await _getOrder(GetOrderParams(orderId));
+    result.fold(
+      (failure) => safeEmit(
+        state.copyWith(
+          failure: failure,
+          failedAction: OrdersAction.refreshOrder,
+        ),
+      ),
+      applyOrder,
+    );
+  }
+
+  /// An order known from elsewhere (just placed, just cancelled).
+  void applyOrder(OrderEntity order) =>
+      safeEmit(state.copyWith(feed: state.feed.withOrder(order)));
 }

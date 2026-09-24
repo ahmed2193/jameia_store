@@ -9,6 +9,7 @@ import '../motion/motion.dart';
 export 'jameia_slide_up_transition_page.dart';
 export 'jameia_snack_bar.dart';
 export 'jameia_transition_page.dart';
+export 'route_observer.dart';
 
 /// 1Day `bottom_slide_in` / `slide_in_bottom`: 300ms ease-out slide-from-bottom
 /// (500ms `large` variant for big sheets). One place for the sheet duration /

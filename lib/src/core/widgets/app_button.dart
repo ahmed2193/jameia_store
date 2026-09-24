@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../motion/haptics.dart';
 import '../motion/motion_widgets.dart';
 import '../../config/theme/app_colors.dart';

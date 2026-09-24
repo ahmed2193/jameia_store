@@ -182,7 +182,9 @@ class _SubChip extends StatelessWidget {
             label,
             style: AppTextStyles.captionLarge.copyWith(
               fontWeight: selected ? AppTextStyles.bold : AppTextStyles.regular,
-              color: AppColors.primaryText,
+              color: selected
+                  ? AppColors.brandForeground
+                  : AppColors.primaryText,
             ),
           ),
         ),

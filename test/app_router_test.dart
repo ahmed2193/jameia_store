@@ -14,6 +14,7 @@
 
 import 'dart:convert';
 
+import 'package:dartz/dartz.dart' show Right;
 import 'package:easy_localization/easy_localization.dart';
 // ignore: implementation_imports
 import 'package:easy_localization/src/localization.dart';
@@ -30,18 +31,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/app_router.dart';
 import 'package:jameia_mart/src/config/routes/placeholder_page.dart';
+import 'package:jameia_mart/src/config/routes/route_args/category_args.dart';
 import 'package:jameia_mart/src/config/routes/route_args/pdp_image_viewer_args.dart';
+import 'package:jameia_mart/src/config/routes/route_args/product_detail_args.dart';
+import 'package:jameia_mart/src/config/routes/route_args/product_listing_args.dart';
 import 'package:jameia_mart/src/config/routes/routes.dart';
 import 'package:jameia_mart/src/config/theme/app_theme.dart';
 import 'package:jameia_mart/src/core/data/jameia_repository.dart';
 import 'package:jameia_mart/src/core/data/models/models.dart';
+import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:jameia_mart/src/core/domain/entities/geo_point_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/jameia_address_entity.dart';
 import 'package:jameia_mart/src/core/navigation/navigation.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/setting_cubit.dart';
+import 'package:jameia_mart/src/features/account/presentation/pages/loyalty_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/mine_about_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/mine_delivery_code_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/mine_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/mine_settings_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/profile_edit_page.dart';
+import 'package:jameia_mart/src/features/account/presentation/pages/wallet_page.dart';
+import 'package:jameia_mart/src/features/address/domain/entities/address_book.dart';
+import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
 import 'package:jameia_mart/src/features/address/presentation/pages/address_edit_page.dart';
 import 'package:jameia_mart/src/features/address/presentation/pages/address_list_page.dart';
 import 'package:jameia_mart/src/features/address/presentation/pages/choose_location_page.dart';
@@ -59,31 +70,32 @@ import 'package:jameia_mart/src/features/discovery/presentation/pages/kingkong_l
 import 'package:jameia_mart/src/features/discovery/presentation/pages/meal_for_one_page.dart';
 import 'package:jameia_mart/src/features/discovery/presentation/pages/pick_up_page.dart';
 import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/pages/invite_friends_page.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/pages/punctual_page.dart';
+import 'package:jameia_mart/src/features/marketing/domain/entities/content_page_entity.dart';
+import 'package:jameia_mart/src/features/marketing/presentation/pages/content_page.dart';
+import 'package:jameia_mart/src/features/marketing/presentation/pages/offers_page.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:jameia_mart/src/features/orders/presentation/pages/order_invoice_page.dart';
-import 'package:jameia_mart/src/features/orders/presentation/pages/order_map_page.dart';
-import 'package:jameia_mart/src/features/orders/presentation/pages/order_refund_detail_page.dart';
-import 'package:jameia_mart/src/features/orders/presentation/pages/order_refund_page.dart';
 import 'package:jameia_mart/src/features/orders/presentation/pages/order_review_page.dart';
 import 'package:jameia_mart/src/features/orders/presentation/pages/order_tracking_page.dart';
 import 'package:jameia_mart/src/features/orders/presentation/pages/orders_page.dart';
+import 'package:jameia_mart/src/features/product_details/presentation/pages/pdp_image_viewer_page.dart';
 import 'package:jameia_mart/src/features/product_details/presentation/pages/product_detail_page.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_image_viewer.dart';
+import 'package:jameia_mart/src/features/recipes/presentation/pages/recipe_detail_page.dart';
+import 'package:jameia_mart/src/features/recipes/presentation/pages/recipes_page.dart';
 import 'package:jameia_mart/src/features/search/presentation/pages/search_page.dart';
-import 'package:jameia_mart/src/features/search/presentation/pages/search_shop_page.dart';
 import 'package:jameia_mart/src/features/shell/presentation/pages/main_shell_page.dart';
-import 'package:jameia_mart/src/features/shop/presentation/pages/shop_detail_page.dart';
-import 'package:jameia_mart/src/features/shop/presentation/pages/shop_favorites_page.dart';
-import 'package:jameia_mart/src/features/shop/presentation/pages/shop_map_page.dart';
-import 'package:jameia_mart/src/features/shop/presentation/pages/shop_page.dart';
+import 'package:jameia_mart/src/features/shop/presentation/pages/brands_page.dart';
+import 'package:jameia_mart/src/features/shop/presentation/pages/categories_page.dart';
+import 'package:jameia_mart/src/features/shop/presentation/pages/category_page.dart';
+import 'package:jameia_mart/src/features/shop/presentation/pages/product_listing_page.dart';
 import 'package:jameia_mart/src/features/splash/presentation/pages/splash_page.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/store_mode_cubit.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/pages/pro_membership_page.dart';
 import 'package:jameia_mart/src/features/support/presentation/pages/customer_service_page.dart';
 import 'package:jameia_mart/src/features/support/presentation/pages/customer_service_question_page.dart';
 import 'package:jameia_mart/src/features/support/presentation/pages/im_chat_page.dart';
+
+import 'features/address/address_test_fakes.dart';
 
 /// One row of the route table: push [path] with the [extra] built from the
 /// loaded catalogue and expect [pageType] on top. [verify] optionally checks
@@ -129,64 +141,83 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
   const _RouteCase(Routes.search, SearchPage),
   _RouteCase(
     Routes.searchShop,
-    SearchShopPage,
-    extra: (_) => 'milk',
-    verify: (t, extra) => expect(_page<SearchShopPage>(t).query, extra),
+    ProductListingPage,
+    note: 'search results are a product listing scoped by the text',
+    extra: (_) => ' milk ',
+    verify: (t, _) => expect(
+      _page<ProductListingPage>(t).args.query,
+      const CatalogProductQuery(search: 'milk'),
+    ),
+  ),
+  const _RouteCase(
+    Routes.searchShop,
+    PlaceholderPage,
+    note: 'missing search text extra',
   ),
   const _RouteCase(Routes.orders, OrdersPage),
   const _RouteCase(Routes.mine, MinePage),
+  const _RouteCase(Routes.categories, CategoriesPage),
   _RouteCase(
     Routes.shop,
-    ShopPage,
+    CategoriesPage,
+    note: 'legacy open-the-shop link lands on the store categories',
     extra: _firstShopId,
-    verify: (t, extra) => expect(_page<ShopPage>(t).shopId, extra),
   ),
   _RouteCase(
-    Routes.shop,
-    ShopPage,
-    note: 'non-String extra falls back to s1',
-    extra: (_) => 42,
-    verify: (t, _) => expect(_page<ShopPage>(t).shopId, 's1'),
+    Routes.category,
+    CategoryPage,
+    extra: (_) => const CategoryArgs(slug: 'fresh-food', name: 'Fresh Food'),
+    verify: (t, extra) => expect(_page<CategoryPage>(t).args, same(extra)),
+  ),
+  const _RouteCase(
+    Routes.category,
+    PlaceholderPage,
+    note: 'missing CategoryArgs extra',
   ),
   _RouteCase(
-    Routes.shopDetail,
-    ShopDetailPage,
-    extra: _firstShopId,
-    verify: (t, extra) => expect(_page<ShopDetailPage>(t).shopId, extra),
+    Routes.productListing,
+    ProductListingPage,
+    extra: (_) => ProductListingArgs.brand(slug: 'almarai', title: 'Almarai'),
+    verify: (t, extra) =>
+        expect(_page<ProductListingPage>(t).args, same(extra)),
   ),
-  _RouteCase(Routes.shopMap, ShopMapPage, extra: _firstShopId),
-  const _RouteCase(Routes.shopFavorites, ShopFavoritesPage),
+  const _RouteCase(
+    Routes.productListing,
+    PlaceholderPage,
+    note: 'missing ProductListingArgs extra',
+  ),
+  const _RouteCase(
+    Routes.shopFavorites,
+    PlaceholderPage,
+    note: 'unbuilt: wishlist API not integrated',
+  ),
   const _RouteCase(Routes.cartPreview, CartPreviewPage),
-  _RouteCase(
-    Routes.checkout,
-    CheckoutPage,
-    extra: _firstShopId,
-    verify: (t, extra) => expect(_page<CheckoutPage>(t).shopId, extra),
-  ),
+  const _RouteCase(Routes.checkout, CheckoutPage),
   _RouteCase(
     Routes.productDetail,
     ProductDetailPage,
-    extra: (repo) => repo.allProducts.first,
-    verify: (t, extra) =>
-        expect(_page<ProductDetailPage>(t).product, same(extra)),
+    extra: (_) => const ProductDetailArgs(slug: 'basmati-rice-5kg'),
+    verify: (t, extra) => expect(_page<ProductDetailPage>(t).args, same(extra)),
   ),
   const _RouteCase(
     Routes.productDetail,
     PlaceholderPage,
-    note: 'missing Product extra',
+    note: 'missing ProductDetailArgs extra',
+  ),
+  _RouteCase(
+    Routes.productDetail,
+    PlaceholderPage,
+    note: 'an offline Product DTO is no longer a valid extra',
+    extra: (repo) => repo.allProducts.first,
   ),
   _RouteCase(
     Routes.pdpImageViewer,
-    PdpImageViewer,
-    extra: (_) => const PdpImageViewerArgs(
-      images: <String>['a', 'b'],
-      kcal: 120,
-      initialIndex: 1,
-    ),
+    PdpImageViewerPage,
+    extra: (_) =>
+        const PdpImageViewerArgs(images: <String>['a', 'b'], initialIndex: 1),
     verify: (t, _) {
-      final viewer = _page<PdpImageViewer>(t);
+      final viewer = _page<PdpImageViewerPage>(t);
       expect(viewer.images, <String>['a', 'b']);
-      expect(viewer.kcal, 120);
       expect(viewer.initialIndex, 1);
     },
   ),
@@ -196,25 +227,32 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
     extra: (_) => 'o2',
     verify: (t, extra) => expect(_page<OrderTrackingPage>(t).orderId, extra),
   ),
-  _RouteCase(
+
+  const _RouteCase(
+    Routes.orderTracking,
+    PlaceholderPage,
+    note: 'no order id extra',
+  ),
+  const _RouteCase(
     Routes.orderMap,
-    OrderMapPage,
-    note: 'no extra falls back to o1',
-    verify: (t, _) => expect(_page<OrderMapPage>(t).orderId, 'o1'),
+    PlaceholderPage,
+    note: 'unbuilt: the API has no courier-location route',
+  ),
+  const _RouteCase(
+    Routes.orderRefund,
+    PlaceholderPage,
+    note: 'unbuilt: the API has no refund route',
+  ),
+  const _RouteCase(
+    Routes.orderRefundDetail,
+    PlaceholderPage,
+    note: 'unbuilt: the API has no refund route',
   ),
   _RouteCase(
     Routes.orderReview,
     OrderReviewPage,
     extra: (_) => 'o1',
     verify: (t, extra) => expect(_page<OrderReviewPage>(t).orderId, extra),
-  ),
-  const _RouteCase(Routes.orderRefund, OrderRefundPage),
-  _RouteCase(
-    Routes.orderRefundDetail,
-    OrderRefundDetailPage,
-    extra: (_) => 'o1',
-    verify: (t, extra) =>
-        expect(_page<OrderRefundDetailPage>(t).orderId, extra),
   ),
   _RouteCase(
     Routes.orderInvoice,
@@ -229,6 +267,30 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
     note: 'new address',
     verify: (t, _) => expect(_page<AddressEditPage>(t).address, isNull),
   ),
+  _RouteCase(
+    Routes.addressEdit,
+    AddressEditPage,
+    note: 'edit an existing address entity',
+    extra: (_) => const JameiaAddressEntity(
+      id: 'aaaaaaaaaaaaaaaaaaaaaaa1',
+      label: 'Home',
+      city: 'Salmiya',
+      block: '7',
+      street: '22',
+      building: '5',
+      phone: '+96550001122',
+      location: GeoPointEntity(lat: 29.33, lng: 48.07),
+    ),
+    verify: (t, extra) =>
+        expect(_page<AddressEditPage>(t).address, same(extra)),
+  ),
+  _RouteCase(
+    Routes.addressEdit,
+    AddressEditPage,
+    note: 'a non-entity extra falls back to a new address',
+    extra: (_) => 42,
+    verify: (t, _) => expect(_page<AddressEditPage>(t).address, isNull),
+  ),
   const _RouteCase(Routes.chooseLocation, ChooseLocationPage),
   const _RouteCase(Routes.myCoupons, MyCouponsPage),
   _RouteCase(
@@ -241,6 +303,8 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
   const _RouteCase(Routes.mineAbout, MineAboutPage),
   const _RouteCase(Routes.mineDeliveryCode, MineDeliveryCodePage),
   const _RouteCase(Routes.profileEdit, ProfileEditPage),
+  const _RouteCase(Routes.wallet, WalletPage),
+  const _RouteCase(Routes.loyalty, LoyaltyPage),
   const _RouteCase(Routes.notifications, NotificationsPage),
   const _RouteCase(Routes.customerService, CustomerServicePage),
   _RouteCase(
@@ -251,8 +315,43 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
         expect(_page<CustomerServiceQuestionPage>(t).arg, extra),
   ),
   _RouteCase(Routes.imChat, ImChatPage, extra: (_) => 'o1'),
-  const _RouteCase(Routes.inviteFriends, InviteFriendsPage),
-  const _RouteCase(Routes.punctual, PunctualPage),
+  const _RouteCase(Routes.offers, OffersPage),
+  _RouteCase(
+    Routes.contentPage,
+    ContentPage,
+    extra: (_) => 'about',
+    verify: (t, _) => expect(_page<ContentPage>(t).kind, ContentPageKind.about),
+  ),
+  _RouteCase(
+    Routes.contentPage,
+    PlaceholderPage,
+    note: 'a slug the backend does not serve',
+    extra: (_) => 'careers',
+  ),
+  const _RouteCase(Routes.recipes, RecipesPage),
+  _RouteCase(
+    Routes.recipe,
+    RecipeDetailPage,
+    extra: (_) => 'machboos',
+    verify: (t, extra) => expect(_page<RecipeDetailPage>(t).slug, extra),
+  ),
+  const _RouteCase(
+    Routes.recipe,
+    PlaceholderPage,
+    note: 'missing recipe slug extra',
+  ),
+  const _RouteCase(Routes.proMembership, ProMembershipPage),
+  const _RouteCase(Routes.brands, BrandsPage),
+  const _RouteCase(
+    Routes.inviteFriends,
+    PlaceholderPage,
+    note: 'no referral backend',
+  ),
+  const _RouteCase(
+    Routes.punctual,
+    PlaceholderPage,
+    note: 'no on-time-guarantee backend',
+  ),
   _RouteCase(
     Routes.channelList,
     ChannelListPage,
@@ -359,7 +458,6 @@ void main() {
         child: MultiBlocProvider(
           providers: [
             BlocProvider<CartCubit>(create: (_) => sl<CartCubit>()),
-            BlocProvider<StoreModeCubit>(create: (_) => sl<StoreModeCubit>()),
             BlocProvider<LocalizationCubit>(
               create: (_) => sl<LocalizationCubit>(),
             ),
@@ -371,6 +469,22 @@ void main() {
             ),
             BlocProvider<UnreadNotificationsCubit>(
               create: (_) => sl<UnreadNotificationsCubit>(),
+            ),
+            // Idle (never started) over fakes: the address pages read it at
+            // build time and the list's first sync never touches the network.
+            BlocProvider<AddressBookCubit>(
+              create: (_) => AddressBookCubit(
+                getCached: FakeGetCachedAddressesUseCase(),
+                getAddresses: FakeGetAddressesUseCase(
+                  const Right(AddressBook.empty),
+                ),
+                updateAddress: FakeUpdateAddressUseCase(
+                  Right(const JameiaAddressEntity(id: 'a1', label: 'Home')),
+                ),
+                deleteAddress: FakeDeleteAddressUseCase(),
+                saveCache: FakeSaveCachedAddressesUseCase(),
+                clearCache: FakeClearCachedAddressesUseCase(),
+              ),
             ),
           ],
           child: MaterialApp.router(
@@ -517,7 +631,6 @@ void main() {
           Routes.pdpImageViewer,
           extra: const PdpImageViewerArgs(
             images: <String>['a', 'b', 'c'],
-            kcal: 0,
             initialIndex: 2,
           ),
         )
@@ -526,7 +639,7 @@ void main() {
           completed = true;
         });
     await settleTransition(tester);
-    expect(find.byType(PdpImageViewer), findsOneWidget);
+    expect(find.byType(PdpImageViewerPage), findsOneWidget);
 
     // System back: the viewer's PopScope intercepts it and pops with its
     // current page index (context.pop(_index)).
@@ -536,7 +649,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(completed, isTrue);
     expect(returned, 2);
-    expect(find.byType(PdpImageViewer), findsNothing);
+    expect(find.byType(PdpImageViewerPage), findsNothing);
     expect(currentPath(router), _baseLocation);
 
     await teardownApp(tester);
@@ -566,18 +679,18 @@ void main() {
 
     router.push(Routes.mineAbout);
     await settleTransition(tester);
-    router.pushReplacement(Routes.inviteFriends);
+    router.pushReplacement(Routes.offers);
     await settleTransition(tester);
 
     expect(tester.takeException(), isNull);
-    expect(find.byType(InviteFriendsPage), findsOneWidget);
+    expect(find.byType(OffersPage), findsOneWidget);
     expect(find.byType(MineAboutPage), findsNothing);
     expect(router.canPop(), isTrue);
 
     router.pop();
     await settleTransition(tester);
 
-    expect(find.byType(InviteFriendsPage), findsNothing);
+    expect(find.byType(OffersPage), findsNothing);
     expect(currentPath(router), _baseLocation);
 
     await teardownApp(tester);

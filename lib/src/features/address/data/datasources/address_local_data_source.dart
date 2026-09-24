@@ -1,70 +1,73 @@
-import '../../../../core/data/jameia_repository.dart';
-import '../../../../core/data/models/models.dart';
-import '../../../../core/utils/jameia_geocode.dart';
+import 'dart:convert';
 
-/// Offline source for the saved-address book + serviceable-region picker.
-///
-/// The live Jameia flows hit `saveOrUpdateV2` / `DELUSERADDRESS` / `switchRegion`;
-/// here every persisted read/write delegates to the in-memory
-/// [JameiaRepository], which owns the `shared_preferences`-backed address book and
-/// the active-address / active-region [ValueNotifier]s. The region ANCHORS are a
-/// pure `JameiaGeocode` derivation (hard-coded serviceable regions), so they are
-/// resolved from the util at call time.
-///
-/// Delegating to the EXACT [JameiaRepository] operations is what keeps add / edit
-/// / delete / set-primary persisting across app restarts and keeps the
-/// active-address notifier updating.
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/storage/local_storage.dart';
+import '../models/cached_address_book_model.dart';
+
+/// The copy of the customer's address book on this device: the API rows plus
+/// the customer they belong to, as JSON under one `LocalStorage` key. It lets
+/// a launch show the book before the network answers and keeps it usable
+/// offline. It is wiped when the session ends.
 abstract class AddressLocalDataSource {
-  /// Raw saved-address book (unsorted — the use case hoists the default).
-  List<JameiaAddress> addresses();
+  /// The saved copy; [CachedAddressBookModel.empty] when nothing is saved.
+  Future<CachedAddressBookModel> readAddresses();
 
-  /// Insert or update a saved address (`upsertAddress`) — persists + records its
-  /// coordinate. Returns the saved row.
-  JameiaAddress upsertAddress(JameiaAddress address);
+  Future<void> saveAddresses(CachedAddressBookModel copy);
 
-  /// Delete a saved address by id (`deleteAddress`) — persists + clears the
-  /// active selection when it pointed at the deleted row.
-  void deleteAddress(String id);
-
-  /// Select the active delivery address (`selectActiveAddress`) — updates the
-  /// active-address notifier + records its coordinate.
-  void selectActiveAddress(String id);
-
-  /// Serviceable-region anchors (`JameiaGeocode.openServiceRegions`).
-  List<ServiceRegionItem> serviceRegions();
-
-  /// The active two-letter region code (`activeRegion`).
-  String activeRegion();
-
-  /// Commit a region switch (`switchRegion`).
-  void switchRegion(String region);
+  /// Removes the copy, and the address books older app versions kept.
+  Future<void> clear();
 }
 
 class AddressLocalDataSourceImpl implements AddressLocalDataSource {
-  AddressLocalDataSourceImpl(this.catalog);
+  const AddressLocalDataSourceImpl(this._storage);
 
-  final JameiaRepository catalog;
+  /// Bump the version when the stored shape changes (and add the old key to
+  /// [_retiredKeys]).
+  static const String cacheKey = 'account.addresses.v2';
 
-  @override
-  List<JameiaAddress> addresses() => catalog.addresses;
+  /// Earlier device copies of the book, removed with the current one:
+  /// `account.addresses.v1` (rows without an owner) and the offline book the
+  /// catalogue persisted before addresses moved to the API — both may hold a
+  /// previous customer's addresses and phone numbers.
+  static const List<String> _retiredKeys = [
+    'account.addresses.v1',
+    'jameia.addressbook.v1',
+  ];
 
-  @override
-  JameiaAddress upsertAddress(JameiaAddress address) =>
-      catalog.upsertAddress(address);
-
-  @override
-  void deleteAddress(String id) => catalog.deleteAddress(id);
-
-  @override
-  void selectActiveAddress(String id) => catalog.selectActiveAddress(id);
-
-  @override
-  List<ServiceRegionItem> serviceRegions() =>
-      JameiaGeocode.openServiceRegions();
+  final LocalStorage _storage;
 
   @override
-  String activeRegion() => catalog.activeRegion;
+  Future<CachedAddressBookModel> readAddresses() async {
+    final raw = _storage.getString(cacheKey);
+    if (raw == null) return CachedAddressBookModel.empty;
+    try {
+      return CachedAddressBookModel.fromJson(jsonDecode(raw));
+    } on FormatException catch (error) {
+      throw CacheException('address cache unreadable: ${error.message}');
+    } on ParsingException catch (error) {
+      throw CacheException(error.message);
+    }
+  }
 
   @override
-  void switchRegion(String region) => catalog.switchRegion(region);
+  Future<void> saveAddresses(CachedAddressBookModel copy) =>
+      _guard(() => _storage.setString(cacheKey, jsonEncode(copy.toJson())));
+
+  @override
+  Future<void> clear() async {
+    for (final key in [cacheKey, ..._retiredKeys]) {
+      await _guard(() => _storage.remove(key));
+    }
+  }
+
+  /// A failed or refused write surfaces as the data layer's [CacheException].
+  static Future<void> _guard(Future<bool> Function() write) async {
+    final bool written;
+    try {
+      written = await write();
+    } on Exception catch (error) {
+      throw CacheException('address cache write failed: $error');
+    }
+    if (!written) throw const CacheException('address cache write refused');
+  }
 }

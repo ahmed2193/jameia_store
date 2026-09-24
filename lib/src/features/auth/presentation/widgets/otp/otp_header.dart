@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/phone_number.dart';
 import '../auth_link_button.dart';
 
@@ -28,7 +29,11 @@ class OtpHeader extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.s6),
         Text(
-          'auth.otp_sent_to'.tr(namedArgs: {'phone': phone.display}),
+          // The number sits inside an Arabic sentence: isolate it so the
+          // `+` stays in front of the digits.
+          'auth.otp_sent_to'.tr(
+            namedArgs: {'phone': Formatters.isolate(phone.display)},
+          ),
           style: AppTextStyles.bodyLarge.copyWith(
             color: AppColors.secondaryText,
           ),

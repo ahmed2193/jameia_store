@@ -41,7 +41,7 @@ class ProfileGenderChip extends StatelessWidget {
         child: Text(
           label,
           style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.primaryText,
+            color: selected ? AppColors.brandForeground : AppColors.primaryText,
             fontWeight: selected ? AppTextStyles.bold : AppTextStyles.regular,
           ),
         ),

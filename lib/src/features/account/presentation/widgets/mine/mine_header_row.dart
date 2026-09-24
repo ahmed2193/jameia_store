@@ -8,6 +8,7 @@ import '../../../../../core/design/jameia_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/responsive/content_clamp.dart';
 import 'mine_avatar.dart';
+import 'mine_pro_badge.dart';
 import 'mine_scan_qr_button.dart';
 
 /// The Mine header layout (bundle `h03722`): full-width background art, then a
@@ -21,6 +22,7 @@ class MineHeaderRow extends StatelessWidget {
     required this.onTap,
     required this.onScan,
     this.showEdit = true,
+    this.showProBadge = false,
   });
 
   final String title;
@@ -30,6 +32,9 @@ class MineHeaderRow extends StatelessWidget {
 
   /// Hide the edit pencil for guests (nothing to edit yet).
   final bool showEdit;
+
+  /// The "PRO" pill after the title (active Jm3eia Pro member).
+  final bool showProBadge;
 
   @override
   Widget build(BuildContext context) {
@@ -63,14 +68,24 @@ class MineHeaderRow extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.headingMedium.copyWith(
-                            fontWeight: AppTextStyles.bold,
-                            color: AppColors.primaryText,
-                          ),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.headingMedium.copyWith(
+                                  fontWeight: AppTextStyles.bold,
+                                  color: AppColors.primaryText,
+                                ),
+                              ),
+                            ),
+                            if (showProBadge) ...[
+                              const SizedBox(width: AppSpacing.s6),
+                              const MineProBadge(),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: AppSpacing.s4),
                         Text(

@@ -1,0 +1,20 @@
+{
+ "data": [
+  {
+   "_id": "6aa6011a8a2745ca861636cf",
+   "rating": 5,
+   "customerName": "Hessa A.",
+   "createdAt": "2026-09-13T01:49:14.169Z",
+   "title": "Excellent",
+   "body": "Will order again."
+  }
+ ],
+ "pagination": {
+  "total": 1,
+  "page": 1,
+  "limit": 20,
+  "hasMore": false
+ },
+ "ratingAverage": 5,
+ "ratingCount": 1
+}

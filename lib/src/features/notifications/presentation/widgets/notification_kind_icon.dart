@@ -14,8 +14,10 @@ class NotificationKindIcon extends StatelessWidget {
 
   static IconData iconFor(NotificationKind kind) => switch (kind) {
     NotificationKind.order => JameiaIcons.orders,
-    NotificationKind.points => JameiaIcons.reward,
-    NotificationKind.wallet => JameiaIcons.pay,
+    // Material for both: the font's reward glyph is the word 賞 and its pay
+    // glyph is a ¥ sign, and this app bills in Kuwaiti dinars.
+    NotificationKind.points => Icons.loyalty_outlined,
+    NotificationKind.wallet => Icons.account_balance_wallet_outlined,
     NotificationKind.coupon => Icons.confirmation_number_outlined,
     NotificationKind.offer => JameiaIcons.flame,
     NotificationKind.review => JameiaIcons.star,

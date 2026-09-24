@@ -75,8 +75,25 @@ class AuthCustomerEntity extends Equatable {
   bool get hasLanguagePreference => language.isNotEmpty;
 
   /// The raw name regardless of language — the backend stores ONE string
-  /// (both fields hold it), so this is what a profile form edits.
+  /// (both fields hold it).
   String get anyName => nameEn.isNotEmpty ? nameEn : nameAr;
+
+  /// The account still carries the placeholder the backend gives a new
+  /// customer at sign-up — the phone number as the name — or no name at all:
+  /// the app asks for a real one ("complete your profile").
+  bool get needsName {
+    final name = anyName.trim();
+    return name.isEmpty || name == phone.trim();
+  }
+
+  /// The name the customer chose, or `''` while [needsName] — what the
+  /// profile form edits (it never offers the phone number as a name).
+  String get givenName => needsName ? '' : anyName;
+
+  /// Date of birth, gender and household size are all filled in — the
+  /// details the backend's one-time profile bonus asks for.
+  bool get hasCompleteDetails =>
+      dateOfBirth != null && gender != null && (householdSize ?? 0) >= 1;
 
   @override
   List<Object?> get props => [

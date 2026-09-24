@@ -1,68 +1,76 @@
 import 'package:equatable/equatable.dart';
 
-import 'coupon_entity.dart';
+import '../../../../core/domain/entities/cart_entity.dart';
+import '../../../../core/domain/entities/order_status.dart';
+import 'delivery_slot_entity.dart';
 
-/// Drop-off choices mirror Jameia's `HAND_TO_ME` / `LEAVE_AT_DESIGNATED_SPOT`.
-enum DropOffOption { handToMe, leaveAtSpot }
+/// When the order should go out.
+enum DeliveryTiming { asap, express, scheduled }
 
-/// Payment methods mirror the order_confirm payment-row asset set.
-enum PaymentMethod { cod, applePay, googlePay }
-
-/// The checkout order draft — the user's in-progress selections on the
-/// `order_confirm_global` screen (coupon, drop-off preference, cutlery toggle,
-/// rider tip, payment method) plus the derived money math (coupon discount +
-/// order total) computed against the live cart subtotal.
-///
-/// The subtotal and delivery fee are NOT part of the draft (they belong to the
-/// cart + shop); the derived-total helpers take them as arguments so the draft
-/// stays a pure snapshot of the user's checkout choices.
+/// What the customer chose on the checkout page. Delivery goes to a saved
+/// address, pickup to a branch; the address / branch itself is selected on
+/// the server (`/v1/delivery/select-*`), so only ids live here.
 class CheckoutDraft extends Equatable {
   const CheckoutDraft({
-    this.coupon,
-    this.dropOff = DropOffOption.handToMe,
-    this.cutlery = false,
-    this.tip = 0,
-    this.payMethod = PaymentMethod.cod,
+    this.mode = FulfillmentMode.delivery,
+    this.addressId,
+    this.branchId,
+    this.timing = DeliveryTiming.asap,
+    this.slot,
+    this.paymentMethod = OrderPaymentMethod.cod,
+    this.notes = '',
   });
 
-  /// The applied coupon, or null when none is selected.
-  final CouponEntity? coupon;
-  final DropOffOption dropOff;
-  final bool cutlery;
-  final double tip;
-  final PaymentMethod payMethod;
+  /// `POST /v1/orders` → `notes` limit.
+  static const int maxNotesLength = 256;
 
-  /// Discount applied by the selected coupon — a flat [Coupon.amount] once the
-  /// [Coupon.minSpend] gate is met, never more than the subtotal. Returns 0 when
-  /// no coupon is applied or the cart is below the coupon's minimum (so a coupon
-  /// auto-drops if the cart shrinks below its threshold).
-  double discountFor(double subtotal) {
-    final c = coupon;
-    if (c == null || subtotal < c.minSpend) return 0;
-    return c.amount < subtotal ? c.amount : subtotal;
-  }
+  final FulfillmentMode mode;
+  final String? addressId;
+  final String? branchId;
+  final DeliveryTiming timing;
+  final DeliverySlotEntity? slot;
+  final OrderPaymentMethod paymentMethod;
+  final String notes;
 
-  /// Order total: subtotal − discount + delivery + tip, floored at zero.
-  double totalFor(double subtotal, double deliveryFee) =>
-      (subtotal - discountFor(subtotal) + deliveryFee + tip).clamp(
-        0.0,
-        double.infinity,
-      );
+  bool get isPickup => mode == FulfillmentMode.pickup;
+  bool get hasDestination => isPickup ? branchId != null : addressId != null;
+  bool get needsSlot => timing == DeliveryTiming.scheduled && slot == null;
+  bool get notesTooLong => notes.length > maxNotesLength;
+
+  /// Everything `POST /v1/orders` needs is chosen and valid.
+  bool get isComplete =>
+      hasDestination &&
+      !needsSlot &&
+      !notesTooLong &&
+      paymentMethod != OrderPaymentMethod.other;
 
   CheckoutDraft copyWith({
-    CouponEntity? coupon,
-    DropOffOption? dropOff,
-    bool? cutlery,
-    double? tip,
-    PaymentMethod? payMethod,
+    FulfillmentMode? mode,
+    String? addressId,
+    String? branchId,
+    DeliveryTiming? timing,
+    DeliverySlotEntity? slot,
+    bool clearSlot = false,
+    OrderPaymentMethod? paymentMethod,
+    String? notes,
   }) => CheckoutDraft(
-    coupon: coupon ?? this.coupon,
-    dropOff: dropOff ?? this.dropOff,
-    cutlery: cutlery ?? this.cutlery,
-    tip: tip ?? this.tip,
-    payMethod: payMethod ?? this.payMethod,
+    mode: mode ?? this.mode,
+    addressId: addressId ?? this.addressId,
+    branchId: branchId ?? this.branchId,
+    timing: timing ?? this.timing,
+    slot: clearSlot ? null : slot ?? this.slot,
+    paymentMethod: paymentMethod ?? this.paymentMethod,
+    notes: notes ?? this.notes,
   );
 
   @override
-  List<Object?> get props => [coupon, dropOff, cutlery, tip, payMethod];
+  List<Object?> get props => [
+    mode,
+    addressId,
+    branchId,
+    timing,
+    slot,
+    paymentMethod,
+    notes,
+  ];
 }

@@ -1,0 +1,152 @@
+{
+ "_id": "6aa601198a2745ca86163639",
+ "name": "Breakfast Bundle",
+ "slug": "breakfast-bundle",
+ "type": "bundle",
+ "price": 2990,
+ "proPrice": null,
+ "compareAt": 3490,
+ "image": "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=600&h=600&fit=crop",
+ "stock": 20,
+ "tags": [
+  "fresh",
+  "best-seller"
+ ],
+ "unitOfSale": "pack",
+ "ratingAverage": 4.6,
+ "ratingCount": 22,
+ "description": "Milk, bread, and eggs — everything for a Kuwaiti breakfast.",
+ "galleryUrls": [
+  "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=600&h=600&fit=crop"
+ ],
+ "brand": {
+  "_id": "6aa5ffb85233feadc5c414fe",
+  "name": "KDD",
+  "slug": "kdd",
+  "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&h=200&fit=crop"
+ },
+ "category": {
+  "_id": "6aa6010d06da786e3f5658f1",
+  "name": "Grocery",
+  "slug": "grocery-items",
+  "image": "",
+  "parentId": "6aa5ffb85233feadc5c4151e",
+  "sortOrder": 1,
+  "productCount": 0
+ },
+ "variants": [],
+ "bundleItems": [
+  {
+   "productId": "6aa6010d06da786e3f5658f4",
+   "quantity": 1,
+   "unitPrice": 499,
+   "product": {
+    "_id": "6aa6010d06da786e3f5658f4",
+    "name": "KDD Full Cream Milk",
+    "slug": "kdd-full-cream-milk",
+    "type": "variant",
+    "price": 0,
+    "proPrice": null,
+    "compareAt": 100,
+    "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop",
+    "stock": 32,
+    "tags": [
+     "6aa5ffb85233feadc5c41502",
+     "fresh",
+     "best-seller"
+    ],
+    "unitOfSale": "l",
+    "ratingAverage": 0,
+    "ratingCount": 0
+   }
+  },
+  {
+   "productId": "6aa6010d06da786e3f5658f7",
+   "quantity": 1,
+   "unitPrice": 150,
+   "product": {
+    "_id": "6aa6010d06da786e3f5658f7",
+    "name": "Arabic Bread (6 pack)",
+    "slug": "arabic-bread-6-pack",
+    "type": "standard",
+    "price": 150,
+    "proPrice": null,
+    "compareAt": 250,
+    "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&h=600&fit=crop",
+    "stock": 200,
+    "tags": [
+     "6aa5ffb85233feadc5c41502",
+     "fresh",
+     "best-seller"
+    ],
+    "unitOfSale": "pack",
+    "ratingAverage": 0,
+    "ratingCount": 0
+   }
+  },
+  {
+   "productId": "6aa601198a2745ca86163638",
+   "quantity": 1,
+   "unitPrice": 2250,
+   "product": {
+    "_id": "6aa601198a2745ca86163638",
+    "name": "Fresh Eggs (30)",
+    "slug": "fresh-eggs-30",
+    "type": "standard",
+    "price": 2250,
+    "proPrice": null,
+    "compareAt": 2813,
+    "image": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&h=600&fit=crop",
+    "stock": 60,
+    "tags": [
+     "6aa5ffb85233feadc5c41502",
+     "fresh",
+     "best-seller"
+    ],
+    "unitOfSale": "pack",
+    "ratingAverage": 4,
+    "ratingCount": 2
+   }
+  }
+ ],
+ "related": [
+  {
+   "_id": "6aa6010d06da786e3f5658f7",
+   "name": "Arabic Bread (6 pack)",
+   "slug": "arabic-bread-6-pack",
+   "type": "standard",
+   "price": 150,
+   "proPrice": null,
+   "compareAt": 250,
+   "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&h=600&fit=crop",
+   "stock": 200,
+   "tags": [
+    "6aa5ffb85233feadc5c41502",
+    "fresh",
+    "best-seller"
+   ],
+   "unitOfSale": "pack",
+   "ratingAverage": 0,
+   "ratingCount": 0
+  },
+  {
+   "_id": "6aa6010d06da786e3f5658fa",
+   "name": "Mai Dubai Water 1.5L",
+   "slug": "mai-dubai-water-1-5l",
+   "type": "standard",
+   "price": 150,
+   "proPrice": null,
+   "compareAt": 250,
+   "image": "https://images.unsplash.com/photo-1546173159-315724a31696?w=600&h=600&fit=crop",
+   "stock": 500,
+   "tags": [
+    "fresh",
+    "best-seller"
+   ],
+   "unitOfSale": "l",
+   "ratingAverage": 0,
+   "ratingCount": 0
+  }
+ ],
+ "recipes": []
+}

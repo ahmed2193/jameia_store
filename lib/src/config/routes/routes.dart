@@ -19,16 +19,29 @@ class Routes {
   static const String kingkongLanding = '/kingkong';
 
   // Shop & ordering
-  static const String shop = '/shop'; // menu/ordering — arg: shopId
-  static const String shopDetail = '/shop-detail';
-  static const String shopMap = '/shop-map';
-  static const String shopFavorites = '/shop-favorites';
+  // Legacy "open the shop" link of the still-offline screens → the store's
+  // categories (single store; the old shop-id extra is ignored).
+  static const String shop = '/shop';
+  static const String shopFavorites = '/shop-favorites'; // unbuilt (wishlist)
   static const String skuModal = '/sku-modal';
   static const String cartPreview = '/cart-preview';
   static const String checkout = '/checkout'; // order confirm
 
-  // Product detail (KeeMart PDP)
-  static const String productDetail = '/product-detail'; // extra: Product
+  // Backend catalogue (jm3eia API) — slugs travel in immutable args classes
+  static const String categories = '/categories'; // the whole category tree
+  static const String category = '/category'; // extra: CategoryArgs
+  // Any product list: brand, collection, tag, offers… extra: ProductListingArgs
+  static const String productListing = '/products';
+  static const String brands = '/brands';
+  static const String offers = '/offers';
+  static const String recipes = '/recipes';
+  static const String recipe = '/recipe'; // extra: String slug
+  static const String contentPage = '/content-page'; // extra: String slug (CMS)
+  static const String proMembership = '/pro'; // Pro plans + perks
+
+  // Product detail
+  // extra: ProductDetailArgs
+  static const String productDetail = '/product-detail';
   // extra: PdpImageViewerArgs
   static const String pdpImageViewer = '/pdp-image-viewer';
 
@@ -50,6 +63,8 @@ class Routes {
   static const String mineAbout = '/mine-about';
   static const String mineSettings = '/mine-settings';
   static const String mineDeliveryCode = '/mine-delivery-code';
+  static const String wallet = '/wallet'; // balance + transactions (signed-in)
+  static const String loyalty = '/loyalty'; // points + history (signed-in)
   static const String customerService = '/customer-service';
   static const String customerServiceQuestion = '/customer-service-question';
   static const String imChat = '/im-chat';

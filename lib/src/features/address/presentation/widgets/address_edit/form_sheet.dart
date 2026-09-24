@@ -1,77 +1,56 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/utils/jameia_geocode.dart';
-import '../../../../../core/widgets/core_widgets.dart';
-import 'additional_note_section.dart';
 import 'address_details_section.dart';
-import 'contact_section.dart';
+import 'address_save_button.dart';
+import 'default_address_switch.dart';
 import 'delivery_address_card.dart';
-import 'delivery_instructions_section.dart';
-import 'sheet_grabber.dart';
+import 'form_sheet_header.dart';
+import 'keyboard_inset_padding.dart';
+import 'notes_section.dart';
+import 'phone_section.dart';
 import 'tag_section.dart';
 
-/// FORM sheet — the scrollable schema-driven address-details form.
+/// FORM sheet — full height: a pinned header over the scrollable address form
+/// (one section per API concern). The list stops above the keyboard, so a
+/// focused field can always scroll into view.
 class FormSheet extends StatelessWidget {
   const FormSheet({
     super.key,
+    required this.isEdit,
     required this.onEditLocation,
-    required this.onSave,
-    required this.errors,
-    required this.altError,
-    required this.onClearError,
-    required this.onClearAltError,
   });
 
+  final bool isEdit;
+
+  /// Back to the map to move the pin.
   final VoidCallback onEditLocation;
-  final VoidCallback onSave;
-  // Inline validation: field → i18n KEY (resolved with .tr() per field).
-  final Map<AddrField, String> errors;
-  final bool altError;
-  final ValueChanged<AddrField> onClearError;
-  final VoidCallback onClearAltError;
 
   @override
   Widget build(BuildContext context) {
-    final bottomPad = MediaQuery.paddingOf(context).bottom;
+    final bottomPad = MediaQuery.viewPaddingOf(context).bottom;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(
         top: Radius.circular(AppRadius.sheet),
       ),
-      child: ListView(
-        padding: EdgeInsets.only(bottom: bottomPad + AppSpacing.s16),
+      child: Column(
         children: [
-          const SheetGrabber(),
-          // 1. Delivery address — resolved area + "Edit" → SELECT.
-          DeliveryAddressCard(onEdit: onEditLocation),
-          // 2. Address details — struct-type tabs + schema-driven inputs.
-          AddressDetailsSection(errors: errors, onClearError: onClearError),
-          // 3. Contact — name + phone (+965).
-          ContactSection(errors: errors, onClearError: onClearError),
-          // 4. Delivery instructions — hand-to-me vs leave-at-spot (+ alt + spots).
-          DeliveryInstructionsSection(
-            altError: altError,
-            onClearAltError: onClearAltError,
-          ),
-          // 5. Additional note.
-          const AdditionalNoteSection(),
-          // 6. Tag / label — Home | Work | Hangout | Other.
-          const TagSection(),
-          // 7. Save CTA.
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.s12,
-              AppSpacing.s8,
-              AppSpacing.s12,
-              AppSpacing.s12,
-            ),
-            // ALWAYS tappable in FORM so the user can tap Save to SEE what's
-            // wrong (inline errors). Validation happens in onSave → _save().
-            child: AppButton(
-              label: 'addr.save_address'.tr(),
-              onPressed: onSave,
-              radius: AppRadius.r1,
+          FormSheetHeader(isEdit: isEdit, onClose: onEditLocation),
+          Expanded(
+            child: KeyboardInsetPadding(
+              child: ListView(
+                padding: EdgeInsets.only(bottom: bottomPad + AppSpacing.s16),
+                children: [
+                  // Pinned area + "Edit" → back to the map.
+                  DeliveryAddressCard(onEdit: onEditLocation),
+                  const AddressDetailsSection(),
+                  const PhoneSection(),
+                  const NotesSection(),
+                  const TagSection(),
+                  const DefaultAddressSwitch(),
+                  const AddressSaveButton(),
+                ],
+              ),
             ),
           ),
         ],

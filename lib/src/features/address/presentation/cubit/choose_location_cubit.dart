@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../domain/entities/service_region_item_entity.dart';
-import '../../domain/repositories/address_repository.dart';
+import '../../domain/usecases/get_service_regions_usecase.dart';
+import '../../domain/usecases/switch_region_usecase.dart';
 
 /// Re-export the framework-free region row type so the screen imports it via the
 /// cubit (mirrors the old `ServiceRegionItem` re-export).
@@ -66,17 +68,19 @@ class ChooseLocationState extends Equatable {
 /// active region. Resolved via `sl<ChooseLocationCubit>()`.
 class ChooseLocationCubit extends Cubit<ChooseLocationState>
     with SafeCubitMixin<ChooseLocationState> {
-  ChooseLocationCubit(this._repository) : super(const ChooseLocationState()) {
+  ChooseLocationCubit(this._getServiceRegions, this._switchRegion)
+    : super(const ChooseLocationState()) {
     load();
   }
 
-  final AddressRepository _repository;
+  final GetServiceRegionsUseCase _getServiceRegions;
+  final SwitchRegionUseCase _switchRegion;
 
   /// Load the region anchors + active region. Default selection = the active
   /// region (`lastSelectedRegion`), NOT first.
   Future<void> load() async {
     safeEmit(state.copyWith(status: ChooseLocationStatus.loading));
-    final result = await _repository.getServiceRegions();
+    final result = await _getServiceRegions(const NoParams());
     result.fold(
       (failure) => safeEmit(
         state.copyWith(
@@ -128,5 +132,7 @@ class ChooseLocationCubit extends Cubit<ChooseLocationState>
   bool isSwitch(String id) => id != state.activeRegion;
 
   /// Commit a region switch (`switchRegion` + `com.jameia.changed.region`).
-  Future<void> switchRegion(String region) => _repository.switchRegion(region);
+  Future<void> switchRegion(String region) async {
+    await _switchRegion(SwitchRegionParams(region: region));
+  }
 }

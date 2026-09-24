@@ -1,127 +1,100 @@
 import 'package:equatable/equatable.dart';
 
-/// Saved delivery address (address book, home address bar, checkout address
-/// bar, order tracking map).
+import 'address_label.dart';
+import 'geo_point_entity.dart';
+
+/// A saved delivery address, shaped like the jm3eia API row
+/// (`GET / POST / PATCH /v1/account/addresses`).
 ///
-/// Carries every raw field of the `JameiaAddress` DTO. The Jameia enums are
-/// stored as their raw codes so the domain imports nothing from
-/// `core/utils/jameia_geocode.dart` (which pulls `google_maps_flutter`):
-/// - [structTypeCode] == `StructType.code` (2 apartment · 3 house · 4 office)
-/// - [labelTypeCode] == `LabelType.code` (0 home … 5 other)
-/// - [dropOffLeaveAtSpot] == `DropOff.leaveAtSpot` (false → `handToMe`)
-///
-/// Presentation rebuilds the enums with `StructType.fromCode(...)` /
-/// `LabelType.fromCode(...)`. Defaults mirror `JameiaAddress.fromJson`.
+/// Optional wire fields are empty strings here, never `null`, so widgets and
+/// update diffs compare plain values. [label] is the raw wire text;
+/// [labelKind] is the tag the app understands.
 class JameiaAddressEntity extends Equatable {
   const JameiaAddressEntity({
     required this.id,
     required this.label,
-    this.line = '',
-    this.area = '',
-    this.recipient = '',
-    this.phone = '',
-    this.isDefault = false,
-    this.lat = 0,
-    this.lng = 0,
-    this.structTypeCode = 2,
-    this.labelTypeCode = 0,
-    this.dropOffLeaveAtSpot = false,
-    this.dropSpot = '',
-    this.altLocation = '',
-    this.poiName = '',
-    this.brief = '',
-    this.detail = '',
-    this.buildingName = '',
-    this.aptNumber = '',
-    this.unitOrFloor = '',
-    this.companyName = '',
-    this.street = '',
+    this.city = '',
+    this.governorateNo = '',
+    this.areaId = '',
     this.block = '',
-    this.avenue = '',
-    this.additionalDirection = '',
-    this.note = '',
+    this.street = '',
+    this.building = '',
+    this.floor = '',
+    this.apartment = '',
+    this.phone = '',
+    this.notes = '',
+    this.location,
+    this.isDefault = false,
   });
 
+  /// Mongo id (`_id`).
   final String id;
 
-  /// Tag display: Home | Work | Hangout | Other.
+  /// Raw tag text, e.g. `Home`.
   final String label;
 
-  /// Legacy one-line address (== detail/brief fallback).
-  final String line;
-  final String area;
-  final String recipient;
-  final String phone;
-  final bool isDefault;
-  final double lat;
-  final double lng;
-
-  /// `StructType.code` (2 apartment · 3 house · 4 office).
-  final int structTypeCode;
-
-  /// `LabelType.code` (0 home · 1 work · 2 hangout · 3 faceDelivery ·
-  /// 4 assignedPlace · 5 other).
-  final int labelTypeCode;
-
-  /// `DropOff.leaveAtSpot` when true, `DropOff.handToMe` when false.
-  final bool dropOffLeaveAtSpot;
-
-  /// frontDoor | lobby | frontDesk | other | ''.
-  final String dropSpot;
-  final String altLocation;
-  final String poiName;
-  final String brief;
-  final String detail;
-  final String buildingName;
-  final String aptNumber;
-  final String unitOrFloor;
-  final String companyName;
-  final String street;
+  /// Area name (reverse-geocoded when the address was pinned).
+  final String city;
+  final String governorateNo;
+  final String areaId;
   final String block;
-  final String avenue;
-  final String additionalDirection;
-  final String note;
+  final String street;
+  final String building;
+  final String floor;
+  final String apartment;
 
-  /// Two-line display: the brief line (or legacy [line]) + area.
-  String get fullText {
-    final head = brief.isNotEmpty ? brief : line;
-    return area.isEmpty ? head : '$head, $area';
+  /// Contact phone for the courier, as stored (E.164 when the app wrote it).
+  final String phone;
+  final String notes;
+
+  /// The map pin; `null` when the address was saved without coordinates.
+  final GeoPointEntity? location;
+  final bool isDefault;
+
+  AddressLabel get labelKind => AddressLabel.fromWire(label);
+
+  /// The label text another client wrote that matches no app tag (e.g.
+  /// `Mom's house`), or `null` when [labelKind] already says it all.
+  String? get customLabel {
+    final text = label.trim();
+    if (labelKind != AddressLabel.other || text.isEmpty) return null;
+    final isOtherToken =
+        text.toLowerCase() == AddressLabel.other.wireValue.toLowerCase();
+    return isOtherToken ? null : text;
   }
 
-  /// Home-bar / picker headline. Prefers an explicit POI name, else the brief.
-  String get displayTitle {
-    if (poiName.isNotEmpty) return poiName;
-    if (brief.isNotEmpty) return brief;
-    return line.isNotEmpty ? line : area;
-  }
+  JameiaAddressEntity copyWith({bool? isDefault}) => JameiaAddressEntity(
+    id: id,
+    label: label,
+    city: city,
+    governorateNo: governorateNo,
+    areaId: areaId,
+    block: block,
+    street: street,
+    building: building,
+    floor: floor,
+    apartment: apartment,
+    phone: phone,
+    notes: notes,
+    location: location,
+    isDefault: isDefault ?? this.isDefault,
+  );
 
   @override
   List<Object?> get props => [
     id,
     label,
-    line,
-    area,
-    recipient,
-    phone,
-    isDefault,
-    lat,
-    lng,
-    structTypeCode,
-    labelTypeCode,
-    dropOffLeaveAtSpot,
-    dropSpot,
-    altLocation,
-    poiName,
-    brief,
-    detail,
-    buildingName,
-    aptNumber,
-    unitOrFloor,
-    companyName,
-    street,
+    city,
+    governorateNo,
+    areaId,
     block,
-    avenue,
-    additionalDirection,
-    note,
+    street,
+    building,
+    floor,
+    apartment,
+    phone,
+    notes,
+    location,
+    isDefault,
   ];
 }

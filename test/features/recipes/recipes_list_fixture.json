@@ -1,0 +1,46 @@
+{
+ "data": [
+  {
+   "_id": "6aa72210da383e2755e08d95",
+   "slug": "machboos",
+   "title": "Kuwaiti Chicken Machboos",
+   "imageUrl": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80",
+   "prepMinutes": 25,
+   "cookMinutes": 55,
+   "servings": 6,
+   "cuisine": {
+    "slug": "kuwaiti",
+    "name": "Kuwaiti"
+   },
+   "diet": {
+    "slug": "halal",
+    "name": "Halal"
+   },
+   "excerpt": "Fragrant baharat rice with tender chicken, dried lime, and ghee — a Friday and Ramadan classic."
+  },
+  {
+   "_id": "6aa72210da383e2755e08d96",
+   "slug": "margoog",
+   "title": "Margoog (Vegetable Stew)",
+   "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+   "prepMinutes": 25,
+   "cookMinutes": 70,
+   "servings": 4,
+   "cuisine": {
+    "slug": "kuwaiti",
+    "name": "Kuwaiti"
+   },
+   "diet": {
+    "slug": "halal",
+    "name": "Halal"
+   },
+   "excerpt": "Slow-cooked stew under a thin bread lid — vegetables, chicken, and spices soak into soft flatbread."
+  }
+ ],
+ "pagination": {
+  "total": 6,
+  "page": 1,
+  "limit": 2,
+  "hasMore": true
+ }
+}

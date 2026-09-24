@@ -1,6 +1,7 @@
-# Integration patterns (each one is shipped code — read the file named)
+# Integration patterns (shipped code unless marked — read the file named)
 
-Every pattern below fixed a real bug found in review. Use them instead of rediscovering them.
+Patterns §1–§9 and §11 are shipped and each fixed a real bug found in review; §10 and §12 are
+the agreed target shape for cases no feature has needed yet. Use them instead of rediscovering them.
 
 ## 1. Paginated list
 
@@ -65,7 +66,8 @@ A `failedAction` enum tells the page whether the failure is full-screen or a toa
 
 The interceptor already tried to refresh. If the datasource still gets 401 the repository
 returns `UnauthorizedFailure` → state getter `isSignedOut` → the body shows the sign-in prompt
-(`'…sign_in_prompt'.tr()` + button → `context.push(Routes.login)`). Do not pre-check the
+(`'…sign_in_prompt'.tr()` + button → `context.go(Routes.login)` — `go`, not `push`: auth
+transitions replace the stack so every page cubit is rebuilt for the new session). Do not pre-check the
 session in the cubit and do not read `SessionStore` — let the 401 tell you.
 Session **expiry** (refresh rejected) is handled globally: the app root routes to login.
 
@@ -104,7 +106,7 @@ Cross-feature import allowed only for the app-global cubits listed in `CLAUDE.md
 - Unknown enum wire values → an `other` / `unknown` case, never a throw: the backend adds
   notification types and order statuses without an app release.
 
-## 10. Branching on business errors
+## 10. Branching on business errors (target shape — see the blocker below)
 
 ```dart
 result.fold(
@@ -116,6 +118,15 @@ result.fold(
   (_) => …,
 );
 ```
+
+**Blocker today:** `ApiStatus` lives in `core/network/api_status.dart`, and the lints forbid
+`core/network` in presentation (`presentation_no_data_layer`) and in domain
+(`domain_layer_purity` allows only `core/error/failures.dart` + `core/usecase`). So neither a
+cubit nor a use case can import it, and nothing in `lib/` branches on a code yet. Do **not**
+silence the lint or compare against a string literal. The intended fix is a small core change
+— move the constants under `core/error/` and re-export them from `failures.dart` — which needs
+the owner's go-ahead; raise it in your report when your feature needs a code. Until then
+branch on the failure **type** / `statusCode` only.
 
 Add a missing code to `ApiStatus` first. Field-level validation messages arrive in
 `BadRequestException.details` (`[{key, message}]`) but are **not** carried by `ServerFailure`
@@ -133,5 +144,7 @@ not parse `failure.message`.
 ## 12. User-typed queries (search, autocomplete)
 
 Debounce in the cubit (timer cancelled in `close()`) and drop stale replies with the
-generation counter from §1. `ApiConsumer` exposes no cancel token on purpose — a superseded
-request is simply ignored when it lands; do not reach for Dio to cancel it.
+generation counter from §1. `ApiConsumer` takes no cancel token today (`SafeCubitMixin.cancelToken`
+exists but is not wired to it), so a superseded request is simply ignored when it lands. If
+real cancellation becomes necessary, add it to `ApiConsumer` in core — never reach for Dio
+from a feature.

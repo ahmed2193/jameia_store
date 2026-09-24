@@ -46,8 +46,10 @@ class CustomerModel {
   static const String householdSizeKey = 'householdSize';
   static const String marketingPushKey = 'marketingPush';
   static const String activeStatus = 'active';
+  static const String inactiveStatus = 'inactive';
   static const String _englishKey = 'en';
   static const String _arabicKey = 'ar';
+  static const int _dateLength = 10; // YYYY-MM-DD
 
   /// Throws [ParsingException] when the record carries no id — a customer
   /// without an identity is a broken payload, not an anonymous customer.
@@ -104,6 +106,34 @@ class CustomerModel {
   final String? gender;
   final int? householdSize;
   final bool marketingPush;
+
+  /// The API shape again (a `GET /v1/account/me` row), so what the device
+  /// stores reads back through [CustomerModel.fromJson] unchanged. One name
+  /// for both languages goes out as the plain string the backend sends.
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    mongoIdKey: id,
+    phoneKey: phone,
+    nameKey: nameEn == nameAr
+        ? nameEn
+        : <String, dynamic>{_englishKey: nameEn, _arabicKey: nameAr},
+    emailKey: email.isEmpty ? null : email,
+    if (language.isNotEmpty) languageKey: language,
+    walletKey: wallet,
+    loyaltyPointsKey: loyaltyPoints,
+    statusKey: status,
+    proKey: <String, dynamic>{
+      proActiveKey: proActive,
+      proExpiresAtKey: proExpiresAt,
+    },
+    dateOfBirthKey: dateOfBirth,
+    genderKey: gender,
+    householdSizeKey: householdSize,
+    marketingPushKey: marketingPush,
+  };
+
+  /// A calendar day as the API writes it (`dateOfBirth`: `YYYY-MM-DD`).
+  static String wireDate(DateTime day) =>
+      day.toIso8601String().substring(0, _dateLength);
 
   static String? _string(Object? value) =>
       value is String && value.isNotEmpty ? value : null;

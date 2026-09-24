@@ -1,29 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/widgets/common.dart';
-import '../../cubit/orders_cubit.dart';
+import '../../../../../core/domain/entities/order_status.dart';
+import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/option_row.dart';
+import '../../../domain/entities/cancel_order_request.dart';
 
-// ── Cancel-order bottom sheet ─────────────────────────────────────────────────
-
-enum _CancelReason {
-  mistake,
-  tooSlow,
-  cheaper,
-  other;
-
-  String get label => switch (this) {
-    _CancelReason.mistake => 'orders.reason_mistake'.tr(),
-    _CancelReason.tooSlow => 'orders.reason_too_slow'.tr(),
-    _CancelReason.cheaper => 'orders.reason_cheaper'.tr(),
-    _CancelReason.other => 'orders.reason_other'.tr(),
-  };
-}
-
+/// The five reasons `POST /v1/orders/{id}/cancel` accepts plus an optional
+/// note; pops the [CancelOrderRequest] to send, or nothing.
 class CancelOrderSheet extends StatefulWidget {
   const CancelOrderSheet({super.key, required this.orderId});
 
@@ -34,130 +22,88 @@ class CancelOrderSheet extends StatefulWidget {
 }
 
 class _CancelOrderSheetState extends State<CancelOrderSheet> {
-  _CancelReason? _selected;
+  CancelOrderReason _reason = CancelOrderReason.changedMind;
+  final TextEditingController _note = TextEditingController();
 
-  void _confirm() {
-    final selected = _selected;
-    if (selected == null) return;
-    // Dispatch the cancel through the list cubit (CancelOrderUseCase). Offline
-    // this is an accepted no-op that reloads the list, then the sheet closes.
-    context.read<OrdersCubit>().cancel(widget.orderId, reason: selected.label);
-    Navigator.of(context).pop();
+  static const int _noteLines = 2;
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
   }
+
+  String _label(CancelOrderReason reason) => switch (reason) {
+    CancelOrderReason.changedMind => 'orders.cancel_reason_changed_mind'.tr(),
+    CancelOrderReason.orderedByMistake =>
+      'orders.cancel_reason_ordered_by_mistake'.tr(),
+    CancelOrderReason.tooSlow => 'orders.cancel_reason_too_slow'.tr(),
+    CancelOrderReason.foundElsewhere =>
+      'orders.cancel_reason_found_elsewhere'.tr(),
+    CancelOrderReason.other => 'orders.cancel_reason_other'.tr(),
+  };
 
   @override
   Widget build(BuildContext context) {
-    final bottomPad = MediaQuery.paddingOf(context).bottom;
     return Padding(
-      padding: EdgeInsetsDirectional.only(bottom: bottomPad + AppSpacing.s16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ── Handle ─────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsetsDirectional.only(top: AppSpacing.s12),
-            child: Center(
-              child: Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.s16),
-          // ── Title ───────────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.pageMargin,
-            ),
-            child: Text(
-              'orders.cancel_order'.tr(),
-              style: AppTextStyles.displaySmall.copyWith(
-                fontWeight: AppTextStyles.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.s4),
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.pageMargin,
-            ),
-            child: Text(
-              'orders.select_a_reason'.tr(),
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.secondaryText,
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.s8),
-          const ThinDivider(),
-          // ── Radio list ──────────────────────────────────────────────────
-          RadioGroup<_CancelReason>(
-            groupValue: _selected,
-            onChanged: (v) => setState(() => _selected = v),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final reason in _CancelReason.values)
-                  InkWell(
-                    onTap: () => setState(() => _selected = reason),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                        horizontal: AppSpacing.pageMargin,
-                        vertical: AppSpacing.s12,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              reason.label,
-                              style: AppTextStyles.bodyLarge,
-                            ),
-                          ),
-                          Radio<_CancelReason>(
-                            value: reason,
-                            activeColor: AppColors.primaryText,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const ThinDivider(),
-          const SizedBox(height: AppSpacing.s16),
-          // ── Confirm button ──────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.pageMargin,
-            ),
-            child: FilledButton(
-              onPressed: _selected != null ? _confirm : null,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                disabledBackgroundColor: AppColors.primary.withValues(
-                  alpha: 0.4,
-                ),
-                foregroundColor: AppColors.brandForeground,
-                minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.r1),
-                ),
-              ),
+      padding: EdgeInsetsDirectional.only(
+        bottom: MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.s16),
               child: Text(
-                'orders.confirm'.tr(),
+                'orders.cancel_title'.tr(),
                 style: AppTextStyles.headingMedium.copyWith(
-                  fontWeight: AppTextStyles.bold,
+                  color: AppColors.primaryText,
                 ),
               ),
             ),
-          ),
-        ],
+            for (final reason in CancelOrderReason.values)
+              OptionRow(
+                key: ValueKey<CancelOrderReason>(reason),
+                title: _label(reason),
+                selected: reason == _reason,
+                onTap: () => setState(() => _reason = reason),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.s16),
+              child: TextField(
+                controller: _note,
+                maxLength: CancelOrderRequest.maxNoteLength,
+                maxLines: _noteLines,
+                decoration: InputDecoration(
+                  hintText: 'orders.cancel_note_hint'.tr(),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.s16,
+                0,
+                AppSpacing.s16,
+                AppSpacing.s16,
+              ),
+              child: AppButton(
+                label: 'orders.cancel_confirm'.tr(),
+                color: AppColors.error,
+                foreground: AppColors.white,
+                onPressed: () => context.pop(
+                  CancelOrderRequest(
+                    orderId: widget.orderId,
+                    reason: _reason,
+                    note: _note.text,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

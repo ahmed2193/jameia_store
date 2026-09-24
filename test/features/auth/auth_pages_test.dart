@@ -14,6 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
 import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/app_router.dart';
 import 'package:jameia_mart/src/config/routes/routes.dart';
@@ -28,7 +29,6 @@ import 'package:jameia_mart/src/features/auth/presentation/pages/otp_verify_page
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/store_mode_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'auth_test_fakes.dart';
@@ -61,6 +61,9 @@ void main() {
       restoreSession: FakeRestoreSessionUseCase(const Right(null)),
       logout: FakeLogoutUseCase(),
       watchExpiry: watchExpiry,
+      getCachedCustomer: FakeGetCachedCustomerUseCase(),
+      saveCachedCustomer: FakeSaveCachedCustomerUseCase(),
+      clearCachedCustomer: FakeClearCachedCustomerUseCase(),
     );
     // Swap the page cubits' network for the fakes; DI shape stays real.
     sl
@@ -104,11 +107,13 @@ void main() {
         child: MultiBlocProvider(
           providers: [
             BlocProvider<CartCubit>(create: (_) => sl<CartCubit>()),
-            BlocProvider<StoreModeCubit>(create: (_) => sl<StoreModeCubit>()),
             BlocProvider<LocalizationCubit>(
               create: (_) => sl<LocalizationCubit>(),
             ),
             BlocProvider<SettingCubit>(create: (_) => SettingCubit()),
+            BlocProvider<AddressBookCubit>(
+              create: (_) => sl<AddressBookCubit>(),
+            ),
             BlocProvider<AuthSessionCubit>.value(value: session),
             BlocProvider<UnreadNotificationsCubit>(
               create: (_) => sl<UnreadNotificationsCubit>(),

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
 import '../data/models/shop.dart';
 import '../motion/motion_widgets.dart';
 import '../responsive/app_size.dart';

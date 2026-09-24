@@ -77,6 +77,65 @@ void main() {
     );
   });
 
+  group('about you', () {
+    blocTest<ProfileCubit, ProfileState>(
+      'date of birth: set makes the form dirty, clearing it undoes that',
+      build: () => build(initial: kProfileCustomer),
+      act: (cubit) {
+        cubit.dateOfBirthChanged(DateTime(1990, 5, 17));
+        expect(cubit.state.isDirty, isTrue);
+        cubit.dateOfBirthChanged(null);
+      },
+      verify: (cubit) {
+        expect(cubit.state.dateOfBirth, isNull);
+        expect(cubit.state.isDirty, isFalse);
+      },
+    );
+
+    blocTest<ProfileCubit, ProfileState>(
+      'household: + starts at one, − below one removes the value',
+      build: () => build(initial: kProfileCustomer),
+      act: (cubit) {
+        cubit.removePerson(); // nothing to remove yet
+        expect(cubit.state.householdSize, isNull);
+        cubit.addPerson();
+        cubit.addPerson();
+        expect(cubit.state.householdSize, 2);
+        cubit.removePerson();
+        cubit.removePerson();
+      },
+      verify: (cubit) => expect(cubit.state.householdSize, isNull),
+    );
+
+    blocTest<ProfileCubit, ProfileState>(
+      'household: + stops at the backend maximum',
+      build: () => build(initial: kProfileCustomer),
+      act: (cubit) {
+        for (var i = 0; i < ProfileUpdate.maxHouseholdSize + 3; i++) {
+          cubit.addPerson();
+        }
+      },
+      verify: (cubit) {
+        expect(cubit.state.householdSize, ProfileUpdate.maxHouseholdSize);
+        expect(cubit.state.canAddPerson, isFalse);
+      },
+    );
+
+    test('the sign-up placeholder name is never offered as the name', () {
+      const placeholder = AuthCustomerEntity(
+        id: 'n',
+        phone: '+96512345678',
+        nameEn: '+96512345678',
+        nameAr: '+96512345678',
+      );
+      final cubit = build(initial: placeholder);
+      expect(cubit.state.name, isEmpty);
+      expect(cubit.state.needsName, isTrue);
+      expect(cubit.state.isDirty, isFalse);
+      cubit.close();
+    });
+  });
+
   group('save', () {
     blocTest<ProfileCubit, ProfileState>(
       'invalid form → shows errors, no request',
@@ -153,6 +212,51 @@ void main() {
     });
 
     blocTest<ProfileCubit, ProfileState>(
+      'completing the details reports the profile bonus the save earned',
+      build: () {
+        updateProfile.result = Right(_completed(kProfileCustomer, points: 50));
+        return build(initial: kProfileCustomer);
+      },
+      act: (cubit) async {
+        cubit.dateOfBirthChanged(DateTime(1990, 5, 17));
+        cubit.addPerson();
+        await cubit.save();
+      },
+      verify: (cubit) {
+        expect(
+          updateProfile.calls.single.update,
+          ProfileUpdate(dateOfBirth: DateTime(1990, 5, 17), householdSize: 1),
+        );
+        expect(cubit.state.status, ProfileStatus.saved);
+        expect(cubit.state.bonusEarned, 50);
+      },
+    );
+
+    test('the earned bonus is transient: the next change forgets it', () async {
+      updateProfile.result = Right(_completed(kProfileCustomer, points: 50));
+      final cubit = build(initial: kProfileCustomer)
+        ..dateOfBirthChanged(DateTime(1990, 5, 17))
+        ..addPerson();
+      await cubit.save();
+      expect(cubit.state.bonusEarned, 50);
+
+      cubit.nameChanged('Ahmed Ali');
+
+      expect(cubit.state.bonusEarned, 0);
+      await cubit.close();
+    });
+
+    blocTest<ProfileCubit, ProfileState>(
+      'a save that leaves the details incomplete earns no bonus',
+      build: () => build(initial: kProfileCustomer),
+      act: (cubit) async {
+        cubit.nameChanged('Ahmed Ali');
+        await cubit.save();
+      },
+      verify: (cubit) => expect(cubit.state.bonusEarned, 0),
+    );
+
+    blocTest<ProfileCubit, ProfileState>(
       'backend rejection → error with the failure, draft kept',
       build: () {
         updateProfile.result = const Left(
@@ -176,6 +280,25 @@ void main() {
     );
   });
 }
+
+/// [customer] after the server accepted date of birth + household size (it
+/// already had a gender) and credited [points].
+AuthCustomerEntity _completed(
+  AuthCustomerEntity customer, {
+  required int points,
+}) => AuthCustomerEntity(
+  id: customer.id,
+  phone: customer.phone,
+  nameEn: customer.nameEn,
+  nameAr: customer.nameAr,
+  email: customer.email,
+  language: customer.language,
+  walletFils: customer.walletFils,
+  loyaltyPoints: customer.loyaltyPoints + points,
+  gender: customer.gender,
+  dateOfBirth: DateTime(1990, 5, 17),
+  householdSize: 1,
+);
 
 extension on AuthCustomerEntity {
   AuthCustomerEntity copyWithName(String name) => AuthCustomerEntity(

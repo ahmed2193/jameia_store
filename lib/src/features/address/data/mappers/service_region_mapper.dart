@@ -1,7 +1,7 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/utils/jameia_geocode.dart' show ServiceRegionItem;
-import '../../domain/entities/geo_point.dart';
+import '../../../../core/domain/entities/geo_point_entity.dart';
 import '../../domain/entities/service_region_item_entity.dart';
 
 /// DTO ↔ entity mapping for the serviceable-region rows. Lives in the data

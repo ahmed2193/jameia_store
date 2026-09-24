@@ -103,6 +103,21 @@ void main() {
       },
       verify: (_) => expect(watchLive.listens, 1),
     );
+
+    blocTest<NotificationsCubit, NotificationsState>(
+      'without a live source (the default build) it loads and never listens',
+      build: () => NotificationsCubit(
+        getNotifications: getNotifications,
+        markRead: markRead,
+        markAllRead: markAllRead,
+      ),
+      act: (cubit) => cubit.load(),
+      expect: () => [
+        const NotificationsState(status: NotificationsStatus.loading),
+        loaded,
+      ],
+      verify: (_) => expect(watchLive.listens, 0),
+    );
   });
 
   group('refresh', () {

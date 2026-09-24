@@ -53,7 +53,8 @@ refreshing before …`, `session refreshed`, `refresh rejected … → session e
 - "Is the user signed in?" in the **UI**: `context.select((AuthSessionCubit c) => c.state.isSignedIn)`
   (cross-feature import of this app-global cubit is allowed). In a **cubit**: do not ask —
   call the use case and treat `UnauthorizedFailure` as signed out (`state.isSignedOut` → sign-in
-  prompt → `context.push(Routes.login)`).
+  prompt → `context.go(Routes.login)`; always `go`, never `push` — auth transitions replace
+  the stack so page cubits are rebuilt for the new session).
 - A route that returns the customer object → push it to the app:
   `context.read<AuthSessionCubit>().updateCustomer(customer)` (page listener).
 - After a successful OTP verify the page calls `AuthSessionCubit.signedIn(customer)`; settings
@@ -70,8 +71,11 @@ refreshing before …`, `session refreshed`, `refresh rejected … → session e
 When you integrate a feature whose local state is per-customer (cart, addresses, wishlist,
 recently viewed): it must be dropped or re-fetched on **sign-out, expiry and account switch**.
 Hook a listener on `AuthSessionCubit` in `app.dart` (the same place `UnreadNotificationsCubit`
-is started / stopped). This is a known open gap for cart + addresses — close it when you
-migrate them, and cover it with a test.
+is started / stopped). Addresses do this (`AddressBookCubit.start(customerId:)` / `stop()`, keyed
+on `AuthSessionState.status` AND `customer?.id`, so a launch that finds the session gone also wipes
+the device copy and a sign-in as another customer without a sign-out starts the book over; the device
+copy records its owner; tests in `test/features/address/address_book_cubit_test.dart`). The cart is still a known open
+gap — close it when you migrate it, and cover it with a test.
 
 ## Debugging a session problem
 

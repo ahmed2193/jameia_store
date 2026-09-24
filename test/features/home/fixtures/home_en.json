@@ -1,0 +1,1223 @@
+{
+ "slides": [
+  {
+   "_id": "6aa601198a2745ca86163640",
+   "sortOrder": 0,
+   "title": "Fresh groceries, delivered fast",
+   "imageUrl": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&h=480&fit=crop",
+   "status": "active",
+   "scheduleStart": null,
+   "scheduleEnd": null,
+   "description": "Fresh groceries from Kuwait's favorite brands — delivered to your door."
+  },
+  {
+   "_id": "6aa601198a2745ca86163641",
+   "sortOrder": 1,
+   "title": "Free delivery on your first order",
+   "imageUrl": "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1200&h=480&fit=crop",
+   "status": "active",
+   "scheduleStart": null,
+   "scheduleEnd": null,
+   "description": "Shop today and enjoy free delivery on your first basket."
+  },
+  {
+   "_id": "6aa601198a2745ca86163642",
+   "sortOrder": 2,
+   "title": "Weekend deals — save more",
+   "imageUrl": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&h=480&fit=crop",
+   "status": "active",
+   "scheduleStart": null,
+   "scheduleEnd": null,
+   "description": "Limited-time savings across fresh food, dairy, and pantry essentials."
+  }
+ ],
+ "sections": [
+  {
+   "id": "hs-categories",
+   "sortOrder": 0,
+   "status": "active",
+   "type": "rail",
+   "config": {
+    "source": "categories",
+    "limit": 12,
+    "displayMode": "slider",
+    "categoryIds": []
+   },
+   "data": [
+    {
+     "_id": "6aa5ffb85233feadc5c41509",
+     "name": "Fresh Food",
+     "slug": "fresh-food",
+     "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 0,
+     "productCount": 24
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41513",
+     "name": "Dairy & Eggs",
+     "slug": "dairy-eggs",
+     "image": "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 1,
+     "productCount": 18
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41518",
+     "name": "Bakery",
+     "slug": "bakery",
+     "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 2,
+     "productCount": 12
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c4151b",
+     "name": "Beverages",
+     "slug": "beverages",
+     "image": "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 3,
+     "productCount": 16
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c4151e",
+     "name": "Grocery",
+     "slug": "grocery",
+     "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 4,
+     "productCount": 20
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41521",
+     "name": "Snacks",
+     "slug": "snacks",
+     "image": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 5,
+     "productCount": 14
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41524",
+     "name": "Frozen Foods",
+     "slug": "frozen-foods",
+     "image": "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 6,
+     "productCount": 10
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41527",
+     "name": "Cleaning",
+     "slug": "cleaning",
+     "image": "https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 7,
+     "productCount": 8
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41529",
+     "name": "Personal Care",
+     "slug": "personal-care",
+     "image": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
+     "parentId": null,
+     "sortOrder": 8,
+     "productCount": 9
+    }
+   ],
+   "title": "Shop by category"
+  },
+  {
+   "id": "hs-occasions",
+   "sortOrder": 1,
+   "status": "active",
+   "type": "promo_cards",
+   "config": {
+    "cards": [
+     {
+      "id": "card-weeknight",
+      "title": "Weeknight dinner",
+      "linkType": "collection",
+      "linkTarget": "fresh-picks",
+      "subtitle": "Quick meals & fresh staples",
+      "icon": {
+       "source": "library",
+       "key": "utensils"
+      },
+      "color": "from-violet-600 to-purple-700"
+     },
+     {
+      "id": "card-healthy",
+      "title": "Healthy start",
+      "linkType": "category",
+      "linkTarget": "fresh-food",
+      "subtitle": "Produce, dairy & better-for-you",
+      "icon": {
+       "source": "library",
+       "key": "leaf"
+      },
+      "color": "from-emerald-500 to-teal-600"
+     },
+     {
+      "id": "card-gathering",
+      "title": "Family gathering",
+      "linkType": "recipes",
+      "linkTarget": "/recipes",
+      "subtitle": "Recipes & party essentials",
+      "icon": {
+       "source": "library",
+       "key": "heart"
+      },
+      "color": "from-orange-500 to-rose-600"
+     }
+    ]
+   },
+   "data": null,
+   "title": "Shop by occasion"
+  },
+  {
+   "id": "hs-flash",
+   "sortOrder": 2,
+   "status": "active",
+   "type": "promo_strip",
+   "config": {
+    "title": "Flash deals — up to 30% off",
+    "linkType": "collection",
+    "linkTarget": "todays-deals",
+    "theme": "deals",
+    "badge": "Limited time",
+    "subtitle": "Fresh picks at unbeatable prices. While stocks last.",
+    "endsAt": null
+   },
+   "data": null,
+   "title": "Flash deals"
+  },
+  {
+   "id": "hs-todays-deals",
+   "sortOrder": 3,
+   "status": "active",
+   "type": "rail",
+   "config": {
+    "source": "products",
+    "limit": 12,
+    "displayMode": "slider",
+    "productGroupId": "6aa601198a2745ca8616363a",
+    "theme": "deals"
+   },
+   "data": [
+    {
+     "_id": "6aa6010d06da786e3f5658f9",
+     "name": "Basmati Rice 5kg",
+     "slug": "basmati-rice-5kg",
+     "type": "standard",
+     "price": 3250,
+     "proPrice": null,
+     "compareAt": 4063,
+     "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&h=600&fit=crop",
+     "stock": 80,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 5,
+     "ratingCount": 1
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f8",
+     "name": "Lurpak Butter 200g",
+     "slug": "lurpak-butter-200g",
+     "type": "standard",
+     "price": 899,
+     "proPrice": null,
+     "compareAt": 1050,
+     "image": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop",
+     "stock": 24,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 3,
+     "ratingCount": 2
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f4",
+     "name": "KDD Full Cream Milk",
+     "slug": "kdd-full-cream-milk",
+     "type": "variant",
+     "price": 0,
+     "proPrice": null,
+     "compareAt": 100,
+     "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop",
+     "stock": 32,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "l",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa601198a2745ca86163639",
+     "name": "Breakfast Bundle",
+     "slug": "breakfast-bundle",
+     "type": "bundle",
+     "price": 2990,
+     "proPrice": null,
+     "compareAt": 3490,
+     "image": "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=600&h=600&fit=crop",
+     "stock": 20,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "pack",
+     "ratingAverage": 4.6,
+     "ratingCount": 22
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f5",
+     "name": "Red Apples",
+     "slug": "red-apples",
+     "type": "standard",
+     "price": 499,
+     "proPrice": null,
+     "compareAt": null,
+     "image": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&h=600&fit=crop",
+     "stock": 120,
+     "tags": [
+      "6aa5ffb85233feadc5c41508",
+      "fresh"
+     ],
+     "unitOfSale": "kg",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f6",
+     "name": "Almarai Chicken 900g",
+     "slug": "almarai-chicken-900g",
+     "type": "standard",
+     "price": 1499,
+     "proPrice": null,
+     "compareAt": null,
+     "image": "https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600&h=600&fit=crop",
+     "stock": 45,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f7",
+     "name": "Arabic Bread (6 pack)",
+     "slug": "arabic-bread-6-pack",
+     "type": "standard",
+     "price": 150,
+     "proPrice": null,
+     "compareAt": 250,
+     "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&h=600&fit=crop",
+     "stock": 200,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "pack",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658fa",
+     "name": "Mai Dubai Water 1.5L",
+     "slug": "mai-dubai-water-1-5l",
+     "type": "standard",
+     "price": 150,
+     "proPrice": null,
+     "compareAt": 250,
+     "image": "https://images.unsplash.com/photo-1546173159-315724a31696?w=600&h=600&fit=crop",
+     "stock": 500,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "l",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    }
+   ],
+   "title": "Today's deals",
+   "icon": {
+    "source": "library",
+    "key": "sparkles"
+   },
+   "iconColor": "amber",
+   "productGroupSlug": "todays-deals"
+  },
+  {
+   "id": "hs-new-arrivals",
+   "sortOrder": 4,
+   "status": "active",
+   "type": "rail",
+   "config": {
+    "source": "products",
+    "limit": 12,
+    "displayMode": "slider",
+    "productGroupId": "6aa601198a2745ca8616363b",
+    "theme": "featured"
+   },
+   "data": [
+    {
+     "_id": "6aa6010d06da786e3f5658f9",
+     "name": "Basmati Rice 5kg",
+     "slug": "basmati-rice-5kg",
+     "type": "standard",
+     "price": 3250,
+     "proPrice": null,
+     "compareAt": 4063,
+     "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&h=600&fit=crop",
+     "stock": 80,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 5,
+     "ratingCount": 1
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f8",
+     "name": "Lurpak Butter 200g",
+     "slug": "lurpak-butter-200g",
+     "type": "standard",
+     "price": 899,
+     "proPrice": null,
+     "compareAt": 1050,
+     "image": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop",
+     "stock": 24,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 3,
+     "ratingCount": 2
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f4",
+     "name": "KDD Full Cream Milk",
+     "slug": "kdd-full-cream-milk",
+     "type": "variant",
+     "price": 0,
+     "proPrice": null,
+     "compareAt": 100,
+     "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop",
+     "stock": 32,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "l",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f5",
+     "name": "Red Apples",
+     "slug": "red-apples",
+     "type": "standard",
+     "price": 499,
+     "proPrice": null,
+     "compareAt": null,
+     "image": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&h=600&fit=crop",
+     "stock": 120,
+     "tags": [
+      "6aa5ffb85233feadc5c41508",
+      "fresh"
+     ],
+     "unitOfSale": "kg",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f6",
+     "name": "Almarai Chicken 900g",
+     "slug": "almarai-chicken-900g",
+     "type": "standard",
+     "price": 1499,
+     "proPrice": null,
+     "compareAt": null,
+     "image": "https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600&h=600&fit=crop",
+     "stock": 45,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f7",
+     "name": "Arabic Bread (6 pack)",
+     "slug": "arabic-bread-6-pack",
+     "type": "standard",
+     "price": 150,
+     "proPrice": null,
+     "compareAt": 250,
+     "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&h=600&fit=crop",
+     "stock": 200,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "pack",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658fa",
+     "name": "Mai Dubai Water 1.5L",
+     "slug": "mai-dubai-water-1-5l",
+     "type": "standard",
+     "price": 150,
+     "proPrice": null,
+     "compareAt": 250,
+     "image": "https://images.unsplash.com/photo-1546173159-315724a31696?w=600&h=600&fit=crop",
+     "stock": 500,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "l",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    }
+   ],
+   "title": "New arrivals",
+   "icon": {
+    "source": "library",
+    "key": "trending_up"
+   },
+   "iconColor": "emerald",
+   "productGroupSlug": "new-arrivals"
+  },
+  {
+   "id": "hs-on-sale",
+   "sortOrder": 5,
+   "status": "active",
+   "type": "rail",
+   "config": {
+    "source": "products",
+    "limit": 12,
+    "displayMode": "slider",
+    "productGroupId": "6aa601198a2745ca8616363d",
+    "theme": "sale"
+   },
+   "data": [
+    {
+     "_id": "6aa6010d06da786e3f5658f9",
+     "name": "Basmati Rice 5kg",
+     "slug": "basmati-rice-5kg",
+     "type": "standard",
+     "price": 3250,
+     "proPrice": null,
+     "compareAt": 4063,
+     "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&h=600&fit=crop",
+     "stock": 80,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 5,
+     "ratingCount": 1
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f8",
+     "name": "Lurpak Butter 200g",
+     "slug": "lurpak-butter-200g",
+     "type": "standard",
+     "price": 899,
+     "proPrice": null,
+     "compareAt": 1050,
+     "image": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop",
+     "stock": 24,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "piece",
+     "ratingAverage": 3,
+     "ratingCount": 2
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f4",
+     "name": "KDD Full Cream Milk",
+     "slug": "kdd-full-cream-milk",
+     "type": "variant",
+     "price": 0,
+     "proPrice": null,
+     "compareAt": 100,
+     "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&h=600&fit=crop",
+     "stock": 32,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "l",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa601198a2745ca86163639",
+     "name": "Breakfast Bundle",
+     "slug": "breakfast-bundle",
+     "type": "bundle",
+     "price": 2990,
+     "proPrice": null,
+     "compareAt": 3490,
+     "image": "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=600&h=600&fit=crop",
+     "stock": 20,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "pack",
+     "ratingAverage": 4.6,
+     "ratingCount": 22
+    },
+    {
+     "_id": "6aa601198a2745ca86163638",
+     "name": "Fresh Eggs (30)",
+     "slug": "fresh-eggs-30",
+     "type": "standard",
+     "price": 2250,
+     "proPrice": null,
+     "compareAt": 2813,
+     "image": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&h=600&fit=crop",
+     "stock": 60,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "pack",
+     "ratingAverage": 4,
+     "ratingCount": 2
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f7",
+     "name": "Arabic Bread (6 pack)",
+     "slug": "arabic-bread-6-pack",
+     "type": "standard",
+     "price": 150,
+     "proPrice": null,
+     "compareAt": 250,
+     "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&h=600&fit=crop",
+     "stock": 200,
+     "tags": [
+      "6aa5ffb85233feadc5c41502",
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "pack",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658fa",
+     "name": "Mai Dubai Water 1.5L",
+     "slug": "mai-dubai-water-1-5l",
+     "type": "standard",
+     "price": 150,
+     "proPrice": null,
+     "compareAt": 250,
+     "image": "https://images.unsplash.com/photo-1546173159-315724a31696?w=600&h=600&fit=crop",
+     "stock": 500,
+     "tags": [
+      "fresh",
+      "best-seller"
+     ],
+     "unitOfSale": "l",
+     "ratingAverage": 0,
+     "ratingCount": 0
+    }
+   ],
+   "title": "On sale now",
+   "icon": {
+    "source": "library",
+    "key": "sparkles"
+   },
+   "iconColor": "rose",
+   "productGroupSlug": "on-sale"
+  },
+  {
+   "id": "hs-brands",
+   "sortOrder": 6,
+   "status": "active",
+   "type": "rail",
+   "config": {
+    "source": "brands",
+    "limit": 12,
+    "displayMode": "slider",
+    "brandIds": []
+   },
+   "data": [
+    {
+     "_id": "6aa5ffb85233feadc5c414fd",
+     "name": "Almarai",
+     "slug": "almarai",
+     "image": "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=200&h=200&fit=crop"
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41500",
+     "name": "Americana",
+     "slug": "americana",
+     "image": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=200&h=200&fit=crop"
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c414fe",
+     "name": "KDD",
+     "slug": "kdd",
+     "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&h=200&fit=crop"
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658ef",
+     "name": "Lurpak",
+     "slug": "lurpak",
+     "image": ""
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c414ff",
+     "name": "Mai Dubai",
+     "slug": "mai-dubai",
+     "image": "https://images.unsplash.com/photo-1546173159-315724a31696?w=200&h=200&fit=crop"
+    },
+    {
+     "_id": "6aa6010d06da786e3f5658f0",
+     "name": "Nestlé",
+     "slug": "nestle",
+     "image": ""
+    },
+    {
+     "_id": "6aa5ffb85233feadc5c41501",
+     "name": "Puck",
+     "slug": "puck",
+     "image": "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=200&h=200&fit=crop"
+    }
+   ],
+   "title": "Shop by brand",
+   "icon": {
+    "source": "library",
+    "key": "award"
+   },
+   "iconColor": "emerald"
+  },
+  {
+   "id": "hs-recipes",
+   "sortOrder": 7,
+   "status": "active",
+   "type": "rail",
+   "config": {
+    "source": "recipes",
+    "limit": 12,
+    "displayMode": "slider",
+    "recipeIds": []
+   },
+   "data": [
+    {
+     "_id": "6aa72210da383e2755e08d95",
+     "slug": "machboos",
+     "title": "Kuwaiti Chicken Machboos",
+     "imageUrl": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80",
+     "prepMinutes": 25,
+     "cookMinutes": 55,
+     "servings": 6,
+     "cuisine": {
+      "slug": "kuwaiti",
+      "name": "Kuwaiti"
+     },
+     "diet": {
+      "slug": "halal",
+      "name": "Halal"
+     }
+    },
+    {
+     "_id": "6aa72210da383e2755e08d96",
+     "slug": "margoog",
+     "title": "Margoog (Vegetable Stew)",
+     "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80",
+     "prepMinutes": 25,
+     "cookMinutes": 70,
+     "servings": 4,
+     "cuisine": {
+      "slug": "kuwaiti",
+      "name": "Kuwaiti"
+     },
+     "diet": {
+      "slug": "halal",
+      "name": "Halal"
+     }
+    },
+    {
+     "_id": "6aa72210da383e2755e08d97",
+     "slug": "sayadiya",
+     "title": "Sayadiya Rice with Spiced Fish Style",
+     "imageUrl": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&q=80",
+     "prepMinutes": 25,
+     "cookMinutes": 50,
+     "servings": 4,
+     "cuisine": {
+      "slug": "levant",
+      "name": "Levant"
+     },
+     "diet": {
+      "slug": "halal",
+      "name": "Halal"
+     }
+    },
+    {
+     "_id": "6aa72210da383e2755e08d98",
+     "slug": "gulf-chicken-rice",
+     "title": "Gulf-Style Chicken & Rice",
+     "imageUrl": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80",
+     "prepMinutes": 15,
+     "cookMinutes": 45,
+     "servings": 4,
+     "cuisine": {
+      "slug": "gulf",
+      "name": "Gulf"
+     },
+     "diet": {
+      "slug": "halal",
+      "name": "Halal"
+     }
+    },
+    {
+     "_id": "6aa72210da383e2755e08d99",
+     "slug": "kuwaiti-egg-breakfast",
+     "title": "Kuwaiti Egg & Bread Breakfast",
+     "imageUrl": "https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800&q=80",
+     "prepMinutes": 5,
+     "cookMinutes": 10,
+     "servings": 2,
+     "cuisine": {
+      "slug": "kuwaiti",
+      "name": "Kuwaiti"
+     },
+     "diet": {
+      "slug": "vegetarian",
+      "name": "Vegetarian"
+     }
+    },
+    {
+     "_id": "6aa72210da383e2755e08d9a",
+     "slug": "apple-rice-bowl",
+     "title": "Apple & Rice Comfort Bowl",
+     "imageUrl": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=800&q=80",
+     "prepMinutes": 10,
+     "cookMinutes": 25,
+     "servings": 2,
+     "cuisine": {
+      "slug": "international",
+      "name": "International"
+     },
+     "diet": {
+      "slug": "vegan",
+      "name": "Vegan"
+     }
+    }
+   ],
+   "title": "Recipes",
+   "icon": {
+    "source": "library",
+    "key": "chef_hat"
+   },
+   "iconColor": "violet"
+  }
+ ],
+ "categories": [
+  {
+   "_id": "6aa5ffb85233feadc5c41509",
+   "name": "Fresh Food",
+   "slug": "fresh-food",
+   "image": "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 0,
+   "productCount": 24
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41513",
+   "name": "Dairy & Eggs",
+   "slug": "dairy-eggs",
+   "image": "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 1,
+   "productCount": 18
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41518",
+   "name": "Bakery",
+   "slug": "bakery",
+   "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 2,
+   "productCount": 12
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4151b",
+   "name": "Beverages",
+   "slug": "beverages",
+   "image": "https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 3,
+   "productCount": 16
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4151e",
+   "name": "Grocery",
+   "slug": "grocery",
+   "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 4,
+   "productCount": 20
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41521",
+   "name": "Snacks",
+   "slug": "snacks",
+   "image": "https://images.unsplash.com/photo-1599599810769-bcde5a160d32?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 5,
+   "productCount": 14
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41524",
+   "name": "Frozen Foods",
+   "slug": "frozen-foods",
+   "image": "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 6,
+   "productCount": 10
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41527",
+   "name": "Cleaning",
+   "slug": "cleaning",
+   "image": "https://images.unsplash.com/photo-1585421514738-01798e348b17?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 7,
+   "productCount": 8
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41529",
+   "name": "Personal Care",
+   "slug": "personal-care",
+   "image": "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=400&fit=crop",
+   "parentId": null,
+   "sortOrder": 8,
+   "productCount": 9
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4150a",
+   "name": "Fruits & Vegetables",
+   "slug": "fruits-vegetables",
+   "image": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41509",
+   "sortOrder": 0,
+   "productCount": 8
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4150d",
+   "name": "Meat & Poultry",
+   "slug": "meat-poultry",
+   "image": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41509",
+   "sortOrder": 1,
+   "productCount": 6
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41510",
+   "name": "Seafood",
+   "slug": "seafood",
+   "image": "https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41509",
+   "sortOrder": 2,
+   "productCount": 5
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4150b",
+   "name": "Apples",
+   "slug": "apples",
+   "image": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4150a",
+   "sortOrder": 0,
+   "productCount": 2
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4150c",
+   "name": "Bananas",
+   "slug": "bananas",
+   "image": "https://images.unsplash.com/photo-1603833665858-e61d17a86224?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4150a",
+   "sortOrder": 1,
+   "productCount": 2
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4150e",
+   "name": "Chicken",
+   "slug": "chicken",
+   "image": "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4150d",
+   "sortOrder": 0,
+   "productCount": 2
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4150f",
+   "name": "Beef",
+   "slug": "beef",
+   "image": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4150d",
+   "sortOrder": 1,
+   "productCount": 2
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41511",
+   "name": "Fish",
+   "slug": "fish",
+   "image": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41510",
+   "sortOrder": 0,
+   "productCount": 2
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41512",
+   "name": "Shrimp",
+   "slug": "shrimp",
+   "image": "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41510",
+   "sortOrder": 1,
+   "productCount": 2
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41514",
+   "name": "Milk & Cream",
+   "slug": "fresh-milk",
+   "image": "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41513",
+   "sortOrder": 0,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41515",
+   "name": "Cheese",
+   "slug": "cheese",
+   "image": "https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41513",
+   "sortOrder": 1,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41516",
+   "name": "Yogurt",
+   "slug": "yogurt",
+   "image": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41513",
+   "sortOrder": 2,
+   "productCount": 3
+  },
+  {
+   "_id": "6aa6010d06da786e3f5658f2",
+   "name": "Cheese & Butter",
+   "slug": "cheese-butter",
+   "image": "",
+   "parentId": "6aa5ffb85233feadc5c41513",
+   "sortOrder": 2,
+   "productCount": 0
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41517",
+   "name": "Eggs",
+   "slug": "eggs",
+   "image": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41513",
+   "sortOrder": 3,
+   "productCount": 3
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41519",
+   "name": "Bread",
+   "slug": "bread",
+   "image": "https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41518",
+   "sortOrder": 0,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4151a",
+   "name": "Pastries",
+   "slug": "pastries",
+   "image": "https://images.unsplash.com/photo-1509365465985-25d11c17e812?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41518",
+   "sortOrder": 1,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4151c",
+   "name": "Juices",
+   "slug": "juices",
+   "image": "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4151b",
+   "sortOrder": 0,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4151d",
+   "name": "Water",
+   "slug": "water",
+   "image": "https://images.unsplash.com/photo-1546173159-315724a31696?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4151b",
+   "sortOrder": 1,
+   "productCount": 3
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4151f",
+   "name": "Rice & Pasta",
+   "slug": "rice-pasta",
+   "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4151e",
+   "sortOrder": 0,
+   "productCount": 6
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41520",
+   "name": "Cereals",
+   "slug": "cereals",
+   "image": "https://images.unsplash.com/photo-1521483451569-e33803c0330c?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c4151e",
+   "sortOrder": 1,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa6010d06da786e3f5658f1",
+   "name": "Grocery",
+   "slug": "grocery-items",
+   "image": "",
+   "parentId": "6aa5ffb85233feadc5c4151e",
+   "sortOrder": 1,
+   "productCount": 0
+  },
+  {
+   "_id": "6aa6010d06da786e3f5658f3",
+   "name": "Basmati Rice",
+   "slug": "basmati-rice",
+   "image": "",
+   "parentId": "6aa5ffb85233feadc5c4151e",
+   "sortOrder": 2,
+   "productCount": 0
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41522",
+   "name": "Chips & Crisps",
+   "slug": "chips-crisps",
+   "image": "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41521",
+   "sortOrder": 0,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41523",
+   "name": "Chocolate & Candy",
+   "slug": "chocolate-candy",
+   "image": "https://images.unsplash.com/photo-1548907040-4baa42d10919?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41521",
+   "sortOrder": 1,
+   "productCount": 5
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41525",
+   "name": "Frozen Meals",
+   "slug": "frozen-meals",
+   "image": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41524",
+   "sortOrder": 0,
+   "productCount": 3
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41526",
+   "name": "Ice Cream",
+   "slug": "ice-cream",
+   "image": "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41524",
+   "sortOrder": 1,
+   "productCount": 3
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c41528",
+   "name": "Floor & Surface",
+   "slug": "floor-surface",
+   "image": "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41527",
+   "sortOrder": 0,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4152a",
+   "name": "Skin Care",
+   "slug": "skin-care",
+   "image": "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41529",
+   "sortOrder": 0,
+   "productCount": 4
+  },
+  {
+   "_id": "6aa5ffb85233feadc5c4152b",
+   "name": "Hair Care",
+   "slug": "hair-care",
+   "image": "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=400&h=400&fit=crop",
+   "parentId": "6aa5ffb85233feadc5c41529",
+   "sortOrder": 1,
+   "productCount": 4
+  }
+ ],
+ "announcement": {
+  "enabled": true,
+  "items": [
+   {
+    "id": "ann-1",
+    "text": "Free delivery on orders over 5.000 KWD · Same-day slots available",
+    "icon": {
+     "source": "library",
+     "key": "truck"
+    }
+   },
+   {
+    "id": "ann-2",
+    "text": "Use WELCOME10 for 10% off your first order",
+    "icon": {
+     "source": "library",
+     "key": "tag"
+    }
+   },
+   {
+    "id": "ann-3",
+    "text": "Delivery in 45 min",
+    "icon": {
+     "source": "library",
+     "key": "zap"
+    }
+   }
+  ]
+ }
+}

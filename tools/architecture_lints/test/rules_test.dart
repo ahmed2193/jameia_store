@@ -657,6 +657,8 @@ class A implements HomeRepository {}
 class B with BaseRepositoryMixin implements HomeRepository {}
 class C {}
 class D extends B implements HomeRepository {}
+class E implements Exception {}
+class F implements Comparable<F> {}
 ''',
       ['A'],
     );

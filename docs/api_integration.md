@@ -133,6 +133,10 @@ every second. Each drop is ONE `sse` log line with the connection's lifetime
 a constant ~60 s lifetime means the reverse proxy cut an idle stream (`proxy_read_timeout`) —
 the backend must heartbeat (`: ping` every ≤ 25 s) and disable proxy buffering on the route.
 It only ends — with an error — on 401 (after the refresh), 403 or 404.
+The notifications stream is **off by default** (`AppEnv.liveNotifications`,
+`--dart-define=LIVE_NOTIFICATIONS=true` turns it on): the production proxy closes the idle
+stream after ~60 s and sends no heartbeat, so it only ever reconnected. Without it the unread
+badge loads on sign-in / launch restore and the inbox on open and pull-to-refresh.
 A repository exposes such a stream through `BaseRepositoryMixin.guardStream`, so listeners
 receive `Failure`s, never exception types.
 
@@ -158,9 +162,13 @@ receive `Failure`s, never exception types.
 Rules:
 
 - **Branch on `code`** (`ApiStatus.outOfStock`, `ApiStatus.cartEmpty`, ...) or the
-  status, never on the message text.
-- **Show `failure.message`** for `ServerFailure`: it is the backend's localized
-  `error.message`. Transport failures carry English fallbacks — map those to i18n keys.
+  status, never on the message text. Open gap: `ApiStatus` lives in `core/network`, which
+  domain and presentation may not import, so a cubit / use case cannot reference it yet
+  (planned: move under `core/error/`, re-export from `failures.dart`); branch on the failure
+  type / `statusCode` until then.
+- **Show `failure.localizedMessage`** (`core/utils/failure_message.dart`): a backend failure
+  keeps the server's localized `error.message`; transport failures carry English fallbacks,
+  so the extension maps them to `core.*` i18n keys. API-backed states hold the `Failure`.
 - 401 on `EndPoints.authPaths` is never refreshed (login/OTP/refresh/logout).
 
 ## 6. Session and auth
@@ -192,16 +200,40 @@ Feature side (done in `features/auth`): `AuthSessionCubit` is app-global
 feeds it the notifier stream; the app root's `BlocListener` does
 `appRouter.go(Routes.login, extra: true)` on expiry and the login page shows the notice.
 Settings → log out calls `AuthSessionCubit.signOut()` (server revoke + local wipe, wipe even
-offline). Not yet wired: clearing user-scoped state (cart, addresses) on sign-out.
+offline). The customer record itself has a device copy (`LocalStorage` key
+`account.profile.v1`, the same JSON the backend sends): `AuthSessionCubit` is its only writer —
+`restore()` shows it at once (only while tokens exist), then confirms it with `GET
+/v1/account/me` (`AuthSessionState.isVerified`); every confirmed snapshot (sign-in, restore,
+`updateCustomer`) is saved back and every sign-out / expiry wipes it. The account-language sync
+and the profile page wait for a confirmed snapshot, so a stale copy never PATCHes anything and
+the profile page skips `GET /v1/account/me` when the session already confirmed it this run.
+The saved-address book is wiped (memory + device copy) by the app root on every
+sign-out / expiry (`AddressBookCubit.stop()`), and the cart mirror is re-owned on every session change
+(`CartCubit.onSignedIn(customerId)` / `onSignedOut()` from the app root: the local mirror is
+dropped and the new owner’s server cart is pulled).
 
 ### 6.1 Features already on the API
 
 | Feature | Routes | Entry points |
 |---|---|---|
 | auth | `send-otp`, `verify-otp`, `refresh`, `logout`, `account/me` (restore) | `LoginCubit`, `OtpCubit`, app-global `AuthSessionCubit` |
-| account / profile | `GET /v1/account/me`, `PATCH /v1/account/profile` | `ProfileCubit` + `ProfileEditPage` (`Routes.profileEdit`); only the changed fields are sent (`ProfileUpdate.diff`); the Mine header + wallet read `AuthSessionCubit.customer` |
+| account / profile | `GET /v1/account/me`, `PATCH /v1/account/profile` | `ProfileCubit` + `ProfileEditPage` (`Routes.profileEdit`): name, email, and the optional "About you" details — date of birth (calendar sheet, 1900…today, clearable), gender (male / female / prefer not to say) and household size (1–20 stepper). Only the changed fields are sent (`ProfileUpdate.diff`; a removed value goes out as `null`). The sign-up placeholder name (= the phone) is never offered as the name: the page and the Mine header ask to "Complete your profile" instead. The profile-bonus hint comes from `store.loyalty.profileBonusPoints` (`GET /v1/init`), and a save that completes the details and credits points toasts the points earned. The Mine header (name, PRO pill) + wallet read `AuthSessionCubit.customer` |
+| account / wallet | `GET /v1/account/wallet?page&limit` | `LedgerCubit<WalletEntryEntity>` + `WalletPage` (`Routes.wallet`; Mine → wallet stat or the Wallet cell): balance (fils) + signed transactions (refund, checkout, cashback, admin adjustment, promo; unknown kinds → "other"), paginated, stale page dropped after a refresh |
+| account / loyalty | `GET /v1/account/loyalty?page&limit`, `GET /v1/init` → `store.loyalty` | `LedgerCubit<LoyaltyEntryEntity>` + `LoyaltyProgramCubit` + `LoyaltyPage` (`Routes.loyalty`; Mine → Loyalty points): points balance and what it is worth, the programme rules (earn rate, point value, redemption minimum, expiry) and the history (earn, redeem, expire, welcome / profile bonus, refund restore, admin adjustment; earned lines show their expiry). The programme is read once per run and shared (`LoyaltyRemoteDataSourceImpl`) |
 | language | `PATCH /v1/account/profile { language }` | `LocalizationCubit.syncToServer()` — fired (not awaited) after every switch and by the app root when a sign-in finds a different language on the account; signed-out is a no-op |
-| notifications | `GET /v1/notifications`, `PATCH …/:id/read`, `PATCH …/read-all`, `GET …/sse`, `POST /v1/push/register` | `NotificationsCubit` + `NotificationsPage` (`Routes.notifications`), app-global `UnreadNotificationsCubit` (bell on Home, badge on Mine). ONE shared SSE connection per device. `RegisterPushTokenUseCase` is ready but has no caller until FCM / APNs is added |
+| notifications | `GET /v1/notifications`, `PATCH …/:id/read`, `PATCH …/read-all`, `GET …/sse`, `POST /v1/push/register` | `NotificationsCubit` + `NotificationsPage` (`Routes.notifications`), app-global `UnreadNotificationsCubit` (bell on Home, badge on Mine). ONE shared SSE connection per device — only when built with `--dart-define=LIVE_NOTIFICATIONS=true` (default off, see §4). `RegisterPushTokenUseCase` is ready but has no caller until FCM / APNs is added |
+| addresses | `GET /v1/account/addresses`, `POST /v1/account/addresses`, `PATCH /v1/account/addresses/:addressId`, `DELETE /v1/account/addresses/:addressId` | app-global `AddressBookCubit`: the app root calls `start(customerId:)` on sign-in / launch restore and whenever the customer id changes (device copy shown at once, then `GET` → saved back to `LocalStorage` key `account.addresses.v2` as `{ownerId, addresses: [API rows]}`; a copy saved for another customer is never shown, and a different customer starts the book over) and `stop()` on sign-out / expiry (memory + device copy wiped, plus the retired `account.addresses.v1` / offline `jameia.addressbook.v1` books). Address ids must be ObjectIds before they go into a path. `AddressListPage` (`Routes.addressList`) reads it; `AddressEditCubit` + `AddressEditPage` (`Routes.addressEdit`, extra = `JameiaAddressEntity`) POST a new address or PATCH only the changed fields (`AddressUpdate.diff`), and the page hands the reply to `AddressBookCubit.applySaved`. Delete waits for the server (404 = already gone). Checkout reads the book for the delivery address (`POST /v1/delivery/select-address`); Home still reads the offline `JameiaRepository.defaultAddress` |
+| catalogue (shared reads) | `GET /v1/products`, `GET /v1/categories`, `GET /v1/brands` | `core/data/datasources/catalog_remote_data_source.dart` — one datasource for shop, search, the home rails and the PDP rails. The category tree is one small page every catalogue screen reads, so it is kept per request language for `CatalogRemoteDataSourceImpl.categoryTreeTtl` (5 min); a pull-to-refresh passes `refresh: true`. Entities: `CatalogProductEntity` / `CatalogCategoryEntity` + `CatalogCategoryTree` / `BrandEntity`, query object `CatalogProductQuery` |
+| home | `GET /v1/home`, `GET /v1/init` | `HomeCubit` loads both in one emit; sealed `HomeSectionEntity` subtypes render the rails, promo cards, strips and banners in the order the backend sends them; `HomeBootstrap` carries the store settings + popups |
+| shop — catalogue browse | `GET /v1/categories`, `GET /v1/products` | `CategoryBrowseCubit` (rows) + `ProductListingCubit` (grid). `CategoriesPage` (`Routes.shop` / `Routes.categories`): top-level categories as the app bar tab row, the open tab’s children as a circle rail, their children as chips; the deepest pick scopes `categorySlug` (a parent includes its descendants) and the first tab is picked on open, so the first product page is fetched once for the right category. `CategoryPage` (`Routes.category`) is the same rows under one category, its own products loaded in parallel with the tree. `ProductListingPage` (brand / collection / offers / search results) and `BrandsPage` share the grid, sort and server-side filters |
+| product_details | `GET /v1/products/:slug`, `GET /v1/products/:slug/reviews` | `ProductDetailCubit` + `ProductReviewsCubit`; the `ProductDetail` entity owns the buying rules (variant needed, unit price, compare-at, line total, Pro hint) |
+| search | `GET /v1/products?search=`, `GET /v1/categories`, `GET /v1/brands` | `SearchCubit` (debounced suggestions, min 2 characters, stale replies dropped); recents live in `LocalStorage`; committing a search opens `ProductListingPage` with `CatalogProductQuery(search:)` |
+| marketing | `GET /v1/offers`, `GET /v1/pages/:slug` | `OffersPage`; `ContentPage` renders a backend content page (an unknown slug answers `400`, not `404`) |
+| recipes | `GET /v1/recipes`, `GET /v1/recipes/:slug` | `RecipesCubit` + `RecipeDetailPage`; the ingredients are real products, so the page can add them all to the cart |
+| store_mode — Jm3eia Pro | `GET /v1/subscription-plans`, `GET /v1/account/subscription`, `POST /v1/account/subscription`, `POST /v1/account/subscription/cancel` | `ProMembershipCubit`; subscribing waits for the server and then refreshes the customer snapshot (`AuthSessionCubit.restore()`), because `isPro` drives every Pro price in the app |
+| cart | `GET /v1/cart`, `POST /v1/cart/items`, `PATCH /v1/cart/items/:key`, `DELETE /v1/cart/items/:key`, `DELETE /v1/cart`, `POST` / `DELETE /v1/cart/coupon`, `POST` / `DELETE /v1/cart/loyalty`, `POST /v1/cart/express` | app-global `CartCubit` over an **offline-first mirror**: every tap edits the local projection and emits at once, then the repository coalesces the pending deltas per line (debounce `CartRepositoryImpl.defaultFlushDelay` = 400 ms), sends **one** request at a time (new lines batched into `POST /v1/cart/items`, existing lines as absolute `PATCH` / `DELETE`), rebases whatever was tapped while the request was in flight, drops stale replies by generation, retries transport failures after `defaultRetryDelay` = 5 s and persists the mirror + queue to `LocalStorage` (`cart.mirror.v1`) so a cold start renders instantly and replays when online. The guest cart lives on the `X-Cart-Token` the server issues; the app root re-owns the mirror on sign-in / sign-out and refetches on a locale change |
+| checkout | `GET /v1/delivery/branches`, `GET /v1/delivery/slots`, `POST /v1/delivery/select-branch`, `POST /v1/delivery/select-address`, `POST /v1/orders` | `CheckoutCubit` + `CheckoutPage` (`Routes.checkout`, no extra). The branch list is read once per language (`DeliveryRemoteDataSourceImpl.branchesTtl` = 5 min), so a language switch shows the names in the new language. Mode = delivery to a saved address or pickup from a branch; timing = ASAP / express (surcharge from the cart) / a scheduled slot from `GET /v1/delivery/slots`; payment `cod` or `wallet` only; notes ≤ `CheckoutDraft.maxNotesLength` (256). Each selection is a server call that returns the re-priced cart, so fees stay the server’s; a stale selection reply is dropped by generation. `POST /v1/orders` sends only `paymentMethod`, `notes` and the chosen `deliverySlot` — everything else is the server cart. One in-flight placement (`isPlacing`); on success the cart mirror is cleared, a wallet order refreshes the customer snapshot and the page does `pushReplacement(Routes.orderTracking, extra: order.id)` |
+| orders | `GET /v1/orders`, `GET /v1/orders/:id`, `POST /v1/orders/:id/cancel`, `POST /v1/reviews` | `OrdersCubit` + `OrdersPage` (`Routes.orders`, tabs are status groups computed in `OrdersFeed`; the next page follows the scroll — never a build pass — and a tab still showing nothing pulls up to `OrdersList._autoFillPages` pages before it waits for a tap, because the API pages one flat list and cannot filter by status), `OrderTrackingCubit` + `OrderTrackingPage` (`Routes.orderTracking`, extra = order id; polls `GET /v1/orders/:id` every `OrderTrackingCubit.pollInterval` = 30 s only while the route is on top (`routeObserver`), the app is resumed and the status is not terminal), cancel with one of the five API reasons + an optional note (`CancelOrderRequest`), reorder through the cart’s batched `POST /v1/cart/items`, and `OrderReviewCubit` → `POST /v1/reviews` per product (1–5 stars, title ≤ 120, body ≤ 2000, delivered orders only). The invoice page renders the order’s own totals |
 
 The customer DTO is shared: `core/data/models/customer_model.dart` + `customer_mapper.dart` →
 `AuthCustomerEntity` (money in fils: `walletFils`, `walletKd`).
@@ -218,33 +250,12 @@ The customer DTO is shared: `core/data/models/customer_model.dart` + `customer_m
 
 ## 8. Adding a remote datasource (checklist)
 
-```dart
-// features/orders/data/datasources/orders_remote_data_source.dart
-abstract class OrdersRemoteDataSource {
-  Future<List<OrderModel>> getOrders({required int page, required int limit});
-}
-
-class OrdersRemoteDataSourceImpl implements OrdersRemoteDataSource {
-  const OrdersRemoteDataSourceImpl(this._api);
-  final ApiConsumer _api;
-
-  @override
-  Future<List<OrderModel>> getOrders({required int page, required int limit}) async {
-    final results = await _api.get(
-      EndPoints.orders,
-      queryParameters: {'page': page, 'limit': limit},
-    );
-    final data = ApiPayload.asMap(results, EndPoints.orders)['data'];
-    if (data is! List) throw const ParsingException('orders: data missing');
-    // Non-object rows are skipped here; to also survive a row whose FIELDS are
-    // malformed, parse through a try-helper like NotificationsPageModel._tryParseItem.
-    return [
-      for (final raw in data)
-        if (raw is Map) OrderModel.fromJson(raw.cast<String, dynamic>()),
-    ];
-  }
-}
-```
+Code for every layer (page DTO that keeps `pagination`, key constants, a malformed row
+skipped, mapper, datasource, repository, use case, state, cubit, DI, page):
+`.claude/skills/jameia-api-integration/references/layer-templates.md`. The shipped model to
+read next to it is `features/notifications/` (`notifications_remote_data_source.dart`,
+`notifications_page_model.dart`). Moving a legacy offline feature:
+`references/migrating-offline-feature.md`.
 
 1. Path → `EndPoints` (add if missing).
 2. DTO `fromJson` in `data/models/`; mapper extension in `data/mappers/`.

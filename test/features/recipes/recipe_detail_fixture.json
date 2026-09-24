@@ -1,0 +1,183 @@
+{
+ "_id": "6aa72210da383e2755e08d95",
+ "slug": "machboos",
+ "title": "Kuwaiti Chicken Machboos",
+ "imageUrl": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80",
+ "prepMinutes": 25,
+ "cookMinutes": 55,
+ "servings": 6,
+ "cuisine": {
+  "slug": "kuwaiti",
+  "name": "Kuwaiti"
+ },
+ "diet": {
+  "slug": "halal",
+  "name": "Halal"
+ },
+ "excerpt": "Fragrant baharat rice with tender chicken, dried lime, and ghee — a Friday and Ramadan classic.",
+ "ingredients": [
+  {
+   "id": "i1",
+   "productId": "6aa6010d06da786e3f5658f6",
+   "purchaseQty": 2,
+   "useQty": 2,
+   "useUnitOfSale": "piece",
+   "product": {
+    "_id": "6aa6010d06da786e3f5658f6",
+    "name": "Almarai Chicken 900g",
+    "slug": "almarai-chicken-900g",
+    "type": "standard",
+    "price": 1499,
+    "proPrice": null,
+    "compareAt": null,
+    "image": "https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=600&h=600&fit=crop",
+    "stock": 45,
+    "tags": [
+     "6aa5ffb85233feadc5c41502",
+     "fresh"
+    ],
+    "unitOfSale": "piece",
+    "ratingAverage": 0,
+    "ratingCount": 0
+   },
+   "note": "bone-in pieces"
+  },
+  {
+   "id": "i2",
+   "productId": "6aa6010d06da786e3f5658f9",
+   "purchaseQty": 1,
+   "useQty": 1,
+   "useUnitOfSale": "piece",
+   "product": {
+    "_id": "6aa6010d06da786e3f5658f9",
+    "name": "Basmati Rice 5kg",
+    "slug": "basmati-rice-5kg",
+    "type": "standard",
+    "price": 3250,
+    "proPrice": null,
+    "compareAt": 4063,
+    "image": "https://images.unsplash.com/photo-1586201375761-83865001e31c?w=600&h=600&fit=crop",
+    "stock": 80,
+    "tags": [
+     "fresh",
+     "best-seller"
+    ],
+    "unitOfSale": "piece",
+    "ratingAverage": 5,
+    "ratingCount": 1
+   },
+   "note": "rinse until water runs clear"
+  },
+  {
+   "id": "i3",
+   "productId": "6aa6010d06da786e3f5658f7",
+   "purchaseQty": 1,
+   "useQty": 1,
+   "useUnitOfSale": "pack",
+   "product": {
+    "_id": "6aa6010d06da786e3f5658f7",
+    "name": "Arabic Bread (6 pack)",
+    "slug": "arabic-bread-6-pack",
+    "type": "standard",
+    "price": 150,
+    "proPrice": null,
+    "compareAt": 250,
+    "image": "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&h=600&fit=crop",
+    "stock": 200,
+    "tags": [
+     "6aa5ffb85233feadc5c41502",
+     "fresh",
+     "best-seller"
+    ],
+    "unitOfSale": "pack",
+    "ratingAverage": 0,
+    "ratingCount": 0
+   },
+   "note": "for serving"
+  },
+  {
+   "id": "i4",
+   "productId": "6aa6010d06da786e3f5658f8",
+   "purchaseQty": 1,
+   "useQty": 1,
+   "useUnitOfSale": "piece",
+   "product": {
+    "_id": "6aa6010d06da786e3f5658f8",
+    "name": "Lurpak Butter 200g",
+    "slug": "lurpak-butter-200g",
+    "type": "standard",
+    "price": 899,
+    "proPrice": null,
+    "compareAt": 1050,
+    "image": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop",
+    "stock": 24,
+    "tags": [
+     "fresh",
+     "best-seller"
+    ],
+    "unitOfSale": "piece",
+    "ratingAverage": 3,
+    "ratingCount": 2
+   },
+   "note": "ghee or butter for browning"
+  },
+  {
+   "id": "i5",
+   "productId": "6aa6010d06da786e3f5658fa",
+   "purchaseQty": 2,
+   "useQty": 1.5,
+   "useUnitOfSale": "l",
+   "product": {
+    "_id": "6aa6010d06da786e3f5658fa",
+    "name": "Mai Dubai Water 1.5L",
+    "slug": "mai-dubai-water-1-5l",
+    "type": "standard",
+    "price": 150,
+    "proPrice": null,
+    "compareAt": 250,
+    "image": "https://images.unsplash.com/photo-1546173159-315724a31696?w=600&h=600&fit=crop",
+    "stock": 500,
+    "tags": [
+     "fresh",
+     "best-seller"
+    ],
+    "unitOfSale": "l",
+    "ratingAverage": 0,
+    "ratingCount": 0
+   },
+   "note": "for stock"
+  }
+ ],
+ "steps": [
+  {
+   "id": "s1",
+   "order": 1,
+   "body": "Pat chicken dry; season with salt, baharat, and turmeric.",
+   "durationMin": 10
+  },
+  {
+   "id": "s2",
+   "order": 2,
+   "body": "Brown chicken in ghee with dried lime until golden on all sides.",
+   "durationMin": 15
+  },
+  {
+   "id": "s3",
+   "order": 3,
+   "body": "Add water, simmer until chicken is cooked; remove and reserve stock.",
+   "durationMin": 25
+  },
+  {
+   "id": "s4",
+   "order": 4,
+   "body": "Cook rinsed rice in the stock until absorbed; rest covered 10 minutes.",
+   "durationMin": 20
+  },
+  {
+   "id": "s5",
+   "order": 5,
+   "body": "Top rice with chicken; serve with Arabic bread and daqoos if you like.",
+   "durationMin": 5
+  }
+ ]
+}

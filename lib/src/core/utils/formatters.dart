@@ -28,6 +28,49 @@ class Formatters {
   static String price(double v) =>
       _isAr ? '${amount(v)} $currency' : '$currency ${amount(v)}';
 
+  static final Map<String, DateFormat> _dateTimeFormats =
+      <String, DateFormat>{};
+
+  /// "21 Sept 2026, 10:42" in [languageCode]; empty without a date. The
+  /// format is cached per language because `DateFormat` parses its skeleton
+  /// on construction and a list builds dozens of rows.
+  static String dateTime(String languageCode, DateTime? at) {
+    if (at == null) return '';
+    final format = _dateTimeFormats.putIfAbsent(
+      languageCode,
+      () => DateFormat.yMMMd(languageCode).add_jm(),
+    );
+    return format.format(at.toLocal());
+  }
+
+  /// First-strong isolate markers: `U+2068 … U+2069`. Text between them is
+  /// laid out on its own, so an Arabic paragraph cannot pull a neutral
+  /// character out of a Latin run.
+  static const String _isolateStart = '\u2068';
+  static const String _isolateEnd = '\u2069';
+
+  /// [text] kept in its own direction inside a sentence of the other one.
+  ///
+  /// Without this, RTL bidi moves the neutral characters of a Latin run to
+  /// the visual edge of the paragraph: `+96550001110` reads `96550001110+`,
+  /// `10:00 - 12:00` reads `12:00 - 10:00`, and an order number runs into
+  /// the date beside it. Empty text passes through unchanged so a caller can
+  /// isolate an optional field without producing two stray markers.
+  static String isolate(String text) =>
+      text.isEmpty ? text : '$_isolateStart$text$_isolateEnd';
+
+  /// "21 Sept 2026" in [languageCode]; empty without a date.
+  static String date(String languageCode, DateTime? at) {
+    if (at == null) return '';
+    final format = _dateFormats.putIfAbsent(
+      languageCode,
+      () => DateFormat.yMMMEd(languageCode),
+    );
+    return format.format(at.toLocal());
+  }
+
+  static final Map<String, DateFormat> _dateFormats = <String, DateFormat>{};
+
   static String distance(double km) => km < 1
       ? 'home.distance_m'.tr(namedArgs: {'count': '${(km * 1000).round()}'})
       : 'home.distance_km'.tr(namedArgs: {'count': km.toStringAsFixed(1)});
