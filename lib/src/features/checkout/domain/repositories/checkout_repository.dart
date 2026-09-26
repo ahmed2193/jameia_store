@@ -5,7 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/branch_entity.dart';
 import '../entities/checkout_draft.dart';
 import '../entities/delivery_selection_entity.dart';
-import '../entities/delivery_slot_entity.dart';
+import '../../../../core/domain/entities/delivery_slot_entity.dart';
 
 /// Delivery choices and order placement (`/v1/delivery/*`, `POST /v1/orders`).
 abstract class CheckoutRepository {

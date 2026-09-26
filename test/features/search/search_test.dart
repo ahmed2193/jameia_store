@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
 import 'package:jameia_mart/src/core/data/models/brand_model.dart';
 import 'package:jameia_mart/src/core/data/models/category_model.dart';
+import 'package:jameia_mart/src/core/data/models/offer_model.dart';
 import 'package:jameia_mart/src/core/data/models/product_model.dart';
 import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
 import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
@@ -137,6 +138,9 @@ class _ScriptedCatalog implements CatalogRemoteDataSource {
     required int limit,
     String? search,
   }) async => const [BrandModel(id: 'b1', slug: 'kdd', name: 'KDD')];
+
+  @override
+  Future<List<OfferModel>> getOffers() async => const <OfferModel>[];
 }
 
 SearchCubit _cubit(_FakeRepository repository) => SearchCubit(

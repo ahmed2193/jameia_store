@@ -5,9 +5,11 @@ import 'data/repositories/catalog_browse_repository_impl.dart';
 import 'domain/repositories/catalog_browse_repository.dart';
 import 'domain/usecases/get_brands_usecase.dart';
 import 'domain/usecases/get_category_tree_usecase.dart';
+import 'domain/usecases/get_listing_category_tabs_usecase.dart';
 import 'domain/usecases/get_products_usecase.dart';
 import 'presentation/cubit/brands_cubit.dart';
 import 'presentation/cubit/category_browse_cubit.dart';
+import 'presentation/cubit/listing_tabs_cubit.dart';
 import 'presentation/cubit/product_listing_cubit.dart';
 
 /// Shop feature DI — category browsing + product listings on the jm3eia
@@ -28,6 +30,9 @@ void initShopFeature() {
     ..registerLazySingleton(
       () => GetBrandsUseCase(sl<CatalogBrowseRepository>()),
     )
+    ..registerLazySingleton(
+      () => GetListingCategoryTabsUseCase(sl<CatalogBrowseRepository>()),
+    )
     ..registerFactory(() => BrandsCubit(sl<GetBrandsUseCase>()))
     // param1 = the slug of the category being browsed; '' browses the store.
     ..registerFactoryParam<CategoryBrowseCubit, String, void>(
@@ -41,5 +46,10 @@ void initShopFeature() {
         sl<GetBrandsUseCase>(),
         query: query,
       ),
+    )
+    // param1 = the collection page's list, whose category tabs to find.
+    ..registerFactoryParam<ListingTabsCubit, CatalogProductQuery, void>(
+      (query, _) =>
+          ListingTabsCubit(sl<GetListingCategoryTabsUseCase>(), query: query),
     );
 }

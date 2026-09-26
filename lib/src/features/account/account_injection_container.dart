@@ -18,6 +18,7 @@ import 'domain/usecases/get_account_overview_usecase.dart';
 import 'domain/usecases/get_delivery_code_usecase.dart';
 import 'domain/usecases/get_loyalty_ledger_usecase.dart';
 import 'domain/usecases/get_loyalty_program_usecase.dart';
+import 'domain/usecases/get_loyalty_rewards_usecase.dart';
 import 'domain/usecases/get_profile_usecase.dart';
 import 'domain/usecases/get_wallet_ledger_usecase.dart';
 import 'domain/usecases/update_profile_usecase.dart';
@@ -25,6 +26,7 @@ import 'presentation/cubit/account_cubit.dart';
 import 'presentation/cubit/delivery_code_cubit.dart';
 import 'presentation/cubit/ledger_cubit.dart';
 import 'presentation/cubit/loyalty_program_cubit.dart';
+import 'presentation/cubit/loyalty_rewards_cubit.dart';
 import 'presentation/cubit/profile_cubit.dart';
 
 /// Account feature DI — offline overview / delivery code, the live profile
@@ -68,6 +70,7 @@ void initAccountFeature() {
     ..registerLazySingleton(() => GetWalletLedgerUseCase(sl()))
     ..registerLazySingleton(() => GetLoyaltyLedgerUseCase(sl()))
     ..registerLazySingleton(() => GetLoyaltyProgramUseCase(sl()))
+    ..registerLazySingleton(() => GetLoyaltyRewardsUseCase(sl()))
     // Presentation — the profile cubit takes the customer the app already
     // knows (from the session) so the form renders before the refresh lands.
     ..registerFactory(() => AccountCubit(sl()))
@@ -82,5 +85,6 @@ void initAccountFeature() {
     ..registerFactory<LedgerCubit<LoyaltyEntryEntity>>(
       () => LedgerCubit<LoyaltyEntryEntity>(sl<GetLoyaltyLedgerUseCase>()),
     )
-    ..registerFactory(() => LoyaltyProgramCubit(sl()));
+    ..registerFactory(() => LoyaltyProgramCubit(sl()))
+    ..registerFactory(() => LoyaltyRewardsCubit(sl()));
 }

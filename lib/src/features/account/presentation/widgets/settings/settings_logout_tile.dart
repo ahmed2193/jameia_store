@@ -1,0 +1,81 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../../config/routes/routes.dart';
+import '../../../../../config/theme/app_colors.dart';
+import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/haptics.dart';
+import '../../../../../core/navigation/navigation.dart';
+import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/branded_loader.dart';
+import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
+import '../../../../auth/presentation/cubit/auth_session_state.dart';
+import 'settings_logout_dialog.dart';
+import 'settings_section.dart';
+import 'settings_tile.dart';
+import 'settings_tone.dart';
+
+/// "Log out" in its own card at the end of Settings, shown only while
+/// signed in. It asks first; on yes a warning haptic, the session ends
+/// (revoked server-side, wiped locally even offline) and the whole stack is
+/// replaced by login.
+class SettingsLogoutTile extends StatelessWidget {
+  const SettingsLogoutTile({super.key, required this.title});
+
+  final String title;
+
+  Future<void> _logOut(BuildContext context) async {
+    final session = context.read<AuthSessionCubit>();
+    final confirmed = await showJameiaDialog<bool>(
+      context,
+      barrierLabel: 'settings.logout_barrier'.tr(),
+      barrierColor: AppColors.overlayPrimary,
+      pageBuilder: (_) => const SettingsLogoutDialog(),
+    );
+    if (confirmed != true) return;
+    Haptics.warning();
+    await session.signOut();
+    if (!context.mounted) return;
+    context.go(Routes.login);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<
+      AuthSessionCubit,
+      AuthSessionState,
+      ({bool visible, bool busy})
+    >(
+      selector: (state) => (
+        visible: state.isSignedIn || state.isSigningOut,
+        busy: state.isSigningOut,
+      ),
+      builder: (context, logout) {
+        if (!logout.visible) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsetsDirectional.only(top: AppSpacing.s24),
+          child: SettingsSection(
+            children: [
+              SettingsTile(
+                icon: Icons.logout_rounded,
+                tone: SettingsTone.danger,
+                title: title,
+                titleColor: AppColors.logoutRed,
+                chevron: false,
+                onTap: logout.busy ? null : () => _logOut(context),
+                trailing: logout.busy
+                    ? const BrandedLoader.inline(
+                        size: AppSize.s20,
+                        color: AppColors.logoutRed,
+                      )
+                    : null,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}

@@ -187,6 +187,12 @@ class FakeEventStreamClient implements EventStreamClient {
       StreamController<ServerSentEvent>.broadcast();
   final List<String> paths = [];
 
+  /// Every one-shot `send`, in order.
+  final List<({String path, Object? data})> sends = [];
+
+  /// Scripts the reply of a `send`; an empty stream when unset.
+  Stream<ServerSentEvent> Function(String path, Object? data)? onSend;
+
   @override
   Stream<ServerSentEvent> connect(
     String path, {
@@ -194,6 +200,12 @@ class FakeEventStreamClient implements EventStreamClient {
   }) {
     paths.add(path);
     return controller.stream;
+  }
+
+  @override
+  Stream<ServerSentEvent> send(String path, {Object? data}) {
+    sends.add((path: path, data: data));
+    return onSend?.call(path, data) ?? const Stream<ServerSentEvent>.empty();
   }
 }
 

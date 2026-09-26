@@ -1,9 +1,9 @@
 import '../../../../core/data/models/json_read.dart';
+import '../../../../core/data/models/offer_model.dart';
 import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/content_page_model.dart';
-import '../models/offer_model.dart';
 
 /// Public routes (Bearer optional). Receives the envelope's `results`
 /// (unwrapped by `DioConsumer`); throws `AppException` only.

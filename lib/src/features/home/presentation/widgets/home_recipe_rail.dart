@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/recipe_summary_entity.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/catalog_recipe_card.dart';
 import '../../domain/entities/home_section_entity.dart';
+import 'home_layout.dart';
+import 'home_pressable.dart';
+import 'home_reveal_item.dart';
 import 'home_section_block.dart';
 
 /// The recipe rail of the home feed: a lazily built horizontal strip.
@@ -33,14 +35,19 @@ class HomeRecipeRail extends StatelessWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.pageMargin,
+            horizontal: HomeLayout.gutter,
           ),
           itemCount: recipes.length,
-          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s10),
-          itemBuilder: (context, index) => CatalogRecipeCard(
+          separatorBuilder: (_, _) => const SizedBox(width: HomeLayout.itemGap),
+          itemBuilder: (context, index) => HomeRevealItem(
             key: ValueKey(recipes[index].id),
-            recipe: recipes[index],
-            onTap: () => onOpenRecipe(recipes[index]),
+            index: index,
+            child: HomePressable(
+              child: CatalogRecipeCard(
+                recipe: recipes[index],
+                onTap: () => onOpenRecipe(recipes[index]),
+              ),
+            ),
           ),
         ),
       ),

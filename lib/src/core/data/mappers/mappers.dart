@@ -20,6 +20,7 @@ export 'jameia_rank_mapper.dart';
 export 'jameia_sub_category_mapper.dart';
 export 'jameia_address_mapper.dart';
 export 'jameia_order_mapper.dart';
+export 'offer_mapper.dart';
 export 'kingkong_item_mapper.dart';
 export 'menu_section_mapper.dart';
 export 'order_item_mapper.dart';

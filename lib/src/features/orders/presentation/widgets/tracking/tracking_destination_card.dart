@@ -1,15 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/jameia_section_header.dart';
+import '../../../../../core/widgets/jameia_surface_card.dart';
+import 'tracking_info_row.dart';
 
-/// Where the order goes: the frozen delivery address, or the pickup branch.
+/// Where the order goes: the frozen delivery address, or the pickup branch —
+/// a section ("Deliver to" / "Pick up from") over one icon row on a hairline
+/// card. Takes no space when there is nothing to show.
 class TrackingDestinationCard extends StatelessWidget {
   const TrackingDestinationCard({super.key, required this.order});
 
@@ -18,58 +20,45 @@ class TrackingDestinationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lc = context.locale.languageCode;
-    final address = order.address;
+    // One decision for the title, the lines and the icon: no address (a
+    // pickup, or a delivery order without one) shows the branch.
+    final address = order.isPickup ? null : order.address;
     final String title;
-    final String body;
-    if (order.isPickup || address == null) {
+    final List<String> lines;
+    if (address == null) {
       title = 'orders.pick_up_from'.tr();
-      body = order.branch?.nameFor(lc) ?? '';
+      final branch = order.branch?.nameFor(lc) ?? '';
+      lines = [if (branch.isNotEmpty) branch];
     } else {
       title = 'orders.deliver_to'.tr();
-      body = [
+      lines = [
         if (address.label.isNotEmpty) address.label,
         if (address.summary.isNotEmpty) address.summary,
         // Isolated, or RTL bidi drops the '+' of +965… at the far end
         // of the line and the number reads back to front.
         if (address.phone.isNotEmpty) Formatters.isolate(address.phone),
-      ].join('\n');
+      ];
     }
-    if (body.isEmpty) return const SizedBox.shrink();
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            order.isPickup ? JameiaIcons.store : JameiaIcons.locationOutline,
-            size: AppSize.s22,
-            color: AppColors.primary,
+    if (lines.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        JameiaSectionHeader(title: title, titleStyle: AppTextStyles.groupTitle),
+        Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpacing.gutter,
           ),
-          const SizedBox(width: AppSpacing.s12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  style: AppTextStyles.captionLarge.copyWith(
-                    color: AppColors.secondaryText,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.s2),
-                Text(
-                  body,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.primaryText,
-                  ),
-                ),
-              ],
+          child: JameiaSurfaceCard(
+            child: TrackingInfoRow(
+              icon: address == null
+                  ? Icons.storefront_outlined
+                  : Icons.location_on_outlined,
+              lines: lines,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

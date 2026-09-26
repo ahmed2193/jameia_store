@@ -1,0 +1,49 @@
+import 'package:flutter/material.dart';
+
+import '../../../../../config/theme/app_colors.dart';
+import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/responsive/app_size.dart';
+
+/// One fact on the tracking page: a 24 dp icon, then its lines — the first
+/// one in the row style, the rest as grey meta. Read out as one node.
+class TrackingInfoRow extends StatelessWidget {
+  const TrackingInfoRow({
+    super.key,
+    required this.icon,
+    required this.lines,
+    this.iconColor = AppColors.primaryText,
+  });
+
+  final IconData icon;
+  final List<String> lines;
+  final Color iconColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return MergeSemantics(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: AppSize.s24, color: iconColor),
+          const SizedBox(width: AppSpacing.s16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (var i = 0; i < lines.length; i++)
+                  Text(
+                    lines[i],
+                    style: i == 0
+                        ? AppTextStyles.itemTitle
+                        : AppTextStyles.meta,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

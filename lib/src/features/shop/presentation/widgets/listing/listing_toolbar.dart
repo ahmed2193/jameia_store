@@ -6,7 +6,6 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/catalog_product_query.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../../../../../core/responsive/app_size.dart';
 import '../../cubit/product_listing_cubit.dart';
 import '../../cubit/product_listing_state.dart';
 import 'listing_brand_sheet.dart';
@@ -58,11 +57,11 @@ class ListingToolbar extends StatelessWidget {
         final query = state.query;
         final brand = query.brandSlug;
         return SizedBox(
-          height: AppSize.s48,
+          height: ListingFilterPill.height + AppSpacing.s16,
           child: ListView(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.pageMargin,
+              horizontal: AppSpacing.s16,
               vertical: AppSpacing.s8,
             ),
             children: [

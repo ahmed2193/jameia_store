@@ -3,7 +3,7 @@ import '../../../../core/domain/entities/geo_point_entity.dart';
 import '../../domain/entities/branch_entity.dart';
 import '../../domain/entities/checkout_draft.dart';
 import '../../domain/entities/delivery_selection_entity.dart';
-import '../../domain/entities/delivery_slot_entity.dart';
+import '../../../../core/domain/entities/delivery_slot_entity.dart';
 import '../models/branch_model.dart';
 import '../models/delivery_selection_model.dart';
 import '../models/delivery_slot_model.dart';

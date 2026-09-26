@@ -8,6 +8,7 @@ import 'config/routes/routes.dart';
 import 'config/theme/app_theme.dart';
 import 'features/account/presentation/cubit/setting_cubit.dart';
 import 'features/address/presentation/cubit/address_book_cubit.dart';
+import 'features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'features/auth/presentation/cubit/auth_session_state.dart';
 import 'features/cart/presentation/cubit/cart_cubit.dart';
@@ -61,6 +62,9 @@ class _JameiaAppState extends State<JameiaApp> {
         ),
         BlocProvider<AddressBookCubit>(
           create: (_) => AppGlobalCubits.addressBook(),
+        ),
+        BlocProvider<AssistantAvailabilityCubit>(
+          create: (_) => AppGlobalCubits.assistantAvailability(),
         ),
       ],
       child: MultiBlocListener(

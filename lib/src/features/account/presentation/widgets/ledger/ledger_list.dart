@@ -1,63 +1,196 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/content_clamp.dart';
 import '../../../../../core/widgets/branded_refresh.dart';
-import '../../../../../core/widgets/thin_divider.dart';
 import '../../../domain/entities/ledger.dart';
+import '../../../domain/entities/ledger_change.dart';
 import '../../../domain/entities/ledger_entry.dart';
 import '../../cubit/ledger_cubit.dart';
+import '../../cubit/ledger_state.dart';
+import 'ledger_dates.dart';
+import 'ledger_day_sliver.dart';
 import 'ledger_load_more_row.dart';
 
-/// The loaded history as a pull-to-refresh list: [header] first, then the
-/// entries (or [empty]), then the load-more sentinel while the server has
-/// more.
-class LedgerList<T extends LedgerEntry> extends StatelessWidget {
+/// The loaded history as a pull-to-refresh scroll: [header] first, then the
+/// entries grouped by day under pinned day titles (or [empty]), then the
+/// load-more sentinel while the server has more.
+///
+/// Motion, all from two controllers owned here: the first rows cascade in
+/// once when the list first appears (never on a refresh, a later page or a
+/// row scrolled back into view), and the lines a pull-to-refresh brings in
+/// flash a soft green once.
+class LedgerList<T extends LedgerEntry> extends StatefulWidget {
   const LedgerList({
     super.key,
     required this.ledger,
     required this.header,
     required this.entryBuilder,
+    required this.entryDate,
     required this.empty,
+    required this.todayLabel,
+    required this.yesterdayLabel,
   });
 
   final Ledger<T> ledger;
   final Widget header;
   final Widget Function(T entry) entryBuilder;
+
+  /// When a line was booked — what the days group on.
+  final DateTime Function(T entry) entryDate;
   final Widget empty;
+  final String todayLabel;
+  final String yesterdayLabel;
+
+  @override
+  State<LedgerList<T>> createState() => _LedgerListState<T>();
+}
+
+class _LedgerListState<T extends LedgerEntry> extends State<LedgerList<T>>
+    with TickerProviderStateMixin {
+  /// Day titles + rows that cascade in on the first load; the rest just
+  /// sit there (the playbook's cap of 6–8).
+  static const int _staggered = 8;
+  static final Duration _step = AppMotion.fast ~/ 5; // 30ms
+  static const Duration _lead = AppMotion.microPop; // after the fade-through
+  static const Duration _rowIn = AppMotion.slow;
+  static final Duration _entranceLength =
+      _lead + _step * (_staggered - 1) + _rowIn;
+
+  static final Duration _flashLength = AppMotion.slow * 2.5; // 1s
+  static final Color _flashClear = AppColors.brandLightBg.withValues(alpha: 0);
+
+  late final AnimationController _entrance = AnimationController(
+    vsync: this,
+    duration: _entranceLength,
+  );
+  late final List<CurvedAnimation> _slots = [
+    for (var slot = 0; slot < _staggered; slot++)
+      CurvedAnimation(
+        parent: _entrance,
+        curve: Interval(
+          _share(_lead + _step * slot),
+          _share(_lead + _step * slot + _rowIn),
+          curve: AppMotion.emphasizedDecelerate,
+        ),
+      ),
+  ];
+
+  late final AnimationController _flash = AnimationController(
+    vsync: this,
+    duration: _flashLength,
+  );
+  late final Animation<Color?> _flashColor = ColorTween(
+    begin: AppColors.brandLightBg,
+    end: _flashClear,
+  ).animate(CurvedAnimation(parent: _flash, curve: AppMotion.exit));
+
+  Set<String> _fresh = const <String>{};
+  bool _entered = false;
+
+  static double _share(Duration at) =>
+      at.inMicroseconds / _entranceLength.inMicroseconds;
+
+  @override
+  void initState() {
+    super.initState();
+    _flash.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() => _fresh = const <String>{});
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_entered) return;
+    _entered = true;
+    if (MotionGuard.reduced(context)) {
+      _entrance.value = 1;
+    } else {
+      _entrance.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final slot in _slots) {
+      slot.dispose();
+    }
+    _entrance.dispose();
+    _flash.dispose();
+    super.dispose();
+  }
+
+  Animation<double>? _entranceOf(int slot) =>
+      slot < _slots.length ? _slots[slot] : null;
+
+  void _onChange(LedgerChange change) {
+    if (change.newEntryIds.isEmpty) return;
+    setState(() => _fresh = change.newEntryIds);
+    // Reduced motion: a short colour change instead of the slow fade.
+    _flash.duration = MotionGuard.reduced(context)
+        ? AppMotion.fast
+        : _flashLength;
+    _flash.forward(from: 0);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final entries = ledger.entries;
-    final hasMore = ledger.hasMore && entries.isNotEmpty;
-    // header · entries (or the empty view) · sentinel
-    final count =
-        1 + (entries.isEmpty ? 1 : entries.length) + (hasMore ? 1 : 0);
-    return BrandedRefresh(
-      onRefresh: () => context.read<LedgerCubit<T>>().refresh(),
-      child: ContentClamp(
-        child: ListView.builder(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsetsDirectional.only(
-            bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.s16,
+    final ledger = widget.ledger;
+    final languageCode = context.locale.languageCode;
+    final now = DateTime.now();
+    final days = ledger.daysBy(widget.entryDate);
+    final firstSlots = <int>[];
+    var slot = 0;
+    for (final day in days) {
+      firstSlots.add(slot);
+      slot += 1 + day.entries.length;
+    }
+    return BlocListener<LedgerCubit<T>, LedgerState<T>>(
+      listenWhen: (previous, current) =>
+          previous.changeSerial != current.changeSerial,
+      listener: (_, state) => _onChange(state.change),
+      child: BrandedRefresh(
+        onRefresh: () => context.read<LedgerCubit<T>>().refresh(),
+        child: ContentClamp(
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverToBoxAdapter(child: widget.header),
+              if (days.isEmpty)
+                SliverFillRemaining(hasScrollBody: false, child: widget.empty),
+              for (var index = 0; index < days.length; index++)
+                LedgerDaySliver<T>(
+                  key: ValueKey<DateTime>(days[index].date),
+                  title: LedgerDates.dayTitle(
+                    languageCode: languageCode,
+                    day: days[index],
+                    now: now,
+                    today: widget.todayLabel,
+                    yesterday: widget.yesterdayLabel,
+                  ),
+                  entries: days[index].entries,
+                  entryBuilder: widget.entryBuilder,
+                  firstSlot: firstSlots[index],
+                  entranceOf: _entranceOf,
+                  freshIds: _fresh,
+                  flash: _flashColor,
+                ),
+              if (ledger.hasMore && !ledger.isEmpty)
+                SliverToBoxAdapter(child: LedgerLoadMoreRow<T>()),
+              SliverPadding(
+                padding: EdgeInsetsDirectional.only(
+                  bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.s16,
+                ),
+              ),
+            ],
           ),
-          itemCount: count,
-          itemBuilder: (_, index) {
-            if (index == 0) return header;
-            if (entries.isEmpty) return empty;
-            final position = index - 1;
-            if (position == entries.length) return LedgerLoadMoreRow<T>();
-            final entry = entries[position];
-            return Column(
-              key: ValueKey<String>(entry.id),
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                entryBuilder(entry),
-                const ThinDivider(indent: AppSpacing.s16),
-              ],
-            );
-          },
         ),
       ),
     );

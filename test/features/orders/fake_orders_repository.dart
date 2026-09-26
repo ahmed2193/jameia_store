@@ -34,6 +34,10 @@ class FakeOrdersRepository implements OrdersRepository {
   /// How many pages the fake serves.
   int pages = 1;
 
+  /// When set, the first page answers with one order per status instead of a
+  /// single `placed` row — a history with running, done and cancelled orders.
+  List<String>? statuses;
+
   /// The status the detail / cancel calls answer with.
   String detailStatus = 'placed';
   int reviewCalls = 0;
@@ -55,9 +59,15 @@ class FakeOrdersRepository implements OrdersRepository {
     final failure = listFailure;
     listFailure = null;
     if (failure != null) return Left(failure);
+    final mixed = statuses;
     return Right(
       OrdersPage(
-        orders: <OrderEntity>[order(id: 'o$page')],
+        orders: mixed == null || page != 1
+            ? <OrderEntity>[order(id: 'o$page')]
+            : <OrderEntity>[
+                for (var i = 0; i < mixed.length; i++)
+                  order(id: 'o$i', status: mixed[i]),
+              ],
         page: page,
         hasMore: page < pages,
         total: pages,

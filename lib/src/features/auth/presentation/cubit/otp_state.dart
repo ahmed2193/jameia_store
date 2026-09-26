@@ -19,6 +19,8 @@ class OtpState extends Equatable {
     this.isResending = false,
     this.customer,
     this.failure,
+    this.codeFailure,
+    this.rejections = 0,
   });
 
   final PhoneNumber phone;
@@ -37,12 +39,35 @@ class OtpState extends Equatable {
   /// Transient — cleared on every [copyWith]; the page localizes it.
   final Failure? failure;
 
+  /// The backend refused the typed code ([OtpChallenge.isRefusedCode]).
+  /// Unlike [failure] it outlives the countdown ticks: it stays under the
+  /// digits until the code is edited or a new one is sent.
+  final Failure? codeFailure;
+
+  /// Refusals so far — a new value shakes the digits once more.
+  final int rejections;
+
   bool get isVerifying => status == OtpStatus.verifying;
+  bool get isVerified => status == OtpStatus.verified;
+
+  /// The code cannot change: it is being checked or it was accepted.
+  bool get isLocked => isVerifying || isVerified;
+  bool get isCodeRejected => codeFailure != null;
+
+  /// The error just emitted is the refusal of the code (shown under the
+  /// digits), not a failed request (shown as a snack bar).
+  bool get failureIsRefusal => failure != null && failure == codeFailure;
   bool get isCodeComplete => OtpChallenge.isCodeComplete(code);
-  bool get canVerify => isCodeComplete && !isVerifying && !isResending;
+  bool get canVerify => isCodeComplete && !isLocked && !isResending;
   bool get isCooldownOver => resendSecondsLeft == 0;
-  bool get canResend => isCooldownOver && !isResending && !isVerifying;
+  bool get canResend => isCooldownOver && !isResending && !isLocked;
   bool get hasDebugCode => debugCode != null && debugCode!.isNotEmpty;
+
+  /// Digit slots the input shows (rule in [OtpChallenge.slotCount]).
+  int get slotCount => OtpChallenge.slotCount(
+    knownCode: hasDebugCode ? debugCode : null,
+    typedLength: code.length,
+  );
 
   OtpState copyWith({
     OtpStatus? status,
@@ -52,6 +77,9 @@ class OtpState extends Equatable {
     bool? isResending,
     AuthCustomerEntity? customer,
     Failure? failure,
+    Failure? codeFailure,
+    bool clearCodeFailure = false,
+    int? rejections,
   }) => OtpState(
     phone: phone,
     status: status ?? this.status,
@@ -61,6 +89,8 @@ class OtpState extends Equatable {
     isResending: isResending ?? this.isResending,
     customer: customer ?? this.customer,
     failure: failure,
+    codeFailure: clearCodeFailure ? null : (codeFailure ?? this.codeFailure),
+    rejections: rejections ?? this.rejections,
   );
 
   @override
@@ -73,5 +103,7 @@ class OtpState extends Equatable {
     isResending,
     customer,
     failure,
+    codeFailure,
+    rejections,
   ];
 }

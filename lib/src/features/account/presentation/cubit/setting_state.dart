@@ -1,23 +1,45 @@
 import 'package:equatable/equatable.dart';
 
-/// UI orchestration state for language switching — models the relevant slice of
-/// khayool's `SettingState`. `isChangingLanguage` drives the [LanguageIconButton]
-/// spinner and disables re-tap while a switch is in flight.
+import '../../../../core/error/failures.dart';
+
+/// App-wide Settings state: the language switch in flight (it disables the
+/// language controls), the push-notification choice and the cache clean-up
+/// in flight.
 class SettingState extends Equatable {
+  const SettingState({
+    this.isChangingLanguage = false,
+    this.notificationsEnabled = true,
+    this.isClearingCache = false,
+    this.failure,
+  });
+
   final bool isChangingLanguage;
+  final bool notificationsEnabled;
+  final bool isClearingCache;
 
-  /// Transient error from the last operation — reset on each [copyWith].
-  final String? error;
+  /// What the last operation failed with. Transient: every [copyWith] clears
+  /// it, so the page reacts to it once.
+  final Failure? failure;
 
-  const SettingState({this.isChangingLanguage = false, this.error});
-
-  SettingState copyWith({bool? isChangingLanguage, String? error}) {
+  SettingState copyWith({
+    bool? isChangingLanguage,
+    bool? notificationsEnabled,
+    bool? isClearingCache,
+    Failure? failure,
+  }) {
     return SettingState(
       isChangingLanguage: isChangingLanguage ?? this.isChangingLanguage,
-      error: error,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
+      isClearingCache: isClearingCache ?? this.isClearingCache,
+      failure: failure,
     );
   }
 
   @override
-  List<Object?> get props => [isChangingLanguage, error];
+  List<Object?> get props => [
+    isChangingLanguage,
+    notificationsEnabled,
+    isClearingCache,
+    failure,
+  ];
 }

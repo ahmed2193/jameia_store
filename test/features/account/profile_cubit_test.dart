@@ -5,6 +5,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/features/account/domain/entities/profile_field.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/profile_update.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/profile_cubit.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/profile_state.dart';
@@ -149,6 +150,70 @@ void main() {
         expect(updateProfile.calls, isEmpty);
       },
     );
+
+    blocTest<ProfileCubit, ProfileState>(
+      'each refusal is counted, per invalid field only',
+      build: () => build(initial: kProfileCustomer),
+      act: (cubit) async {
+        cubit.nameChanged('   ');
+        await cubit.save();
+        cubit.emailChanged('bad@');
+        await cubit.save();
+      },
+      verify: (cubit) {
+        expect(cubit.state.rejectedSubmits, 2);
+        expect(cubit.state.refusalsOf(ProfileField.name), 2);
+        expect(cubit.state.refusalsOf(ProfileField.email), 1);
+        expect(cubit.state.firstInvalidField, ProfileField.name);
+        expect(updateProfile.calls, isEmpty);
+      },
+    );
+
+    blocTest<ProfileCubit, ProfileState>(
+      'fixing a field clears its error but keeps its refusal count',
+      build: () => build(initial: kProfileCustomer),
+      act: (cubit) async {
+        cubit.nameChanged('   ');
+        await cubit.save();
+        cubit.nameChanged('Ahmed Ali');
+      },
+      verify: (cubit) {
+        expect(cubit.state.showNameError, isFalse);
+        expect(cubit.state.refusalsOf(ProfileField.name), 1);
+        expect(cubit.state.firstInvalidField, isNull);
+      },
+    );
+
+    blocTest<ProfileCubit, ProfileState>(
+      'the refusal counters outlive the fresh draft a save seeds',
+      build: () => build(initial: kProfileCustomer),
+      act: (cubit) async {
+        cubit.nameChanged('   ');
+        await cubit.save();
+        cubit.nameChanged('Ahmed Ali');
+        await cubit.save();
+      },
+      verify: (cubit) {
+        expect(cubit.state.status, ProfileStatus.saved);
+        expect(cubit.state.showErrors, isFalse);
+        expect(cubit.state.rejectedSubmits, 1);
+        expect(cubit.state.refusalsOf(ProfileField.name), 1);
+      },
+    );
+
+    test('the completion follows the draft', () {
+      final cubit = build(initial: kProfileCustomer);
+      // Name, email and gender: 3 of 5.
+      expect(cubit.state.completion.percent, 60);
+      expect(cubit.state.completion.next, ProfileField.dateOfBirth);
+      cubit
+        ..dateOfBirthChanged(DateTime(1990, 5, 17))
+        ..addPerson();
+      expect(cubit.state.completion.isComplete, isTrue);
+      cubit.genderChanged(null);
+      expect(cubit.state.completion.next, ProfileField.gender);
+      cubit.close();
+    });
 
     blocTest<ProfileCubit, ProfileState>(
       'unchanged form → nothing sent',

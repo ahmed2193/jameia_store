@@ -3,52 +3,52 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_progress_entities.dart';
+import '../../../../../core/motion/collapse_reveal.dart';
+import 'tracking_notice_card.dart';
 
 /// What changed while the order was picked: unavailable lines and
-/// substitutions. Hidden when nothing changed.
+/// substitutions. Opens (height + fade) when a poll brings the first change;
+/// takes no space while nothing changed.
 class TrackingPickingNotice extends StatelessWidget {
-  const TrackingPickingNotice({super.key, required this.picking});
+  const TrackingPickingNotice({super.key, this.picking});
 
-  final OrderPickingEntity picking;
+  final OrderPickingEntity? picking;
 
   @override
   Widget build(BuildContext context) {
-    if (!picking.hasChanges) return const SizedBox.shrink();
+    final picking = this.picking;
+    final changes = picking != null && picking.hasChanges ? picking : null;
     final lc = context.locale.languageCode;
-    return Container(
-      color: AppColors.warnBg,
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'orders.picking_changes'.tr(),
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.primaryText,
-              fontWeight: AppTextStyles.medium,
-            ),
-          ),
-          if (picking.unavailableLineKeys.isNotEmpty)
-            Text(
-              'orders.unavailable_items'.tr(
-                namedArgs: {'count': '${picking.unavailableLineKeys.length}'},
+    return CollapseReveal(
+      visible: changes != null,
+      child: changes == null
+          ? const SizedBox.shrink()
+          : Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.gutter,
+                AppSpacing.s12,
+                AppSpacing.gutter,
+                0,
               ),
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.warn),
-            ),
-          for (final row in picking.substitutions)
-            Text(
-              'orders.substituted_item'.tr(
-                namedArgs: {'name': row.productNameFor(lc)},
+              child: TrackingNoticeCard(
+                icon: Icons.swap_horiz_rounded,
+                iconColor: AppColors.warn,
+                title: 'orders.picking_changes'.tr(),
+                lines: [
+                  if (changes.unavailableLineKeys.isNotEmpty)
+                    'orders.unavailable_items'.tr(
+                      namedArgs: {
+                        'count': '${changes.unavailableLineKeys.length}',
+                      },
+                    ),
+                  for (final row in changes.substitutions)
+                    'orders.substituted_item'.tr(
+                      namedArgs: {'name': row.productNameFor(lc)},
+                    ),
+                ],
               ),
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.primaryText,
-              ),
             ),
-        ],
-      ),
     );
   }
 }

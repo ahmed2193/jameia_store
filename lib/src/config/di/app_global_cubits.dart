@@ -1,4 +1,5 @@
 import '../../features/address/presentation/cubit/address_book_cubit.dart';
+import '../../features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import '../../features/auth/presentation/cubit/auth_session_cubit.dart';
 import '../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../features/language/presentation/cubit/localization_cubit.dart';
@@ -25,4 +26,9 @@ abstract final class AppGlobalCubits {
   /// Unread badge; idle until the app root calls `start()` on sign-in.
   static UnreadNotificationsCubit unreadNotifications() =>
       sl<UnreadNotificationsCubit>();
+
+  /// Whether the store runs the assistant: read from `/v1/init` when the
+  /// first entry point builds (the provider is lazy), never at app start.
+  static AssistantAvailabilityCubit assistantAvailability() =>
+      sl<AssistantAvailabilityCubit>()..ensureLoaded();
 }

@@ -19,7 +19,11 @@ import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dar
 import 'package:jameia_mart/src/features/home/domain/entities/home_icon.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_link.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_section_entity.dart';
+import 'package:jameia_mart/src/features/home/presentation/widgets/home_arrow_button.dart';
+import 'package:jameia_mart/src/features/home/presentation/widgets/home_category_grid.dart';
 import 'package:jameia_mart/src/features/home/presentation/widgets/home_category_tile.dart';
+import 'package:jameia_mart/src/features/home/presentation/widgets/home_icon_view.dart';
+import 'package:jameia_mart/src/features/home/presentation/widgets/home_min_order_bar.dart';
 import 'package:jameia_mart/src/features/home/presentation/widgets/home_promo_cards.dart';
 import 'package:jameia_mart/src/features/home/presentation/widgets/home_section_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,14 +31,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// The largest text the app lets through (`TextScalerClamp`).
 const TextScaler _largestText = TextScaler.linear(1.3);
 
+/// The tallest card a rail holds: a tag, two name lines, a unit, a deal
+/// (price + struck price) and a Pro price.
 const CatalogProductEntity _product = CatalogProductEntity(
   id: 'p1',
   slug: 'bananas',
   name: 'Chiquita Bananas Premium Selection, 1kg',
   priceFils: 1250,
   compareAtFils: 1500,
+  proPriceFils: 1100,
   stock: 20,
   unitOfSale: UnitOfSale.kg,
+  tags: ['best-seller'],
   ratingAverage: 4.5,
   ratingCount: 12,
 );
@@ -63,19 +71,44 @@ void main() {
     ),
   );
 
-  testWidgets('the loading skeleton fits the narrowest phone', (tester) async {
+  void narrowestPhone(WidgetTester tester) {
     tester.view.physicalSize = const Size(320, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+  }
+
+  testWidgets('the loading skeleton fits the narrowest phone', (tester) async {
+    narrowestPhone(tester);
 
     await pump(tester, const HomeSkeleton());
 
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('at rest a product cell is the picture plus the text block', (
+    tester,
+  ) async {
+    late double cell;
+    await pump(
+      tester,
+      Builder(
+        builder: (context) {
+          cell = CatalogProductCard.cellHeight(context);
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+
+    expect(
+      cell,
+      CatalogProductCard.defaultWidth + CatalogProductCard.textBlockHeight,
+    );
+  });
+
   testWidgets('a product card fits the cell its rail gives it, scaled up', (
     tester,
   ) async {
+    narrowestPhone(tester);
     late double cell;
     await pump(
       tester,
@@ -85,12 +118,18 @@ void main() {
           return SizedBox(
             width: CatalogProductCard.defaultWidth,
             height: cell,
-            child: CatalogProductCard(
-              product: _product,
-              qty: 0,
-              onTap: () {},
-              onAdd: () {},
-              onRemove: () {},
+            // Free of the cell's tight height, so the card lays out at its
+            // own height (spilling past the cell still reports).
+            child: UnconstrainedBox(
+              alignment: AlignmentDirectional.topStart,
+              constrainedAxis: Axis.horizontal,
+              child: CatalogProductCard(
+                product: _product,
+                qty: 0,
+                onTap: () {},
+                onAdd: () {},
+                onRemove: () {},
+              ),
             ),
           );
         },
@@ -106,9 +145,54 @@ void main() {
         CatalogProductCard.defaultWidth + CatalogProductCard.textBlockHeight,
       ),
     );
+    // The card's own height (every line of the tallest card), not the cell's.
+    final height = tester.getSize(find.byType(CatalogProductCard)).height;
+    expect(height, lessThanOrEqualTo(cell));
+    expect(height, greaterThan(CatalogProductCard.defaultWidth));
   });
 
-  testWidgets('the occasion cards fit their row, scaled up', (tester) async {
+  testWidgets('a plain card is shorter than its cell: the room is spare', (
+    tester,
+  ) async {
+    late double cell;
+    await pump(
+      tester,
+      Builder(
+        builder: (context) {
+          cell = CatalogProductCard.cellHeight(context);
+          return SizedBox(
+            width: CatalogProductCard.defaultWidth,
+            height: cell,
+            child: UnconstrainedBox(
+              alignment: AlignmentDirectional.topStart,
+              constrainedAxis: Axis.horizontal,
+              child: CatalogProductCard(
+                product: const CatalogProductEntity(
+                  id: 'p2',
+                  slug: 'lemon',
+                  name: 'Lemon',
+                  priceFils: 500,
+                  stock: 5,
+                ),
+                qty: 0,
+                onTap: () {},
+                onAdd: () {},
+                onRemove: () {},
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(
+      tester.getSize(find.byType(CatalogProductCard)).height,
+      lessThan(cell),
+    );
+  });
+
+  testWidgets('the occasion tiles fit their row, scaled up', (tester) async {
     await pump(
       tester,
       HomePromoCards(
@@ -118,7 +202,7 @@ void main() {
           cards: [
             HomePromoCard(
               id: 'c1',
-              title: 'Weeknight dinner',
+              title: 'Weeknight dinner for the whole family',
               subtitle: 'Ready in 20 minutes',
               link: HomeLink(type: HomeLinkType.collection, target: 'dinner'),
               accent: HomeAccent.violet,
@@ -131,7 +215,34 @@ void main() {
     );
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Weeknight dinner'), findsOneWidget);
+    expect(find.text('Weeknight dinner for the whole family'), findsOneWidget);
+  });
+
+  testWidgets('both rows of the category shelf fit, scaled up', (tester) async {
+    await pump(
+      tester,
+      SingleChildScrollView(
+        child: HomeCategoryGrid(
+          section: HomeCategoryRailSection(
+            id: 'cat',
+            title: 'Shop by category',
+            categories: [
+              for (var i = 0; i < 12; i++)
+                CatalogCategoryEntity(
+                  id: 'c$i',
+                  slug: 'c$i',
+                  name: 'Fruits, vegetables and fresh herbs $i',
+                ),
+            ],
+          ),
+          onOpenCategory: (_) {},
+          onViewAll: () {},
+        ),
+      ),
+      textScaler: _largestText,
+    );
+
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('a category with no artwork still shows something', (
@@ -139,15 +250,17 @@ void main() {
   ) async {
     await pump(
       tester,
-      SizedBox(
-        height: HomeCategoryTile.height,
-        child: HomeCategoryTile(
-          category: const CatalogCategoryEntity(
-            id: 'c1',
-            slug: 'bakery',
-            name: 'Bakery',
+      Builder(
+        builder: (context) => SizedBox(
+          height: HomeCategoryTile.cellHeight(context),
+          child: HomeCategoryTile(
+            category: const CatalogCategoryEntity(
+              id: 'c1',
+              slug: 'bakery',
+              name: 'Bakery',
+            ),
+            onTap: () {},
           ),
-          onTap: () {},
         ),
       ),
     );
@@ -155,26 +268,42 @@ void main() {
     expect(find.byIcon(Icons.category_rounded), findsOneWidget);
   });
 
-  testWidgets('the icon disc does not vanish into a tinted block', (
-    tester,
-  ) async {
+  testWidgets('a header wears the backend icon in its accent', (tester) async {
     await pump(
       tester,
       const HomeSectionHeader(
         title: "Today's deals",
         icon: HomeIcon(key: HomeIconKey.trendingUp),
         accent: HomeAccent.amber,
-        // The deals block is washed in the same amber the icon uses.
-        fill: AppColors.accent3Light,
       ),
     );
 
-    final disc = tester.widget<Container>(find.byType(Container).first);
     expect(
-      (disc.decoration! as BoxDecoration).color,
-      AppColors.white,
-      reason: 'a disc the colour of its block is no disc at all',
+      tester.widget<HomeIconView>(find.byType(HomeIconView)).color,
+      AppColors.accent3,
     );
+    // Nowhere to go: no arrow.
+    expect(find.byType(HomeArrowButton), findsNothing);
+  });
+
+  testWidgets('the minimum-order bar fits the narrowest phone, scaled up', (
+    tester,
+  ) async {
+    narrowestPhone(tester);
+
+    await pump(
+      tester,
+      Align(
+        alignment: Alignment.bottomCenter,
+        child: HomeMinOrderBar(
+          message: 'Start adding KD 12.500 to place your order!',
+          onInfo: () {},
+        ),
+      ),
+      textScaler: _largestText,
+    );
+
+    expect(tester.takeException(), isNull);
   });
 
   group('HomeDelivery', () {

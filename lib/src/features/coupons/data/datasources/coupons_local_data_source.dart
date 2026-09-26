@@ -1,19 +1,17 @@
 import '../../../../core/data/jameia_repository.dart';
 import '../../../../core/data/models/models.dart';
 
-/// Offline source for the user's coupons. The live Jameia pages hit the coupon
-/// list endpoints; here the coupon set is served straight from the in-memory
-/// [JameiaRepository] (the same dummy data the screens read inline before the
-/// clean-arch conversion).
+/// Offline source for the user's coupons: the jm3eia API has no coupon wallet,
+/// so the set is served from the in-memory [JameiaRepository] catalogue.
 abstract class CouponsLocalDataSource {
   List<Coupon> coupons();
 }
 
 class CouponsLocalDataSourceImpl implements CouponsLocalDataSource {
-  CouponsLocalDataSourceImpl(this.catalog);
+  const CouponsLocalDataSourceImpl(this._catalog);
 
-  final JameiaRepository catalog;
+  final JameiaRepository _catalog;
 
   @override
-  List<Coupon> coupons() => catalog.coupons;
+  List<Coupon> coupons() => _catalog.coupons;
 }

@@ -14,13 +14,19 @@ class LoginCubit extends Cubit<LoginState> with SafeCubitMixin<LoginState> {
   final SendOtpUseCase _sendOtp;
 
   /// Accepts typed or pasted input; parsing rules live in [PhoneNumber].
-  void phoneChanged(String raw) => safeEmit(
-    state.copyWith(
-      phone: PhoneNumber.parseKuwait(raw),
-      status: LoginStatus.initial,
-      clearChallenge: true,
-    ),
-  );
+  /// The field reports caret moves too: the same number is not an edit, so
+  /// it neither resets the status nor drops the challenge.
+  void phoneChanged(String raw) {
+    final phone = PhoneNumber.parseKuwait(raw);
+    if (phone == state.phone) return;
+    safeEmit(
+      state.copyWith(
+        phone: phone,
+        status: LoginStatus.initial,
+        clearChallenge: true,
+      ),
+    );
+  }
 
   /// Request a code for the typed phone (no-op while invalid or in flight).
   Future<void> submit() async {

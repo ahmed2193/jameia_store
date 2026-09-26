@@ -8,12 +8,12 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/fade_through_switcher.dart';
 import '../../../../core/navigation/jameia_snack_bar.dart';
 import '../../../../core/utils/failure_message.dart';
-import '../../../../core/widgets/error_view.dart';
+import '../../../../core/widgets/jameia_state_view.dart';
+import '../../../../core/widgets/jameia_title_bar.dart';
 import '../../../../core/widgets/orders_skeleton.dart';
-import '../../../../core/widgets/signed_out_view.dart';
 import '../cubit/orders_cubit.dart';
 import '../cubit/orders_state.dart';
 import '../widgets/orders_list/orders_list.dart';
@@ -26,6 +26,10 @@ import '../widgets/orders_list/orders_list.dart';
 /// once and never disposed: [active] is how the shell says it is the tab on
 /// screen. Coming back to it re-reads the list, because an order placed,
 /// cancelled or reviewed on another screen happened behind its back.
+///
+/// The states (skeleton, list, error, signed out) fade through one another,
+/// keyed by the status bucket only: a refresh keeps `loaded`, so the list is
+/// never torn down or faded again while it is on screen.
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key, this.active = true, this.embedded = false});
 
@@ -76,44 +80,49 @@ class _OrdersPageState extends State<OrdersPage> {
             current.failure != null && previous != current,
         listener: _onFailure,
         child: Scaffold(
-          backgroundColor: AppColors.mediumBackground,
+          backgroundColor: AppColors.white,
+          // The page has no text field; only the cancel sheet above it opens
+          // the keyboard, and the list behind the barrier need not re-lay
+          // out on every frame of that.
+          resizeToAvoidBottomInset: false,
           appBar: widget.embedded
               ? null
-              : AppBar(
-                  title: Text(
-                    'orders.title'.tr(),
-                    style: AppTextStyles.displaySmall.copyWith(
-                      fontWeight: AppTextStyles.medium,
+              : JameiaTitleBar(title: 'orders.title'.tr()),
+          // In the Cart tab the page sits in the shell's IndexedStack, which
+          // keeps hidden tabs animating: a hidden history ticks nothing (the
+          // skeleton shimmer, the first-page cascade). A pushed page has no
+          // such scope, so this stays on there.
+          body: TickerMode(
+            enabled: Visibility.of(context),
+            child: BlocBuilder<OrdersCubit, OrdersState>(
+              buildWhen: (previous, current) =>
+                  previous.status != current.status ||
+                  previous.loadFailure != current.loadFailure,
+              builder: (context, state) {
+                final bucket = switch (state.status) {
+                  OrdersStatus.initial ||
+                  OrdersStatus.loading => OrdersStatus.loading,
+                  final status => status,
+                };
+                return FadeThroughSwitcher(
+                  stateKey: bucket,
+                  alignment: AlignmentDirectional.topCenter,
+                  child: switch (state.status) {
+                    OrdersStatus.initial ||
+                    OrdersStatus.loading => const OrdersSkeleton(),
+                    OrdersStatus.error when state.isSignedOut =>
+                      JameiaStateView.signedOut(
+                        message: 'orders.sign_in_required'.tr(),
+                      ),
+                    OrdersStatus.error => JameiaStateView.error(
+                      message: state.loadFailure?.localizedMessage,
+                      onRetry: context.read<OrdersCubit>().load,
                     ),
-                  ),
-                  backgroundColor: AppColors.white,
-                  surfaceTintColor: AppColors.white,
-                  elevation: 0,
-                  centerTitle: false,
-                ),
-          body: BlocBuilder<OrdersCubit, OrdersState>(
-            buildWhen: (previous, current) =>
-                previous.status != current.status ||
-                previous.loadFailure != current.loadFailure,
-            builder: (context, state) {
-              switch (state.status) {
-                case OrdersStatus.initial:
-                case OrdersStatus.loading:
-                  return const OrdersSkeleton();
-                case OrdersStatus.error:
-                  if (state.isSignedOut) {
-                    return SignedOutView(
-                      message: 'orders.sign_in_required'.tr(),
-                    );
-                  }
-                  return ErrorView(
-                    message: state.loadFailure?.localizedMessage,
-                    onRetry: context.read<OrdersCubit>().load,
-                  );
-                case OrdersStatus.loaded:
-                  return const OrdersList();
-              }
-            },
+                    OrdersStatus.loaded => const OrdersList(),
+                  },
+                );
+              },
+            ),
           ),
         ),
       ),

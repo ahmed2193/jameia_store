@@ -39,6 +39,16 @@ class _PopScaleState extends State<PopScale>
     duration: widget.duration ?? AppMotion.medium,
     value: 1,
   );
+  // Built once and re-pointed on a curve change: a CurvedAnimation made in
+  // build() registers a listener on the controller on every rebuild.
+  late final CurvedAnimation _curve = CurvedAnimation(
+    parent: _c,
+    curve: widget.curve ?? AppMotion.emphasized,
+  );
+  late final Animation<double> _scale = Tween<double>(
+    begin: AppMotion.popScaleBegin,
+    end: AppMotion.popScaleEnd,
+  ).animate(_curve);
   bool _firstPop = false;
 
   /// Pop the controller — but under reduced motion pin it to the rest scale so
@@ -64,11 +74,15 @@ class _PopScaleState extends State<PopScale>
   @override
   void didUpdateWidget(covariant PopScale old) {
     super.didUpdateWidget(old);
+    if (old.curve != widget.curve) {
+      _curve.curve = widget.curve ?? AppMotion.emphasized;
+    }
     if (old.popKey != widget.popKey) _play();
   }
 
   @override
   void dispose() {
+    _curve.dispose();
     _c.dispose();
     super.dispose();
   }
@@ -76,18 +90,6 @@ class _PopScaleState extends State<PopScale>
   @override
   Widget build(BuildContext context) {
     if (MotionGuard.reduced(context)) return widget.child;
-    return ScaleTransition(
-      scale:
-          Tween<double>(
-            begin: AppMotion.popScaleBegin,
-            end: AppMotion.popScaleEnd,
-          ).animate(
-            CurvedAnimation(
-              parent: _c,
-              curve: widget.curve ?? AppMotion.emphasized,
-            ),
-          ),
-      child: widget.child,
-    );
+    return ScaleTransition(scale: _scale, child: widget.child);
   }
 }

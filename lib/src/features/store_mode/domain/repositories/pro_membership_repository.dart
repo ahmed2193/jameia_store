@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/pro_membership.dart';
 
@@ -18,4 +19,8 @@ abstract class ProMembershipRepository {
   /// `POST /v1/account/subscription/cancel` — stops the renewal; the paid
   /// period keeps running.
   Future<Either<Failure, ProSubscription>> cancel();
+
+  /// `GET /v1/brands?page&limit` — public; the first page only (the paywall's
+  /// brand logo rows, not a brand directory).
+  Future<Either<Failure, List<BrandEntity>>> getBrands();
 }

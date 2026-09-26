@@ -16,4 +16,14 @@ class AppShadows {
   static const List<BoxShadow> high = [
     BoxShadow(color: Color(0x19000000), offset: Offset(0, 4), blurRadius: 18),
   ];
+
+  /// Hairline shadow under a title bar (the search entry bar).
+  static const List<BoxShadow> barBottom = [
+    BoxShadow(color: Color(0x14000000), offset: Offset(0, 1), blurRadius: 3),
+  ];
+
+  /// Hairline shadow above a pinned bottom action bar.
+  static const List<BoxShadow> barTop = [
+    BoxShadow(color: Color(0x14000000), offset: Offset(0, -1), blurRadius: 3),
+  ];
 }

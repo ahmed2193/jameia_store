@@ -19,4 +19,11 @@ abstract final class OrderStatusPalette {
     OrderStatusGroup.completed => AppColors.successBg,
     OrderStatusGroup.cancelled => AppColors.errorBg,
   };
+
+  /// Colour of the big status headline on the tracking page: ink, red text
+  /// (AA) when cancelled — the status tag carries the brand colour.
+  static Color headline(OrderStatus status) => switch (status.group) {
+    OrderStatusGroup.cancelled => AppColors.errorDeep,
+    _ => AppColors.primaryText,
+  };
 }

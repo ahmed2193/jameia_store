@@ -1,7 +1,8 @@
+import '../../../core/domain/entities/catalog_product_query.dart';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/domain/entities/catalog_product_query.dart';
 import '../../../core/navigation/navigation.dart';
 import '../../../features/shop/presentation/pages/product_listing_page.dart';
 import '../placeholder_page.dart';

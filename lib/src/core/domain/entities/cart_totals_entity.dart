@@ -69,6 +69,16 @@ class CartTotalsEntity extends Equatable {
       deliveryFeeWithoutExpressFils / CatalogProductEntity.filsPerDinar;
   double get totalKd => totalFils / CatalogProductEntity.filsPerDinar;
   double get minOrderKd => minOrderFils / CatalogProductEntity.filsPerDinar;
+
+  /// What the order would cost without its discounts — the struck amount
+  /// beside [totalFils] in the checkout bar; `null` without a discount.
+  int? get totalBeforeDiscountFils =>
+      hasDiscount ? totalFils + discountFils : null;
+
+  double? get totalBeforeDiscountKd {
+    final fils = totalBeforeDiscountFils;
+    return fils == null ? null : fils / CatalogProductEntity.filsPerDinar;
+  }
   double get shortfallKd => shortfallFils / CatalogProductEntity.filsPerDinar;
 
   /// The same totals with the subtotal re-summed from projected lines; the

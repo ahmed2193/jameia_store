@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/text/ascii_digits.dart';
+
 /// A customer phone number as the login flow handles it: a dial code plus the
 /// local digits the user typed. Jameia serves Kuwait, so the only constructor
 /// is [PhoneNumber.kuwait]; the entity owns the parsing and validity rules and
@@ -12,20 +14,24 @@ class PhoneNumber extends Equatable {
   /// Flag shown next to the dial code (not translatable text).
   static const String kuwaitFlag = '🇰🇼';
   static const String _kuwaitCountryCode = '965';
+  static const String _internationalPrefix = '00';
 
   /// Kuwait mobile numbers are 8 digits.
   static const int kuwaitLocalLength = 8;
 
   static const PhoneNumber empty = PhoneNumber.kuwait('');
 
-  static final RegExp _nonDigits = RegExp(r'\D');
-
-  /// Builds a Kuwait number from anything the user typed or pasted: drops
-  /// separators, a leading `+965` / `965` / `00965`, and caps the local part
-  /// at [kuwaitLocalLength] digits.
+  /// Builds a Kuwait number from anything the user typed, pasted or had
+  /// autofilled: Arabic-Indic / Persian digits become ASCII, separators go,
+  /// a leading `+965` / `965` / `00965` is dropped once the input is longer
+  /// than a local number, and the local part is capped at
+  /// [kuwaitLocalLength] digits.
   factory PhoneNumber.parseKuwait(String raw) {
-    var digits = raw.replaceAll(_nonDigits, '');
-    if (digits.startsWith('00')) digits = digits.substring(2);
+    var digits = asciiDigitsOnly(raw);
+    if (digits.length > kuwaitLocalLength &&
+        digits.startsWith(_internationalPrefix)) {
+      digits = digits.substring(_internationalPrefix.length);
+    }
     if (digits.length > kuwaitLocalLength &&
         digits.startsWith(_kuwaitCountryCode)) {
       digits = digits.substring(_kuwaitCountryCode.length);
@@ -35,6 +41,11 @@ class PhoneNumber extends Equatable {
     }
     return PhoneNumber.kuwait(digits);
   }
+
+  /// The local digits [raw] parses to — the rule the phone input applies on
+  /// every keystroke, so the field never holds more than a local number.
+  static String localDigitsOf(String raw) =>
+      PhoneNumber.parseKuwait(raw).localDigits;
 
   final String dialCode;
   final String localDigits;
@@ -52,7 +63,7 @@ class PhoneNumber extends Equatable {
   /// What the user sees (`+965 12345678`).
   String get display => '$dialCode $localDigits';
 
-  static bool _isAsciiDigit(int unit) => unit >= 0x30 && unit <= 0x39;
+  static bool _isAsciiDigit(int unit) => asciiDigitUnit(unit) == unit;
 
   @override
   List<Object?> get props => [dialCode, localDigits];

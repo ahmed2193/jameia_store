@@ -25,15 +25,14 @@ void main() {
     );
   }
 
-  test('load fills the feed and buckets it by status group', () async {
+  test('load fills the feed, each row carrying its status', () async {
     final cubit = build();
 
     await cubit.load();
 
     expect(cubit.state.status, OrdersStatus.loaded);
     expect(cubit.state.feed.orders, hasLength(1));
-    expect(cubit.state.feed.byGroup(OrderStatusGroup.inProgress), hasLength(1));
-    expect(cubit.state.feed.byGroup(OrderStatusGroup.completed), isEmpty);
+    expect(cubit.state.feed.orders.single.group, OrderStatusGroup.inProgress);
     await cubit.close();
   });
 
@@ -133,8 +132,8 @@ void main() {
     );
 
     expect(cubit.state.feed.orders, hasLength(1));
-    expect(cubit.state.feed.byGroup(OrderStatusGroup.cancelled), hasLength(1));
-    expect(cubit.state.feed.byGroup(OrderStatusGroup.inProgress), isEmpty);
+    // The row stays in the one list; only its status moved.
+    expect(cubit.state.feed.orders.single.group, OrderStatusGroup.cancelled);
     await cubit.close();
   });
 
@@ -149,7 +148,7 @@ void main() {
 
     expect(cancelled, isFalse);
     expect(cubit.state.failedAction, OrdersAction.cancel);
-    expect(cubit.state.feed.byGroup(OrderStatusGroup.inProgress), hasLength(1));
+    expect(cubit.state.feed.orders.single.group, OrderStatusGroup.inProgress);
     await cubit.close();
   });
 
@@ -163,10 +162,7 @@ void main() {
       await cubit.refreshOrder('o1');
 
       expect(cubit.state.feed.orders, hasLength(1));
-      expect(
-        cubit.state.feed.byGroup(OrderStatusGroup.completed),
-        hasLength(1),
-      );
+      expect(cubit.state.feed.orders.single.group, OrderStatusGroup.completed);
       await cubit.close();
     },
   );

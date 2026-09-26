@@ -16,7 +16,7 @@ class LoginHeading extends StatelessWidget {
       children: [
         Text(
           'auth.log_in_or_sign_up'.tr(),
-          style: AppTextStyles.displaySmall.copyWith(
+          style: AppTextStyles.displayMedium.copyWith(
             fontWeight: AppTextStyles.bold,
           ),
         ),

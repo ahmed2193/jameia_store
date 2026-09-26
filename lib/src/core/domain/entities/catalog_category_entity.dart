@@ -33,6 +33,11 @@ class CatalogCategoryEntity extends Equatable {
   bool get isRoot => parentId == null;
   bool get hasImage => image.isNotEmpty;
 
+  /// First character of [name] (a whole code point), the picture
+  /// placeholder.
+  String get initial =>
+      name.isEmpty ? '' : String.fromCharCode(name.runes.first);
+
   @override
   List<Object?> get props => [
     id,

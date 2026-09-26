@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'ledger_change.dart';
+import 'ledger_day.dart';
 import 'ledger_entry.dart';
 
 /// The loaded pages of an account ledger plus the balance the server sent
@@ -46,6 +48,33 @@ class Ledger<T extends LedgerEntry> extends Equatable {
       page: next.page,
       hasMore: next.hasMore,
     );
+  }
+
+  /// What this (newer) ledger brings over [earlier]: the balance delta and
+  /// the lines [earlier] did not have.
+  LedgerChange changeSince(Ledger<T> earlier) {
+    final known = {for (final entry in earlier.entries) entry.id};
+    return LedgerChange(
+      balanceDelta: balance - earlier.balance,
+      newEntryIds: {
+        for (final entry in entries)
+          if (!known.contains(entry.id)) entry.id,
+      },
+    );
+  }
+
+  /// The entries grouped by the local calendar day [dateOf] gives them, in
+  /// the order the days first appear (newest first) and keeping the order
+  /// inside each day.
+  List<LedgerDay<T>> daysBy(DateTime Function(T entry) dateOf) {
+    final days = <DateTime, List<T>>{};
+    for (final entry in entries) {
+      days.putIfAbsent(LedgerDay.dayOf(dateOf(entry)), () => <T>[]).add(entry);
+    }
+    return [
+      for (final day in days.entries)
+        LedgerDay<T>(date: day.key, entries: List<T>.unmodifiable(day.value)),
+    ];
   }
 
   @override

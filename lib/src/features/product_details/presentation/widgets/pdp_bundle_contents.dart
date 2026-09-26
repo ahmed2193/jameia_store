@@ -2,11 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/widgets/thin_divider.dart';
 import '../../domain/entities/product_detail.dart';
 import 'pdp_bundle_item_row.dart';
-import 'pdp_section_card.dart';
+import 'pdp_section.dart';
 
-/// What a bundle contains.
+/// What a bundle contains: flat rows split by hairlines.
 class PdpBundleContents extends StatelessWidget {
   const PdpBundleContents({
     super.key,
@@ -19,16 +20,18 @@ class PdpBundleContents extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PdpSectionCard(
+    return PdpSection(
       title: 'product.bundle_contains'.tr(),
       child: Column(
         children: [
-          for (final item in items)
+          for (var i = 0; i < items.length; i++) ...[
+            if (i > 0) const ThinDivider(),
             PdpBundleItemRow(
-              key: ValueKey(item.product.id),
-              item: item,
-              onTap: () => onOpenProduct(item.product),
+              key: ValueKey(items[i].product.id),
+              item: items[i],
+              onTap: () => onOpenProduct(items[i].product),
             ),
+          ],
         ],
       ),
     );

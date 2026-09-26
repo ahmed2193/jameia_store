@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../domain/entities/ledger_change.dart';
 import '../../domain/entities/ledger_entry.dart';
 import '../../domain/usecases/get_ledger_usecase.dart';
 import 'ledger_state.dart';
@@ -34,6 +35,8 @@ class LedgerCubit<T extends LedgerEntry> extends Cubit<LedgerState<T>>
   }
 
   /// Pull-to-refresh: page 1 again while the current list stays on screen.
+  /// When the balance or the lines moved, [LedgerState.change] says how and
+  /// [LedgerState.changeSerial] ticks (the screen plays the delta once).
   Future<void> refresh() => _loadFirstPage(LedgerAction.refresh);
 
   Future<void> _loadFirstPage(LedgerAction action) async {
@@ -51,14 +54,24 @@ class LedgerCubit<T extends LedgerEntry> extends Cubit<LedgerState<T>>
           failedAction: action,
         ),
       ),
-      (ledger) => safeEmit(
-        state.copyWith(
-          status: LedgerStatus.loaded,
-          ledger: ledger,
-          isLoadingMore: false,
-          loadMoreFailed: false,
-        ),
-      ),
+      (ledger) {
+        // Only a refresh of a list already on screen "changes" something the
+        // customer watches; a first load (or a retry) just appears.
+        final change = state.isLoaded
+            ? ledger.changeSince(state.ledger)
+            : LedgerChange.none;
+        final moved = !change.isEmpty;
+        safeEmit(
+          state.copyWith(
+            status: LedgerStatus.loaded,
+            ledger: ledger,
+            isLoadingMore: false,
+            loadMoreFailed: false,
+            change: moved ? change : null,
+            changeSerial: moved ? state.changeSerial + 1 : null,
+          ),
+        );
+      },
     );
   }
 

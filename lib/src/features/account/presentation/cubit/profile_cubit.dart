@@ -54,10 +54,18 @@ class ProfileCubit extends Cubit<ProfileState>
       (customer) => safeEmit(
         state.isDirty
             ? state.copyWith(status: ProfileStatus.ready, customer: customer)
-            : ProfileState.fromCustomer(customer),
+            : _reseeded(customer),
       ),
     );
   }
+
+  /// A fresh draft from [customer]. The refusal counters live as long as
+  /// the form: a counter going back to zero would read as a new refusal.
+  ProfileState _reseeded(AuthCustomerEntity customer) =>
+      ProfileState.fromCustomer(customer).copyWith(
+        rejectedSubmits: state.rejectedSubmits,
+        refusals: state.refusals,
+      );
 
   void nameChanged(String value) => safeEmit(state.copyWith(name: value));
 
@@ -90,10 +98,24 @@ class ProfileCubit extends Cubit<ProfileState>
     );
   }
 
+  /// Sends the diff. Never twice at once (a tap during the PATCH is a
+  /// no-op); an invalid draft is refused instead: the inline errors show,
+  /// [ProfileState.rejectedSubmits] counts the refusal and
+  /// [ProfileState.refusals] the fields it was refused for.
   Future<void> save() async {
     if (state.isSaving) return;
     if (!state.isValid) {
-      safeEmit(state.copyWith(showErrors: true));
+      safeEmit(
+        state.copyWith(
+          showErrors: true,
+          rejectedSubmits: state.rejectedSubmits + 1,
+          refusals: {
+            ...state.refusals,
+            for (final field in state.invalidFields)
+              field: state.refusalsOf(field) + 1,
+          },
+        ),
+      );
       return;
     }
     final before = state.customer;
@@ -105,7 +127,7 @@ class ProfileCubit extends Cubit<ProfileState>
         state.copyWith(status: ProfileStatus.error, failure: failure),
       ),
       (customer) => safeEmit(
-        ProfileState.fromCustomer(customer).copyWith(
+        _reseeded(customer).copyWith(
           status: ProfileStatus.saved,
           bonusEarned: LoyaltyProgram.profileBonusEarned(
             before: before,

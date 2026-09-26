@@ -7,35 +7,52 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// Explains why the user landed on login after the session could not be
-/// refreshed (shown when the route was opened with the expired flag).
+/// refreshed (shown when the route was opened with the expired flag). A
+/// notice, not an error: a warm amber card with the lock-clock badge.
 class LoginExpiredBanner extends StatelessWidget {
   const LoginExpiredBanner({super.key});
 
+  static const double _badge = AppSize.s32;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsetsDirectional.all(AppSpacing.s12),
-      decoration: BoxDecoration(
-        color: AppColors.errorBg,
-        borderRadius: BorderRadius.circular(AppRadius.r6),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.info_outline,
-            color: AppColors.error,
-            size: AppSize.s18,
-          ),
-          const SizedBox(width: AppSpacing.s8),
-          Expanded(
-            child: Text(
-              'auth.session_expired'.tr(),
-              style: AppTextStyles.captionLarge.copyWith(
-                color: AppColors.error,
+    return Semantics(
+      liveRegion: true,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.accent3Light,
+          borderRadius: BorderRadius.circular(AppRadius.r3),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.all(AppSpacing.s12),
+          child: Row(
+            children: [
+              const SizedBox.square(
+                dimension: _badge,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.lock_clock_outlined,
+                    color: AppColors.accent3Dark,
+                    size: AppSize.s18,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: AppSpacing.s12),
+              Expanded(
+                child: Text(
+                  'auth.session_expired'.tr(),
+                  style: AppTextStyles.subheadingMedium.copyWith(
+                    color: AppColors.primaryText,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

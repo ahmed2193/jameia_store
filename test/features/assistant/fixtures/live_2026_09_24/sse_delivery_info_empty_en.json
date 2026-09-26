@@ -1,0 +1,392 @@
+[
+ {
+  "ms": 753,
+  "event": "message",
+  "data": "",
+  "comment": ": connected"
+ },
+ {
+  "ms": 754,
+  "event": "message_start",
+  "data": "{\"conversationId\":\"6ab511ac9e3ba2a7a933b077\"}",
+  "comment": null
+ },
+ {
+  "ms": 754,
+  "event": "user_message",
+  "data": "{\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"message\":{\"_id\":\"6ab511ac9e3ba2a7a933b078\",\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"role\":\"user\",\"content\":\"What delivery slots are available and what is the delivery fee?\",\"blocks\":[],\"feedback\":null,\"createdAt\":\"2026-09-24T12:03:56.875Z\",\"updatedAt\":\"2026-09-24T12:03:56.875Z\"}}",
+  "comment": null
+ },
+ {
+  "ms": 1634,
+  "event": "tool_start",
+  "data": "{\"name\":\"list_delivery_slots\",\"callId\":\"call_JDLS5HHVVsl8L0ZUvn4maGYQ\"}",
+  "comment": null
+ },
+ {
+  "ms": 1635,
+  "event": "tool_end",
+  "data": "{\"name\":\"list_delivery_slots\",\"callId\":\"call_JDLS5HHVVsl8L0ZUvn4maGYQ\",\"ok\":false}",
+  "comment": null
+ },
+ {
+  "ms": 1635,
+  "event": "tool_start",
+  "data": "{\"name\":\"check_delivery\",\"callId\":\"call_CLcI6sQu8OqdgE4Jr5vqI3U8\"}",
+  "comment": null
+ },
+ {
+  "ms": 1658,
+  "event": "tool_end",
+  "data": "{\"name\":\"check_delivery\",\"callId\":\"call_CLcI6sQu8OqdgE4Jr5vqI3U8\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 1658,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"delivery_info\"}}",
+  "comment": null
+ },
+ {
+  "ms": 2360,
+  "event": "text_delta",
+  "data": "{\"delta\":\"Please\"}",
+  "comment": null
+ },
+ {
+  "ms": 2360,
+  "event": "text_delta",
+  "data": "{\"delta\":\" select\"}",
+  "comment": null
+ },
+ {
+  "ms": 2379,
+  "event": "text_delta",
+  "data": "{\"delta\":\" a\"}",
+  "comment": null
+ },
+ {
+  "ms": 2379,
+  "event": "text_delta",
+  "data": "{\"delta\":\" delivery\"}",
+  "comment": null
+ },
+ {
+  "ms": 2395,
+  "event": "text_delta",
+  "data": "{\"delta\":\" area\"}",
+  "comment": null
+ },
+ {
+  "ms": 2395,
+  "event": "text_delta",
+  "data": "{\"delta\":\" or\"}",
+  "comment": null
+ },
+ {
+  "ms": 2405,
+  "event": "text_delta",
+  "data": "{\"delta\":\" pickup\"}",
+  "comment": null
+ },
+ {
+  "ms": 2405,
+  "event": "text_delta",
+  "data": "{\"delta\":\" branch\"}",
+  "comment": null
+ },
+ {
+  "ms": 2418,
+  "event": "text_delta",
+  "data": "{\"delta\":\" first\"}",
+  "comment": null
+ },
+ {
+  "ms": 2418,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 2430,
+  "event": "text_delta",
+  "data": "{\"delta\":\" see\"}",
+  "comment": null
+ },
+ {
+  "ms": 2431,
+  "event": "text_delta",
+  "data": "{\"delta\":\" available\"}",
+  "comment": null
+ },
+ {
+  "ms": 2459,
+  "event": "text_delta",
+  "data": "{\"delta\":\" delivery\"}",
+  "comment": null
+ },
+ {
+  "ms": 2459,
+  "event": "text_delta",
+  "data": "{\"delta\":\" slots\"}",
+  "comment": null
+ },
+ {
+  "ms": 2471,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 2471,
+  "event": "text_delta",
+  "data": "{\"delta\":\" The\"}",
+  "comment": null
+ },
+ {
+  "ms": 2485,
+  "event": "text_delta",
+  "data": "{\"delta\":\" current\"}",
+  "comment": null
+ },
+ {
+  "ms": 2485,
+  "event": "text_delta",
+  "data": "{\"delta\":\" delivery\"}",
+  "comment": null
+ },
+ {
+  "ms": 2494,
+  "event": "text_delta",
+  "data": "{\"delta\":\" fee\"}",
+  "comment": null
+ },
+ {
+  "ms": 2494,
+  "event": "text_delta",
+  "data": "{\"delta\":\" is\"}",
+  "comment": null
+ },
+ {
+  "ms": 2494,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2514,
+  "event": "text_delta",
+  "data": "{\"delta\":\"0\"}",
+  "comment": null
+ },
+ {
+  "ms": 2514,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 2527,
+  "event": "text_delta",
+  "data": "{\"delta\":\"000\"}",
+  "comment": null
+ },
+ {
+  "ms": 2527,
+  "event": "text_delta",
+  "data": "{\"delta\":\" K\"}",
+  "comment": null
+ },
+ {
+  "ms": 2546,
+  "event": "text_delta",
+  "data": "{\"delta\":\"WD\"}",
+  "comment": null
+ },
+ {
+  "ms": 2546,
+  "event": "text_delta",
+  "data": "{\"delta\":\" with\"}",
+  "comment": null
+ },
+ {
+  "ms": 2554,
+  "event": "text_delta",
+  "data": "{\"delta\":\" a\"}",
+  "comment": null
+ },
+ {
+  "ms": 2554,
+  "event": "text_delta",
+  "data": "{\"delta\":\" minimum\"}",
+  "comment": null
+ },
+ {
+  "ms": 2554,
+  "event": "text_delta",
+  "data": "{\"delta\":\" order\"}",
+  "comment": null
+ },
+ {
+  "ms": 2567,
+  "event": "text_delta",
+  "data": "{\"delta\":\" of\"}",
+  "comment": null
+ },
+ {
+  "ms": 2567,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2598,
+  "event": "text_delta",
+  "data": "{\"delta\":\"2\"}",
+  "comment": null
+ },
+ {
+  "ms": 2598,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 2617,
+  "event": "text_delta",
+  "data": "{\"delta\":\"500\"}",
+  "comment": null
+ },
+ {
+  "ms": 2617,
+  "event": "text_delta",
+  "data": "{\"delta\":\" K\"}",
+  "comment": null
+ },
+ {
+  "ms": 2637,
+  "event": "text_delta",
+  "data": "{\"delta\":\"WD\"}",
+  "comment": null
+ },
+ {
+  "ms": 2637,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 2652,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Delivery\"}",
+  "comment": null
+ },
+ {
+  "ms": 2652,
+  "event": "text_delta",
+  "data": "{\"delta\":\" time\"}",
+  "comment": null
+ },
+ {
+  "ms": 2657,
+  "event": "text_delta",
+  "data": "{\"delta\":\" estimate\"}",
+  "comment": null
+ },
+ {
+  "ms": 2657,
+  "event": "text_delta",
+  "data": "{\"delta\":\" is\"}",
+  "comment": null
+ },
+ {
+  "ms": 2682,
+  "event": "text_delta",
+  "data": "{\"delta\":\" about\"}",
+  "comment": null
+ },
+ {
+  "ms": 2682,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2723,
+  "event": "text_delta",
+  "data": "{\"delta\":\"40\"}",
+  "comment": null
+ },
+ {
+  "ms": 2723,
+  "event": "text_delta",
+  "data": "{\"delta\":\" minutes\"}",
+  "comment": null
+ },
+ {
+  "ms": 2738,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 2738,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Would\"}",
+  "comment": null
+ },
+ {
+  "ms": 2751,
+  "event": "text_delta",
+  "data": "{\"delta\":\" you\"}",
+  "comment": null
+ },
+ {
+  "ms": 2751,
+  "event": "text_delta",
+  "data": "{\"delta\":\" like\"}",
+  "comment": null
+ },
+ {
+  "ms": 2768,
+  "event": "text_delta",
+  "data": "{\"delta\":\" help\"}",
+  "comment": null
+ },
+ {
+  "ms": 2768,
+  "event": "text_delta",
+  "data": "{\"delta\":\" selecting\"}",
+  "comment": null
+ },
+ {
+  "ms": 2774,
+  "event": "text_delta",
+  "data": "{\"delta\":\" your\"}",
+  "comment": null
+ },
+ {
+  "ms": 2775,
+  "event": "text_delta",
+  "data": "{\"delta\":\" delivery\"}",
+  "comment": null
+ },
+ {
+  "ms": 2787,
+  "event": "text_delta",
+  "data": "{\"delta\":\" area\"}",
+  "comment": null
+ },
+ {
+  "ms": 2787,
+  "event": "text_delta",
+  "data": "{\"delta\":\"?\"}",
+  "comment": null
+ },
+ {
+  "ms": 2839,
+  "event": "message_end",
+  "data": "{\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"message\":{\"_id\":\"6ab511ae9e3ba2a7a933b07b\",\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"role\":\"assistant\",\"content\":\"Please select a delivery area or pickup branch first to see available delivery slots. The current delivery fee is 0.000 KWD with a minimum order of 2.500 KWD. Delivery time estimate is about 40 minutes. Would you like help selecting your delivery area?\",\"blocks\":[{\"kind\":\"text\",\"text\":\"Please select a delivery area or pickup branch first to see available delivery slots. The current delivery fee is 0.000 KWD with a minimum order of 2.500 KWD. Delivery time estimate is about 40 minutes. Would you like help selecting your delivery area?\"},{\"kind\":\"delivery_info\"},{\"kind\":\"actions\",\"suggestions\":[{\"label\":\"Show delivery areas\",\"prompt\":\"Show me the delivery areas you cover\"}]}],\"feedback\":null,\"createdAt\":\"2026-09-24T12:03:56.875Z\",\"updatedAt\":\"2026-09-24T12:03:56.875Z\"}}",
+  "comment": null
+ }
+]

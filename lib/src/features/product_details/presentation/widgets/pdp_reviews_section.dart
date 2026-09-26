@@ -7,25 +7,31 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
-import '../../../../core/widgets/rating_badge.dart';
+import '../../../../core/widgets/app_outline_button.dart';
+import '../../../../core/widgets/thin_divider.dart';
 import '../cubit/product_reviews_cubit.dart';
 import '../cubit/product_reviews_state.dart';
 import 'pdp_review_tile.dart';
-import 'pdp_section_card.dart';
+import 'pdp_reviews_summary.dart';
+import 'pdp_section.dart';
 
-/// Reviews of the product: the rating summary, the reviews loaded so far and
-/// "Show more". Its own loader / error / empty states live INSIDE the card, so
-/// a reviews failure never touches the rest of the product page.
+/// Reviews of the product, flat: the rating summary, the reviews loaded so
+/// far split by hairlines, and an outlined "Show more". Its own loader /
+/// error / empty states live INSIDE the block, so a reviews failure never
+/// touches the rest of the product page.
 class PdpReviewsSection extends StatelessWidget {
   const PdpReviewsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return PdpSectionCard(
+    return PdpSection(
       title: 'product.reviews'.tr(),
       child: BlocBuilder<ProductReviewsCubit, ProductReviewsState>(
         builder: (context, state) {
           final cubit = context.read<ProductReviewsCubit>();
+          final muted = AppTextStyles.bodyLarge.copyWith(
+            color: AppColors.secondaryText,
+          );
           switch (state.status) {
             case ProductReviewsStatus.initial:
             case ProductReviewsStatus.loading:
@@ -40,60 +46,46 @@ class PdpReviewsSection extends StatelessWidget {
                     child: Text(
                       state.failure?.localizedMessage ??
                           'product.reviews_failed'.tr(),
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.secondaryText,
-                      ),
+                      style: muted,
                     ),
                   ),
-                  TextButton(onPressed: cubit.load, child: Text('retry'.tr())),
+                  const SizedBox(width: AppSpacing.s12),
+                  AppOutlineButton(label: 'retry'.tr(), onPressed: cubit.load),
                 ],
               );
             case ProductReviewsStatus.loaded:
               if (state.isEmpty) {
-                return Text(
-                  'product.no_reviews'.tr(),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.secondaryText,
-                  ),
-                );
+                return Text('product.no_reviews'.tr(), style: muted);
               }
               final reviews = state.reviews;
               return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      RatingBadge(rating: reviews.ratingAverage),
-                      const SizedBox(width: AppSpacing.s6),
-                      Text(
-                        'product.based_on_reviews'.tr(
-                          namedArgs: {'count': '${reviews.ratingCount}'},
-                        ),
-                        style: AppTextStyles.captionLarge.copyWith(
-                          color: AppColors.secondaryText,
-                        ),
-                      ),
-                    ],
+                  PdpReviewsSummary(
+                    average: reviews.ratingAverage,
+                    count: reviews.ratingCount,
                   ),
-                  const SizedBox(height: AppSpacing.s4),
-                  for (final review in reviews.reviews)
+                  const SizedBox(height: AppSpacing.s8),
+                  for (final review in reviews.reviews) ...[
+                    const ThinDivider(),
                     PdpReviewTile(key: ValueKey(review.id), review: review),
+                  ],
                   if (state.isLoadingMore)
                     const Padding(
                       padding: EdgeInsets.all(AppSpacing.s8),
                       child: AppLoader(),
                     )
-                  else if (reviews.hasMore)
+                  else if (reviews.hasMore) ...[
+                    const SizedBox(height: AppSpacing.s8),
                     Center(
-                      child: TextButton(
+                      child: AppOutlineButton(
+                        label: state.loadMoreFailed
+                            ? 'retry'.tr()
+                            : 'product.show_more_reviews'.tr(),
                         onPressed: cubit.loadMore,
-                        child: Text(
-                          state.loadMoreFailed
-                              ? 'retry'.tr()
-                              : 'product.show_more_reviews'.tr(),
-                        ),
                       ),
                     ),
+                  ],
                 ],
               );
           }

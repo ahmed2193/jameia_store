@@ -58,6 +58,27 @@ class ProductDetail extends Equatable {
       ? galleryUrls
       : <String>[if (product.image.isNotEmpty) product.image];
 
+  /// The categories a cart offer may count this product by: its own and
+  /// that one's parent (`GetProductOfferUseCase`).
+  List<String> get offerCategoryIds {
+    final own = category;
+    return own == null ? const <String>[] : <String>[own.id, ?own.parentId];
+  }
+
+  /// The [related] products on a deal (the "Shop more for less" rail), in
+  /// the backend's order.
+  List<CatalogProductEntity> get relatedOnDeal => <CatalogProductEntity>[
+    for (final product in related)
+      if (product.hasDiscount) product,
+  ];
+
+  /// The other [related] products (the "Similar products" rail), in the
+  /// backend's order.
+  List<CatalogProductEntity> get relatedRegular => <CatalogProductEntity>[
+    for (final product in related)
+      if (!product.hasDiscount) product,
+  ];
+
   /// A variant product is bought through one of its [variants].
   bool get needsVariant => product.isVariant && variants.isNotEmpty;
 
@@ -102,6 +123,23 @@ class ProductDetail extends Equatable {
       unitPriceFils(variant: variant, pro: pro) *
       quantity /
       CatalogProductEntity.filsPerDinar;
+
+  /// What [quantity] units come to at the struck price — the deal's price
+  /// before, valid at [now], else the regular price a Pro member does not
+  /// pay — in KD (the buy bar's struck total); `null` without one.
+  double? struckTotalKd({
+    required CatalogVariantEntity? variant,
+    required bool pro,
+    required DateTime now,
+    required int quantity,
+  }) {
+    final struck =
+        compareAtFils(variant: variant, now: now) ??
+        regularPriceFilsWhenPro(variant: variant, pro: pro);
+    return struck == null
+        ? null
+        : struck * quantity / CatalogProductEntity.filsPerDinar;
+  }
 
   /// The struck price valid at [now], or `null`.
   int? compareAtFils({

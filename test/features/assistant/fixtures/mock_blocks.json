@@ -1,0 +1,83 @@
+{
+  "_comment": "One block of every documented kind, shaped from the live OpenAPI spec (2026-09-24) for the kinds the live store did not produce, plus an unknown kind and malformed cards. Used by the DTO / mapper / widget tests.",
+  "blocks": [
+    { "kind": "text", "text": "Here is **what I found**:\n- Milk\n- Bread\n\n1. First\n2. Second" },
+    {
+      "kind": "products",
+      "products": [
+        { "_id": "6aa6010d06da786e3f5658f8", "name": "Lurpak Butter 200g", "slug": "lurpak-butter-200g", "type": "standard", "price": 2250, "proPrice": 2100, "compareAt": 2813, "image": "https://img.example/butter.jpg", "stock": 57, "tags": ["6aa5ffb85233feadc5c41502", "best-seller"], "unitOfSale": "pack", "ratingAverage": 4, "ratingCount": 2 },
+        { "_id": "6aa6010d06da786e3f5658f9", "name": "Olive Oil", "slug": "olive-oil", "type": "variant", "price": 0, "proPrice": null, "compareAt": null, "image": null, "stock": 12, "tags": [], "unitOfSale": "l", "ratingAverage": 0, "ratingCount": 0 },
+        { "_id": "6aa6010d06da786e3f5658fa", "name": "Out of stock bread", "slug": "bread", "type": "standard", "price": 350, "proPrice": null, "compareAt": null, "image": "https://img.example/bread.jpg", "stock": 0, "tags": ["fresh"], "unitOfSale": "piece", "ratingAverage": 0, "ratingCount": 0 },
+        { "name": "no id and no slug: dropped" }
+      ]
+    },
+    {
+      "kind": "product_detail",
+      "product": { "_id": "6aa6010d06da786e3f5658f8", "name": "Lurpak Butter 200g", "slug": "lurpak-butter-200g", "type": "standard", "price": 2250, "proPrice": null, "compareAt": 2813, "image": "https://img.example/butter.jpg", "stock": 57, "tags": [], "unitOfSale": "pack", "ratingAverage": 4.5, "ratingCount": 12 }
+    },
+    {
+      "kind": "cart_action",
+      "actionId": "a059e104bf1e645249a95219",
+      "status": "pending",
+      "estimatedTotal": 4500,
+      "items": [
+        { "productId": "6aa6010d06da786e3f5658f8", "variantId": null, "quantity": 2, "product": { "_id": "6aa6010d06da786e3f5658f8", "name": "Lurpak Butter 200g", "slug": "lurpak-butter-200g", "price": 2250, "image": "https://img.example/butter.jpg", "stock": 57 } },
+        { "productId": "6aa6010d06da786e3f5658f9", "variantId": "v-1l", "quantity": 1, "product": { "name": "broken product: the line survives without it" } },
+        { "quantity": 3 }
+      ]
+    },
+    {
+      "kind": "cart_summary",
+      "cart": {
+        "cartToken": "guest-cart-token-0123456789",
+        "itemCount": 5,
+        "lines": [
+          { "key": "l1", "quantity": 2, "product": { "_id": "p1", "slug": "a", "name": "Butter", "image": "https://img.example/butter.jpg" } },
+          { "key": "l2", "quantity": 1, "product": { "_id": "p2", "slug": "b", "name": "Milk", "image": null } },
+          { "key": "l3", "quantity": 1, "product": { "_id": "p3", "slug": "c", "name": "Eggs" } },
+          { "key": "l4", "quantity": 1, "product": { "_id": "p4", "slug": "d", "name": "Bread" } },
+          { "key": "l5", "quantity": 1, "product": { "_id": "p5", "slug": "e", "name": "Cheese" } }
+        ],
+        "totals": { "subtotal": 4500, "deliveryFee": 650, "total": 5150, "minOrder": 2500, "meetsMinOrder": true }
+      }
+    },
+    { "kind": "order", "order": { "_id": "6ab0000000000000000000a1", "orderNumber": "JM-10042", "status": "out_for_delivery", "total": 12750, "createdAt": "2026-09-23T10:00:00.000Z", "itemCount": 6, "thumbnails": ["https://img.example/1.jpg", null, "https://img.example/2.jpg"] } },
+    { "kind": "order_status", "order": { "_id": "6ab0000000000000000000a2", "orderNumber": "JM-10043", "status": "teleported", "total": 900, "createdAt": "not-a-date", "itemCount": 1, "thumbnails": [] } },
+    {
+      "kind": "offers",
+      "couponCode": "SAVE10",
+      "offers": [
+        { "_id": "6aa601198a2745ca86163649", "name": "Free delivery over 5 KWD", "description": "Spend 5 KWD or more.", "status": "active", "trigger": { "type": "cart_subtotal", "min": 5000 }, "reward": { "type": "free_delivery" }, "priority": 10, "stackable": true, "branchIds": [], "startsAt": null, "endsAt": null },
+        { "_id": "6aa601198a2745ca8616364a", "name": "10% off over 15 KWD", "status": "active", "trigger": { "type": "cart_subtotal", "min": 15000 }, "reward": { "type": "percentage_discount", "percent": 10, "maxDiscount": 3000 }, "priority": 20, "stackable": false, "branchIds": [], "startsAt": null, "endsAt": "2026-12-31T20:59:59.000Z" }
+      ]
+    },
+    {
+      "kind": "recipe",
+      "servings": 1,
+      "ingredientCount": 4,
+      "recipe": { "_id": "6aa72210da383e2755e08d99", "slug": "kuwaiti-egg-breakfast", "title": "Kuwaiti Egg & Bread Breakfast", "imageUrl": "https://img.example/eggs.jpg", "prepMinutes": 5, "cookMinutes": 10, "servings": 2, "cuisine": { "slug": "kuwaiti", "name": "Kuwaiti" }, "diet": { "slug": "vegetarian", "name": "Vegetarian" } }
+    },
+    { "kind": "faq", "items": [ { "id": "delivery-areas", "question": "Where do you deliver?", "answer": "All of Kuwait." }, { "id": "", "question": "Payment?", "answer": "Cash or wallet." }, { "id": "x", "answer": "no question: dropped" } ] },
+    { "kind": "categories", "categories": [ { "_id": "6aa5ff0000000000000000c1", "name": "Dairy", "slug": "dairy", "image": "https://img.example/dairy.jpg", "parentId": null, "sortOrder": 1, "productCount": 12 } ] },
+    { "kind": "brands", "brands": [ { "_id": "6aa5ff0000000000000000b1", "name": "Lurpak", "slug": "lurpak", "image": "" } ] },
+    {
+      "kind": "delivery_slots",
+      "days": [
+        { "date": "2026-09-24", "label": "Today", "slots": [
+          { "templateId": "t-am", "date": "2026-09-24", "start": "10:00", "end": "12:00", "startAt": "2026-09-24T07:00:00.000Z", "endAt": "2026-09-24T09:00:00.000Z", "label": "10:00 – 12:00", "capacity": 10, "booked": 10, "remaining": 0, "available": false },
+          { "templateId": "t-pm", "date": "2026-09-24", "start": "16:00", "end": "18:00", "startAt": "2026-09-24T13:00:00.000Z", "endAt": "2026-09-24T15:00:00.000Z", "label": "16:00 – 18:00", "capacity": 10, "booked": 3, "remaining": 7, "available": true }
+        ] },
+        { "date": "2026-09-26", "label": "2026-09-26", "slots": [] }
+      ]
+    },
+    { "kind": "delivery_info", "areaName": "Salmiya", "zoneName": "Salmiya & Sharq", "fee": 0, "etaMinutes": 40 },
+    { "kind": "delivery_info" },
+    { "kind": "locations", "items": [ { "label": "Salmiya branch", "address": "Salem Al Mubarak St", "phone": "+96522222222", "lat": 29.33, "lng": 48.07 }, { "label": "No coordinates: dropped" } ] },
+    { "kind": "handoff", "ticketId": "6ab0000000000000000000t1", "ticketNumber": "T-2026-0042" },
+    { "kind": "error", "code": "TOOL_FAILED", "message": "" },
+    { "kind": "future_card", "whatever": true },
+    { "kind": "cart_action", "items": [] },
+    "not an object",
+    { "kind": "actions", "suggestions": [ { "label": "Show more", "prompt": "Show me more breakfast items" }, { "label": "Only a label" } ] }
+  ]
+}

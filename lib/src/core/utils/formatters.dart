@@ -28,6 +28,11 @@ class Formatters {
   static String price(double v) =>
       _isAr ? '${amount(v)} $currency' : '$currency ${amount(v)}';
 
+  /// Price for a run laid out in `Directionality.ltr` (tabular money): the
+  /// label always leads, so it reads `KD 12.500` / `د.ك 12.500` and lands in
+  /// the same visual place as [price] does inside an RTL paragraph.
+  static String priceLtr(double v) => '$currency ${amount(v)}';
+
   static final Map<String, DateFormat> _dateTimeFormats =
       <String, DateFormat>{};
 

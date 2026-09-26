@@ -86,6 +86,47 @@ void main() {
     );
   });
 
+  group('request body', () {
+    // The backend 500s a JSON content type with no body ("Body cannot be
+    // empty when content-type is set to 'application/json'").
+    final writes = <String, Future<dynamic> Function(DioConsumer consumer)>{
+      'POST': (consumer) => consumer.post('/v1/auth/logout'),
+      'PUT': (consumer) => consumer.put('/v1/x'),
+      'PATCH': (consumer) => consumer.patch('/v1/notifications/read-all'),
+      'DELETE': (consumer) => consumer.delete('/v1/cart/items/k1'),
+    };
+
+    for (final MapEntry(key: method, value: send) in writes.entries) {
+      test('$method without a body sends {}', () async {
+        final adapter = FakeHttpClientAdapter((_, _) => okBody(null));
+
+        await send(consumerWith(adapter));
+
+        final request = adapter.requests.single;
+        expect(request.method, method);
+        expect(request.data, <String, dynamic>{});
+        expect(request.contentType, ApiHeaders.jsonMediaType);
+      });
+    }
+
+    test('a given body is sent unchanged', () async {
+      final adapter = FakeHttpClientAdapter((_, _) => okBody(null));
+
+      await consumerWith(adapter)
+          .patch('/v1/cart/items/k1', body: {'quantity': 2});
+
+      expect(adapter.requests.single.data, {'quantity': 2});
+    });
+
+    test('GET sends no body', () async {
+      final adapter = FakeHttpClientAdapter((_, _) => okBody(null));
+
+      await consumerWith(adapter).get('/v1/cart');
+
+      expect(adapter.requests.single.data, isNull);
+    });
+  });
+
   group('HTTP status mapping', () {
     Future<void> expectStatus(
       int status,

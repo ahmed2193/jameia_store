@@ -1,0 +1,662 @@
+[
+ {
+  "ms": 376,
+  "event": "message",
+  "data": "",
+  "comment": ": connected"
+ },
+ {
+  "ms": 377,
+  "event": "message_start",
+  "data": "{\"conversationId\":\"6ab511ac9e3ba2a7a933b077\"}",
+  "comment": null
+ },
+ {
+  "ms": 377,
+  "event": "user_message",
+  "data": "{\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"message\":{\"_id\":\"6ab511af9e3ba2a7a933b07c\",\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"role\":\"user\",\"content\":\"Suggest a breakfast recipe and show current offers\",\"blocks\":[],\"feedback\":null,\"createdAt\":\"2026-09-24T12:03:59.516Z\",\"updatedAt\":\"2026-09-24T12:03:59.516Z\"}}",
+  "comment": null
+ },
+ {
+  "ms": 1371,
+  "event": "tool_start",
+  "data": "{\"name\":\"search_recipes\",\"callId\":\"call_sqIztOjiWXGineh5rUhHas9T\"}",
+  "comment": null
+ },
+ {
+  "ms": 1376,
+  "event": "tool_end",
+  "data": "{\"name\":\"search_recipes\",\"callId\":\"call_sqIztOjiWXGineh5rUhHas9T\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 1381,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"recipe\",\"recipe\":{\"_id\":\"6aa72210da383e2755e08d99\",\"slug\":\"kuwaiti-egg-breakfast\",\"title\":\"Kuwaiti Egg & Bread Breakfast\",\"imageUrl\":\"https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800&q=80\",\"prepMinutes\":5,\"cookMinutes\":10,\"servings\":2,\"cuisine\":{\"slug\":\"kuwaiti\",\"name\":\"Kuwaiti\"},\"diet\":{\"slug\":\"vegetarian\",\"name\":\"Vegetarian\"}},\"servings\":1,\"ingredientCount\":4}}",
+  "comment": null
+ },
+ {
+  "ms": 1381,
+  "event": "tool_start",
+  "data": "{\"name\":\"list_offers\",\"callId\":\"call_saaDPyxRkr6sdRN1b0LLCbS4\"}",
+  "comment": null
+ },
+ {
+  "ms": 1388,
+  "event": "tool_end",
+  "data": "{\"name\":\"list_offers\",\"callId\":\"call_saaDPyxRkr6sdRN1b0LLCbS4\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 1395,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"offers\",\"offers\":[{\"_id\":\"6aa601198a2745ca86163649\",\"name\":\"Free delivery over 5 KWD\",\"description\":\"Spend 5 KWD or more to unlock free delivery.\",\"status\":\"active\",\"trigger\":{\"type\":\"cart_subtotal\",\"min\":5000},\"reward\":{\"type\":\"free_delivery\"},\"priority\":10,\"stackable\":true,\"branchIds\":[],\"startsAt\":\"2025-01-01T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:00.000Z\"},{\"_id\":\"6aa601198a2745ca8616364a\",\"name\":\"10% off over 15 KWD\",\"description\":\"Automatic 10% off when your cart reaches 15 KWD.\",\"status\":\"active\",\"trigger\":{\"type\":\"cart_subtotal\",\"min\":15000},\"reward\":{\"type\":\"percentage_discount\",\"percent\":10,\"maxDiscount\":3000},\"priority\":20,\"stackable\":true,\"branchIds\":[\"6aa5ffb85233feadc5c4152c\",\"6aa5ffb85233feadc5c4152d\"],\"startsAt\":\"2025-01-01T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:59.000Z\"},{\"_id\":\"6aa601198a2745ca8616364b\",\"name\":\"2 KWD off dairy (3 items)\",\"description\":\"Add 3 items from Dairy & Eggs for 2 KWD off.\",\"status\":\"active\",\"trigger\":{\"type\":\"category_quantity\",\"categoryId\":\"6aa5ffb85233feadc5c41513\",\"minQuantity\":3},\"reward\":{\"type\":\"fixed_discount\",\"amount\":2000},\"priority\":30,\"stackable\":true,\"branchIds\":[],\"startsAt\":\"2025-01-01T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:59.000Z\"},{\"_id\":\"6aa601198a2745ca8616364c\",\"name\":\"Scheduled summer offer\",\"status\":\"active\",\"trigger\":{\"type\":\"cart_subtotal\",\"min\":20000},\"reward\":{\"type\":\"fixed_discount\",\"amount\":1000},\"priority\":40,\"stackable\":false,\"branchIds\":[],\"startsAt\":\"2026-06-15T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:59.000Z\"}]}}",
+  "comment": null
+ },
+ {
+  "ms": 1911,
+  "event": "text_delta",
+  "data": "{\"delta\":\"For\"}",
+  "comment": null
+ },
+ {
+  "ms": 1911,
+  "event": "text_delta",
+  "data": "{\"delta\":\" breakfast\"}",
+  "comment": null
+ },
+ {
+  "ms": 1924,
+  "event": "text_delta",
+  "data": "{\"delta\":\",\"}",
+  "comment": null
+ },
+ {
+  "ms": 1924,
+  "event": "text_delta",
+  "data": "{\"delta\":\" you\"}",
+  "comment": null
+ },
+ {
+  "ms": 1939,
+  "event": "text_delta",
+  "data": "{\"delta\":\" can\"}",
+  "comment": null
+ },
+ {
+  "ms": 1939,
+  "event": "text_delta",
+  "data": "{\"delta\":\" try\"}",
+  "comment": null
+ },
+ {
+  "ms": 1948,
+  "event": "text_delta",
+  "data": "{\"delta\":\" the\"}",
+  "comment": null
+ },
+ {
+  "ms": 1948,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \\\"\"}",
+  "comment": null
+ },
+ {
+  "ms": 1963,
+  "event": "text_delta",
+  "data": "{\"delta\":\"K\"}",
+  "comment": null
+ },
+ {
+  "ms": 1963,
+  "event": "text_delta",
+  "data": "{\"delta\":\"uw\"}",
+  "comment": null
+ },
+ {
+  "ms": 1977,
+  "event": "text_delta",
+  "data": "{\"delta\":\"aiti\"}",
+  "comment": null
+ },
+ {
+  "ms": 1977,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Egg\"}",
+  "comment": null
+ },
+ {
+  "ms": 1998,
+  "event": "text_delta",
+  "data": "{\"delta\":\" &\"}",
+  "comment": null
+ },
+ {
+  "ms": 1998,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Bread\"}",
+  "comment": null
+ },
+ {
+  "ms": 2012,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Breakfast\"}",
+  "comment": null
+ },
+ {
+  "ms": 2012,
+  "event": "text_delta",
+  "data": "{\"delta\":\",\\\"\"}",
+  "comment": null
+ },
+ {
+  "ms": 2025,
+  "event": "text_delta",
+  "data": "{\"delta\":\" a\"}",
+  "comment": null
+ },
+ {
+  "ms": 2025,
+  "event": "text_delta",
+  "data": "{\"delta\":\" quick\"}",
+  "comment": null
+ },
+ {
+  "ms": 2046,
+  "event": "text_delta",
+  "data": "{\"delta\":\" vegetarian\"}",
+  "comment": null
+ },
+ {
+  "ms": 2046,
+  "event": "text_delta",
+  "data": "{\"delta\":\" dish\"}",
+  "comment": null
+ },
+ {
+  "ms": 2065,
+  "event": "text_delta",
+  "data": "{\"delta\":\" with\"}",
+  "comment": null
+ },
+ {
+  "ms": 2065,
+  "event": "text_delta",
+  "data": "{\"delta\":\" soft\"}",
+  "comment": null
+ },
+ {
+  "ms": 2076,
+  "event": "text_delta",
+  "data": "{\"delta\":\" eggs\"}",
+  "comment": null
+ },
+ {
+  "ms": 2076,
+  "event": "text_delta",
+  "data": "{\"delta\":\",\"}",
+  "comment": null
+ },
+ {
+  "ms": 2089,
+  "event": "text_delta",
+  "data": "{\"delta\":\" warm\"}",
+  "comment": null
+ },
+ {
+  "ms": 2089,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Arabic\"}",
+  "comment": null
+ },
+ {
+  "ms": 2100,
+  "event": "text_delta",
+  "data": "{\"delta\":\" bread\"}",
+  "comment": null
+ },
+ {
+  "ms": 2100,
+  "event": "text_delta",
+  "data": "{\"delta\":\",\"}",
+  "comment": null
+ },
+ {
+  "ms": 2109,
+  "event": "text_delta",
+  "data": "{\"delta\":\" and\"}",
+  "comment": null
+ },
+ {
+  "ms": 2109,
+  "event": "text_delta",
+  "data": "{\"delta\":\" butter\"}",
+  "comment": null
+ },
+ {
+  "ms": 2116,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\\n\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 2116,
+  "event": "text_delta",
+  "data": "{\"delta\":\"Current\"}",
+  "comment": null
+ },
+ {
+  "ms": 2121,
+  "event": "text_delta",
+  "data": "{\"delta\":\" offers\"}",
+  "comment": null
+ },
+ {
+  "ms": 2121,
+  "event": "text_delta",
+  "data": "{\"delta\":\" include\"}",
+  "comment": null
+ },
+ {
+  "ms": 2144,
+  "event": "text_delta",
+  "data": "{\"delta\":\":\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 2144,
+  "event": "text_delta",
+  "data": "{\"delta\":\"-\"}",
+  "comment": null
+ },
+ {
+  "ms": 2156,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Free\"}",
+  "comment": null
+ },
+ {
+  "ms": 2156,
+  "event": "text_delta",
+  "data": "{\"delta\":\" delivery\"}",
+  "comment": null
+ },
+ {
+  "ms": 2176,
+  "event": "text_delta",
+  "data": "{\"delta\":\" over\"}",
+  "comment": null
+ },
+ {
+  "ms": 2176,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2184,
+  "event": "text_delta",
+  "data": "{\"delta\":\"5\"}",
+  "comment": null
+ },
+ {
+  "ms": 2184,
+  "event": "text_delta",
+  "data": "{\"delta\":\" K\"}",
+  "comment": null
+ },
+ {
+  "ms": 2189,
+  "event": "text_delta",
+  "data": "{\"delta\":\"WD\"}",
+  "comment": null
+ },
+ {
+  "ms": 2189,
+  "event": "text_delta",
+  "data": "{\"delta\":\"\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 2202,
+  "event": "text_delta",
+  "data": "{\"delta\":\"-\"}",
+  "comment": null
+ },
+ {
+  "ms": 2203,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2232,
+  "event": "text_delta",
+  "data": "{\"delta\":\"10\"}",
+  "comment": null
+ },
+ {
+  "ms": 2232,
+  "event": "text_delta",
+  "data": "{\"delta\":\"%\"}",
+  "comment": null
+ },
+ {
+  "ms": 2245,
+  "event": "text_delta",
+  "data": "{\"delta\":\" off\"}",
+  "comment": null
+ },
+ {
+  "ms": 2245,
+  "event": "text_delta",
+  "data": "{\"delta\":\" over\"}",
+  "comment": null
+ },
+ {
+  "ms": 2255,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2255,
+  "event": "text_delta",
+  "data": "{\"delta\":\"15\"}",
+  "comment": null
+ },
+ {
+  "ms": 2258,
+  "event": "text_delta",
+  "data": "{\"delta\":\" K\"}",
+  "comment": null
+ },
+ {
+  "ms": 2258,
+  "event": "text_delta",
+  "data": "{\"delta\":\"WD\"}",
+  "comment": null
+ },
+ {
+  "ms": 2287,
+  "event": "text_delta",
+  "data": "{\"delta\":\"\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 2287,
+  "event": "text_delta",
+  "data": "{\"delta\":\"-\"}",
+  "comment": null
+ },
+ {
+  "ms": 2295,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2295,
+  "event": "text_delta",
+  "data": "{\"delta\":\"2\"}",
+  "comment": null
+ },
+ {
+  "ms": 2305,
+  "event": "text_delta",
+  "data": "{\"delta\":\" K\"}",
+  "comment": null
+ },
+ {
+  "ms": 2305,
+  "event": "text_delta",
+  "data": "{\"delta\":\"WD\"}",
+  "comment": null
+ },
+ {
+  "ms": 2331,
+  "event": "text_delta",
+  "data": "{\"delta\":\" off\"}",
+  "comment": null
+ },
+ {
+  "ms": 2331,
+  "event": "text_delta",
+  "data": "{\"delta\":\" dairy\"}",
+  "comment": null
+ },
+ {
+  "ms": 2337,
+  "event": "text_delta",
+  "data": "{\"delta\":\" when\"}",
+  "comment": null
+ },
+ {
+  "ms": 2337,
+  "event": "text_delta",
+  "data": "{\"delta\":\" you\"}",
+  "comment": null
+ },
+ {
+  "ms": 2345,
+  "event": "text_delta",
+  "data": "{\"delta\":\" buy\"}",
+  "comment": null
+ },
+ {
+  "ms": 2345,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2346,
+  "event": "text_delta",
+  "data": "{\"delta\":\"3\"}",
+  "comment": null
+ },
+ {
+  "ms": 2346,
+  "event": "text_delta",
+  "data": "{\"delta\":\" items\"}",
+  "comment": null
+ },
+ {
+  "ms": 2367,
+  "event": "text_delta",
+  "data": "{\"delta\":\"\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 2368,
+  "event": "text_delta",
+  "data": "{\"delta\":\"-\"}",
+  "comment": null
+ },
+ {
+  "ms": 2377,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Scheduled\"}",
+  "comment": null
+ },
+ {
+  "ms": 2378,
+  "event": "text_delta",
+  "data": "{\"delta\":\" summer\"}",
+  "comment": null
+ },
+ {
+  "ms": 2394,
+  "event": "text_delta",
+  "data": "{\"delta\":\" offer\"}",
+  "comment": null
+ },
+ {
+  "ms": 2394,
+  "event": "text_delta",
+  "data": "{\"delta\":\" with\"}",
+  "comment": null
+ },
+ {
+  "ms": 2401,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2401,
+  "event": "text_delta",
+  "data": "{\"delta\":\"1\"}",
+  "comment": null
+ },
+ {
+  "ms": 2415,
+  "event": "text_delta",
+  "data": "{\"delta\":\" K\"}",
+  "comment": null
+ },
+ {
+  "ms": 2415,
+  "event": "text_delta",
+  "data": "{\"delta\":\"WD\"}",
+  "comment": null
+ },
+ {
+  "ms": 2433,
+  "event": "text_delta",
+  "data": "{\"delta\":\" off\"}",
+  "comment": null
+ },
+ {
+  "ms": 2433,
+  "event": "text_delta",
+  "data": "{\"delta\":\" on\"}",
+  "comment": null
+ },
+ {
+  "ms": 2446,
+  "event": "text_delta",
+  "data": "{\"delta\":\" orders\"}",
+  "comment": null
+ },
+ {
+  "ms": 2446,
+  "event": "text_delta",
+  "data": "{\"delta\":\" over\"}",
+  "comment": null
+ },
+ {
+  "ms": 2455,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 2455,
+  "event": "text_delta",
+  "data": "{\"delta\":\"20\"}",
+  "comment": null
+ },
+ {
+  "ms": 2480,
+  "event": "text_delta",
+  "data": "{\"delta\":\" K\"}",
+  "comment": null
+ },
+ {
+  "ms": 2481,
+  "event": "text_delta",
+  "data": "{\"delta\":\"WD\"}",
+  "comment": null
+ },
+ {
+  "ms": 2513,
+  "event": "text_delta",
+  "data": "{\"delta\":\"\\n\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 2513,
+  "event": "text_delta",
+  "data": "{\"delta\":\"Would\"}",
+  "comment": null
+ },
+ {
+  "ms": 2522,
+  "event": "text_delta",
+  "data": "{\"delta\":\" you\"}",
+  "comment": null
+ },
+ {
+  "ms": 2523,
+  "event": "text_delta",
+  "data": "{\"delta\":\" like\"}",
+  "comment": null
+ },
+ {
+  "ms": 2537,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 2537,
+  "event": "text_delta",
+  "data": "{\"delta\":\" add\"}",
+  "comment": null
+ },
+ {
+  "ms": 2549,
+  "event": "text_delta",
+  "data": "{\"delta\":\" the\"}",
+  "comment": null
+ },
+ {
+  "ms": 2549,
+  "event": "text_delta",
+  "data": "{\"delta\":\" breakfast\"}",
+  "comment": null
+ },
+ {
+  "ms": 2563,
+  "event": "text_delta",
+  "data": "{\"delta\":\" recipe\"}",
+  "comment": null
+ },
+ {
+  "ms": 2563,
+  "event": "text_delta",
+  "data": "{\"delta\":\" ingredients\"}",
+  "comment": null
+ },
+ {
+  "ms": 2570,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 2571,
+  "event": "text_delta",
+  "data": "{\"delta\":\" your\"}",
+  "comment": null
+ },
+ {
+  "ms": 2580,
+  "event": "text_delta",
+  "data": "{\"delta\":\" cart\"}",
+  "comment": null
+ },
+ {
+  "ms": 2580,
+  "event": "text_delta",
+  "data": "{\"delta\":\"?\"}",
+  "comment": null
+ },
+ {
+  "ms": 2628,
+  "event": "message_end",
+  "data": "{\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"message\":{\"_id\":\"6ab511b19e3ba2a7a933b07e\",\"conversationId\":\"6ab511ac9e3ba2a7a933b077\",\"role\":\"assistant\",\"content\":\"For breakfast, you can try the \\\"Kuwaiti Egg & Bread Breakfast,\\\" a quick vegetarian dish with soft eggs, warm Arabic bread, and butter.\\n\\nCurrent offers include:\\n- Free delivery over 5 KWD\\n- 10% off over 15 KWD\\n- 2 KWD off dairy when you buy 3 items\\n- Scheduled summer offer with 1 KWD off on orders over 20 KWD\\n\\nWould you like to add the breakfast recipe ingredients to your cart?\",\"blocks\":[{\"kind\":\"text\",\"text\":\"For breakfast, you can try the \\\"Kuwaiti Egg & Bread Breakfast,\\\" a quick vegetarian dish with soft eggs, warm Arabic bread, and butter.\\n\\nCurrent offers include:\\n- Free delivery over 5 KWD\\n- 10% off over 15 KWD\\n- 2 KWD off dairy when you buy 3 items\\n- Scheduled summer offer with 1 KWD off on orders over 20 KWD\\n\\nWould you like to add the breakfast recipe ingredients to your cart?\"},{\"kind\":\"recipe\",\"recipe\":{\"_id\":\"6aa72210da383e2755e08d99\",\"slug\":\"kuwaiti-egg-breakfast\",\"title\":\"Kuwaiti Egg & Bread Breakfast\",\"imageUrl\":\"https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800&q=80\",\"prepMinutes\":5,\"cookMinutes\":10,\"servings\":2,\"cuisine\":{\"slug\":\"kuwaiti\",\"name\":\"Kuwaiti\"},\"diet\":{\"slug\":\"vegetarian\",\"name\":\"Vegetarian\"}},\"servings\":1,\"ingredientCount\":4},{\"kind\":\"offers\",\"offers\":[{\"_id\":\"6aa601198a2745ca86163649\",\"name\":\"Free delivery over 5 KWD\",\"description\":\"Spend 5 KWD or more to unlock free delivery.\",\"status\":\"active\",\"trigger\":{\"type\":\"cart_subtotal\",\"min\":5000},\"reward\":{\"type\":\"free_delivery\"},\"priority\":10,\"stackable\":true,\"branchIds\":[],\"startsAt\":\"2025-01-01T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:00.000Z\"},{\"_id\":\"6aa601198a2745ca8616364a\",\"name\":\"10% off over 15 KWD\",\"description\":\"Automatic 10% off when your cart reaches 15 KWD.\",\"status\":\"active\",\"trigger\":{\"type\":\"cart_subtotal\",\"min\":15000},\"reward\":{\"type\":\"percentage_discount\",\"percent\":10,\"maxDiscount\":3000},\"priority\":20,\"stackable\":true,\"branchIds\":[\"6aa5ffb85233feadc5c4152c\",\"6aa5ffb85233feadc5c4152d\"],\"startsAt\":\"2025-01-01T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:59.000Z\"},{\"_id\":\"6aa601198a2745ca8616364b\",\"name\":\"2 KWD off dairy (3 items)\",\"description\":\"Add 3 items from Dairy & Eggs for 2 KWD off.\",\"status\":\"active\",\"trigger\":{\"type\":\"category_quantity\",\"categoryId\":\"6aa5ffb85233feadc5c41513\",\"minQuantity\":3},\"reward\":{\"type\":\"fixed_discount\",\"amount\":2000},\"priority\":30,\"stackable\":true,\"branchIds\":[],\"startsAt\":\"2025-01-01T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:59.000Z\"},{\"_id\":\"6aa601198a2745ca8616364c\",\"name\":\"Scheduled summer offer\",\"status\":\"active\",\"trigger\":{\"type\":\"cart_subtotal\",\"min\":20000},\"reward\":{\"type\":\"fixed_discount\",\"amount\":1000},\"priority\":40,\"stackable\":false,\"branchIds\":[],\"startsAt\":\"2026-06-15T00:00:00.000Z\",\"endsAt\":\"2027-12-31T23:59:59.000Z\"}]}],\"feedback\":null,\"createdAt\":\"2026-09-24T12:03:59.516Z\",\"updatedAt\":\"2026-09-24T12:03:59.516Z\"}}",
+  "comment": null
+ }
+]

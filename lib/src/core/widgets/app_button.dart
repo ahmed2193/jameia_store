@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../motion/haptics.dart';
 import '../motion/motion_widgets.dart';
+import '../responsive/app_size.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
@@ -19,7 +20,7 @@ class AppButton extends StatelessWidget {
     this.expanded = true,
     this.enabled = true,
     this.loading = false,
-    this.height = 48,
+    this.height = AppSize.s48,
     this.color,
     this.foreground,
     this.trailing,
@@ -63,22 +64,33 @@ class AppButton extends StatelessWidget {
           height: height,
           child: Center(
             child: loading
-                ? BrandedLoader.inline(size: 22, color: fg)
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        label,
-                        style: AppTextStyles.headingMedium.copyWith(
-                          color: active ? fg : AppColors.tertiaryText,
-                          fontWeight: AppTextStyles.bold,
-                        ),
+                ? BrandedLoader.inline(size: AppSize.s22, color: fg)
+                : Padding(
+                    padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpacing.s16,
+                    ),
+                    // A label wider than the button shrinks to fit (long
+                    // Arabic / large text) instead of overflowing.
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            label,
+                            maxLines: 1,
+                            style: AppTextStyles.headingMedium.copyWith(
+                              color: active ? fg : AppColors.tertiaryText,
+                              fontWeight: AppTextStyles.bold,
+                            ),
+                          ),
+                          if (trailing != null) ...[
+                            const SizedBox(width: AppSpacing.s8),
+                            trailing!,
+                          ],
+                        ],
                       ),
-                      if (trailing != null) ...[
-                        const SizedBox(width: AppSpacing.s8),
-                        trailing!,
-                      ],
-                    ],
+                    ),
                   ),
           ),
         ),

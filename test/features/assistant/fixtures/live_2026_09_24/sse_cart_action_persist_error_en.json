@@ -1,0 +1,242 @@
+[
+ {
+  "ms": 380,
+  "event": "message",
+  "data": "",
+  "comment": ": connected"
+ },
+ {
+  "ms": 381,
+  "event": "message_start",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\"}",
+  "comment": null
+ },
+ {
+  "ms": 381,
+  "event": "user_message",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"message\":{\"_id\":\"6ab511619e3ba2a7a933b06c\",\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"role\":\"user\",\"content\":\"Add 2 Lurpak butter to my cart\",\"blocks\":[],\"feedback\":null,\"createdAt\":\"2026-09-24T12:02:41.035Z\",\"updatedAt\":\"2026-09-24T12:02:41.035Z\"}}",
+  "comment": null
+ },
+ {
+  "ms": 1473,
+  "event": "tool_start",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_spyxx5hr4EQ8G6CdzICZG0io\"}",
+  "comment": null
+ },
+ {
+  "ms": 1477,
+  "event": "tool_end",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_spyxx5hr4EQ8G6CdzICZG0io\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 1480,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"products\",\"products\":[{\"_id\":\"6aa6010d06da786e3f5658f8\",\"name\":\"Lurpak Butter 200g\",\"slug\":\"lurpak-butter-200g\",\"type\":\"standard\",\"price\":899,\"proPrice\":null,\"compareAt\":1050,\"image\":\"https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop\",\"stock\":19,\"tags\":[\"fresh\",\"best-seller\"],\"unitOfSale\":\"piece\",\"ratingAverage\":3,\"ratingCount\":2}]}}",
+  "comment": null
+ },
+ {
+  "ms": 2670,
+  "event": "tool_start",
+  "data": "{\"name\":\"add_to_cart\",\"callId\":\"call_U3Rh0RhbRLxFoMCegi4ODKG2\"}",
+  "comment": null
+ },
+ {
+  "ms": 2673,
+  "event": "tool_end",
+  "data": "{\"name\":\"add_to_cart\",\"callId\":\"call_U3Rh0RhbRLxFoMCegi4ODKG2\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 2677,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"cart_action\",\"actionId\":\"a059e104bf1e645249a95219\",\"items\":[{\"productId\":\"6aa6010d06da786e3f5658f8\",\"variantId\":null,\"quantity\":2,\"product\":{\"_id\":\"6aa6010d06da786e3f5658f8\",\"name\":\"Lurpak Butter 200g\",\"slug\":\"lurpak-butter-200g\",\"type\":\"standard\",\"price\":899,\"proPrice\":null,\"compareAt\":1050,\"image\":\"https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop\",\"stock\":19,\"tags\":[\"fresh\",\"best-seller\"],\"unitOfSale\":\"piece\",\"ratingAverage\":3,\"ratingCount\":2}}],\"status\":\"pending\"}}",
+  "comment": null
+ },
+ {
+  "ms": 3925,
+  "event": "text_delta",
+  "data": "{\"delta\":\"I\"}",
+  "comment": null
+ },
+ {
+  "ms": 3925,
+  "event": "text_delta",
+  "data": "{\"delta\":\" have\"}",
+  "comment": null
+ },
+ {
+  "ms": 3946,
+  "event": "text_delta",
+  "data": "{\"delta\":\" added\"}",
+  "comment": null
+ },
+ {
+  "ms": 3946,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 3959,
+  "event": "text_delta",
+  "data": "{\"delta\":\"2\"}",
+  "comment": null
+ },
+ {
+  "ms": 3959,
+  "event": "text_delta",
+  "data": "{\"delta\":\" pieces\"}",
+  "comment": null
+ },
+ {
+  "ms": 3973,
+  "event": "text_delta",
+  "data": "{\"delta\":\" of\"}",
+  "comment": null
+ },
+ {
+  "ms": 3973,
+  "event": "text_delta",
+  "data": "{\"delta\":\" L\"}",
+  "comment": null
+ },
+ {
+  "ms": 3994,
+  "event": "text_delta",
+  "data": "{\"delta\":\"ur\"}",
+  "comment": null
+ },
+ {
+  "ms": 3994,
+  "event": "text_delta",
+  "data": "{\"delta\":\"pak\"}",
+  "comment": null
+ },
+ {
+  "ms": 4006,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Butter\"}",
+  "comment": null
+ },
+ {
+  "ms": 4006,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 4031,
+  "event": "text_delta",
+  "data": "{\"delta\":\"200\"}",
+  "comment": null
+ },
+ {
+  "ms": 4031,
+  "event": "text_delta",
+  "data": "{\"delta\":\"g\"}",
+  "comment": null
+ },
+ {
+  "ms": 4046,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 4046,
+  "event": "text_delta",
+  "data": "{\"delta\":\" your\"}",
+  "comment": null
+ },
+ {
+  "ms": 4056,
+  "event": "text_delta",
+  "data": "{\"delta\":\" cart\"}",
+  "comment": null
+ },
+ {
+  "ms": 4056,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 4069,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Would\"}",
+  "comment": null
+ },
+ {
+  "ms": 4069,
+  "event": "text_delta",
+  "data": "{\"delta\":\" you\"}",
+  "comment": null
+ },
+ {
+  "ms": 4155,
+  "event": "text_delta",
+  "data": "{\"delta\":\" like\"}",
+  "comment": null
+ },
+ {
+  "ms": 4155,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 4155,
+  "event": "text_delta",
+  "data": "{\"delta\":\" see\"}",
+  "comment": null
+ },
+ {
+  "ms": 4155,
+  "event": "text_delta",
+  "data": "{\"delta\":\" your\"}",
+  "comment": null
+ },
+ {
+  "ms": 4155,
+  "event": "text_delta",
+  "data": "{\"delta\":\" cart\"}",
+  "comment": null
+ },
+ {
+  "ms": 4155,
+  "event": "text_delta",
+  "data": "{\"delta\":\" or\"}",
+  "comment": null
+ },
+ {
+  "ms": 4162,
+  "event": "text_delta",
+  "data": "{\"delta\":\" add\"}",
+  "comment": null
+ },
+ {
+  "ms": 4162,
+  "event": "text_delta",
+  "data": "{\"delta\":\" anything\"}",
+  "comment": null
+ },
+ {
+  "ms": 4168,
+  "event": "text_delta",
+  "data": "{\"delta\":\" else\"}",
+  "comment": null
+ },
+ {
+  "ms": 4168,
+  "event": "text_delta",
+  "data": "{\"delta\":\"?\"}",
+  "comment": null
+ },
+ {
+  "ms": 4219,
+  "event": "error",
+  "data": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Document failed validation\"}",
+  "comment": null
+ }
+]

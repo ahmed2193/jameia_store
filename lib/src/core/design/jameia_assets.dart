@@ -29,7 +29,18 @@ class JameiaAssets {
   static const String jameiaScooter = 'assets/images/scooter_icon.png';
   static const String jameiaScanLine = 'assets/svg/scan_line.svg';
 
+  // ── Basket bars + the cart's deals sheet ───────────────────────────────────
+  // The green basket is [globalCartFull] (an empty basket: [globalCart]); the
+  // delivery rider is [globalRider]. Offer-card glyphs, drawn for the "Buy
+  // more, save more" sheet: a rounded tile each, colour baked in.
+  static const String offerDelivery = 'assets/svg/offer_delivery.svg';
+  static const String offerVoucher = 'assets/svg/offer_voucher.svg';
+  static const String offerGift = 'assets/svg/offer_gift.svg';
+
   // ── Brand / logo (home) ─────────────────────────────────────────────────────
+  /// The JameiaMart app icon (square, wordmark on the green tile) — the store
+  /// badge at the head of home. 1024 px: decode it at the size it is shown.
+  static const String appLogo = 'assets/launcher/app_icon_square.png';
   static const String logo = '$_img/osg_home/logo_1g6o6ut.png';
   static const String logoWhite = '$_img/osg_home/logo_white_1sfau7x.png';
   static const String homeBg = '$_img/osg_home/home_bg_kq3v01.png';
@@ -503,8 +514,4 @@ class JameiaAssets {
 
   /// Splash screen Lottie (JSON) — requires the `lottie` package.
   static const String splashLottie = '$_anim/splash_lottie_default.json';
-
-  /// Invite-rewards shine / shimmer (LTR + RTL).
-  static const String shineGif = '$_anim/shine_aiqpe5.gif';
-  static const String shineRtlGif = '$_anim/shine-rtl_111da1b.gif';
 }

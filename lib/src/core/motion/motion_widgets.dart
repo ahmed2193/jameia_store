@@ -9,7 +9,13 @@
 /// chips / check marks) and staggered list entrances.
 library;
 
+export 'confetti_burst.dart';
+export 'count_up_text.dart';
 export 'flip_value.dart';
+export 'float_loop.dart';
+export 'glow_pulse.dart';
 export 'pop_scale.dart';
 export 'press_scale.dart';
+export 'scroll_reveal.dart';
+export 'shake_x.dart';
 export 'stagger_entrance.dart';

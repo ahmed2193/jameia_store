@@ -5,6 +5,7 @@ import '../../core/navigation/app_keys.dart';
 import '../../core/navigation/navigation.dart';
 import 'feature_routes/account_routes.dart';
 import 'feature_routes/address_routes.dart';
+import 'feature_routes/assistant_routes.dart';
 import 'feature_routes/auth_routes.dart';
 import 'feature_routes/checkout_routes.dart';
 import 'feature_routes/coupons_routes.dart';
@@ -46,6 +47,7 @@ final List<RouteBase> appRoutes = <RouteBase>[
   ...marketingRoutes,
   ...discoveryRoutes,
   ...authRoutes,
+  ...assistantRoutes,
   ...placeholderRoutes,
 ];
 

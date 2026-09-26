@@ -21,6 +21,7 @@ import 'package:jameia_mart/src/config/routes/routes.dart';
 import 'package:jameia_mart/src/config/theme/app_theme.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/utils/formatters.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/loyalty_program.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/loyalty_program_cubit.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/profile_cubit.dart';
@@ -382,6 +383,110 @@ void main() {
     expect(find.text('Validation failed'), findsOneWidget);
     expect(router.state.uri.path, Routes.profileEdit);
 
+    await teardownApp(tester);
+  });
+
+  testWidgets('the header shows how complete the profile is and what is next', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+
+    // Name, email and gender of five fields.
+    expect(
+      find.text('Profile ${Formatters.isolate('60%')} complete'),
+      findsOneWidget,
+    );
+    expect(find.text('60%'), findsOneWidget);
+    expect(find.text('Next: add your date of birth'), findsOneWidget);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('Save does nothing until the form changes', (tester) async {
+    final router = await pumpApp(tester);
+
+    await tapSave(tester);
+
+    expect(updateProfile.calls, isEmpty);
+    expect(router.state.uri.path, Routes.profileEdit);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a refused save moves the focus to the first invalid field', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+
+    await tester.enterText(find.widgetWithText(TextField, 'Ahmed'), '   ');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'ahmed@jm3eia.com'),
+      'bad@',
+    );
+    await tester.pump();
+    final fields = tester.widgetList<TextField>(find.byType(TextField));
+    final name = fields.first.focusNode!;
+    expect(name.hasFocus, isFalse, reason: 'typing in the email');
+    await tapSave(tester);
+
+    expect(name.hasFocus, isTrue);
+    expect(find.text('Name is required'), findsOneWidget);
+    expect(find.text('Enter a valid email address'), findsOneWidget);
+    expect(updateProfile.calls, isEmpty);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a save shows the check for a beat before leaving', (
+    tester,
+  ) async {
+    final router = await pumpApp(tester);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Ahmed'),
+      'Ahmed Ali',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Save changes'));
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    expect(router.state.uri.path, Routes.profileEdit);
+
+    await settle(tester);
+    expect(router.state.uri.path, Routes.mineAbout);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a gender chip is one selectable option of a group', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await pumpApp(tester);
+
+    expect(
+      tester.getSemantics(find.text('Male')),
+      isSemantics(
+        label: 'Male',
+        isButton: true,
+        isSelected: true,
+        isInMutuallyExclusiveGroup: true,
+      ),
+    );
+    await tester.ensureVisible(find.text('Female'));
+    await tester.pump();
+    await tester.tap(find.text('Female'));
+    await settle(tester);
+    expect(
+      tester.getSemantics(find.text('Female')),
+      isSemantics(isSelected: true),
+    );
+    await tapSave(tester);
+
+    expect(updateProfile.calls.single.update.gender, CustomerGender.female);
+
+    semantics.dispose();
     await teardownApp(tester);
   });
 }

@@ -7,6 +7,7 @@ import '../../../../config/di/service_locator.dart';
 import '../../../../config/routes/route_args/otp_verify_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/motion/haptics.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/utils/failure_message.dart';
@@ -53,9 +54,20 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<LoginCubit>(),
-      child: BlocListener<LoginCubit, LoginState>(
-        listenWhen: (previous, current) => previous.status != current.status,
-        listener: _onStatus,
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<LoginCubit, LoginState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status,
+            listener: _onStatus,
+          ),
+          // One click as the eighth digit makes the number valid.
+          BlocListener<LoginCubit, LoginState>(
+            listenWhen: (previous, current) =>
+                !previous.phone.isValid && current.phone.isValid,
+            listener: (_, _) => Haptics.selection(),
+          ),
+        ],
         child: Scaffold(
           backgroundColor: AppColors.white,
           body: SafeArea(

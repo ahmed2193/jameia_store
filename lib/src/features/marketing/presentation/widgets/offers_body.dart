@@ -2,19 +2,25 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/navigation/jameia_snack_bar.dart';
 import '../../../../core/utils/failure_message.dart';
+import '../../../../core/widgets/back_to_top_overlay.dart';
 import '../../../../core/widgets/branded_refresh.dart';
+import '../../../../core/widgets/collection_frame.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../cubit/offers_cubit.dart';
 import '../cubit/offers_state.dart';
-import 'offer_tile.dart';
+import 'offers_list_sliver.dart';
+import 'offers_skeleton.dart';
 
-/// Body of the offers page: loader, the lazily built list, empty, error +
-/// retry (offline = the error view). A failed pull-to-refresh keeps the list.
+/// The scroll view of the offers page: the collection frame's
+/// [headerSlivers] (top bar + hero) first, then skeleton cards, the lazily
+/// built list, empty, or error + retry (offline = the error view). Pull to
+/// refresh; a failed refresh keeps the list and says so in a snack bar.
 class OffersBody extends StatelessWidget {
-  const OffersBody({super.key});
+  const OffersBody({super.key, required this.headerSlivers});
+
+  final List<Widget> headerSlivers;
 
   @override
   Widget build(BuildContext context) {
@@ -30,37 +36,35 @@ class OffersBody extends StatelessWidget {
           previous.offers != current.offers,
       builder: (context, state) {
         final cubit = context.read<OffersCubit>();
-        switch (state.status) {
-          case OffersStatus.initial:
-          case OffersStatus.loading:
-            return const AppLoader();
-          case OffersStatus.error:
-            return ErrorView(
+        final content = switch (state.status) {
+          OffersStatus.initial || OffersStatus.loading =>
+            const SliverToBoxAdapter(child: OffersSkeleton()),
+          OffersStatus.error => SliverFillRemaining(
+            hasScrollBody: false,
+            child: ErrorView(
               message: state.failure?.localizedMessage,
               onRetry: cubit.load,
-            );
-          case OffersStatus.loaded:
-            return BrandedRefresh(
-              onRefresh: cubit.refresh,
-              child: state.isEmpty
-                  ? EmptyStateView(
-                      message: 'offers.empty'.tr(),
-                      icon: Icons.local_offer_outlined,
-                    )
-                  : ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsetsDirectional.only(
-                        top: AppSpacing.s12,
-                        bottom: AppSpacing.s24,
-                      ),
-                      itemCount: state.offers.length,
-                      itemBuilder: (context, index) => OfferTile(
-                        key: ValueKey(state.offers[index].id),
-                        offer: state.offers[index],
-                      ),
-                    ),
-            );
-        }
+            ),
+          ),
+          OffersStatus.loaded when state.isEmpty => SliverFillRemaining(
+            hasScrollBody: false,
+            child: EmptyStateView(
+              message: 'offers.empty'.tr(),
+              icon: Icons.local_offer_outlined,
+            ),
+          ),
+          OffersStatus.loaded => OffersListSliver(offers: state.offers),
+        };
+        return BackToTopOverlay(
+          child: BrandedRefresh(
+            onRefresh: cubit.refresh,
+            edgeOffset: CollectionFrame.pinnedExtent(context),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [...headerSlivers, content],
+            ),
+          ),
+        );
       },
     );
   }

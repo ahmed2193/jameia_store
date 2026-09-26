@@ -27,6 +27,15 @@ class AppColors {
   static const Color brandDarkBg = Color(0xFF4ADE80); // green-400 brand tint
   static const Color brandLightBg = Color(0xFFDCFCE7); // green-100 brand tint
 
+  /// Deep brand green (the "Jameia" wordmark of the logo, green-700): brand
+  /// text on white (5:1) — the search screens' highlights and links.
+  static const Color brandDeep = Color(0xFF15803D);
+
+  /// The dark rim around the white "sticker" letters of the buy buttons and
+  /// deal tags (`StickerText`): near-black green, so it reads on the brand
+  /// green and on the red deal tag alike.
+  static const Color stickerOutline = Color(0xFF0B2E13);
+
   // ── Neutral semantic roles (light) ──────────────────────────────────────────
   // Jameia's rendered Mach screens use #222222 primary / #808080 secondary
   // (verified across every bundle.css.json) — softer than the theme-JSON
@@ -72,12 +81,36 @@ class AppColors {
   static const Color accentVioletLight = Color(0xFFF3EEFF);
   static const Color accentSkyLight = Color(0xFFE8F1FD);
 
+  // ── Jm3eia Pro paywall ────────────────────────────────────────────────────
+  // Pro is violet (`accentViolet` / `accentVioletLight`); the paywall's second
+  // accent — the "Save N%" badge and the headline on the violet hero band — is
+  // a lime with no counterpart in the palette above.
+  static const Color proLime = Color(0xFFD4F53C);
+
+  // The website's Pro identity (jm3eia.store `.pro-gradient`
+  // 135deg #4F46E5 → #7C3AED (= accentViolet) → #A21CAF, accent #FBBF24 for
+  // the crown and the glow). Used for the member card, the success moment and
+  // the violet hero band so the app and the site read as one brand.
+  static const Color proIndigo = Color(0xFF4F46E5);
+  static const Color proFuchsia = Color(0xFFA21CAF);
+  static const Color proAmber = Color(0xFFFBBF24);
+  static const List<Color> proGradient = [proIndigo, accentViolet, proFuchsia];
+
+  // The warm amber → orange → pin-orange ramp of the Rewards and coupons
+  // surfaces (balance / summary hero, reward backdrop, gift badge, coupon
+  // stub).
+  static const List<Color> warmGradient = [proAmber, accent3, kJameiaPillPin];
+
   // ── System states ─────────────────────────────────────────────────────────
   static const Color link = Color(0xFF1963CC); // blue.c9
   static const Color success = Color(0xFF00B080); // cyan/green
   static const Color successBg = Color(0xFFF1FEFA); // cyan.c1
   static const Color error = Color(0xFFF0390E); // magenta/red
   static const Color errorBg = Color(0xFFFFF5F2); // magenta.c1
+
+  /// Red text on [errorBg] / white that meets AA for small bold text (5.7:1);
+  /// [error] itself is 3.7:1 there.
+  static const Color errorDeep = Color(0xFFBD2400);
   static const Color warn = Color(0xFFEE7F00); // orange.c9
   static const Color warnBg = Color(0xFFFFFEEB); // orange.c1
 
@@ -201,6 +234,9 @@ class AppColors {
   static const Color trackingLineTodo = Color(
     0xFFDEDFE4,
   ); // tracking connector (inactive)
+
+  // Collection page hero (offers, flash deals, best sellers): warm beige band.
+  static const Color collectionCream = Color(0xFFF3EDE5);
 
   // Voucher ticket (home popup) — cream fill, brown ink, tan condition text.
   static const Color voucherCream = Color(0xFFFFFEF5); // amount panel fill

@@ -6,10 +6,13 @@ import '../../../../config/theme/app_colors.dart';
 import '../cubit/account_cubit.dart';
 import '../widgets/mine/mine_body.dart';
 
-/// Jameia "Mine" (account) tab — `mach_pro_sailor_c_mine`: the session-aware
-/// header, quick stats (coupons · wallet · favourites), invite banner, menu
-/// (orders, addresses, wallet, loyalty points, Jm3eia Pro, coupons, …) and
-/// the delivery code, on the `mediumBackground` page.
+/// Jameia "Mine" (account) tab: the collapsing profile header (sign-in
+/// prompt for a guest), the quick stats (wallet · points · coupons ·
+/// favourites), the invite banner, the menu cards (orders, addresses,
+/// coupons, wallet, loyalty points, Jm3eia Pro, invite friends,
+/// notifications, the assistant, customer service, settings, about) and the
+/// delivery code, on the `mediumBackground` page. The overview cubit is
+/// created — and loads — the first time the tab is opened.
 class MinePage extends StatelessWidget {
   const MinePage({super.key});
 

@@ -3,45 +3,66 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/catalog_product_card.dart';
+import '../../../../../core/widgets/shelf_product_card.dart';
 import 'listing_product_tile.dart';
+import 'listing_reveal_item.dart';
 
 /// The product grid of a listing as a lazily built sliver: two columns on a
 /// phone, more as the screen widens. The cell height follows the card
-/// ([CatalogProductCard.cellHeight]), so nothing is measured.
+/// ([ShelfProductCard.cellHeight]), so nothing is measured. The first cards
+/// come in one after another as a list arrives ([ListingRevealItem], after
+/// [firstRevealIndex] pieces above the grid).
 class ProductGridSliver extends StatelessWidget {
-  const ProductGridSliver({super.key, required this.products});
+  const ProductGridSliver({
+    super.key,
+    required this.products,
+    this.firstRevealIndex = 0,
+  });
 
   final List<CatalogProductEntity> products;
+
+  /// Where the first card sits in the listing's entrance order.
+  final int firstRevealIndex;
 
   static const double _targetCellWidth = AppSize.s180;
   static const int _minColumns = 2;
   static const int _maxColumns = 6;
 
+  /// Space between two cells, across and down.
+  static const double crossGap = AppSpacing.s12;
+  static const double mainGap = AppSpacing.s20;
+
+  /// Around the grid: 16 dp gutters, a little air above and below.
+  static const EdgeInsetsDirectional padding = EdgeInsetsDirectional.fromSTEB(
+    AppSpacing.s16,
+    AppSpacing.s8,
+    AppSpacing.s16,
+    AppSpacing.s8,
+  );
+
+  /// Columns for a grid [width] wide (inside [padding]).
+  static int columnsFor(double width) =>
+      (width / _targetCellWidth).floor().clamp(_minColumns, _maxColumns);
+
+  /// Width of one cell of a [columns]-column grid [width] wide.
+  static double cellWidthFor(double width, int columns) =>
+      (width - crossGap * (columns - 1)) / columns;
+
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.pageMargin,
-        AppSpacing.s8,
-        AppSpacing.pageMargin,
-        AppSpacing.s8,
-      ),
+      padding: padding,
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
           final available = constraints.crossAxisExtent;
-          final columns = (available / _targetCellWidth).floor().clamp(
-            _minColumns,
-            _maxColumns,
-          );
-          final cellWidth =
-              (available - AppSpacing.s8 * (columns - 1)) / columns;
+          final columns = columnsFor(available);
+          final cellWidth = cellWidthFor(available, columns);
           return SliverGrid.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: columns,
-              crossAxisSpacing: AppSpacing.s8,
-              mainAxisSpacing: AppSpacing.s12,
-              mainAxisExtent: CatalogProductCard.cellHeight(
+              crossAxisSpacing: crossGap,
+              mainAxisSpacing: mainGap,
+              mainAxisExtent: ShelfProductCard.cellHeight(
                 context,
                 width: cellWidth,
               ),
@@ -50,10 +71,13 @@ class ProductGridSliver extends StatelessWidget {
             // Tiles isolate their own repaints (see [ListingProductTile]).
             addRepaintBoundaries: false,
             addAutomaticKeepAlives: false,
-            itemBuilder: (context, index) => ListingProductTile(
+            itemBuilder: (context, index) => ListingRevealItem(
               key: ValueKey<String>(products[index].id),
-              product: products[index],
-              width: cellWidth,
+              index: firstRevealIndex + index,
+              child: ListingProductTile(
+                product: products[index],
+                width: cellWidth,
+              ),
             ),
           );
         },

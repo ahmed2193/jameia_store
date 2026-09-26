@@ -10,10 +10,11 @@ import '../../cubit/ledger_state.dart';
 import '../../cubit/loyalty_program_cubit.dart';
 import '../ledger/ledger_balance_card.dart';
 import '../ledger/ledger_section_title.dart';
+import 'loyalty_rewards_entry.dart';
 import 'loyalty_rules_card.dart';
 
-/// Points balance (+ what it is worth), the programme rules when the store
-/// runs one, and the history title.
+/// Points balance (+ what it is worth), the way to the Rewards screen and
+/// the programme rules when the store runs one, and the history title.
 class LoyaltyHeader extends StatelessWidget {
   const LoyaltyHeader({super.key});
 
@@ -44,7 +45,10 @@ class LoyaltyHeader extends StatelessWidget {
                           )
                         : '',
                   ),
-                  if (program.enabled) LoyaltyRulesCard(program: program),
+                  if (program.enabled) ...[
+                    const LoyaltyRewardsEntry(),
+                    LoyaltyRulesCard(program: program),
+                  ],
                   LedgerSectionTitle('loyalty.history'.tr()),
                 ],
               );

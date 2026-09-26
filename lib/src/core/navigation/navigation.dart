@@ -58,7 +58,9 @@ Future<T?> showJameiaDialog<T>(
     pageBuilder: (ctx, _, _) => pageBuilder(ctx),
     transitionBuilder: (ctx, anim, _, child) {
       if (MotionGuard.reduced(ctx)) return child;
-      final curved = CurvedAnimation(parent: anim, curve: AppMotion.decelerate);
+      // drive(): this builder runs every tick; a CurvedAnimation here would
+      // add a listener to the dialog animation each time.
+      final curved = anim.drive(CurveTween(curve: AppMotion.decelerate));
       return FadeTransition(
         opacity: anim,
         child: ScaleTransition(

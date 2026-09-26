@@ -15,7 +15,7 @@ void main() {
   OrdersPage page(List<OrderEntity> orders, {int at = 1, bool more = false}) =>
       OrdersPage(orders: orders, page: at, hasMore: more);
 
-  test('the buckets are computed once, not per build', () {
+  test('every status lives in the one list, in the order sent', () {
     final feed = OrdersFeed.empty.replace(
       page(<OrderEntity>[
         order('o1', 'placed'),
@@ -25,13 +25,20 @@ void main() {
       ]),
     );
 
-    expect(feed.byGroup(OrderStatusGroup.inProgress), hasLength(1));
-    expect(feed.byGroup(OrderStatusGroup.completed), hasLength(1));
-    expect(feed.byGroup(OrderStatusGroup.cancelled), hasLength(2));
-    expect(
-      identical(feed.inProgress, feed.byGroup(OrderStatusGroup.inProgress)),
-      isTrue,
-    );
+    // Nothing is filtered out and nothing is re-ordered by status: the list
+    // shows running, done and cancelled orders together.
+    expect(feed.orders.map((order) => order.id), <String>[
+      'o1',
+      'o2',
+      'o3',
+      'o4',
+    ]);
+    expect(feed.orders.map((order) => order.group), <OrderStatusGroup>[
+      OrderStatusGroup.inProgress,
+      OrderStatusGroup.completed,
+      OrderStatusGroup.cancelled,
+      OrderStatusGroup.cancelled,
+    ]);
   });
 
   test('merge appends the next page and drops rows already loaded', () {
@@ -59,7 +66,7 @@ void main() {
     expect(refreshed.page, 1);
   });
 
-  test('withOrder replaces the row in place and re-buckets it', () {
+  test('withOrder replaces the row in place, keeping its position', () {
     final feed = OrdersFeed.empty.replace(
       page(<OrderEntity>[order('o1', 'placed'), order('o2', 'placed')]),
     );
@@ -67,8 +74,8 @@ void main() {
     final updated = feed.withOrder(order('o1', 'cancelled'));
 
     expect(updated.orders.map((order) => order.id), <String>['o1', 'o2']);
-    expect(updated.byGroup(OrderStatusGroup.cancelled).single.id, 'o1');
-    expect(updated.byGroup(OrderStatusGroup.inProgress).single.id, 'o2');
+    expect(updated.orders.first.group, OrderStatusGroup.cancelled);
+    expect(updated.orders.last.group, OrderStatusGroup.inProgress);
   });
 
   test('an order the feed does not know goes on top', () {

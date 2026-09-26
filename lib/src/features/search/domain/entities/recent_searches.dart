@@ -9,6 +9,9 @@ class RecentSearches extends Equatable {
   static const RecentSearches empty = RecentSearches(<String>[]);
   static const int maxTerms = 10;
 
+  /// How many past terms are offered while the customer types.
+  static const int maxMatches = 3;
+
   final List<String> terms;
 
   bool get isEmpty => terms.isEmpty;
@@ -24,6 +27,21 @@ class RecentSearches extends Equatable {
         ...terms.where((existing) => existing.toLowerCase() != lower),
       ].take(maxTerms).toList(growable: false),
     );
+  }
+
+  /// The past terms that contain [text] (letter case ignored), newest first
+  /// and at most [maxMatches]. The term the customer has typed in full is
+  /// left out: "see all results" already searches for it.
+  List<String> matching(String text) {
+    final needle = text.trim().toLowerCase();
+    if (needle.isEmpty) return const <String>[];
+    return terms
+        .where((term) {
+          final lower = term.toLowerCase();
+          return lower != needle && lower.contains(needle);
+        })
+        .take(maxMatches)
+        .toList(growable: false);
   }
 
   @override

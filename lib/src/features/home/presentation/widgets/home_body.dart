@@ -70,9 +70,8 @@ class _HomeBodyState extends State<HomeBody> {
             previous.feed != current.feed ||
             previous.bootstrap != current.bootstrap,
         builder: (context, state) => switch (state.status) {
-          HomeStatus.initial || HomeStatus.loading => HomeLoadingView(
-            fallbackPlace: state.bootstrap.delivery?.placeName ?? '',
-          ),
+          HomeStatus.initial ||
+          HomeStatus.loading => HomeLoadingView(bootstrap: state.bootstrap),
           HomeStatus.error => ErrorView(
             message: state.failure?.localizedMessage,
             onRetry: () => context.read<HomeCubit>().load(),

@@ -1,0 +1,60 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/responsive/app_size.dart';
+import '../../cubit/assistant_chat_cubit.dart';
+import 'assistant_handoff_dialog.dart';
+
+enum _MenuItem { newChat, handOff }
+
+/// The overflow menu: start a new chat (the current one stays in history),
+/// or hand the chat to a person when the conversation allows it.
+class AssistantChatMenu extends StatelessWidget {
+  const AssistantChatMenu({super.key});
+
+  void _onSelected(BuildContext context, _MenuItem item) {
+    switch (item) {
+      case _MenuItem.newChat:
+        context.read<AssistantChatCubit>().startNewChat();
+        showJameiaSnackBar(context, 'assistant.new_chat_started'.tr());
+      case _MenuItem.handOff:
+        AssistantHandoffDialog.confirm(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final (canStartNew, canHandOff) = context
+        .select<AssistantChatCubit, (bool, bool)>(
+          (cubit) => (
+            !cubit.state.isWelcome && !cubit.state.isStreaming,
+            cubit.state.canHandOff,
+          ),
+        );
+    return PopupMenuButton<_MenuItem>(
+      tooltip: 'assistant.more'.tr(),
+      icon: const Icon(
+        Icons.more_vert_rounded,
+        size: AppSize.s24,
+        color: AppColors.primaryText,
+      ),
+      color: AppColors.white,
+      onSelected: (item) => _onSelected(context, item),
+      itemBuilder: (_) => [
+        PopupMenuItem(
+          value: _MenuItem.newChat,
+          enabled: canStartNew,
+          child: Text('assistant.new_chat'.tr()),
+        ),
+        PopupMenuItem(
+          value: _MenuItem.handOff,
+          enabled: canHandOff,
+          child: Text('assistant.talk_to_person'.tr()),
+        ),
+      ],
+    );
+  }
+}

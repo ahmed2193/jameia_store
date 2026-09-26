@@ -2,21 +2,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../domain/entities/product_detail.dart';
 import '../../domain/usecases/get_product_detail_usecase.dart';
+import '../../domain/usecases/get_product_offer_usecase.dart';
 import 'product_detail_state.dart';
 
 /// The product page: loads `GET /v1/products/:slug` and keeps the customer's
-/// selection (variant, quantity, gallery page). Adding to the cart is the
+/// selection (variant, quantity, gallery page). Once the product is in, the
+/// cart offer that counts it is looked up for the buy bar's promo tag. Adding to the cart is the
 /// page's job (`CartCubit` is app-global); this cubit says what may be added.
 class ProductDetailCubit extends Cubit<ProductDetailState>
     with SafeCubitMixin<ProductDetailState> {
   ProductDetailCubit(
-    this._getProductDetail, {
+    this._getProductDetail,
+    this._getProductOffer, {
     required this._slug,
     CatalogProductEntity? preview,
   }) : super(ProductDetailState(preview: preview));
 
   final GetProductDetailUseCase _getProductDetail;
+  final GetProductOfferUseCase _getProductOffer;
   final String _slug;
   int _generation = 0;
 
@@ -57,6 +62,25 @@ class ProductDetailCubit extends Cubit<ProductDetailState>
         );
       },
     );
+    final detail = state.detail;
+    if (detail != null && generation == _generation) {
+      await _loadPromo(detail, generation);
+    }
+  }
+
+  /// The promo tag is extra: a failure leaves the bar without one.
+  Future<void> _loadPromo(ProductDetail detail, int generation) async {
+    final result = await _getProductOffer(
+      GetProductOfferParams(
+        productId: detail.product.id,
+        categoryIds: detail.offerCategoryIds,
+      ),
+    );
+    if (generation != _generation) return;
+    final promo = result.fold((_) => null, (offer) => offer);
+    if (promo != null && promo != state.promo) {
+      safeEmit(state.copyWith(promo: promo));
+    }
   }
 
   /// Ignores an option that cannot be bought. A new option restarts the

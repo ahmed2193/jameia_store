@@ -31,6 +31,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/app_router.dart';
 import 'package:jameia_mart/src/config/routes/placeholder_page.dart';
+import 'package:jameia_mart/src/config/routes/route_args/assistant_chat_args.dart';
 import 'package:jameia_mart/src/config/routes/route_args/category_args.dart';
 import 'package:jameia_mart/src/config/routes/route_args/pdp_image_viewer_args.dart';
 import 'package:jameia_mart/src/config/routes/route_args/product_detail_args.dart';
@@ -45,6 +46,7 @@ import 'package:jameia_mart/src/core/domain/entities/jameia_address_entity.dart'
 import 'package:jameia_mart/src/core/navigation/navigation.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/setting_cubit.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/loyalty_page.dart';
+import 'package:jameia_mart/src/features/account/presentation/pages/loyalty_rewards_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/mine_about_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/mine_delivery_code_page.dart';
 import 'package:jameia_mart/src/features/account/presentation/pages/mine_page.dart';
@@ -56,6 +58,9 @@ import 'package:jameia_mart/src/features/address/presentation/cubit/address_book
 import 'package:jameia_mart/src/features/address/presentation/pages/address_edit_page.dart';
 import 'package:jameia_mart/src/features/address/presentation/pages/address_list_page.dart';
 import 'package:jameia_mart/src/features/address/presentation/pages/choose_location_page.dart';
+import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
+import 'package:jameia_mart/src/features/assistant/presentation/pages/assistant_chat_page.dart';
+import 'package:jameia_mart/src/features/assistant/presentation/pages/assistant_history_page.dart';
 import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:jameia_mart/src/features/auth/presentation/pages/login_page.dart';
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
@@ -305,7 +310,18 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
   const _RouteCase(Routes.profileEdit, ProfileEditPage),
   const _RouteCase(Routes.wallet, WalletPage),
   const _RouteCase(Routes.loyalty, LoyaltyPage),
+  const _RouteCase(Routes.loyaltyRewards, LoyaltyRewardsPage),
   const _RouteCase(Routes.notifications, NotificationsPage),
+  const _RouteCase(Routes.assistant, AssistantChatPage, note: 'new chat'),
+  _RouteCase(
+    Routes.assistant,
+    AssistantChatPage,
+    note: 'past conversation',
+    extra: (_) => const AssistantChatArgs(conversationId: 'c1'),
+    verify: (t, _) =>
+        expect(_page<AssistantChatPage>(t).conversationId, 'c1'),
+  ),
+  const _RouteCase(Routes.assistantHistory, AssistantHistoryPage),
   const _RouteCase(Routes.customerService, CustomerServicePage),
   _RouteCase(
     Routes.customerServiceQuestion,
@@ -469,6 +485,11 @@ void main() {
             ),
             BlocProvider<UnreadNotificationsCubit>(
               create: (_) => sl<UnreadNotificationsCubit>(),
+            ),
+            // Never loaded: status unknown, so the home disc and the Mine
+            // cell stay hidden and nothing reaches the network.
+            BlocProvider<AssistantAvailabilityCubit>(
+              create: (_) => sl<AssistantAvailabilityCubit>(),
             ),
             // Idle (never started) over fakes: the address pages read it at
             // build time and the list's first sync never touches the network.

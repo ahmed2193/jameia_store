@@ -79,7 +79,7 @@ Update this table (and `docs/api_integration.md` §6.1) when you ship a feature.
 | language | `PATCH account/profile { language }` | **on API** (mirror of the device language) |
 | notifications | `GET notifications`, `PATCH :id/read`, `PATCH read-all`, `GET sse`, `POST push/register` | **on API** (the SSE stream is opt-in: `--dart-define=LIVE_NOTIFICATIONS=true` — the production proxy drops the idle stream every ~60 s; no FCM / APNs token source yet → `RegisterPushTokenUseCase` has no caller) |
 | account — wallet | `GET account/wallet` | **on API** (`WalletPage`, generic `LedgerCubit<WalletEntryEntity>`: balance + paginated transactions) |
-| account — loyalty | `GET account/loyalty`, `GET init` → `store.loyalty` | **on API** (`LoyaltyPage`: balance, programme rules, paginated points history; programme read once per run) |
+| account — loyalty | `GET account/loyalty`, `GET init` → `store.loyalty` | **on API** (`LoyaltyPage`: balance, programme rules, paginated points history; programme read once per run). `LoyaltyRewardsPage` (`Routes.loyaltyRewards`): the API has **no rewards catalogue** — the tiers are an app choice (`minRedeemPoints` × 1/2/5/10, worth `redemptionPerPoint` fils each) redeemed through the cart's `POST cart/loyalty` |
 | account — wishlist, viewed | Account | not built (not in the web account menu either) |
 | address — saved addresses | `GET / POST account/addresses`, `PATCH / DELETE account/addresses/:addressId` | **on API** (app-global `AddressBookCubit`; device copy in `LocalStorage`, wiped on sign-out / expiry). Not built: Delivery `areas` (→ `areaId` / `governorateNo` are never sent) and `resolve-location`; `select-address` is used by checkout; the map search / reverse geocode still use `lbs_service.dart` on `package:http` (legacy); home / checkout / orders still read the offline default address |
 | home | Bootstrap (`init`, `home`) | **on API** (sealed section entities, popup frequency rules) |
@@ -88,14 +88,14 @@ Update this table (and `docs/api_integration.md` §6.1) when you ship a feature.
 | search | Catalog (`products?search`, `categories`, `brands`) | **on API** (recents in `LocalStorage`) |
 | recipes | Catalog (`recipes`, `recipes/:slug`) | **on API** |
 | marketing | Catalog (`offers`, `pages/:slug`) | **on API** (unknown page slug answers `400`) |
-| store_mode — Jm3eia Pro | Account (`subscription-plans`, `account/subscription`) | **on API** |
+| store_mode — Jm3eia Pro | Account (`subscription-plans`, `account/subscription`), Catalog (`brands`) | **on API** (paywall: plan tabs, "Save N%" on the best value per month, member = `hasBenefits` — `cancelled` + `cancelAtPeriodEnd` still has the perks until `currentPeriodEnd`). No trial / promo code / family plan in the API |
 | discovery | Catalog | offline catalogue (`assets/data/jameia_data.json`) |
 | cart | Cart (`GET cart`, `items`, `items/:key`, `coupon`, `loyalty`, `express`) | **on API** (offline-first mirror: local projection + coalesced per-line writes, one request in flight, pending deltas rebased on the reply, stale replies dropped by generation, transport retry, mirror persisted in `LocalStorage` `cart.mirror.v1`, guest cart on `X-Cart-Token`, re-owned on sign-in / sign-out / locale change) |
 | coupons — my coupon wallet | — (no route: the API applies a coupon **code** to the cart) | offline catalogue; the code entered in the cart goes to `POST /v1/cart/coupon` |
 | checkout | Delivery (`branches`, `slots`, `select-branch`, `select-address`), Orders (`POST orders`) | **on API** (delivery to a saved address or branch pickup, ASAP / express / scheduled slot, `cod` | `wallet`, notes ≤ 256; every selection re-prices on the server; one in-flight placement). Not built: Delivery `areas` and `resolve-location` (no guest-area / drop-a-pin flow); the API has no drop-off note, tableware, tip, delivery-promise or weather field |
 | orders | Orders (`GET orders`, `:id`, `:id/cancel`), Reviews (`POST reviews`) | **on API** (paginated list with status-group tabs, detail polled every 30 s while visible and non-terminal, the five cancel reasons + note, reorder through the cart batch `POST`, one review per product of a delivered order). No API for the courier map or refunds → those routes render `PlaceholderPage` |
 | support | Support (`categories`, `tickets`, `messages`) | offline |
-| assistant | Assistant (`conversations`, `messages` SSE, `handoff`, `actions/:id/confirm`) | not built |
+| assistant | Assistant (`conversations`, `conversations/:id`, `messages` SSE (`POST`), `actions/:id/confirm`, `conversations/:id/handoff`, `messages/:id/feedback`), Bootstrap (`init` → `store.assistant`) | **on API** (streamed chat over `EventStreamClient.send`, every block kind, cart proposals confirmed by the customer, history, handoff, thumbs; guests on `X-Assistant-Guest`). Live quirks L1–L20 / N1–N26 in `docs/prompts/assistant_chat_prompt.md`; still open server-side: L7 (a failed turn's proposal was never stored → confirm 404s), L13 (empty `delivery_info`), N2 (a bad Bearer is ignored), N4 (in-band errors in English). Never call `handoff` live |
 | splash, shell | — | no backend dependency today |
 
 Known gaps in core (raise them, do not patch around them in a feature):
@@ -108,4 +108,5 @@ Known gaps in core (raise them, do not patch around them in a feature):
 - User-scoped local state on sign-out is handled now: the app root drops the address book
   (`AddressBookCubit.stop()`) and re-owns the cart mirror (`CartCubit.onSignedOut()`).
 - No router guard for signed-in-only routes (pages render the sign-in prompt instead).
-- `EventStreamClient.connect` is `GET` only; the assistant reply stream is a `POST`.
+- ~~`EventStreamClient.connect` is `GET` only~~ — closed: `EventStreamClient.send(path, data:)`
+  streams a `POST` reply once (no reconnect, no replay).

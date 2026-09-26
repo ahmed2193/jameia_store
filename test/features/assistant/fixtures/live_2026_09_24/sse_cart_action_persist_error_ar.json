@@ -1,0 +1,224 @@
+[
+ {
+  "ms": 386,
+  "event": "message",
+  "data": "",
+  "comment": ": connected"
+ },
+ {
+  "ms": 387,
+  "event": "message_start",
+  "data": "{\"conversationId\":\"6ab511879e3ba2a7a933b06f\"}",
+  "comment": null
+ },
+ {
+  "ms": 388,
+  "event": "user_message",
+  "data": "{\"conversationId\":\"6ab511879e3ba2a7a933b06f\",\"message\":{\"_id\":\"6ab511879e3ba2a7a933b070\",\"conversationId\":\"6ab511879e3ba2a7a933b06f\",\"role\":\"user\",\"content\":\"أضف ١ تفاح أحمر إلى السلة\",\"blocks\":[],\"feedback\":null,\"createdAt\":\"2026-09-24T12:03:19.893Z\",\"updatedAt\":\"2026-09-24T12:03:19.893Z\"}}",
+  "comment": null
+ },
+ {
+  "ms": 1953,
+  "event": "tool_start",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_dWKZqXR7aJgzNA9q5rQa3Go2\"}",
+  "comment": null
+ },
+ {
+  "ms": 1956,
+  "event": "tool_end",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_dWKZqXR7aJgzNA9q5rQa3Go2\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 1961,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"products\",\"products\":[{\"_id\":\"6aa6010d06da786e3f5658f5\",\"name\":\"تفاح أحمر\",\"slug\":\"red-apples\",\"type\":\"standard\",\"price\":499,\"proPrice\":null,\"compareAt\":null,\"image\":\"https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&h=600&fit=crop\",\"stock\":120,\"tags\":[\"6aa5ffb85233feadc5c41508\",\"fresh\"],\"unitOfSale\":\"kg\",\"ratingAverage\":0,\"ratingCount\":0}]}}",
+  "comment": null
+ },
+ {
+  "ms": 2808,
+  "event": "tool_start",
+  "data": "{\"name\":\"add_to_cart\",\"callId\":\"call_YCubaf5CjO294Dlx9ax7Jl2p\"}",
+  "comment": null
+ },
+ {
+  "ms": 2812,
+  "event": "tool_end",
+  "data": "{\"name\":\"add_to_cart\",\"callId\":\"call_YCubaf5CjO294Dlx9ax7Jl2p\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 2816,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"cart_action\",\"actionId\":\"2e71220ecbb7ded69bc612c2\",\"items\":[{\"productId\":\"6aa6010d06da786e3f5658f5\",\"variantId\":null,\"quantity\":1,\"product\":{\"_id\":\"6aa6010d06da786e3f5658f5\",\"name\":\"تفاح أحمر\",\"slug\":\"red-apples\",\"type\":\"standard\",\"price\":499,\"proPrice\":null,\"compareAt\":null,\"image\":\"https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=600&h=600&fit=crop\",\"stock\":120,\"tags\":[\"6aa5ffb85233feadc5c41508\",\"fresh\"],\"unitOfSale\":\"kg\",\"ratingAverage\":0,\"ratingCount\":0}}],\"status\":\"pending\"}}",
+  "comment": null
+ },
+ {
+  "ms": 3365,
+  "event": "text_delta",
+  "data": "{\"delta\":\"تم\"}",
+  "comment": null
+ },
+ {
+  "ms": 3365,
+  "event": "text_delta",
+  "data": "{\"delta\":\" اقت\"}",
+  "comment": null
+ },
+ {
+  "ms": 3380,
+  "event": "text_delta",
+  "data": "{\"delta\":\"راح\"}",
+  "comment": null
+ },
+ {
+  "ms": 3380,
+  "event": "text_delta",
+  "data": "{\"delta\":\" إضافة\"}",
+  "comment": null
+ },
+ {
+  "ms": 3392,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 3392,
+  "event": "text_delta",
+  "data": "{\"delta\":\"1\"}",
+  "comment": null
+ },
+ {
+  "ms": 3404,
+  "event": "text_delta",
+  "data": "{\"delta\":\" ك\"}",
+  "comment": null
+ },
+ {
+  "ms": 3404,
+  "event": "text_delta",
+  "data": "{\"delta\":\"جم\"}",
+  "comment": null
+ },
+ {
+  "ms": 3419,
+  "event": "text_delta",
+  "data": "{\"delta\":\" من\"}",
+  "comment": null
+ },
+ {
+  "ms": 3419,
+  "event": "text_delta",
+  "data": "{\"delta\":\" تف\"}",
+  "comment": null
+ },
+ {
+  "ms": 3431,
+  "event": "text_delta",
+  "data": "{\"delta\":\"اح\"}",
+  "comment": null
+ },
+ {
+  "ms": 3431,
+  "event": "text_delta",
+  "data": "{\"delta\":\" أح\"}",
+  "comment": null
+ },
+ {
+  "ms": 3463,
+  "event": "text_delta",
+  "data": "{\"delta\":\"مر\"}",
+  "comment": null
+ },
+ {
+  "ms": 3463,
+  "event": "text_delta",
+  "data": "{\"delta\":\" إلى\"}",
+  "comment": null
+ },
+ {
+  "ms": 3486,
+  "event": "text_delta",
+  "data": "{\"delta\":\" الس\"}",
+  "comment": null
+ },
+ {
+  "ms": 3486,
+  "event": "text_delta",
+  "data": "{\"delta\":\"لة\"}",
+  "comment": null
+ },
+ {
+  "ms": 3496,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 3497,
+  "event": "text_delta",
+  "data": "{\"delta\":\" يرج\"}",
+  "comment": null
+ },
+ {
+  "ms": 3513,
+  "event": "text_delta",
+  "data": "{\"delta\":\"ى\"}",
+  "comment": null
+ },
+ {
+  "ms": 3513,
+  "event": "text_delta",
+  "data": "{\"delta\":\" تأ\"}",
+  "comment": null
+ },
+ {
+  "ms": 3530,
+  "event": "text_delta",
+  "data": "{\"delta\":\"كيد\"}",
+  "comment": null
+ },
+ {
+  "ms": 3530,
+  "event": "text_delta",
+  "data": "{\"delta\":\" الإ\"}",
+  "comment": null
+ },
+ {
+  "ms": 3548,
+  "event": "text_delta",
+  "data": "{\"delta\":\"ضافة\"}",
+  "comment": null
+ },
+ {
+  "ms": 3548,
+  "event": "text_delta",
+  "data": "{\"delta\":\" في\"}",
+  "comment": null
+ },
+ {
+  "ms": 3561,
+  "event": "text_delta",
+  "data": "{\"delta\":\" ال\"}",
+  "comment": null
+ },
+ {
+  "ms": 3561,
+  "event": "text_delta",
+  "data": "{\"delta\":\"واجهة\"}",
+  "comment": null
+ },
+ {
+  "ms": 3589,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 3606,
+  "event": "error",
+  "data": "{\"code\":\"INTERNAL_ERROR\",\"message\":\"Document failed validation\"}",
+  "comment": null
+ }
+]

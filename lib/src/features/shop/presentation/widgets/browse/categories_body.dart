@@ -8,7 +8,7 @@ import '../../cubit/category_browse_cubit.dart';
 import '../../cubit/category_browse_state.dart';
 import '../listing/product_listing_body.dart';
 import 'category_chips.dart';
-import 'category_rail.dart';
+import 'category_rail_header.dart';
 
 /// Body of the store page. The tabs live in the app bar; here comes the
 /// sub-category rail of the open tab, its chips and the products. The tree is
@@ -47,7 +47,7 @@ class CategoriesBody extends StatelessWidget {
           CategoryBrowseStatus.loaded => ProductListingBody(
             onRefresh: onRefresh,
             headerSlivers: const [
-              SliverToBoxAdapter(child: CategoryRail(level: _railLevel)),
+              CategoryRailHeader(level: _railLevel),
               SliverToBoxAdapter(child: CategoryChips(level: _chipsLevel)),
             ],
           ),

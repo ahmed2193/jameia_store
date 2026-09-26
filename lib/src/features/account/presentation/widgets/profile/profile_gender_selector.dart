@@ -10,7 +10,7 @@ import 'profile_field_label.dart';
 import 'profile_gender_chip.dart';
 
 /// Male / female / prefer-not-to-say (the backend accepts `male`, `female` or
-/// `null`).
+/// `null`). Rebuilds only when the choice changes.
 class ProfileGenderSelector extends StatelessWidget {
   const ProfileGenderSelector({super.key});
 
@@ -31,17 +31,17 @@ class ProfileGenderSelector extends StatelessWidget {
                 ProfileGenderChip(
                   label: 'profile.gender_male'.tr(),
                   selected: gender == CustomerGender.male,
-                  onTap: () => select(CustomerGender.male),
+                  onSelected: () => select(CustomerGender.male),
                 ),
                 ProfileGenderChip(
                   label: 'profile.gender_female'.tr(),
                   selected: gender == CustomerGender.female,
-                  onTap: () => select(CustomerGender.female),
+                  onSelected: () => select(CustomerGender.female),
                 ),
                 ProfileGenderChip(
                   label: 'profile.gender_unset'.tr(),
                   selected: gender == null,
-                  onTap: () => select(null),
+                  onSelected: () => select(null),
                 ),
               ],
             ),

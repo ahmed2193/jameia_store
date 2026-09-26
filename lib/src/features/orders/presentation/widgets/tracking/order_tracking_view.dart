@@ -1,18 +1,9 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../../config/routes/routes.dart';
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../../../../../core/utils/failure_message.dart';
-import '../../../../../core/widgets/app_loader.dart';
-import '../../../../../core/widgets/error_view.dart';
-import '../../../../../core/widgets/signed_out_view.dart';
 import '../../cubit/order_tracking_cubit.dart';
-import '../../cubit/order_tracking_state.dart';
-import 'tracking_body.dart';
+import 'tracking_scaffold.dart';
 
 /// Owns the visibility of the tracking page: it subscribes to the router's
 /// [routeObserver] (covered by another page) and to the app lifecycle
@@ -66,70 +57,8 @@ class _OrderTrackingViewState extends State<OrderTrackingView>
     context.read<OrderTrackingCubit>().setVisible(_onTop && _foreground);
   }
 
-  void _onCancelled(BuildContext context, OrderTrackingState state) =>
-      showJameiaSnackBar(context, 'orders.cancelled_done'.tr());
-
-  void _onFailure(BuildContext context, OrderTrackingState state) {
-    final failure = state.failure;
-    if (failure == null || state.loadFailure != null) return;
-    if (state.isSignedOut) {
-      context.go(Routes.login);
-      return;
-    }
-    showJameiaSnackBar(context, failure.localizedMessage);
-  }
-
+  // `ModalRoute.of` above rebuilds this State on every push / pop over the
+  // page; the const frame is skipped, so nothing below it rebuilds.
   @override
-  Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<OrderTrackingCubit, OrderTrackingState>(
-          listenWhen: (previous, current) =>
-              !previous.cancelled && current.cancelled,
-          listener: _onCancelled,
-        ),
-        BlocListener<OrderTrackingCubit, OrderTrackingState>(
-          listenWhen: (previous, current) =>
-              current.failure != null && previous != current,
-          listener: _onFailure,
-        ),
-      ],
-      child: Scaffold(
-        backgroundColor: AppColors.mediumBackground,
-        appBar: AppBar(
-          title: Text('orders.tracking_title'.tr()),
-          backgroundColor: AppColors.white,
-          surfaceTintColor: AppColors.white,
-          elevation: 0,
-        ),
-        body: BlocBuilder<OrderTrackingCubit, OrderTrackingState>(
-          buildWhen: (previous, current) =>
-              previous.status != current.status ||
-              previous.order != current.order ||
-              previous.loadFailure != current.loadFailure,
-          builder: (context, state) {
-            final order = state.order;
-            if (order != null) return TrackingBody(order: order);
-            switch (state.status) {
-              case OrderTrackingStatus.initial:
-              case OrderTrackingStatus.loading:
-                return const AppLoader();
-              case OrderTrackingStatus.error:
-                if (state.isSignedOut) {
-                  return SignedOutView(message: 'orders.sign_in_required'.tr());
-                }
-                return ErrorView(
-                  message: state.isNotFound
-                      ? 'orders.not_found'.tr()
-                      : state.loadFailure?.localizedMessage,
-                  onRetry: context.read<OrderTrackingCubit>().refresh,
-                );
-              case OrderTrackingStatus.loaded:
-                return const AppLoader();
-            }
-          },
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const TrackingScaffold();
 }

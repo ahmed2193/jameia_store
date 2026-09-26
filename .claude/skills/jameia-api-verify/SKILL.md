@@ -100,6 +100,9 @@ Failure knobs (all `POST` unless noted):
 | `/__admin/addresses/fail/500/1` | the next address request answers 500 `INTERNAL_ERROR` (any status: 404 → `RESOURCE_NOT_FOUND` …) |
 | `/__admin/addresses/delay/3000` | address replies wait 3 s → in-flight UI, double tap sends ONE request (`0` turns it off) |
 | `/__admin/ledger/fail/500/1` | the next wallet / loyalty request answers 500 (any status) → error view / load-more retry |
+| `/__admin/subscription/fail/500/1` | the next Pro subscription request answers 500 (any status) → snackbar, buttons back on |
+| `/__admin/subscription/delay/3000` | subscribe / cancel replies wait 3 s → loader on the CTA, double tap sends ONE request |
+| `/__admin/subscription/reset` | no subscription again, `customer.pro` inactive |
 | `/__admin/profile/reset` | the customer is back in the sign-up state (name = phone, no date of birth / gender / household, bonus not paid) → "Complete your profile" + the bonus hint |
 | `/__admin/cart/out-of-stock/<productId>` | that product answers `400 OUT_OF_STOCK` on add / update |
 | `/__admin/cart/stock/<productId>/3` | caps the stock → the line comes back with `quantityReduced` and `blocksCheckout` |
@@ -109,6 +112,27 @@ Failure knobs (all `POST` unless noted):
 | `/__admin/orders/advance/<orderId>` | pushes the order one status forward (placed → … → delivered) |
 | `/__admin/orders/fail/<orderId>` | marks it `delivery_failed` with a reason |
 | `GET /__admin/orders` | every order as JSON |
+
+Assistant (`scripts/mock_api/assistant.js`; scripted replies by keyword — `butter eggs milk …` →
+products, `add 2 butter` → proposal, `my cart`, `track`, `orders`, `offers`, `recipe`, `faq`,
+`categories`, `brands`, `slots`, `fee`, `area` (empty L13 card), `branch`, `escalate` (N6),
+`error`, `future` (unknown kind), `markdown`, `long`, `everything`; Arabic equivalents too):
+
+| Knob | Effect |
+|---|---|
+| `/__admin/assistant/reset` | no conversations / proposals / tickets, knobs off |
+| `/__admin/assistant/fail-persist/1` | next turn streams its cards + text, then `error` (L7: its proposal 404s) |
+| `/__admin/assistant/error-frame/1?code=X` | next turn: half the text, then `error {code}` → "Retry" / "Talk to a person" |
+| `/__admin/assistant/drop-mid-stream/1` | socket closed mid-text, no terminal frame (the reply is still saved) |
+| `/__admin/assistant/slow/3000` · `stall/70000` | wait before the first word, with / without heartbeats |
+| `/__admin/assistant/closed/1` | next send finds its thread closed → `message_start` carries a NEW id |
+| `/__admin/assistant/disabled/0` · `guests-off/1` · `flag/0` | assistant off / guests refused (401) / feature flag off — `GET /v1/init` follows |
+| `/__admin/assistant/rate-limit/2` · `validation/1` | 429 with `Retry-After` / 400 before the stream |
+| `/__admin/assistant/fail/<list|detail|confirm|feedback|handoff>/<status>/<n>` | that route fails n times |
+| `/__admin/assistant/delay/3000` | JSON routes wait 3 s (double taps, in-flight UI) |
+| `/__admin/assistant/expire-actions` | every pending proposal 404s on confirm |
+| `/__admin/assistant/strict-auth/1` | an unknown Bearer gets 401 `TOKEN_EXPIRED` instead of being ignored (N2) |
+| `/__admin/assistant/seed/45?owner=customer` | 45 finished conversations over the last weeks (history paging) |
 
 ```sh
 curl -s -X POST http://127.0.0.1:5055/__admin/notify -H "Content-Type: application/json" \

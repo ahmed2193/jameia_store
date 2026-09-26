@@ -7,17 +7,22 @@ import '../../../../config/di/service_locator.dart';
 import '../../../../config/routes/route_args/otp_verify_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/motion/haptics.dart';
+import '../../../../core/motion/spring_curve.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/utils/failure_message.dart';
 import '../cubit/auth_session_cubit.dart';
 import '../cubit/otp_cubit.dart';
 import '../cubit/otp_state.dart';
+import '../widgets/otp/otp_app_bar.dart';
 import '../widgets/otp/otp_body.dart';
 
 /// Code entry: `POST /v1/auth/verify-otp`. On success the app-global
-/// [AuthSessionCubit] learns the customer and the whole stack is replaced by
-/// the shell.
+/// [AuthSessionCubit] learns the customer at once, the check shows for
+/// [AppSprings.successHold], then the whole stack is replaced by the shell.
+/// A refused code is explained under the digits (and felt); any other
+/// failure is a snack bar.
 class OtpVerifyPage extends StatelessWidget {
   const OtpVerifyPage({super.key, required this.args});
 
@@ -30,8 +35,15 @@ class OtpVerifyPage extends StatelessWidget {
         if (customer != null) {
           context.read<AuthSessionCubit>().signedIn(customer);
         }
-        context.go(Routes.shell);
+        Haptics.success();
+        Future<void>.delayed(AppSprings.successHold, () {
+          if (context.mounted) context.go(Routes.shell);
+        });
       case OtpStatus.error:
+        if (state.failureIsRefusal) {
+          Haptics.warning();
+          return;
+        }
         showJameiaSnackBar(
           context,
           state.failure?.localizedMessage ?? 'core.something_went_wrong'.tr(),
@@ -51,12 +63,9 @@ class OtpVerifyPage extends StatelessWidget {
         listener: _onStatus,
         child: Scaffold(
           backgroundColor: AppColors.white,
-          appBar: AppBar(
-            backgroundColor: AppColors.white,
-            surfaceTintColor: AppColors.white,
-            elevation: 0,
-          ),
+          appBar: const OtpAppBar(),
           body: SafeArea(
+            top: false,
             child: ContentClamp(child: OtpBody(phone: args.phone)),
           ),
         ),

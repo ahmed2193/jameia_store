@@ -5,9 +5,10 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/recipe_summary_entity.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/catalog_recipe_card.dart';
-import 'pdp_section_card.dart';
+import 'pdp_section.dart';
 
-/// "Recipes using this product": a lazily built horizontal strip.
+/// "Recipes using this product": a lazily built horizontal strip on the
+/// page's 16 dp gutters.
 class PdpRecipesRail extends StatelessWidget {
   const PdpRecipesRail({
     super.key,
@@ -22,7 +23,7 @@ class PdpRecipesRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PdpSectionCard(
+    return PdpSection(
       title: 'product.recipes_with_product'.tr(),
       padded: false,
       child: SizedBox(
@@ -30,10 +31,10 @@ class PdpRecipesRail extends StatelessWidget {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.s12,
+            horizontal: AppSpacing.s16,
           ),
           itemCount: recipes.length,
-          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s10),
+          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s12),
           itemBuilder: (context, index) => CatalogRecipeCard(
             key: ValueKey(recipes[index].id),
             recipe: recipes[index],

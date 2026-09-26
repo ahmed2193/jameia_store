@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/jameia_image.dart';
 import '../../domain/entities/home_section_entity.dart';
+import 'home_layout.dart';
 
 /// One image banner of the home feed, with its caption on a bottom scrim.
 class HomeBannerBlock extends StatelessWidget {
@@ -24,16 +26,15 @@ class HomeBannerBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.pageMargin,
+        HomeLayout.gutter,
         0,
-        AppSpacing.pageMargin,
-        AppSpacing.s8,
+        HomeLayout.gutter,
+        HomeLayout.blockGap,
       ),
-      child: GestureDetector(
+      child: PressScale(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderRadius: BorderRadius.circular(HomeLayout.radius),
           child: SizedBox(
             height: _height,
             child: Stack(

@@ -3,9 +3,10 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/data/repositories/base_repository_mixin.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/content_page_entity.dart';
-import '../../domain/entities/offer_entity.dart';
+import '../../../../core/domain/entities/offer_entity.dart';
 import '../../domain/repositories/promotions_repository.dart';
 import '../datasources/promotions_remote_data_source.dart';
+import '../../../../core/data/mappers/offer_mapper.dart';
 import '../mappers/promotions_mapper.dart';
 
 class PromotionsRepositoryImpl

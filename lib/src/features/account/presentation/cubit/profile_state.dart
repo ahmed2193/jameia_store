@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/domain/entities/auth_customer_entity.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/profile_completion.dart';
+import '../../domain/entities/profile_field.dart';
 import '../../domain/entities/profile_update.dart';
 
 enum ProfileStatus { initial, loading, ready, saving, saved, error }
@@ -19,6 +21,8 @@ class ProfileState extends Equatable {
     this.dateOfBirth,
     this.householdSize,
     this.showErrors = false,
+    this.rejectedSubmits = 0,
+    this.refusals = const {},
     this.bonusEarned = 0,
     this.failure,
   });
@@ -48,6 +52,15 @@ class ProfileState extends Equatable {
   /// Set after a failed submit so the fields show their inline errors.
   final bool showErrors;
 
+  /// How many times Save was refused because a field is invalid. Each bump
+  /// is one refusal the page answers (shake, haptic, focus, announcement).
+  final int rejectedSubmits;
+
+  /// Per field, how many refused saves it was invalid in: its own shake
+  /// counter, so fixing a field (or another field being refused) never
+  /// shakes it.
+  final Map<ProfileField, int> refusals;
+
   /// Transient, set together with [ProfileStatus.saved]: the points that
   /// save earned through the profile bonus (0 when none).
   final int bonusEarned;
@@ -66,6 +79,29 @@ class ProfileState extends Equatable {
   bool get showNameError => showErrors && !isNameValid;
 
   bool get showEmailError => showErrors && !isEmailValid;
+
+  /// The fields a save would be refused for, in form order.
+  List<ProfileField> get invalidFields => [
+    if (!isNameValid) ProfileField.name,
+    if (!isEmailValid) ProfileField.email,
+  ];
+
+  /// The invalid field the form points at after a refused save.
+  ProfileField? get firstInvalidField {
+    final invalid = invalidFields;
+    return invalid.isEmpty ? null : invalid.first;
+  }
+
+  int refusalsOf(ProfileField field) => refusals[field] ?? 0;
+
+  /// How complete the draft is (the ring at the top of the form).
+  ProfileCompletion get completion => ProfileCompletion.of(
+    name: name,
+    email: email,
+    dateOfBirth: dateOfBirth,
+    gender: gender,
+    householdSize: householdSize,
+  );
 
   /// The account still has no real name: the form asks for one first.
   bool get needsName => customer?.needsName ?? false;
@@ -88,6 +124,8 @@ class ProfileState extends Equatable {
 
   bool get isSaving => status == ProfileStatus.saving;
 
+  bool get isSaved => status == ProfileStatus.saved;
+
   /// The load failed because nobody is signed in (deep link, expired
   /// session) — the page offers sign-in instead of a retry.
   bool get isSignedOut => customer == null && failure is UnauthorizedFailure;
@@ -109,6 +147,8 @@ class ProfileState extends Equatable {
     int? householdSize,
     bool clearHouseholdSize = false,
     bool? showErrors,
+    int? rejectedSubmits,
+    Map<ProfileField, int>? refusals,
     int? bonusEarned,
     Failure? failure,
   }) => ProfileState(
@@ -122,6 +162,8 @@ class ProfileState extends Equatable {
         ? null
         : (householdSize ?? this.householdSize),
     showErrors: showErrors ?? this.showErrors,
+    rejectedSubmits: rejectedSubmits ?? this.rejectedSubmits,
+    refusals: refusals ?? this.refusals,
     bonusEarned: bonusEarned ?? 0,
     failure: failure,
   );
@@ -136,6 +178,8 @@ class ProfileState extends Equatable {
     dateOfBirth,
     householdSize,
     showErrors,
+    rejectedSubmits,
+    refusals,
     bonusEarned,
     failure,
   ];

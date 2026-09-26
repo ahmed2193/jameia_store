@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:jameia_mart/src/features/account/data/mappers/profile_update_mapper.dart';
+import 'package:jameia_mart/src/features/account/domain/entities/profile_completion.dart';
+import 'package:jameia_mart/src/features/account/domain/entities/profile_field.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/profile_update.dart';
 
 final AuthCustomerEntity _customer = AuthCustomerEntity(
@@ -171,6 +173,74 @@ void main() {
       );
       expect(ProfileUpdate.isSameDay(null, null), isTrue);
       expect(ProfileUpdate.isSameDay(DateTime(2000), null), isFalse);
+    });
+  });
+
+  group('ProfileCompletion', () {
+    ProfileCompletion completion({
+      String name = 'Ahmed',
+      String email = 'ahmed@jm3eia.com',
+      DateTime? dateOfBirth,
+      CustomerGender? gender = CustomerGender.male,
+      int? householdSize = 3,
+    }) => ProfileCompletion.of(
+      name: name,
+      email: email,
+      dateOfBirth: dateOfBirth,
+      gender: gender,
+      householdSize: householdSize,
+    );
+
+    test('everything filled in: 100%, nothing next', () {
+      final full = completion(dateOfBirth: DateTime(1990, 5, 17));
+      expect(full.isComplete, isTrue);
+      expect(full.percent, 100);
+      expect(full.ratio, 1);
+      expect(full.next, isNull);
+    });
+
+    test('an empty draft: 0%, the name first', () {
+      final empty = completion(
+        name: '',
+        email: '',
+        gender: null,
+        householdSize: null,
+      );
+      expect(empty.percent, 0);
+      expect(empty.missing, ProfileField.values);
+      expect(empty.next, ProfileField.name);
+    });
+
+    test('each field counts the same; the next one follows the form order', () {
+      final partial = completion(householdSize: null);
+      expect(partial.filled, 3);
+      expect(partial.percent, 60);
+      expect(partial.missing, [
+        ProfileField.dateOfBirth,
+        ProfileField.householdSize,
+      ]);
+      expect(partial.next, ProfileField.dateOfBirth);
+    });
+
+    test('a value the backend would refuse still counts as missing', () {
+      final refused = completion(
+        name: '   ',
+        email: 'nope',
+        dateOfBirth: DateTime(1990, 5, 17),
+        householdSize: 21,
+      );
+      expect(refused.missing, [
+        ProfileField.name,
+        ProfileField.householdSize,
+        ProfileField.email,
+      ]);
+      expect(refused.percent, 40);
+    });
+
+    test('the optional email comes last', () {
+      final noEmail = completion(email: '', dateOfBirth: DateTime(1990));
+      expect(noEmail.next, ProfileField.email);
+      expect(noEmail.percent, 80);
     });
   });
 }

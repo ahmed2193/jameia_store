@@ -52,6 +52,11 @@ class AppMotion {
   /// [INFERENCE] — no exact apk token at 280.
   static const Duration flip = Duration(milliseconds: 280);
 
+  /// Delay between the items of an entrance cascade or a multi-star fill.
+  /// [FACT] home_page_main staggered reveal = 0/30/60 ms
+  /// (docs/jameia_motion_reference.md §2), the step StaggerEntrance uses.
+  static const Duration staggerStep = Duration(milliseconds: 30);
+
   // ── Mach-CSS-grounded tokens (extracted from `bundle.css.json` @keyframes) ──
   // See docs/jameia_motion_reference.md §2. These are literal in-app values.
   /// SKU add/remove micro-pop (`scale(0)→scale(1)`). [FACT] shop_global CSS =
@@ -69,6 +74,31 @@ class AppMotion {
   /// Spinner / lottery-wheel rotation (`rotateZ 0→360`, linear infinite). [FACT]
   /// home_page_main spinner + myprizescomp wheel = 1000ms per revolution.
   static const Duration spin = Duration(milliseconds: 1000);
+
+  // ── Ambient + reveal tokens (Pro paywall / rewards polish) ────────────────
+  /// Idle "float" bob of a hero illustration (up and back, one period).
+  /// [INFERENCE] — slow enough to read as calm, not as loading.
+  static const Duration floatLoop = Duration(milliseconds: 3200);
+
+  /// Breathing glow behind a hero (opacity .45→.75, scale 1→1.08, and back).
+  /// [FACT] jm3eia.store `.animate-pro-glow` = 5s ease-in-out infinite.
+  static const Duration glowPulse = Duration(milliseconds: 5000);
+
+  /// Self-drawing outline (arch / underline) — path length 0→1.
+  /// [INFERENCE] — long enough to be seen, short enough not to delay reading.
+  static const Duration drawOn = Duration(milliseconds: 700);
+
+  /// Number count-up (points, prices) from the old value to the new one.
+  /// [INFERENCE].
+  static const Duration countUp = Duration(milliseconds: 700);
+
+  /// One-shot celebration burst (subscribe success, reward applied).
+  /// [INFERENCE].
+  static const Duration confetti = Duration(milliseconds: 1400);
+
+  /// Slow holographic sheen across a member card (one sweep + rest).
+  /// [INFERENCE].
+  static const Duration sheen = Duration(milliseconds: 3600);
 
   // ── Brand-moment nominal durations ─────────────────────────────────────────
   // NOTE: Jameia's heart / pay-success / refresh / add-on clips are NOT shipped

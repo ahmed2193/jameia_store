@@ -9,9 +9,10 @@ import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../cubit/product_detail_cubit.dart';
 import '../cubit/product_detail_state.dart';
-import 'pdp_header_block.dart';
+import 'pdp_info_block.dart';
 import 'pdp_loaded_view.dart';
 import 'pdp_scaffold_view.dart';
+import 'pdp_section.dart';
 
 /// Switches the product page on the cubit state. While the detail loads it
 /// paints the card the customer tapped (photo, name) instead of a bare
@@ -19,7 +20,10 @@ import 'pdp_scaffold_view.dart';
 /// the error view with retry (offline = the error view with "no internet").
 /// A failed reload keeps the page and shows a snack bar.
 class PdpBody extends StatelessWidget {
-  const PdpBody({super.key});
+  const PdpBody({super.key, this.galleryKey});
+
+  /// Put on the gallery, for the buy bar's fly-to-cart.
+  final GlobalKey? galleryKey;
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +34,8 @@ class PdpBody extends StatelessWidget {
           previous.failure != current.failure,
       listener: (context, state) =>
           showJameiaSnackBar(context, state.failure!.localizedMessage),
-      // Quantity and the gallery page have their own builders: never rebuild
-      // the whole page for them.
+      // The gallery page and the basket have their own builders: never
+      // rebuild the whole page for them.
       buildWhen: (previous, current) =>
           previous.status != current.status ||
           previous.detail != current.detail ||
@@ -42,6 +46,8 @@ class PdpBody extends StatelessWidget {
           return PdpLoadedView(
             detail: detail,
             selectedVariantId: state.selectedVariantId,
+            lowStockLeft: state.lowStockLeft,
+            galleryKey: galleryKey,
           );
         }
         if (state.isNotFound) {
@@ -65,9 +71,13 @@ class PdpBody extends StatelessWidget {
         final preview = state.preview;
         if (preview == null) return const SafeArea(child: AppLoader());
         return PdpScaffoldView(
+          title: preview.name,
           images: [if (preview.image.isNotEmpty) preview.image],
+          galleryKey: galleryKey,
           sections: [
-            PdpHeaderBlock(product: preview, inStock: preview.inStock),
+            PdpSection(
+              child: PdpInfoBlock(product: preview, inStock: preview.inStock),
+            ),
             const Padding(
               padding: EdgeInsets.all(AppSpacing.s24),
               child: AppLoader(),

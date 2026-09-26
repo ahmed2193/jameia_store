@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/utils/formatters.dart';
 import '../../cubit/otp_cubit.dart';
 import '../../cubit/otp_state.dart';
 import '../auth_link_button.dart';
 
 /// Non-production backends echo the OTP in the send response; show it as a
-/// tap-to-fill hint so testers skip the SMS. Renders nothing otherwise.
+/// tap-to-fill hint under the digits so testers skip the SMS. Renders
+/// nothing otherwise.
 class OtpDevCodeHint extends StatelessWidget {
   const OtpDevCodeHint({super.key, required this.onUseCode});
 
@@ -20,10 +22,11 @@ class OtpDevCodeHint extends StatelessWidget {
       selector: (state) => state.hasDebugCode ? state.debugCode : null,
       builder: (context, code) {
         if (code == null) return const SizedBox.shrink();
-        return Align(
-          alignment: AlignmentDirectional.centerStart,
+        return Center(
           child: AuthLinkButton(
-            label: 'auth.otp_dev_code'.tr(namedArgs: {'code': code}),
+            label: 'auth.otp_dev_code'.tr(
+              namedArgs: {'code': Formatters.isolate(code)},
+            ),
             onPressed: () => onUseCode(code),
             style: AppTextStyles.captionLarge,
           ),

@@ -29,9 +29,12 @@ class WalletPage extends StatelessWidget {
           child: LedgerBody<WalletEntryEntity>(
             header: const WalletHeader(),
             entryBuilder: (entry) => WalletEntryTile(entry: entry),
+            entryDate: (entry) => entry.createdAt,
             emptyIcon: Icons.account_balance_wallet_outlined,
             emptyMessage: 'wallet.empty'.tr(),
             signInMessage: 'wallet.sign_in_prompt'.tr(),
+            todayLabel: 'wallet.today'.tr(),
+            yesterdayLabel: 'wallet.yesterday'.tr(),
           ),
         ),
       ),

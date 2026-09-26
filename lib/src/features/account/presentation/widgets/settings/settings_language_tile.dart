@@ -1,0 +1,82 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/motion/locale_swap_veil.dart';
+import '../../../../../core/motion/motion.dart';
+import '../../../../../core/motion/spring_curve.dart';
+import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/jameia_segmented_control.dart';
+import '../../cubit/setting_cubit.dart';
+import 'settings_language.dart';
+import 'settings_tile.dart';
+import 'settings_tone.dart';
+
+/// "Language" row with an EN / العربية segmented control under the title
+/// (full width, so both labels fit at any text size). A tap glides the
+/// thumb to the new language first; once it lands, the switch itself runs
+/// under [LocaleSwapVeil] — one calm veil over the whole app while it
+/// rebuilds and mirrors, never two app trees on screen.
+class SettingsLanguageTile extends StatefulWidget {
+  const SettingsLanguageTile({
+    super.key,
+    required this.title,
+    required this.languageCode,
+  });
+
+  final String title;
+
+  /// The language the app shows right now.
+  final String languageCode;
+
+  @override
+  State<SettingsLanguageTile> createState() => _SettingsLanguageTileState();
+}
+
+class _SettingsLanguageTileState extends State<SettingsLanguageTile> {
+  static const double _controlHeight = AppSize.s40;
+
+  /// Where the thumb sits while a switch runs (the app still shows the old
+  /// language underneath).
+  SettingsLanguage? _pending;
+
+  Future<void> _select(SettingsLanguage language) async {
+    if (_pending != null) return;
+    setState(() => _pending = language);
+    final settings = context.read<SettingCubit>();
+    // Let the thumb land before the veil covers it.
+    await Future<void>.delayed(
+      MotionGuard.duration(context, AppSprings.calm.duration),
+    );
+    if (!mounted) return;
+    try {
+      await LocaleSwapVeil.run(
+        context,
+        color: AppColors.mediumBackground,
+        commit: () => settings.changeLanguage(context, language.code),
+      );
+    } finally {
+      if (mounted) setState(() => _pending = null);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final busy =
+        _pending != null ||
+        context.select<SettingCubit, bool>((c) => c.state.isChangingLanguage);
+    return SettingsTile(
+      icon: Icons.translate_rounded,
+      tone: SettingsTone.sky,
+      title: widget.title,
+      below: JameiaSegmentedControl<SettingsLanguage>(
+        values: SettingsLanguage.values,
+        selected: _pending ?? SettingsLanguage.of(widget.languageCode),
+        labelOf: (language) => language.labelKey.tr(),
+        onChanged: busy ? null : _select,
+        height: _controlHeight,
+      ),
+    );
+  }
+}

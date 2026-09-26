@@ -11,6 +11,10 @@ class AppSpacing {
   static const double primaryHeading = 8; // vertical.primaryHeading (s8)
   static const double secondaryModule = 16; // vertical.secondaryModule (s16)
 
+  // Search screens' rhythm: side gutter, section gap.
+  static const double gutter = 16;
+  static const double section = 24;
+
   // Common rhythm steps off the raw 1px scale (sN == N).
   static const double s2 = 2;
   static const double s4 = 4;
@@ -75,4 +79,5 @@ class AppRadius {
       12; // Jameia cards render at 12dp (bundle.css.json)
   static const double chip = 6; // r6
   static const double sheet = 24; // r2 — bottom sheets
+  static const double media = 16; // image / surface cards (search tiles)
 }

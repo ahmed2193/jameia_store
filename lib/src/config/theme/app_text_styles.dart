@@ -60,6 +60,36 @@ class AppTextStyles {
   static TextStyle get captionMedium => _base(10, medium, 13);
   static TextStyle get captionSmall => _base(10, regular, 13);
 
+  // ── Search roles: heavy headings, regular copy, grey meta ──────────────────
+
+  /// Section heading.
+  static TextStyle get sectionTitle => _base(20, bold, 26);
+
+  /// List-group heading, sheet / dialog title.
+  static TextStyle get groupTitle => _base(18, bold, 24);
+
+  /// Title bar.
+  static TextStyle get barTitle => _base(18, medium, 24);
+
+  /// List row, card title, body copy.
+  static TextStyle get itemTitle => _base(16, regular, 22);
+
+  /// Tab label, emphasised row, secondary button.
+  static TextStyle get itemTitleStrong => _base(16, medium, 22);
+
+  /// Meta line ("600 points"), helper text.
+  static TextStyle get meta =>
+      _base(14, regular, 20).copyWith(color: AppColors.secondaryText);
+
+  /// Small buttons, chips, field labels.
+  static TextStyle get label => _base(14, medium, 18);
+
+  /// Badges and tags.
+  static TextStyle get tag => _base(12, bold, 16);
+
+  /// Tabular figures for numbers people compare (money, points, codes).
+  static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
+
   /// Digit-display style (prices / counters) using MT Digital Display.
   static TextStyle digits(double size, {FontWeight weight = bold}) => TextStyle(
     fontFamily: digitFamily,

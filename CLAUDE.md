@@ -147,7 +147,7 @@ lib/
 Nothing else is allowed inside a feature: no `screens/`, `util/`, `utils/`, `popups/`,
 `helpers/`, `models/` outside `data/`, and no files at the presentation root.
 
-Features: account, address, auth, cart, checkout, coupons, discovery, home, language,
+Features: account, address, assistant, auth, cart, checkout, coupons, discovery, home, language,
 marketing, notifications, orders, product_details, recipes, search, shell, shop, splash,
 store_mode, support.
 `shell` and `splash` have no data dependency, so they may contain only `presentation/`.
@@ -249,7 +249,9 @@ On the API today: **auth**, **account profile**, **language**, **notifications**
 **addresses**, **cart**, **checkout** (delivery selection + place order), **orders**
 (list, tracking, cancel, reorder, reviews), and the whole catalogue — **home**, **shop**
 (categories / listings / brands), **product_details**, **search**, **recipes**, **marketing**
-(offers, content pages) and **store_mode** (Jm3eia Pro). The coupon wallet, discovery, support
+(offers, content pages), **store_mode** (Jm3eia Pro) and the **assistant** (streamed chat on
+`/v1/assistant/*`: `POST` SSE replies through `EventStreamClient.send`, cart proposals confirmed
+by the customer, history, handoff, feedback). The coupon wallet, discovery, support
 and wallet / loyalty / wishlist still read the offline catalogue / local persistence (§12).
 The cart is a **local mirror of the server cart** (`features/cart`): the UI edits a local
 projection and emits at once, the repository coalesces the pending deltas per line, keeps one
@@ -335,7 +337,10 @@ sign-in / sign-out and refetches on a locale change.
   `SettingCubit`, `AuthSessionCubit` (sign-in state + the customer snapshot; `signOut()` from
   settings, `signedIn()` from the OTP page, `updateCustomer()` from edit-profile, `expired` →
   the app root routes to login), `UnreadNotificationsCubit` (unread badge; the app root starts
-  / stops it with the session, the inbox calls `set()`). Anything else two features
+  / stops it with the session, the inbox calls `set()`), `AddressBookCubit` (the saved
+  addresses; the app root starts / stops it with the session), `AssistantAvailabilityCubit`
+  (whether the store runs the assistant — `/v1/init`, read once, retried on failure; the home
+  header disc and the Mine row show the entry). Anything else two features
   share moves to `core/`. Features never import
   other features' pages or widgets; they navigate through `Routes`.
 
@@ -678,8 +683,7 @@ don't copy it, and migrate it when you own the file.
   and re-export from `failures.dart`); `LocalizationCubit` still takes a `BuildContext`
   (`context.setLocale`) — mirror only its data / domain layers and `syncToServer`;
   `ServerFailure` has no field-level validation `details` (a 404 does have its own type,
-  `NotFoundFailure`, so no screen compares `statusCode` to `404`); `EventStreamClient` is `GET` only (assistant replies
-  stream from a `POST`); no FCM / APNs token source calls `RegisterPushTokenUseCase`; no
+  `NotFoundFailure`, so no screen compares `statusCode` to `404`); no FCM / APNs token source calls `RegisterPushTokenUseCase`; no
   router guard for signed-in-only routes.
 - Multi-widget files, `_buildX()` helpers, inline numeric literals, and `sl<…>()` in widgets/cubits.
 - `core/storage/storage_injection.dart` registers DI outside `config/di` → move it into `config/di`.

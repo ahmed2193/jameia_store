@@ -88,10 +88,12 @@ Do not add your own retry loop, timer, or `Dio` call around it.
 
 ## Limits you must know
 
-- `connect` is **GET only**. `POST /v1/assistant/messages` (streamed reply to a body) needs
-  the client extended in core (method + body parameters, and *no* auto-reconnect for a
-  one-shot reply — replaying a `POST` would send the message twice). Do that in
-  `core/network/event_stream_client.dart` with tests; do not open a stream from a feature.
+- `connect` is `GET` with auto-reconnect (a feed). A streamed reply to a body —
+  `POST /v1/assistant/messages` — goes through `send(path, data:)`: ONE attempt, no
+  reconnect and no replay (re-sending a `POST` would repeat its side effect). A dropped
+  `send` stream ends with an error; the caller decides whether a retry is safe (the
+  assistant keeps what streamed and offers "Retry" as a NEW message). Model:
+  `features/assistant/data/datasources/assistant_remote_data_source.dart`.
 - No `Last-Event-ID` resume: after a reconnect, missed events are recovered by re-fetching
   the list (pull-to-refresh / next `load`), not by the stream.
 - The debug trace prints `body: <stream>` for these calls (one `api` block per (re)connect).

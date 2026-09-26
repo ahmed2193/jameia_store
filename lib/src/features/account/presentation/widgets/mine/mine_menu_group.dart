@@ -1,23 +1,29 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/design/jameia_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
-import '../../../../../core/responsive/app_size.dart';
-import 'mine_menu_cell.dart';
+import 'mine_menu_entry.dart';
+import 'mine_menu_section.dart';
+import 'mine_pro_active_chip.dart';
+import 'mine_tone.dart';
 
-/// The Mine menu card: white, radius 12dp, 12dp side margin; 1dp dividers
-/// (bundle `d90a8d`, 12dp start inset) between the cells. Every cell cascades
-/// in on its own.
+/// The Mine menu in three titled cards — shopping, wallet & rewards, help &
+/// settings — each cascading in once after the cards above it
+/// ([firstEntranceIndex]). Every destination of the tab is here: orders,
+/// addresses, coupons, wallet, loyalty points, Jm3eia Pro, invite friends,
+/// notifications, the Jm3eia Assistant (while the store runs it), customer
+/// service, settings and about.
 class MineMenuGroup extends StatelessWidget {
   const MineMenuGroup({
     super.key,
     this.customerUnreadCount = 0,
     this.notificationsUnread = 0,
+    this.showAssistant = false,
+    this.isProMember = false,
+    this.firstEntranceIndex = 0,
   });
 
   /// Unread customer-service messages → the badge on that cell.
@@ -26,107 +32,125 @@ class MineMenuGroup extends StatelessWidget {
   /// Unread inbox notifications (app-global `UnreadNotificationsCubit`).
   final int notificationsUnread;
 
+  /// The store runs the Jm3eia Assistant → its cell shows.
+  final bool showAssistant;
+
+  /// An active Jm3eia Pro member → "Active" on the Pro row.
+  final bool isProMember;
+
+  /// Stagger slot of the first card (the cards above take the earlier ones).
+  final int firstEntranceIndex;
+
   @override
   Widget build(BuildContext context) {
-    final cells = <_MineMenuItem>[
-      _MineMenuItem(
-        JameiaIcons.orders,
-        'account.menu_orders'.tr(),
-        Routes.orders,
+    final shopping = <MineMenuEntry>[
+      MineMenuEntry(
+        icon: JameiaIcons.orders,
+        label: 'account.menu_orders'.tr(),
+        route: Routes.orders,
+        tone: MineTone.brand,
       ),
-      _MineMenuItem(
-        JameiaIcons.locationOutline,
-        'account.menu_addresses'.tr(),
-        Routes.addressList,
-      ),
-      _MineMenuItem(
-        Icons.account_balance_wallet_outlined,
-        'account.wallet'.tr(),
-        Routes.wallet,
-      ),
-      _MineMenuItem(
-        Icons.stars_outlined,
-        'account.loyalty_points'.tr(),
-        Routes.loyalty,
-      ),
-      _MineMenuItem(
-        Icons.workspace_premium_outlined,
-        'pro.title'.tr(),
-        Routes.proMembership,
+      MineMenuEntry(
+        icon: JameiaIcons.locationOutline,
+        label: 'account.menu_addresses'.tr(),
+        route: Routes.addressList,
+        tone: MineTone.sky,
       ),
       // No Jameia coupon glyph in wm_c_iconfont — keep Material.
-      _MineMenuItem(
-        Icons.confirmation_num_outlined,
-        'account.coupons'.tr(),
-        Routes.myCoupons,
+      MineMenuEntry(
+        icon: Icons.confirmation_num_outlined,
+        label: 'account.coupons'.tr(),
+        route: Routes.myCoupons,
+        tone: MineTone.orange,
+      ),
+    ];
+    final rewards = <MineMenuEntry>[
+      MineMenuEntry(
+        icon: Icons.account_balance_wallet_outlined,
+        label: 'account.wallet'.tr(),
+        route: Routes.wallet,
+        tone: MineTone.brand,
+      ),
+      MineMenuEntry(
+        icon: Icons.stars_outlined,
+        label: 'account.loyalty_points'.tr(),
+        route: Routes.loyalty,
+        tone: MineTone.amber,
+      ),
+      MineMenuEntry(
+        icon: Icons.workspace_premium_outlined,
+        label: 'pro.title'.tr(),
+        route: Routes.proMembership,
+        tone: MineTone.pro,
+        trailing: isProMember ? const MineProActiveChip() : null,
       ),
       // Referral gift — wm_c_iconfont has no reward glyph, only the word 賞.
-      _MineMenuItem(
-        Icons.card_giftcard,
-        'account.invite_friends'.tr(),
-        Routes.inviteFriends,
+      MineMenuEntry(
+        icon: Icons.card_giftcard_rounded,
+        label: 'account.invite_friends'.tr(),
+        route: Routes.inviteFriends,
+        tone: MineTone.rose,
       ),
-      _MineMenuItem(
-        Icons.notifications_none_rounded,
-        'notifications.title'.tr(),
-        Routes.notifications,
+    ];
+    final help = <MineMenuEntry>[
+      MineMenuEntry(
+        icon: Icons.notifications_none_rounded,
+        label: 'notifications.title'.tr(),
+        route: Routes.notifications,
         badgeCount: notificationsUnread,
       ),
-      _MineMenuItem(
-        JameiaIcons.customerService,
-        'account.customer_service'.tr(),
-        Routes.customerService,
+      if (showAssistant)
+        MineMenuEntry(
+          icon: Icons.auto_awesome_outlined,
+          label: 'assistant.title'.tr(),
+          route: Routes.assistant,
+          tone: MineTone.pro,
+        ),
+      MineMenuEntry(
+        icon: JameiaIcons.customerService,
+        label: 'account.customer_service'.tr(),
+        route: Routes.customerService,
         badgeCount: customerUnreadCount,
       ),
       // Material: wm_c_iconfont's nearest glyph is a funnel, which reads as
       // "filter" — it is the one the Discover channel filter uses.
-      _MineMenuItem(
-        Icons.settings_outlined,
-        'account.settings'.tr(),
-        Routes.mineSettings,
+      MineMenuEntry(
+        icon: Icons.settings_outlined,
+        label: 'account.settings'.tr(),
+        route: Routes.mineSettings,
       ),
-      _MineMenuItem(JameiaIcons.info, 'account.about'.tr(), Routes.mineAbout),
+      MineMenuEntry(
+        icon: JameiaIcons.info,
+        label: 'account.about'.tr(),
+        route: Routes.mineAbout,
+      ),
     ];
-
-    return Container(
-      margin: const EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.s12),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < cells.length; i++) ...[
-            if (i != 0)
-              Container(
-                height: AppSize.s1,
-                margin: const EdgeInsetsDirectional.only(start: AppSpacing.s12),
-                color: AppColors.overlayDivider,
-              ),
-            RepaintBoundary(
-              child: StaggerEntrance(
-                index: i,
-                child: MineMenuCell(
-                  icon: cells[i].icon,
-                  label: cells[i].label,
-                  badgeCount: cells[i].badgeCount,
-                  onTap: () => context.push(cells[i].route),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
+    return Column(
+      children: [
+        StaggerEntrance(
+          index: firstEntranceIndex,
+          child: MineMenuSection(
+            title: 'account.section_shopping'.tr(),
+            entries: shopping,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s20),
+        StaggerEntrance(
+          index: firstEntranceIndex + 1,
+          child: MineMenuSection(
+            title: 'account.section_rewards'.tr(),
+            entries: rewards,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.s20),
+        StaggerEntrance(
+          index: firstEntranceIndex + 2,
+          child: MineMenuSection(
+            title: 'account.section_help'.tr(),
+            entries: help,
+          ),
+        ),
+      ],
     );
   }
-}
-
-/// What one menu cell shows and where it goes.
-class _MineMenuItem {
-  const _MineMenuItem(this.icon, this.label, this.route, {this.badgeCount = 0});
-
-  final IconData icon;
-  final String label;
-  final String route;
-  final int badgeCount;
 }

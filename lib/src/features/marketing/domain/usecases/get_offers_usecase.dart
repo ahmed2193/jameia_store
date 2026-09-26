@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
-import '../entities/offer_entity.dart';
+import '../../../../core/domain/entities/offer_entity.dart';
 import '../repositories/promotions_repository.dart';
 
 class GetOffersParams extends Equatable {

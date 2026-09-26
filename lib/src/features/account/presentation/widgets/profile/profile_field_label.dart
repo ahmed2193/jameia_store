@@ -15,7 +15,7 @@ class ProfileFieldLabel extends StatelessWidget {
     padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s6),
     child: Text(
       text,
-      style: AppTextStyles.captionLarge.copyWith(
+      style: AppTextStyles.subheadingSmall.copyWith(
         color: AppColors.secondaryText,
       ),
     ),

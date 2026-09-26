@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// Hairline between two quick stats (bundle `c5b706`: 0.5dp × 35dp).
+/// Hairline between two quick stats.
 class MineStatDivider extends StatelessWidget {
   const MineStatDivider({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return const SizedBox(
       width: AppSize.s0_5,
-      height: AppSize.s35,
-      color: AppColors.overlayDivider,
+      height: AppSize.s44,
+      child: ColoredBox(color: AppColors.overlayDivider),
     );
   }
 }

@@ -1,108 +1,55 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../config/routes/routes.dart';
-import '../../../../config/theme/app_colors.dart';
-import '../../../../config/theme/app_shadows.dart';
-import '../../../../config/theme/app_spacing.dart';
-import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/design/jameia_icons.dart';
-import '../../../../core/responsive/app_size.dart';
+import '../../../../core/motion/motion.dart';
+import '../../../../core/navigation/jameia_snack_bar.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
+import '../cubit/home_cubit.dart';
+import 'home_min_order_bar.dart';
 
-/// The basket bar under the home feed: how much is still missing before the
-/// minimum order the server computed for the cart, or the basket summary
-/// once the order can be placed. Hidden while the basket is empty.
+/// The bar under the home feed, above the shell tab bar: while the basket is
+/// empty it tells the customer how much to start adding — the store's
+/// minimum order from the launch snapshot. Nothing shows while that minimum
+/// is unknown, and nothing once the basket has items: the Cart tab carries
+/// the basket from there. The bar rises out of the bottom edge when it
+/// comes, and sinks back into it when it goes.
 class HomeCartBar extends StatelessWidget {
   const HomeCartBar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CartCubit, CartState>(
-      buildWhen: (previous, current) =>
-          previous.totalQty != current.totalQty ||
-          previous.subtotalKd != current.subtotalKd,
-      builder: (context, cart) {
-        if (cart.isEmpty) return const SizedBox.shrink();
-        final missing = cart.cart.totals.shortfallKd;
-        return SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppSpacing.s12,
-              AppSpacing.s6,
-              AppSpacing.s12,
-              AppSpacing.s8,
-            ),
-            child: GestureDetector(
-              onTap: () => context.push(Routes.cartPreview),
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                height: AppSize.s50,
-                padding: const EdgeInsetsDirectional.symmetric(
-                  horizontal: AppSpacing.s16,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(AppRadius.r3),
-                  boxShadow: AppShadows.medium,
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      JameiaIcons.cart,
-                      size: AppSize.s22,
-                      color: AppColors.brandForeground,
-                    ),
-                    const SizedBox(width: AppSpacing.s8),
-                    if (missing > 0)
-                      Expanded(
-                        child: Text(
-                          'home.min_order_prompt'.tr(
-                            namedArgs: {'amount': Formatters.price(missing)},
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            color: AppColors.brandForeground,
-                            fontWeight: AppTextStyles.medium,
-                          ),
-                        ),
-                      )
-                    else ...[
-                      Text(
-                        'shop.cart_items'.tr(
-                          namedArgs: {'count': '${cart.totalQty}'},
-                        ),
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.brandForeground,
-                          fontWeight: AppTextStyles.medium,
-                        ),
-                      ),
-                      const Spacer(),
-                      Text(
-                        Formatters.price(cart.subtotalKd),
-                        style: AppTextStyles.headingMedium.copyWith(
-                          color: AppColors.brandForeground,
-                          fontWeight: AppTextStyles.bold,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(width: AppSpacing.s4),
-                    const Icon(
-                      Icons.chevron_right,
-                      size: AppSize.s20,
-                      color: AppColors.brandForeground,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+    final minOrderKd = context.select<HomeCubit, double>(
+      (cubit) => cubit.state.bootstrap.delivery?.minOrderKd ?? 0,
+    );
+    return BlocSelector<CartCubit, CartState, bool>(
+      selector: (cart) => cart.isEmpty,
+      builder: (context, isEmpty) {
+        final show = isEmpty && minOrderKd > 0;
+        final amount = Formatters.price(minOrderKd);
+        return AnimatedSwitcher(
+          duration: MotionGuard.duration(context, AppMotion.slow),
+          switchInCurve: AppMotion.emphasizedDecelerate,
+          switchOutCurve: AppMotion.exit,
+          // Rises out of the bottom edge, and sinks back into it.
+          transitionBuilder: (child, animation) => SizeTransition(
+            sizeFactor: animation,
+            alignment: Alignment.topCenter,
+            child: FadeTransition(opacity: animation, child: child),
           ),
+          child: show
+              ? HomeMinOrderBar(
+                  message: 'home.start_adding'.tr(
+                    namedArgs: {'amount': amount},
+                  ),
+                  onInfo: () => showJameiaSnackBar(
+                    context,
+                    'home.min_order_info'.tr(namedArgs: {'amount': amount}),
+                  ),
+                )
+              : const SizedBox.shrink(),
         );
       },
     );

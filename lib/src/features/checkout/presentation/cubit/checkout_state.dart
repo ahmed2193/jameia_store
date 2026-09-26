@@ -5,7 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../../domain/entities/branch_entity.dart';
 import '../../domain/entities/checkout_draft.dart';
 import '../../domain/entities/delivery_selection_entity.dart';
-import '../../domain/entities/delivery_slot_entity.dart';
+import '../../../../core/domain/entities/delivery_slot_entity.dart';
 
 enum CheckoutStatus { initial, loading, ready, placed, error }
 

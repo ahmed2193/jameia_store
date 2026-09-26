@@ -9,7 +9,7 @@ import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/checkout/domain/entities/branch_entity.dart';
 import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
 import 'package:jameia_mart/src/features/checkout/domain/entities/delivery_selection_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/delivery_slot_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
 import 'package:jameia_mart/src/features/checkout/domain/repositories/checkout_repository.dart';
 
 import '../orders/order_test_fixtures.dart';

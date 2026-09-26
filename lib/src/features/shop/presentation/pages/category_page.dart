@@ -65,7 +65,7 @@ class CategoryPage extends StatelessWidget {
             ),
           ],
           child: Scaffold(
-            backgroundColor: AppColors.mediumBackground,
+            backgroundColor: AppColors.white,
             appBar: CategoryBrowseAppBar(fallbackTitle: args.name),
             body: CategoryBody(onRefresh: () => _refresh(context)),
             bottomNavigationBar: const CatalogCartBar(),

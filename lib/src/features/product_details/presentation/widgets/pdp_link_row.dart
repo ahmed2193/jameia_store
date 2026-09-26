@@ -6,8 +6,9 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/jameia_image.dart';
 
-/// "Brand · Nestlé ›" / "Category · Basmati Rice ›": a labelled link to the
-/// products of the brand or the category.
+/// A flat labelled link to the products of the brand or the category: the
+/// grey label over the ink name, and a chevron that follows the reading
+/// direction.
 class PdpLinkRow extends StatelessWidget {
   const PdpLinkRow({
     super.key,
@@ -24,41 +25,52 @@ class PdpLinkRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
-        child: Row(
-          children: [
-            if (imageUrl.isNotEmpty) ...[
-              JameiaImage.circle(url: imageUrl, size: AppSize.s32),
-              const SizedBox(width: AppSpacing.s8),
-            ],
-            Text(
-              label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.secondaryText,
-              ),
-            ),
-            const SizedBox(width: AppSpacing.s8),
-            Expanded(
-              child: Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.end,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  fontWeight: AppTextStyles.medium,
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+            vertical: AppSpacing.s12,
+          ),
+          child: Row(
+            children: [
+              if (imageUrl.isNotEmpty) ...[
+                JameiaImage.circle(url: imageUrl, size: AppSize.s40),
+                const SizedBox(width: AppSpacing.s12),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: AppTextStyles.captionLarge.copyWith(
+                        color: AppColors.secondaryText,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.s2),
+                    Text(
+                      value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.itemTitleStrong.copyWith(
+                        color: AppColors.primaryText,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const Icon(
-              Icons.chevron_right,
-              size: AppSize.s18,
-              color: AppColors.tertiaryText,
-            ),
-          ],
+              const SizedBox(width: AppSpacing.s8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: AppSize.s22,
+                color: AppColors.secondaryText,
+              ),
+            ],
+          ),
         ),
       ),
     );

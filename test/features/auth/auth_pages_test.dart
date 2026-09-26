@@ -21,6 +21,7 @@ import 'package:jameia_mart/src/config/routes/routes.dart';
 import 'package:jameia_mart/src/config/theme/app_theme.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/setting_cubit.dart';
+import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'package:jameia_mart/src/features/auth/domain/entities/phone_number.dart';
 import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:jameia_mart/src/features/auth/presentation/cubit/login_cubit.dart';
@@ -117,6 +118,11 @@ void main() {
             BlocProvider<AuthSessionCubit>.value(value: session),
             BlocProvider<UnreadNotificationsCubit>(
               create: (_) => sl<UnreadNotificationsCubit>(),
+            ),
+            // Sign-in lands on home, whose header reads it. Never loaded:
+            // the assistant disc stays hidden and nothing reaches the network.
+            BlocProvider<AssistantAvailabilityCubit>(
+              create: (_) => sl<AssistantAvailabilityCubit>(),
             ),
           ],
           child: MaterialApp.router(

@@ -10,6 +10,8 @@ import '../../../../core/responsive/app_size.dart';
 import '../../domain/entities/home_announcement_item.dart';
 import 'home_announcement_dots.dart';
 import 'home_announcement_line.dart';
+import 'home_layout.dart';
+import 'home_reveal_scope.dart';
 
 /// The announcement strip of the home feed ("Free delivery over 5.000 KWD"):
 /// a dark card under the header that rolls through the store's notices — the
@@ -30,6 +32,7 @@ class HomeAnnouncementTicker extends StatefulWidget {
 class _HomeAnnouncementTickerState extends State<HomeAnnouncementTicker> {
   Timer? _rotation;
   int _index = 0;
+  bool _onScreen = true;
 
   static const double _height = AppSize.s44;
 
@@ -39,6 +42,7 @@ class _HomeAnnouncementTickerState extends State<HomeAnnouncementTicker> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _onScreen = HomeRevealScope.onScreenOf(context);
     _rearm();
   }
 
@@ -57,7 +61,10 @@ class _HomeAnnouncementTickerState extends State<HomeAnnouncementTicker> {
 
   void _rearm() {
     _rotation?.cancel();
-    if (widget.items.length < 2 || MotionGuard.reduced(context)) return;
+    // Off screen it holds its line, and rolls on once it is back.
+    if (widget.items.length < 2 || MotionGuard.reduced(context) || !_onScreen) {
+      return;
+    }
     _rotation = Timer.periodic(AppMotion.carousel, (_) => _advance());
   }
 
@@ -72,12 +79,11 @@ class _HomeAnnouncementTickerState extends State<HomeAnnouncementTicker> {
     final item = widget.items[_index];
     final key = ValueKey<String>(item.id);
     return Padding(
-      // Clears the seam the header ends on.
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.pageMargin,
-        AppSpacing.s10,
-        AppSpacing.pageMargin,
+        HomeLayout.gutter,
         0,
+        HomeLayout.gutter,
+        HomeLayout.blockGap,
       ),
       child: Container(
         height: _height,
@@ -86,7 +92,7 @@ class _HomeAnnouncementTickerState extends State<HomeAnnouncementTicker> {
         ),
         decoration: BoxDecoration(
           color: AppColors.primaryDark,
-          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderRadius: BorderRadius.circular(HomeLayout.radius),
           boxShadow: AppShadows.low,
         ),
         child: Row(

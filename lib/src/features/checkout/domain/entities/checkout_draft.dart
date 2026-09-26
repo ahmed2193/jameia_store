@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/domain/entities/cart_entity.dart';
 import '../../../../core/domain/entities/order_status.dart';
-import 'delivery_slot_entity.dart';
+import '../../../../core/domain/entities/delivery_slot_entity.dart';
 
 /// When the order should go out.
 enum DeliveryTiming { asap, express, scheduled }

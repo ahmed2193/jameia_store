@@ -8,6 +8,7 @@ import 'package:equatable/equatable.dart';
 import '../error/exceptions.dart';
 import 'api_exception_mapper.dart';
 import 'api_headers.dart';
+import 'api_payload.dart';
 
 /// One `text/event-stream` frame.
 ///
@@ -58,6 +59,16 @@ abstract class EventStreamClient {
     String path, {
     Map<String, dynamic>? queryParameters,
   });
+
+  /// `POST`s [data] and streams the reply ONCE: no reconnect and no replay —
+  /// re-sending a `POST` would repeat its side effect (an assistant message
+  /// sent twice). The stream completes when the server closes it. Errors are
+  /// terminal and typed: a non-2xx answer before the stream opens is decoded
+  /// from its envelope (`BadRequestException` with `code`, 401, 429 after the
+  /// automatic retries …), a break mid-stream is one `NetworkException`, and
+  /// silence past the idle watchdog is a `RequestTimeoutException`.
+  /// Cancelling the subscription cancels the request.
+  Stream<ServerSentEvent> send(String path, {Object? data});
 }
 
 /// SSE over the shared [Dio] (so `AuthInterceptor`, `AppHeadersInterceptor`
@@ -73,7 +84,17 @@ class DioEventStreamClient implements EventStreamClient {
     this._idleTimeout = defaultIdleTimeout,
     this._minHealthyConnection = defaultMinHealthyConnection,
     this._now = DateTime.now,
+    this._sendIdleTimeout = defaultSendIdleTimeout,
   });
+
+  /// Longest silence tolerated on a one-shot [send] reply before it fails
+  /// with `RequestTimeoutException`. A reply streams its first frame at once
+  /// and a tool call takes a few seconds, so a minute of nothing is a dead
+  /// socket, not a slow answer.
+  static const Duration defaultSendIdleTimeout = Duration(seconds: 60);
+
+  /// Upper bound read from a non-2xx streamed body to decode its envelope.
+  static const int _maxErrorBodyBytes = 64 * 1024;
 
   /// Longest silence tolerated before reconnecting. Servers heartbeat far more
   /// often (15–30 s), so a healthy stream never trips it.
@@ -101,6 +122,126 @@ class DioEventStreamClient implements EventStreamClient {
   final Duration _idleTimeout;
   final Duration _minHealthyConnection;
   final DateTime Function() _now;
+  final Duration _sendIdleTimeout;
+
+  @override
+  Stream<ServerSentEvent> send(String path, {Object? data}) {
+    late final StreamController<ServerSentEvent> controller;
+    final cancelToken = CancelToken();
+    var cancelled = false;
+
+    Future<void> run() async {
+      try {
+        // The shared chain still applies: Bearer + a 401 refresh-and-replay,
+        // the guest headers and the 429 retry all happen BEFORE the server
+        // accepts the message, so replaying at that point is safe.
+        final response = await _dio.post<ResponseBody>(
+          path,
+          data: data ?? ApiPayload.emptyBody,
+          cancelToken: cancelToken,
+          options: Options(
+            responseType: ResponseType.stream,
+            receiveTimeout: Duration.zero,
+            headers: {ApiHeaders.accept: ApiHeaders.eventStreamMediaType},
+          ),
+        );
+        log('opened POST $path', name: _logName);
+        var idledOut = false;
+        final bytes = response.data!.stream.timeout(
+          _sendIdleTimeout,
+          onTimeout: (sink) {
+            idledOut = true;
+            sink.close();
+          },
+        );
+        await for (final event in parse(bytes)) {
+          if (cancelled) return;
+          controller.add(event);
+        }
+        if (cancelled) return;
+        if (idledOut) {
+          cancelToken.cancel('idle');
+          log(
+            'POST $path silent for ${_sendIdleTimeout.inSeconds}s',
+            name: _logName,
+          );
+          controller.addError(const RequestTimeoutException());
+        }
+      } on DioException catch (exception) {
+        if (cancelled || exception.type == DioExceptionType.cancel) return;
+        final mapped = await _mapSendFailure(exception);
+        log('POST $path failed: $mapped', name: _logName);
+        controller.addError(mapped);
+      } on Exception catch (error) {
+        // A break MID-stream surfaces raw (`HttpException: Connection closed
+        // while receiving data`, `SocketException`): the reply is cut short.
+        if (cancelled) return;
+        log('POST $path dropped (${_firstLine(error)})', name: _logName);
+        controller.addError(NetworkException(_firstLine(error)));
+      } on Object catch (error, stackTrace) {
+        // An `Error` is a bug, not a drop: keep the trace, still end the
+        // stream so the listener is never left waiting. Typed as a parsing
+        // failure so the customer sees the generic message, never the raw
+        // Dart error text.
+        if (cancelled) return;
+        log(
+          'POST $path failed',
+          name: _logName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+        controller.addError(ParsingException(_firstLine(error)));
+      } finally {
+        if (!cancelled) unawaited(controller.close());
+      }
+    }
+
+    controller = StreamController<ServerSentEvent>(
+      onListen: () => unawaited(run()),
+      onCancel: () {
+        cancelled = true;
+        cancelToken.cancel('stream cancelled');
+      },
+    );
+    return controller.stream;
+  }
+
+  /// With `ResponseType.stream` a non-2xx body is still a byte stream, which
+  /// `ApiExceptionMapper` cannot read: decode the envelope first so the typed
+  /// exception keeps its backend `code` (`VALIDATION_ERROR`,
+  /// `AUTHENTICATION_REQUIRED`, `RATE_LIMITED` …).
+  static Future<AppException> _mapSendFailure(DioException exception) async {
+    final response = exception.response;
+    final body = response?.data;
+    if (exception.type != DioExceptionType.badResponse ||
+        response == null ||
+        body is! ResponseBody) {
+      return ApiExceptionMapper.fromDio(exception);
+    }
+    return ApiExceptionMapper.fromResponse(
+      Response<dynamic>(
+        requestOptions: response.requestOptions,
+        statusCode: response.statusCode,
+        statusMessage: response.statusMessage,
+        headers: response.headers,
+        data: await _decodeErrorBody(body),
+      ),
+    );
+  }
+
+  /// The JSON object in [body], or `null` when it is not one / unreadable.
+  static Future<Object?> _decodeErrorBody(ResponseBody body) async {
+    final bytes = <int>[];
+    try {
+      await for (final chunk in body.stream) {
+        bytes.addAll(chunk);
+        if (bytes.length > _maxErrorBodyBytes) break;
+      }
+      return jsonDecode(utf8.decode(bytes, allowMalformed: true));
+    } on Object {
+      return null;
+    }
+  }
 
   @override
   Stream<ServerSentEvent> connect(

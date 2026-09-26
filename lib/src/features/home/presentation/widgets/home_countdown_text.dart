@@ -2,8 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-/// `HH:MM:SS` left until [endsAt], ticking once a second. Only this text
-/// rebuilds on a tick; [onFinished] fires once when the time is up.
+import '../../../../core/motion/motion_widgets.dart';
+import 'home_reveal_scope.dart';
+
+/// `HH:MM:SS` left until [endsAt], ticking once a second like a flip clock:
+/// only the part that changed rolls to its new value. Only this text
+/// rebuilds on a tick, and not at all while its block is off screen;
+/// [onFinished] fires once when the time is up.
 class HomeCountdownText extends StatefulWidget {
   const HomeCountdownText({
     super.key,
@@ -23,15 +28,25 @@ class HomeCountdownText extends StatefulWidget {
 class _HomeCountdownTextState extends State<HomeCountdownText> {
   static const Duration _tick = Duration(seconds: 1);
   static const int _pad = 2;
+  static const String _separator = ':';
 
   Timer? _timer;
   late Duration _left;
+  bool _onScreen = true;
 
   @override
   void initState() {
     super.initState();
     _left = _remaining();
     _timer = Timer.periodic(_tick, (_) => _onTick());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _onScreen = HomeRevealScope.onScreenOf(context);
+    // Back on screen: show the time as it is now.
+    if (_onScreen) _left = _remaining();
   }
 
   @override
@@ -56,6 +71,8 @@ class _HomeCountdownTextState extends State<HomeCountdownText> {
     if (left == Duration.zero) {
       _timer?.cancel();
       widget.onFinished?.call();
+    } else if (!_onScreen) {
+      return;
     }
     if (mounted) setState(() => _left = left);
   }
@@ -63,12 +80,30 @@ class _HomeCountdownTextState extends State<HomeCountdownText> {
   @override
   Widget build(BuildContext context) {
     String two(int value) => value.toString().padLeft(_pad, '0');
-    final hours = _left.inHours;
-    final minutes = _left.inMinutes.remainder(Duration.minutesPerHour);
-    final seconds = _left.inSeconds.remainder(Duration.secondsPerMinute);
-    return Text(
-      '${two(hours)}:${two(minutes)}:${two(seconds)}',
-      style: widget.style,
+    final parts = [
+      _left.inHours,
+      _left.inMinutes.remainder(Duration.minutesPerHour),
+      _left.inSeconds.remainder(Duration.secondsPerMinute),
+    ];
+    return Semantics(
+      label: parts.map(two).join(_separator),
+      excludeSemantics: true,
+      // A clock reads left to right in either language.
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (index, value) in parts.indexed) ...[
+              if (index > 0) Text(_separator, style: widget.style),
+              FlipValue(
+                flipKey: value,
+                child: Text(two(value), style: widget.style),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

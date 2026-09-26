@@ -22,6 +22,7 @@ import '../../core/storage/session_store.dart';
 import '../../core/storage/storage_injection.dart';
 import '../../features/account/account_injection_container.dart';
 import '../../features/address/address_injection_container.dart';
+import '../../features/assistant/assistant_injection_container.dart';
 import '../../features/auth/auth_injection_container.dart';
 import '../../features/cart/cart_injection_container.dart';
 import '../../features/checkout/checkout_injection_container.dart';
@@ -162,4 +163,5 @@ Future<void> _initFeatures() async {
   initAuthFeature();
   initNotificationsFeature();
   initSupportFeature();
+  initAssistantFeature();
 }

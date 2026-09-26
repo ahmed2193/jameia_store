@@ -1,11 +1,10 @@
-// The orders API pages one flat list; the tabs slice it by status group. A
-// tab must ask for the next page when its end is reached — never from a
-// build pass, and never in an unbounded chain.
+// The orders API pages one flat list and the screen shows all of it. The
+// list must ask for the next page when its end is reached — never from a
+// build pass — and every status must be in it, each row wearing its own.
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
 import 'package:jameia_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
 import 'package:jameia_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
 import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
@@ -27,6 +26,8 @@ import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_use
 import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
+import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_card.dart';
+import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_status_chip.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_list.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_load_more_row.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -80,7 +81,7 @@ void main() {
     await cartRepository.dispose();
   });
 
-  Future<void> pump(WidgetTester tester, OrderStatusGroup group) async {
+  Future<void> pump(WidgetTester tester) async {
     // EasyLocalization reads its JSON from the bundle: let that real async
     // work finish before the fake clock takes over.
     await tester.runAsync(() async {
@@ -99,12 +100,7 @@ void main() {
                 locale: context.locale,
                 supportedLocales: context.supportedLocales,
                 localizationsDelegates: context.localizationDelegates,
-                home: Scaffold(
-                  body: OrdersList(
-                    key: ValueKey<OrderStatusGroup>(group),
-                    group: group,
-                  ),
-                ),
+                home: const Scaffold(body: OrdersList()),
               ),
             ),
           ),
@@ -115,12 +111,12 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a tab with rows never pages from a build pass', (tester) async {
+  testWidgets('a list with rows never pages from a build pass', (tester) async {
     repository.pages = 5; // the server has plenty more
     await cubit.load();
     final afterFirstPage = repository.calls.length;
 
-    await pump(tester, OrderStatusGroup.inProgress);
+    await pump(tester);
 
     // Drawing the list asks for nothing: paging follows the scroll (or the
     // customer's tap), never a build pass.
@@ -136,19 +132,17 @@ void main() {
     expect(repository.calls.length, afterFirstPage + 1);
   });
 
-  testWidgets('an empty tab fills itself, but only for a few pages', (
+  testWidgets('every status is in the one list, with its own chip', (
     tester,
   ) async {
-    repository.pages = 50; // a long history with nothing cancelled in it
+    repository.statuses = <String>['placed', 'delivered', 'cancelled'];
     await cubit.load();
 
-    await pump(tester, OrderStatusGroup.cancelled);
-    for (var i = 0; i < 12; i++) {
-      await tester.pump(const Duration(milliseconds: 20));
-    }
+    await pump(tester);
 
-    // Bounded: the tab never walks the whole history looking for a row.
-    expect(repository.calls.length, greaterThan(1));
-    expect(repository.calls.length, lessThanOrEqualTo(5));
+    // No tabs to switch: the three orders are on screen together.
+    expect(find.byType(OrderCard), findsNWidgets(3));
+    expect(find.byType(OrderStatusChip), findsNWidgets(3));
+    expect(find.byType(TabBar), findsNothing);
   });
 }

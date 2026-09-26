@@ -1,16 +1,22 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/summary_row.dart';
+import '../../../../../core/widgets/jameia_summary_line.dart';
+import 'invoice_payment_status.dart';
+import 'invoice_section.dart';
 
-/// Order number, date, payment method and payment status.
+/// "Order info": order number, date, payment method and payment status on a
+/// hairline card — the first section of the invoice.
 class InvoiceHeader extends StatelessWidget {
   const InvoiceHeader({super.key, required this.order});
+
+  static const TextStyle _numberStyle = TextStyle(
+    fontFeatures: AppTextStyles.tabular,
+  );
 
   final OrderEntity order;
 
@@ -22,35 +28,32 @@ class InvoiceHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SummaryRow(
-            label: 'orders.invoice_number'.tr(),
-            value: order.orderNumber,
+    return InvoiceSection(
+      title: 'orders.info_title'.tr(),
+      headerPadding: InvoiceSection.pageTop,
+      children: [
+        JameiaSummaryLine(
+          label: 'orders.invoice_number'.tr(),
+          value: Directionality(
+            textDirection: TextDirection.ltr,
+            child: Text(order.orderNumber, style: _numberStyle),
           ),
-          SummaryRow(
-            label: 'orders.invoice_date'.tr(),
-            value: Formatters.dateTime(
-              context.locale.languageCode,
-              order.createdAt,
-            ),
+        ),
+        JameiaSummaryLine(
+          label: 'orders.invoice_date'.tr(),
+          value: Text(
+            Formatters.dateTime(context.locale.languageCode, order.createdAt),
           ),
-          SummaryRow(label: 'orders.invoice_payment'.tr(), value: _method),
-          SummaryRow(
-            label: 'orders.invoice_status'.tr(),
-            value: order.payment.isPaid
-                ? 'orders.payment_paid'.tr()
-                : 'orders.payment_pending'.tr(),
-            valueColor: order.payment.isPaid
-                ? AppColors.success
-                : AppColors.warn,
-          ),
-        ],
-      ),
+        ),
+        JameiaSummaryLine(
+          label: 'orders.invoice_payment'.tr(),
+          value: Text(_method),
+        ),
+        JameiaSummaryLine(
+          label: 'orders.invoice_status'.tr(),
+          value: InvoicePaymentStatus(paid: order.payment.isPaid),
+        ),
+      ],
     );
   }
 }

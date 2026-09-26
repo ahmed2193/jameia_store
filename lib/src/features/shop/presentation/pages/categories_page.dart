@@ -70,7 +70,7 @@ class CategoriesPage extends StatelessWidget {
             ),
           ],
           child: Scaffold(
-            backgroundColor: AppColors.mediumBackground,
+            backgroundColor: AppColors.white,
             appBar: CatalogAppBar(
               title: 'shop.all_categories'.tr(),
               bottom: const CategoryTabBar(),

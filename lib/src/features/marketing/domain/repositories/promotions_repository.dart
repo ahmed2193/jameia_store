@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
 import '../entities/content_page_entity.dart';
-import '../entities/offer_entity.dart';
+import '../../../../core/domain/entities/offer_entity.dart';
 
 /// Marketing content of the jm3eia backend (public routes).
 abstract class PromotionsRepository {

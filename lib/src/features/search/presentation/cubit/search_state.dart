@@ -26,6 +26,13 @@ class SearchState extends Equatable {
 
   bool get isTyping => query.trim().isNotEmpty;
 
+  /// Past terms that match what is typed, offered above the products.
+  List<String> get recentMatches => recents.matching(query);
+
+  /// Nothing to list yet: the first product request for this text is still
+  /// running (later keystrokes keep the previous matches on screen).
+  bool get isAwaitingSuggestions => isSuggesting && suggestions.isEmpty;
+
   SearchState copyWith({
     String? query,
     RecentSearches? recents,

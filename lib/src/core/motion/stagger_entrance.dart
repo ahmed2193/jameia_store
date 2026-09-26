@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'motion.dart';
@@ -36,6 +38,17 @@ class _StaggerEntranceState extends State<StaggerEntrance>
     vsync: this,
     duration: AppMotion.medium,
   );
+  late final CurvedAnimation _curve = CurvedAnimation(
+    parent: _c,
+    curve: AppMotion.signature,
+  );
+  late final Animation<Offset> _slide = Tween<Offset>(
+    begin: widget.beginOffset,
+    end: Offset.zero,
+  ).animate(_curve);
+
+  /// The index delay; cancelled on dispose so no timer outlives the item.
+  Timer? _delay;
   bool _played = false;
 
   @override
@@ -48,13 +61,13 @@ class _StaggerEntranceState extends State<StaggerEntrance>
       return;
     }
     final steps = widget.index.clamp(0, widget.maxIndex);
-    Future<void>.delayed(widget.stagger * steps, () {
-      if (mounted) _c.forward();
-    });
+    _delay = Timer(widget.stagger * steps, _c.forward);
   }
 
   @override
   void dispose() {
+    _delay?.cancel();
+    _curve.dispose();
     _c.dispose();
     super.dispose();
   }
@@ -62,16 +75,9 @@ class _StaggerEntranceState extends State<StaggerEntrance>
   @override
   Widget build(BuildContext context) {
     if (MotionGuard.reduced(context)) return widget.child;
-    final curved = CurvedAnimation(parent: _c, curve: AppMotion.signature);
     return FadeTransition(
-      opacity: curved,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: widget.beginOffset,
-          end: Offset.zero,
-        ).animate(curved),
-        child: widget.child,
-      ),
+      opacity: _curve,
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }

@@ -2,11 +2,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/widgets/jameia_input_decoration.dart';
 import '../../../domain/entities/product_review_request.dart';
 import '../../cubit/order_review_cubit.dart';
 
-/// One optional comment, sent with every rated product.
+/// One optional comment, sent with every rated product: an outlined text
+/// area in the page gutters. Typing rebuilds nothing but the field.
 class ReviewCommentField extends StatefulWidget {
   const ReviewCommentField({super.key});
 
@@ -15,6 +19,7 @@ class ReviewCommentField extends StatefulWidget {
 }
 
 class _ReviewCommentFieldState extends State<ReviewCommentField> {
+  late final OrderReviewCubit _cubit;
   late final TextEditingController _controller;
 
   static const int _lines = 4;
@@ -22,9 +27,9 @@ class _ReviewCommentFieldState extends State<ReviewCommentField> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(
-      text: context.read<OrderReviewCubit>().state.draft.comment,
-    );
+    // The page's cubit never changes under the field: read it once.
+    _cubit = context.read<OrderReviewCubit>();
+    _controller = TextEditingController(text: _cubit.state.draft.comment);
   }
 
   @override
@@ -39,14 +44,18 @@ class _ReviewCommentFieldState extends State<ReviewCommentField> {
       (cubit) => cubit.state.isSubmitting,
     );
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.s16),
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: AppSpacing.gutter,
+      ),
       child: TextField(
         controller: _controller,
         enabled: !submitting,
         maxLines: _lines,
         maxLength: ProductReviewRequest.maxBodyLength,
-        onChanged: context.read<OrderReviewCubit>().setComment,
-        decoration: InputDecoration(
+        onChanged: _cubit.setComment,
+        style: AppTextStyles.itemTitle,
+        cursorColor: AppColors.primaryText,
+        decoration: JameiaInputDecoration.outlined(
           hintText: 'orders.review_comment_hint'.tr(),
         ),
       ),

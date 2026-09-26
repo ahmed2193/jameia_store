@@ -7,10 +7,12 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_variant_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_reviews.dart';
 import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_detail_usecase.dart';
+import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
 import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_reviews_usecase.dart';
 import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_detail_cubit.dart';
 import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_detail_state.dart';
@@ -44,6 +46,18 @@ class _StubGetDetail implements GetProductDetailUseCase {
     GetProductDetailParams params,
   ) async => reply;
 }
+
+class _StubGetOffer implements GetProductOfferUseCase {
+  const _StubGetOffer([this.reply = const Right(null)]);
+
+  final Either<Failure, OfferEntity?> reply;
+
+  @override
+  Future<Either<Failure, OfferEntity?>> call(GetProductOfferParams params) async =>
+      reply;
+}
+
+const _noOffer = _StubGetOffer();
 
 class _GatedGetReviews implements GetProductReviewsUseCase {
   final List<GetProductReviewsParams> requests = [];
@@ -80,6 +94,7 @@ void main() {
       'loads and pre-selects the first variant that can be bought',
       build: () => ProductDetailCubit(
         _StubGetDetail(const Right(_milk)),
+        _noOffer,
         slug: 'milk',
         preview: _milkCard,
       ),
@@ -102,6 +117,7 @@ void main() {
         _StubGetDetail(
           const Left(ServerFailure('Product not found', statusCode: 404)),
         ),
+        _noOffer,
         slug: 'nope',
       ),
       act: (cubit) => cubit.load(),
@@ -116,6 +132,7 @@ void main() {
     test('quantity stays inside 1..stock; a new variant restarts it', () async {
       final cubit = ProductDetailCubit(
         _StubGetDetail(const Right(_milk)),
+        _noOffer,
         slug: 'milk',
       );
       await cubit.load();
@@ -136,11 +153,55 @@ void main() {
       await cubit.close();
     });
 
+    test('"only N left" follows the stock of the selection', () async {
+      final cubit = ProductDetailCubit(
+        _StubGetDetail(const Right(_milk)),
+        _noOffer,
+        slug: 'milk',
+      );
+      expect(cubit.state.lowStockLeft, isNull, reason: 'nothing loaded');
+      await cubit.load();
+
+      expect(cubit.state.lowStockLeft, 2); // v1: 2 left
+      cubit.selectVariant('v2');
+      expect(cubit.state.lowStockLeft, 5); // exactly the threshold
+      await cubit.close();
+
+      // Plenty in stock, or none at all: no note.
+      const plenty = ProductDetail(
+        product: CatalogProductEntity(
+          id: 'rice',
+          slug: 'rice',
+          name: 'Rice',
+          priceFils: 1250,
+          stock: ProductDetailState.lowStockThreshold + 1,
+        ),
+      );
+      const soldOut = ProductDetail(
+        product: CatalogProductEntity(
+          id: 'salt',
+          slug: 'salt',
+          name: 'Salt',
+          priceFils: 150,
+        ),
+      );
+      for (final detail in [plenty, soldOut]) {
+        final other = ProductDetailCubit(
+          _StubGetDetail(Right(detail)),
+          _noOffer,
+          slug: detail.product.slug,
+        );
+        await other.load();
+        expect(other.state.lowStockLeft, isNull);
+        await other.close();
+      }
+    });
+
     test(
       'a reload keeps the selection; a failed reload keeps the page',
       () async {
         final getDetail = _StubGetDetail(const Right(_milk));
-        final cubit = ProductDetailCubit(getDetail, slug: 'milk');
+        final cubit = ProductDetailCubit(getDetail, _noOffer, slug: 'milk');
         await cubit.load();
         cubit.selectVariant('v2');
 
@@ -156,6 +217,33 @@ void main() {
         await cubit.close();
       },
     );
+
+    test('the promo tag follows the product; a failure leaves none', () async {
+      const offer = OfferEntity(
+        id: 'of-dairy',
+        name: '2 KWD off dairy (3 items)',
+        triggerType: OfferTriggerType.categoryQuantity,
+      );
+      final cubit = ProductDetailCubit(
+        _StubGetDetail(const Right(_milk)),
+        const _StubGetOffer(Right(offer)),
+        slug: 'milk',
+      );
+      await cubit.load();
+      expect(cubit.state.promo, offer);
+      await cubit.close();
+
+      final failing = ProductDetailCubit(
+        _StubGetDetail(const Right(_milk)),
+        const _StubGetOffer(Left(NetworkFailure('offline'))),
+        slug: 'milk',
+      );
+      await failing.load();
+      expect(failing.state.status, ProductDetailStatus.loaded);
+      expect(failing.state.failure, isNull, reason: 'the page never fails');
+      expect(failing.state.promo, isNull);
+      await failing.close();
+    });
   });
 
   group('ProductReviewsCubit', () {

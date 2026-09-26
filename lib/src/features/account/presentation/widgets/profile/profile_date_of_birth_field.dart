@@ -11,6 +11,8 @@ import 'profile_field_label.dart';
 import 'profile_value_box.dart';
 
 /// Optional date of birth: tap opens the calendar sheet, "Clear" removes it.
+/// The month is spelled in the active language; the digits stay Western, as
+/// everywhere else in the app (the household size, points, prices).
 class ProfileDateOfBirthField extends StatelessWidget {
   const ProfileDateOfBirthField({super.key});
 
@@ -37,7 +39,9 @@ class ProfileDateOfBirthField extends StatelessWidget {
             icon: Icons.cake_outlined,
             value: date == null
                 ? null
-                : DateFormat.yMMMMd(context.locale.languageCode).format(date),
+                : (DateFormat.yMMMMd(
+                    context.locale.languageCode,
+                  )..useNativeDigits = false).format(date),
             placeholder: 'profile.date_placeholder'.tr(),
             onTap: () => _pick(context, date),
             onClear: date == null

@@ -181,6 +181,59 @@ void main() {
     });
   });
 
+  group('getOffers', () {
+    test('GETs one page of 100, keeps the trigger targets, caches', () async {
+      final dataSource = build(
+        FakeHttpClientAdapter(
+          (_, _) => okBody({
+            'data': [
+              {
+                '_id': 'of-dairy',
+                'name': '2 KWD off dairy (3 items)',
+                'status': 'active',
+                'trigger': {
+                  'type': 'category_quantity',
+                  'categoryId': 'c-dairy',
+                  'minQuantity': 3,
+                },
+                'reward': {'type': 'fixed_discount', 'amount': 2000},
+              },
+              {'name': 'no id: skipped'},
+            ],
+            'pagination': {
+              'total': 2,
+              'page': 1,
+              'limit': 100,
+              'hasMore': false,
+            },
+          }),
+        ),
+      );
+
+      final offers = await dataSource.getOffers();
+
+      expect(request().path, EndPoints.offers);
+      expect(request().queryParameters, {'page': 1, 'limit': 100});
+      expect(offers.single.triggerCategoryId, 'c-dairy');
+      expect(offers.single.triggerMinQuantity, 3);
+
+      await dataSource.getOffers();
+      expect(adapter.requests, hasLength(1));
+
+      // Offer names arrive resolved by `Accept-Language`.
+      locale.languageCode = 'ar';
+      await dataSource.getOffers();
+      expect(adapter.requests, hasLength(2));
+
+      clock = clock.add(
+        CatalogRemoteDataSourceImpl.categoryTreeTtl +
+            const Duration(seconds: 1),
+      );
+      await dataSource.getOffers();
+      expect(adapter.requests, hasLength(3));
+    });
+  });
+
   group('getBrands', () {
     test('GETs page + limit, adds a non-blank search', () async {
       final dataSource = build(

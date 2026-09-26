@@ -10,11 +10,18 @@ import 'login_social_button.dart';
 /// Google / Apple / Facebook buttons. The backend only offers OTP login today,
 /// so these announce "coming soon" instead of faking a sign-in.
 class LoginSocialSection extends StatelessWidget {
-  const LoginSocialSection({super.key, required this.firstStaggerIndex});
+  const LoginSocialSection({
+    super.key,
+    required this.firstStaggerIndex,
+    required this.stagger,
+  });
 
   /// Entrance-stagger index of the first button (the section follows the
   /// heading / field / CTA / divider on the page).
   final int firstStaggerIndex;
+
+  /// Delay between two entrances (the page's cascade step).
+  final Duration stagger;
 
   static const List<(String icon, String provider)> _providers = [
     (JameiaAssets.loginGoogle, 'Google'),
@@ -33,6 +40,7 @@ class LoginSocialSection extends StatelessWidget {
           if (i > 0) const SizedBox(height: AppSpacing.s12),
           StaggerEntrance(
             index: firstStaggerIndex + i,
+            stagger: stagger,
             child: LoginSocialButton(
               icon: _providers[i].$1,
               label: 'auth.continue_with'.tr(

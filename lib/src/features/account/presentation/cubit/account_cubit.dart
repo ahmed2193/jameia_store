@@ -31,6 +31,11 @@ class AccountState extends Equatable {
   final int customerServiceUnread;
   final String? error;
 
+  /// The overview read has answered (loaded or failed) — the Mine tab shows
+  /// once this is true, so its counts never flip from zero on open.
+  bool get isResolved =>
+      status == AccountStatus.loaded || status == AccountStatus.error;
+
   AccountState copyWith({
     AccountStatus? status,
     UserProfileEntity? user,

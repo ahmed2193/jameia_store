@@ -6,7 +6,8 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// Outlined social sign-in button with a leading brand icon.
+/// Outlined social sign-in pill with a leading brand icon (the label stays
+/// centred on the whole pill).
 class LoginSocialButton extends StatelessWidget {
   const LoginSocialButton({
     super.key,
@@ -15,6 +16,12 @@ class LoginSocialButton extends StatelessWidget {
     required this.onTap,
   });
 
+  static const double _height = AppSize.s52;
+  static const double _pressedScale = 0.97;
+  static const BorderRadius _radius = BorderRadius.all(
+    Radius.circular(AppRadius.pill),
+  );
+
   final String icon;
   final String label;
   final VoidCallback onTap;
@@ -22,43 +29,50 @@ class LoginSocialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Passive press-scale (no onTap) so the InkWell keeps owning the gesture +
-    // ripple while the whole button still gives Jameia's subtle press feel.
+    // ripple while the whole pill still dips under the finger.
     return PressScale(
+      pressedScale: _pressedScale,
       child: Material(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppRadius.r4),
+        shape: const RoundedRectangleBorder(
+          borderRadius: _radius,
+          side: BorderSide(color: AppColors.divider),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.r4),
           onTap: onTap,
-          child: Container(
-            height: AppSize.s50,
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.s16,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.r4),
-              border: Border.all(color: AppColors.divider),
-            ),
-            child: Row(
-              children: [
-                Image.asset(
-                  icon,
-                  width: AppSize.s22,
-                  height: AppSize.s22,
-                  fit: BoxFit.contain,
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      label,
-                      style: AppTextStyles.headingSmall.copyWith(
-                        fontWeight: AppTextStyles.medium,
+          child: SizedBox(
+            height: _height,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: AppSpacing.s20,
+              ),
+              child: Row(
+                children: [
+                  Image.asset(
+                    icon,
+                    width: AppSize.s22,
+                    height: AppSize.s22,
+                    fit: BoxFit.contain,
+                    excludeFromSemantics: true,
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          label,
+                          maxLines: 1,
+                          style: AppTextStyles.headingSmall.copyWith(
+                            fontWeight: AppTextStyles.medium,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: AppSize.s22),
-              ],
+                  const SizedBox(width: AppSize.s22),
+                ],
+              ),
             ),
           ),
         ),

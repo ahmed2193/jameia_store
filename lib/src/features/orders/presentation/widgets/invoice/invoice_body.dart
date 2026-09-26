@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../order_lines_card.dart';
+import '../order_lines_sliver.dart';
 import 'invoice_header.dart';
 import 'invoice_totals.dart';
 
-/// The receipt: order meta, the lines as sold, and the totals.
+/// The receipt on the white page: order info, the lines as sold (a lazy
+/// sliver, no invoice link — this is the invoice), and the payment summary.
+/// A document: nothing on it moves.
 class InvoiceBody extends StatelessWidget {
   const InvoiceBody({super.key, required this.order});
 
@@ -14,14 +16,18 @@ class InvoiceBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s24),
-      children: [
-        InvoiceHeader(order: order),
-        const SizedBox(height: AppSpacing.s8),
-        OrderLinesCard(order: order, showInvoiceLink: false),
-        const SizedBox(height: AppSpacing.s8),
-        InvoiceTotals(order: order),
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: InvoiceHeader(order: order)),
+        OrderLinesSliver(
+          orderId: order.id,
+          lines: order.lines,
+          offerLines: order.offerLines,
+          totalKd: order.totalKd,
+          showInvoiceLink: false,
+        ),
+        SliverToBoxAdapter(child: InvoiceTotals(order: order)),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.section)),
       ],
     );
   }

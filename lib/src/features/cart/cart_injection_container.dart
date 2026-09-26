@@ -1,7 +1,10 @@
 import '../../config/di/service_locator.dart';
+import '../../core/data/datasources/catalog_remote_data_source.dart';
 import 'data/datasources/cart_local_data_source.dart';
 import 'data/datasources/cart_remote_data_source.dart';
+import 'data/repositories/cart_deals_repository_impl.dart';
 import 'data/repositories/cart_repository_impl.dart';
+import 'domain/repositories/cart_deals_repository.dart';
 import 'domain/repositories/cart_repository.dart';
 import 'domain/usecases/add_cart_items_usecase.dart';
 import 'domain/usecases/adjust_cart_line_usecase.dart';
@@ -10,6 +13,7 @@ import 'domain/usecases/apply_cart_loyalty_usecase.dart';
 import 'domain/usecases/clear_cart_usecase.dart';
 import 'domain/usecases/fetch_cart_usecase.dart';
 import 'domain/usecases/flush_cart_usecase.dart';
+import 'domain/usecases/get_deal_products_usecase.dart';
 import 'domain/usecases/remove_cart_coupon_usecase.dart';
 import 'domain/usecases/remove_cart_line_usecase.dart';
 import 'domain/usecases/remove_cart_loyalty_usecase.dart';
@@ -20,9 +24,11 @@ import 'domain/usecases/set_cart_line_quantity_usecase.dart';
 import 'domain/usecases/sync_cart_owner_usecase.dart';
 import 'domain/usecases/watch_cart_usecase.dart';
 import 'presentation/cubit/cart_cubit.dart';
+import 'presentation/cubit/cart_deals_cubit.dart';
 
-/// Cart feature DI (`/v1/cart*` + the on-device mirror). Called from
-/// `setupServiceLocator`.
+/// Cart feature DI (`/v1/cart*` + the on-device mirror, and the deals
+/// sheet's product reads through the shared catalogue datasource). Called
+/// from `setupServiceLocator`.
 Future<void> initCartFeature() async {
   if (sl.isRegistered<CartRepository>()) return; // idempotent
 
@@ -72,5 +78,11 @@ Future<void> initCartFeature() async {
         setExpress: sl(),
         reset: sl(),
       ),
-    );
+    )
+    // The "Buy more, save more" sheet (one per cart page).
+    ..registerLazySingleton<CartDealsRepository>(
+      () => CartDealsRepositoryImpl(sl<CatalogRemoteDataSource>()),
+    )
+    ..registerLazySingleton(() => GetDealProductsUseCase(sl()))
+    ..registerFactory<CartDealsCubit>(() => CartDealsCubit(sl()));
 }

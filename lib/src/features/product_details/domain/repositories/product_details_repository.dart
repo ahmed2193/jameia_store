@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/domain/entities/offer_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/product_detail.dart';
 import '../entities/product_reviews.dart';
@@ -17,4 +18,8 @@ abstract class ProductDetailsRepository {
     required int page,
     required int limit,
   });
+
+  /// `GET /v1/offers` — the store's active cart offers, highest priority
+  /// first (the buy bar's promo tag). Cached for a few minutes.
+  Future<Either<Failure, List<OfferEntity>>> getOffers();
 }

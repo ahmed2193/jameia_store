@@ -11,9 +11,16 @@ import '../../../../../core/widgets/jameia_card_image.dart';
 import '../../cubit/order_review_cubit.dart';
 import 'review_star_bar.dart';
 
-/// One product of the order with its stars.
+/// One product of the order: a 56 dp thumb with a hairline, the name, and
+/// its stars. Rebuilds only when its own rating or lock changes.
 class ReviewProductTile extends StatelessWidget {
   const ReviewProductTile({super.key, required this.line});
+
+  /// The hairline drawn over the thumb (white packshots on the white page).
+  static const BoxDecoration _thumbHairline = BoxDecoration(
+    borderRadius: BorderRadius.all(Radius.circular(AppRadius.card)),
+    border: Border.fromBorderSide(BorderSide(color: AppColors.divider)),
+  );
 
   final OrderLineEntity line;
 
@@ -27,16 +34,21 @@ class ReviewProductTile extends StatelessWidget {
     );
     return Padding(
       padding: const EdgeInsetsDirectional.symmetric(
-        horizontal: AppSpacing.s16,
+        horizontal: AppSpacing.gutter,
         vertical: AppSpacing.s12,
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          JameiaCardImage(
-            url: line.image,
-            width: AppSize.s56,
-            height: AppSize.s56,
-            radius: AppRadius.r4,
+          DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: _thumbHairline,
+            child: JameiaCardImage(
+              url: line.image,
+              width: AppSize.s56,
+              height: AppSize.s56,
+              radius: AppRadius.card,
+            ),
           ),
           const SizedBox(width: AppSpacing.s12),
           Expanded(
@@ -48,10 +60,9 @@ class ReviewProductTile extends StatelessWidget {
                   line.nameFor(context.locale.languageCode),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: AppColors.primaryText,
-                  ),
+                  style: AppTextStyles.itemTitle,
                 ),
+                const SizedBox(height: AppSpacing.s4),
                 ReviewStarBar(
                   enabled: !locked,
                   rating: rating,

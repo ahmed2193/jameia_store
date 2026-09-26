@@ -15,6 +15,7 @@ class ProMembershipState extends Equatable {
     this.program = ProProgram.empty,
     this.subscription,
     this.isSignedOut = false,
+    this.selectedPlanId,
     this.submittingPlanId,
     this.isCancelling = false,
     this.failure,
@@ -31,6 +32,10 @@ class ProMembershipState extends Equatable {
   /// leads to sign-in.
   final bool isSignedOut;
 
+  /// The plan the tabs show and the CTA subscribes to (see
+  /// [ProProgram.initialPlan]); survives a reload while the plan still exists.
+  final String? selectedPlanId;
+
   /// The plan whose "subscribe" is in flight (its button shows the loader,
   /// every other action is disabled).
   final String? submittingPlanId;
@@ -44,7 +49,19 @@ class ProMembershipState extends Equatable {
 
   bool get isLoaded => status == ProMembershipStatus.loaded;
   bool get isBusy => submittingPlanId != null || isCancelling;
-  bool get isMember => subscription?.isActive ?? false;
+
+  /// Has the Pro perks right now (see [ProSubscription.hasBenefits]): no
+  /// join button, the membership card instead.
+  bool get isMember => subscription?.hasBenefits ?? false;
+
+  ProPlan? get selectedPlan => program.planById(selectedPlanId);
+
+  /// The "Save N%" chip of every plan tab, in plan order (0 = no chip): the
+  /// programme's [ProProgram.badgeSavings], none at all for a member (there
+  /// is nothing left to sell them).
+  List<int> get planSavings => isMember
+      ? List<int>.filled(program.plans.length, 0)
+      : program.badgeSavings;
 
   ProMembershipState copyWith({
     ProMembershipStatus? status,
@@ -52,6 +69,8 @@ class ProMembershipState extends Equatable {
     ProSubscription? subscription,
     bool clearSubscription = false,
     bool? isSignedOut,
+    String? selectedPlanId,
+    bool clearSelectedPlan = false,
     String? submittingPlanId,
     bool clearSubmitting = false,
     bool? isCancelling,
@@ -62,6 +81,9 @@ class ProMembershipState extends Equatable {
     program: program ?? this.program,
     subscription: clearSubscription ? null : subscription ?? this.subscription,
     isSignedOut: isSignedOut ?? this.isSignedOut,
+    selectedPlanId: clearSelectedPlan
+        ? null
+        : selectedPlanId ?? this.selectedPlanId,
     submittingPlanId: clearSubmitting
         ? null
         : submittingPlanId ?? this.submittingPlanId,
@@ -76,6 +98,7 @@ class ProMembershipState extends Equatable {
     program,
     subscription,
     isSignedOut,
+    selectedPlanId,
     submittingPlanId,
     isCancelling,
     failure,

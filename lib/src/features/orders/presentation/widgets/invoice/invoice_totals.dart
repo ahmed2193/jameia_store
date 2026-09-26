@@ -3,15 +3,21 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/summary_row.dart';
+import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/jameia_summary_line.dart';
+import '../../../../../core/widgets/thin_divider.dart';
+import 'invoice_discount_line.dart';
+import 'invoice_loyalty_note.dart';
+import 'invoice_section.dart';
 
-/// The order's own totals — every figure comes from the server, nothing is
-/// recomputed here.
+/// "Payment summary": the order's own totals — every figure comes from the
+/// server, nothing is recomputed here. Deductions and "Free" read in brand
+/// deep green; money is one left-to-right run.
 class InvoiceTotals extends StatelessWidget {
   const InvoiceTotals({super.key, required this.order});
+
+  static const TextStyle _freeStyle = TextStyle(color: AppColors.brandDeep);
 
   final OrderEntity order;
 
@@ -19,68 +25,59 @@ class InvoiceTotals extends StatelessWidget {
   Widget build(BuildContext context) {
     final coupon = order.coupon;
     final loyalty = order.loyalty;
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SummaryRow(
-            label: 'orders.subtotal'.tr(),
-            value: Formatters.price(order.subtotalKd),
-          ),
-          if (order.offerDiscountFils > 0)
-            SummaryRow(
-              label: 'orders.offer_discount'.tr(),
-              value: '- ${Formatters.price(order.offerDiscountKd)}',
-              valueColor: AppColors.success,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InvoiceSection(
+          title: 'orders.summary_title'.tr(),
+          children: [
+            JameiaSummaryLine(
+              label: 'orders.subtotal'.tr(),
+              value: JameiaMoneyText(kd: order.subtotalKd),
             ),
-          if (order.proDiscountFils > 0)
-            SummaryRow(
-              label: 'orders.pro_discount'.tr(),
-              value: '- ${Formatters.price(order.proDiscountKd)}',
-              valueColor: AppColors.success,
-            ),
-          if (coupon != null)
-            SummaryRow(
-              label: 'orders.coupon_discount'.tr(
-                namedArgs: {'code': coupon.code},
+            if (order.offerDiscountFils > 0)
+              InvoiceDiscountLine(
+                label: 'orders.offer_discount'.tr(),
+                kd: order.offerDiscountKd,
               ),
-              value: '- ${Formatters.price(coupon.discountKd)}',
-              valueColor: AppColors.success,
-            ),
-          if (loyalty.discountFils > 0)
-            SummaryRow(
-              label: 'orders.loyalty_discount'.tr(),
-              value: '- ${Formatters.price(loyalty.discountKd)}',
-              valueColor: AppColors.success,
-            ),
-          SummaryRow(
-            label: 'orders.delivery_fee'.tr(),
-            value: order.deliveryFeeFils <= 0
-                ? 'orders.free'.tr()
-                : Formatters.price(order.deliveryFeeKd),
-            valueColor: order.deliveryFeeFils <= 0
-                ? AppColors.freeDelivery
-                : null,
-          ),
-          SummaryRow(
-            label: 'orders.total'.tr(),
-            value: Formatters.price(order.totalKd),
-            emphasized: true,
-          ),
-          if (loyalty.pointsEarned > 0)
-            Text(
-              'orders.loyalty_earned'.tr(
-                namedArgs: {'points': '${loyalty.pointsEarned}'},
+            if (order.proDiscountFils > 0)
+              InvoiceDiscountLine(
+                label: 'orders.pro_discount'.tr(),
+                kd: order.proDiscountKd,
               ),
-              style: AppTextStyles.captionLarge.copyWith(
-                color: AppColors.secondaryText,
+            if (coupon != null)
+              InvoiceDiscountLine(
+                label: 'orders.coupon_discount'.tr(
+                  namedArgs: {'code': coupon.code},
+                ),
+                kd: coupon.discountKd,
               ),
+            if (loyalty.discountFils > 0)
+              InvoiceDiscountLine(
+                label: 'orders.loyalty_discount'.tr(),
+                kd: loyalty.discountKd,
+              ),
+            JameiaSummaryLine(
+              label: 'orders.delivery_fee'.tr(),
+              value: order.deliveryFeeFils <= 0
+                  ? Text('orders.free'.tr(), style: _freeStyle)
+                  : JameiaMoneyText(kd: order.deliveryFeeKd),
             ),
-        ],
-      ),
+            const Padding(
+              padding: EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
+              child: ThinDivider(),
+            ),
+            JameiaSummaryLine(
+              label: 'orders.total'.tr(),
+              emphasized: true,
+              value: JameiaMoneyText(kd: order.totalKd),
+            ),
+          ],
+        ),
+        if (loyalty.pointsEarned > 0)
+          InvoiceLoyaltyNote(points: loyalty.pointsEarned),
+      ],
     );
   }
 }

@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/motion/haptics.dart';
+import '../../../../../core/motion/motion.dart';
+import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// A pill of the listing toolbar: the sort button (with a dropdown caret) or
-/// an on / off filter.
+/// A pill of the listing toolbar: the sort button or the brand filter (with
+/// a dropdown caret), or an on / off filter. Outlined at rest, filled with
+/// ink while it is doing something (the fill cross-fades and the caret
+/// turns), and it sinks a touch under the finger.
 class ListingFilterPill extends StatelessWidget {
   const ListingFilterPill({
     super.key,
@@ -23,46 +28,63 @@ class ListingFilterPill extends StatelessWidget {
   final IconData? icon;
   final bool isDropdown;
 
+  static const double height = AppSize.s40;
+  static const double _glyph = AppSize.s18;
+  static const double _pressedScale = 0.97;
+
+  /// The caret turns over while its filter is on (a half turn).
+  static const double _caretTurned = 0.5;
+
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? AppColors.primaryDark : AppColors.primaryText;
-    return GestureDetector(
+    final duration = MotionGuard.duration(context, AppMotion.fast);
+    final foreground = selected ? AppColors.white : AppColors.primaryText;
+    return PressScale(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        height: AppSize.s32,
+      pressedScale: _pressedScale,
+      haptic: HapticKind.selection,
+      child: AnimatedContainer(
+        duration: duration,
+        curve: MotionGuard.curve(context, AppMotion.standard),
+        height: height,
         padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AppSpacing.s12,
+          horizontal: AppSpacing.s16,
         ),
         decoration: BoxDecoration(
-          color: selected ? AppColors.brandLightBg : AppColors.white,
+          color: selected ? AppColors.primaryText : AppColors.white,
           borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: selected ? AppColors.primaryDark : AppColors.divider,
+            color: selected ? AppColors.primaryText : AppColors.divider,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: AppSize.s16, color: foreground),
-              const SizedBox(width: AppSpacing.s4),
+              Icon(icon, size: _glyph, color: foreground),
+              const SizedBox(width: AppSpacing.s6),
             ],
-            Text(
-              label,
-              style: AppTextStyles.captionLarge.copyWith(
+            AnimatedDefaultTextStyle(
+              duration: duration,
+              style: AppTextStyles.bodyLarge.copyWith(
                 color: foreground,
                 fontWeight: selected
                     ? AppTextStyles.bold
-                    : AppTextStyles.medium,
+                    : AppTextStyles.regular,
               ),
+              child: Text(label, maxLines: 1),
             ),
             if (isDropdown) ...[
-              const SizedBox(width: AppSpacing.s2),
-              Icon(
-                Icons.keyboard_arrow_down_rounded,
-                size: AppSize.s16,
-                color: foreground,
+              const SizedBox(width: AppSpacing.s4),
+              AnimatedRotation(
+                turns: selected ? _caretTurned : 0,
+                duration: MotionGuard.duration(context, AppMotion.medium),
+                curve: AppMotion.emphasizedDecelerate,
+                child: Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: _glyph,
+                  color: foreground,
+                ),
               ),
             ],
           ],

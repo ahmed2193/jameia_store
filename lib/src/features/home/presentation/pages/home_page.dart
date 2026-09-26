@@ -16,7 +16,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
     create: (_) => sl<HomeCubit>()..load(),
     child: const Scaffold(
-      backgroundColor: AppColors.mediumBackground,
+      backgroundColor: AppColors.white,
       body: HomeBody(),
       // Below the feed, above the shell tab bar.
       bottomNavigationBar: HomeCartBar(),

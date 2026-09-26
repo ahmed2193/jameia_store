@@ -3,23 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_coupon_entity.dart';
+import '../../../../../core/motion/change_bump.dart';
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/jameia_sheet_header.dart';
 import '../../../domain/entities/cart_snapshot.dart';
 import '../../cubit/cart_cubit.dart';
 import 'cart_coupon_sheet.dart';
+import 'cart_discount_amount.dart';
 
 /// The applied coupon (code + discount, removable) or the entry to add one.
-class CartCouponRow extends StatelessWidget {
+/// The ticket fills in deep green with a bump when a coupon lands or leaves.
+class CartCouponRow extends StatefulWidget {
   const CartCouponRow({super.key});
+
+  @override
+  State<CartCouponRow> createState() => _CartCouponRowState();
+}
+
+class _CartCouponRowState extends State<CartCouponRow> {
+  // The row is read as one element without a coupon and as separate parts
+  // with one (its ✕ must stay reachable), so the list row rebuilds its
+  // subtree when a coupon lands; this key carries the ticket's bump across.
+  final GlobalKey _ticket = GlobalKey(debugLabel: 'coupon ticket');
 
   void _open(BuildContext context) => showJameiaBottomSheet<void>(
     context,
     isScrollControlled: true,
+    backgroundColor: AppColors.white,
+    shape: JameiaSheetHeader.shape,
     builder: (_) => const CartCouponSheet(),
   );
 
@@ -31,41 +47,44 @@ class CartCouponRow extends StatelessWidget {
     final busy = context.select<CartCubit, bool>(
       (cubit) => cubit.state.busyAction == CartAction.coupon,
     );
-    return ListTile(
-      contentPadding: const EdgeInsetsDirectional.symmetric(
-        horizontal: AppSpacing.s16,
-      ),
+    return JameiaListRow(
       // No coupon glyph in wm_c_iconfont — its 0xe014 is the WORD 賞 — so this
       // is the same Material ticket the Mine menu and the coupon notification
       // already use.
-      leading: const Icon(
-        Icons.confirmation_number_outlined,
-        size: AppSize.s22,
-        color: AppColors.primary,
+      leading: ChangeBump(
+        key: _ticket,
+        value: coupon?.code,
+        child: Icon(
+          coupon == null
+              ? Icons.confirmation_number_outlined
+              : Icons.confirmation_number_rounded,
+          size: AppSize.s24,
+          color: coupon == null ? AppColors.primaryText : AppColors.brandDeep,
+        ),
       ),
-      title: Text(
-        coupon == null
-            ? 'cart.coupon_add'.tr()
-            : 'cart.coupon_applied'.tr(namedArgs: {'code': coupon.code}),
-        style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText),
-      ),
-      subtitle: coupon == null
+      title: coupon == null
+          ? 'cart.coupon_add'.tr()
+          : 'cart.coupon_applied'.tr(namedArgs: {'code': coupon.code}),
+      subtitleWidget: coupon == null
           ? null
-          : Text(
-              '- ${Formatters.price(coupon.discountKd)}',
-              style: AppTextStyles.captionLarge.copyWith(
-                color: AppColors.success,
-              ),
+          : CartDiscountAmount(
+              kd: coupon.discountKd,
+              style: AppTextStyles.meta,
             ),
       trailing: coupon == null
-          ? const Icon(Icons.chevron_right, color: AppColors.tertiaryText)
+          ? null
           : IconButton(
               tooltip: 'cart.coupon_remove'.tr(),
               onPressed: busy
                   ? null
-                  : () => context.read<CartCubit>().removeCoupon(),
-              icon: const Icon(Icons.close, size: AppSize.s20),
+                  : () {
+                      Haptics.selection();
+                      context.read<CartCubit>().removeCoupon();
+                    },
+              icon: const Icon(Icons.close_rounded, size: AppSize.s20),
             ),
+      showChevron: coupon == null,
+      mergeSemantics: coupon == null,
       onTap: coupon == null && !busy ? () => _open(context) : null,
     );
   }

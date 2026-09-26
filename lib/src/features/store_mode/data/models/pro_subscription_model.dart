@@ -31,8 +31,9 @@ class ProSubscriptionModel {
   factory ProSubscriptionModel.fromJson(Map<String, dynamic> json) {
     final id =
         JsonRead.string(json[mongoIdKey]) ?? JsonRead.string(json[idKey]);
-    if (id == null)
+    if (id == null) {
       throw const ParsingException('pro subscription: id missing');
+    }
     return ProSubscriptionModel(
       id: id,
       planId: JsonRead.string(json[planIdKey]) ?? '',

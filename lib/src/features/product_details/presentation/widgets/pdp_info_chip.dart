@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 
-/// Small tinted chip under the gallery: unit of sale, stock status, product
-/// type.
+/// Small tinted chip among the notes under the description ("Pro price").
 class PdpInfoChip extends StatelessWidget {
   const PdpInfoChip({
     super.key,

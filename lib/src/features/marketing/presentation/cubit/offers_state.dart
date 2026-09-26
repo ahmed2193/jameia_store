@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';
-import '../../domain/entities/offer_entity.dart';
+import '../../../../core/domain/entities/offer_entity.dart';
 
 enum OffersStatus { initial, loading, loaded, error }
 

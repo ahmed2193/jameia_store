@@ -19,10 +19,25 @@ import 'home_themed_block.dart';
 /// Renders one backend block of the home feed and wires its taps to the
 /// router. The exhaustive `switch` on the sealed [HomeSectionEntity] means a
 /// new block type cannot be forgotten here.
+///
+/// A block that opens a collection page hands it the hero dress it
+/// advertised: a strip's line and countdown, and a fire after the heading
+/// when the block is a sale or deals.
 class HomeSectionView extends StatelessWidget {
   const HomeSectionView({super.key, required this.section});
 
   final HomeSectionEntity section;
+
+  /// After the heading of a collection page opened from a sale / deals block.
+  static const String _saleEmoji = '🔥';
+
+  /// The hero emoji of a list opened from a block themed [theme].
+  static String? _heroEmojiOf(HomeSectionTheme theme) => switch (theme) {
+    HomeSectionTheme.sale || HomeSectionTheme.deals => _saleEmoji,
+    HomeSectionTheme.standard ||
+    HomeSectionTheme.featured ||
+    HomeSectionTheme.store => null,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -39,26 +54,30 @@ class HomeSectionView extends StatelessWidget {
           extra: ProductListingArgs.collection(
             slug: section.collectionSlug,
             title: section.title,
+            emoji: _heroEmojiOf(section.theme),
           ),
         ),
       ),
+      // The strip links to the collection the rail previews, so its arrow is
+      // the rail's "view all" too: the listing takes the rail's short title.
+      // The fire follows the strip's theme, or the block's when the rail
+      // itself is the sale.
       HomeThemedBlockSection() => HomeThemedBlock(
         section: section,
         onOpenStrip: () => HomeLinkOpener.open(
           context,
           section.strip.link,
-          title: section.strip.headline,
+          title: section.rail.hasTitle
+              ? section.rail.title
+              : section.strip.headline,
+          subtitle: section.strip.subtitle,
+          endsAt: section.strip.endsAt,
+          emoji:
+              _heroEmojiOf(section.strip.theme) ?? _heroEmojiOf(section.theme),
         ),
         onOpenProduct: (product) => context.push(
           Routes.productDetail,
           extra: ProductDetailArgs.of(product),
-        ),
-        onViewAll: () => context.push(
-          Routes.productListing,
-          extra: ProductListingArgs.collection(
-            slug: section.rail.collectionSlug,
-            title: section.rail.title,
-          ),
         ),
       ),
       HomeCategoryRailSection() => HomeCategoryGrid(
@@ -92,6 +111,9 @@ class HomeSectionView extends StatelessWidget {
           context,
           section.link,
           title: section.hasTitle ? section.title : section.headline,
+          subtitle: section.subtitle,
+          endsAt: section.endsAt,
+          emoji: _heroEmojiOf(section.theme),
         ),
       ),
       HomeBannerSection() => HomeBannerBlock(

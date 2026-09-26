@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart' show kTouchSlop;
 
 import 'haptics.dart';
 import 'motion.dart';
@@ -42,6 +43,10 @@ class PressScale extends StatefulWidget {
 class _PressScaleState extends State<PressScale> {
   bool _down = false;
 
+  /// Where the passive press started: a finger that travels past the touch
+  /// slop is scrolling, not pressing, so the press lets go.
+  Offset? _downAt;
+
   void _set(bool v) {
     if (!widget.enabled) return;
     if (_down != v) setState(() => _down = v);
@@ -70,7 +75,17 @@ class _PressScaleState extends State<PressScale> {
     // the child's tap.
     if (widget.onTap == null && widget.onLongPress == null) {
       return Listener(
-        onPointerDown: (_) => _set(true),
+        onPointerDown: (event) {
+          _downAt = event.position;
+          _set(true);
+        },
+        onPointerMove: (event) {
+          final start = _downAt;
+          if (start != null && (event.position - start).distance > kTouchSlop) {
+            _downAt = null;
+            _set(false);
+          }
+        },
         onPointerUp: (_) => _set(false),
         onPointerCancel: (_) => _set(false),
         child: animated,

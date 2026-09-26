@@ -1,16 +1,20 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../config/theme/order_status_palette.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
+import '../../../../../core/motion/collapse_reveal.dart';
+import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/utils/formatters.dart';
 import 'tracking_progress_stepper.dart';
 
-/// Status name, when to expect the order (ETA or booked window), the order
-/// number and date, and the progress stepper.
+/// The page's lead: the status name (ink; red when cancelled), when to expect
+/// the order (ETA or booked window), the order number and date, and the
+/// journey stepper. The headline and the when-line fade through when a poll
+/// changes them; the stepper folds away when the order leaves the journey
+/// (cancelled). Reads no provider — a pure function of [order].
 class TrackingStatusHeader extends StatelessWidget {
   const TrackingStatusHeader({super.key, required this.order});
 
@@ -44,42 +48,73 @@ class TrackingStatusHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final when = _when(context.locale.languageCode);
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.all(AppSpacing.s16),
+    final languageCode = context.locale.languageCode;
+    final when = _when(languageCode);
+    final status = order.status.labelKey.tr();
+    final step = order.progressStep;
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.gutter,
+        AppSpacing.s16,
+        AppSpacing.gutter,
+        0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            order.status.labelKey.tr(),
-            style: AppTextStyles.headingLarge.copyWith(
-              color: OrderStatusPalette.foreground(order.status),
-              fontWeight: AppTextStyles.bold,
-            ),
-          ),
-          if (when != null) ...[
-            const SizedBox(height: AppSpacing.s4),
-            Text(
-              when,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.primaryText,
+          // One announcement per status change: the switcher keeps the
+          // outgoing headline's semantics while it fades, so the live region
+          // reads the label and the switcher is excluded.
+          Semantics(
+            header: true,
+            liveRegion: true,
+            label: status,
+            child: ExcludeSemantics(
+              child: FadeThroughSwitcher(
+                stateKey: order.status,
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  status,
+                  style: AppTextStyles.sectionTitle.copyWith(
+                    color: OrderStatusPalette.headline(order.status),
+                  ),
+                ),
               ),
             ),
-          ],
+          ),
+          CollapseReveal(
+            visible: when != null,
+            child: when == null
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      top: AppSpacing.s4,
+                    ),
+                    child: FadeThroughSwitcher(
+                      stateKey: when,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(when, style: AppTextStyles.itemTitleStrong),
+                    ),
+                  ),
+          ),
           const SizedBox(height: AppSpacing.s4),
           Text(
             '${'orders.order_no'.tr(namedArgs: {'number': Formatters.isolate(order.orderNumber)})}'
-            ' · ${Formatters.dateTime(context.locale.languageCode, order.createdAt)}',
-            style: AppTextStyles.captionLarge.copyWith(
-              color: AppColors.secondaryText,
-            ),
+            ' · ${Formatters.dateTime(languageCode, order.createdAt)}',
+            style: AppTextStyles.meta,
           ),
-          if (order.progressStep != null) ...[
-            const SizedBox(height: AppSpacing.s16),
-            TrackingProgressStepper(step: order.progressStep!),
-          ],
+          CollapseReveal(
+            visible: step != null,
+            child: step == null
+                ? const SizedBox.shrink()
+                : Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      top: AppSpacing.s16,
+                    ),
+                    child: TrackingProgressStepper(step: step),
+                  ),
+          ),
         ],
       ),
     );

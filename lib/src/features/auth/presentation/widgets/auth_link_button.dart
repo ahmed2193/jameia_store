@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_text_styles.dart';
 
-/// Inline text link (no padding, no min size) in the brand link color.
+/// Inline text link in the brand link color: no visual padding, so it lines
+/// up with the text around it, but a padded (48 dp) touch target.
 class AuthLinkButton extends StatelessWidget {
   const AuthLinkButton({
     super.key,
@@ -25,7 +26,7 @@ class AuthLinkButton extends StatelessWidget {
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
         minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        tapTargetSize: MaterialTapTargetSize.padded,
       ),
       child: Text(
         label,

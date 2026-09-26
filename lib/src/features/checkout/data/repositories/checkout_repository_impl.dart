@@ -7,7 +7,7 @@ import '../../../../core/error/failures.dart';
 import '../../domain/entities/branch_entity.dart';
 import '../../domain/entities/checkout_draft.dart';
 import '../../domain/entities/delivery_selection_entity.dart';
-import '../../domain/entities/delivery_slot_entity.dart';
+import '../../../../core/domain/entities/delivery_slot_entity.dart';
 import '../../domain/repositories/checkout_repository.dart';
 import '../datasources/checkout_remote_data_source.dart';
 import '../datasources/delivery_remote_data_source.dart';

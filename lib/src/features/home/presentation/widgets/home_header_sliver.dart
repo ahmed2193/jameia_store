@@ -10,20 +10,24 @@ import '../../../../core/utils/address_display.dart';
 import '../../../../core/utils/failure_message.dart';
 import '../../../address/presentation/cubit/address_book_cubit.dart';
 import '../../../address/presentation/cubit/address_book_state.dart';
+import '../../../assistant/presentation/cubit/assistant_availability_cubit.dart';
 import '../../../notifications/presentation/cubit/unread_notifications_cubit.dart';
 import '../../../notifications/presentation/cubit/unread_notifications_state.dart';
+import '../../domain/entities/home_bootstrap.dart';
 import 'home_hero_delegate.dart';
 
-/// The home hero header. Its delivery pill always shows the customer's
-/// default saved address, live from the app-global address book; without one
-/// (a guest, an empty book) it falls back to the store's delivery area, then
-/// to a prompt. Tapping the pill opens the saved addresses, and the one the
-/// customer picks becomes the default.
+/// The home header. The store row comes from the launch snapshot (name, Pro
+/// programme, the zone's delivery time). The delivery line always shows the
+/// customer's default saved address, live from the app-global address book;
+/// without one (a guest, an empty book) it falls back to the store's
+/// delivery area, then to a prompt. Tapping it opens the saved addresses, and
+/// the one the customer picks becomes the default. The assistant disc shows
+/// while the store runs the assistant.
 class HomeHeaderSliver extends StatelessWidget {
-  const HomeHeaderSliver({super.key, required this.fallbackPlace});
+  const HomeHeaderSliver({super.key, required this.bootstrap});
 
-  /// The delivery area the store knows (`GET /v1/init`); empty when unknown.
-  final String fallbackPlace;
+  /// The launch snapshot (`GET /v1/init`); empty until it lands.
+  final HomeBootstrap bootstrap;
 
   Future<void> _pickAddress(BuildContext context) async {
     final addressBook = context.read<AddressBookCubit>();
@@ -37,6 +41,11 @@ class HomeHeaderSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final delivery = bootstrap.delivery;
+    final fallbackPlace = delivery?.placeName ?? '';
+    final showAssistant = context.select<AssistantAvailabilityCubit, bool>(
+      (availability) => availability.state.isAvailable,
+    );
     // Rebuilds only when the default address or the unread badge changes.
     return BlocSelector<
       AddressBookCubit,
@@ -54,16 +63,25 @@ class HomeHeaderSliver extends StatelessWidget {
             builder: (context, hasUnread) => SliverPersistentHeader(
               pinned: true,
               delegate: HomeHeroDelegate(
+                storeName: bootstrap.storeName.isNotEmpty
+                    ? bootstrap.storeName
+                    : 'home.jameia'.tr(),
+                isPro: bootstrap.pro.enabled,
+                etaMinutes: delivery?.etaMinutes ?? 0,
                 placeLabel:
                     defaultAddress?.shortPlace ??
                     (fallbackPlace.isNotEmpty
                         ? fallbackPlace
                         : 'home.choose_delivery_area'.tr()),
                 topPad: MediaQuery.paddingOf(context).top,
+                textScaler: MediaQuery.textScalerOf(context),
                 onAddressTap: () => _pickAddress(context),
                 onSearch: () => context.push(Routes.search),
                 onNotifications: () => context.push(Routes.notifications),
                 hasUnreadNotifications: hasUnread,
+                onAssistant: showAssistant
+                    ? () => context.push(Routes.assistant)
+                    : null,
               ),
             ),
           ),

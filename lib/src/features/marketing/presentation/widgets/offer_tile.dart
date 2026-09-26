@@ -1,125 +1,82 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/responsive/app_size.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../domain/entities/offer_entity.dart';
+import '../../../../core/domain/entities/offer_entity.dart';
+import '../../../../core/widgets/countdown_chip.dart';
+import 'offer_card_shell.dart';
+import 'offer_reward_chip.dart';
+import 'offer_reward_disc.dart';
+import 'offer_terms.dart';
+import 'offer_title.dart';
 
-/// One automatic cart promotion: what you get (icon + headline built from the
-/// backend's reward), the backend's own name / description, and the condition
-/// ("on orders over KD 5.000").
+/// One automatic cart promotion as a flat talabat card: a tinted disc for
+/// the kind of reward, the backend's name and description, the reward in a
+/// lime chip, a running clock when the offer ends within
+/// [countdownWindow], and the small print ([OfferTerms]).
 class OfferTile extends StatelessWidget {
-  const OfferTile({super.key, required this.offer});
+  const OfferTile({super.key, required this.offer, this.clock = DateTime.now});
 
   final OfferEntity offer;
 
+  /// What time it is; a test sets it.
+  final DateTime Function() clock;
+
+  /// An offer ending sooner than this counts down; a later end date reads
+  /// as a day in the small print.
+  static const Duration countdownWindow = Duration(days: 1);
+  static const int _descriptionLines = 2;
+
   @override
   Widget build(BuildContext context) {
-    final (icon, reward) = switch (offer.rewardType) {
-      OfferRewardType.freeDelivery => (
-        Icons.local_shipping_outlined,
-        'offers.reward_free_delivery'.tr(),
-      ),
-      OfferRewardType.percentageDiscount => (
-        Icons.percent_rounded,
-        'offers.reward_percent'.tr(namedArgs: {'percent': '${offer.percent}'}),
-      ),
-      OfferRewardType.fixedDiscount => (
-        Icons.sell_outlined,
-        'offers.reward_fixed'.tr(
-          namedArgs: {'amount': Formatters.price(offer.amountKd)},
-        ),
-      ),
-      OfferRewardType.freeProduct => (
-        Icons.card_giftcard_rounded,
-        'offers.reward_free_product'.tr(
-          namedArgs: {'count': '${offer.freeQuantity}'},
-        ),
-      ),
-      OfferRewardType.other => (Icons.local_offer_outlined, offer.name),
-    };
-    final condition = switch (offer.triggerType) {
-      OfferTriggerType.cartSubtotal => 'offers.when_subtotal'.tr(
-        namedArgs: {'amount': Formatters.price(offer.minSubtotalKd)},
-      ),
-      OfferTriggerType.itemQuantity || OfferTriggerType.categoryQuantity =>
-        'offers.when_quantity'.tr(namedArgs: {'count': '${offer.minQuantity}'}),
-      OfferTriggerType.other => '',
-    };
-    final cap = offer.maxDiscountKd;
-    return Container(
-      margin: const EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.s12,
-        0,
-        AppSpacing.s12,
-        AppSpacing.s8,
-      ),
-      padding: const EdgeInsets.all(AppSpacing.s14),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: AppSize.s44,
-            height: AppSize.s44,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.finalPriceBg,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: AppSize.s22, color: AppColors.finalPrice),
-          ),
-          const SizedBox(width: AppSpacing.s12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  reward,
-                  style: AppTextStyles.headingSmall.copyWith(
-                    fontWeight: AppTextStyles.bold,
-                  ),
+    final endsAt = offer.endsAt;
+    final left = endsAt?.difference(clock());
+    final countsDown =
+        left != null && left > Duration.zero && left <= countdownWindow;
+    final hasReward = offer.rewardType != OfferRewardType.other;
+    return Semantics(
+      container: true,
+      child: OfferCardShell(
+        leading: OfferRewardDisc(type: offer.rewardType),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            OfferTitle(offer: offer),
+            if (offer.description.isNotEmpty) ...[
+              const SizedBox(height: AppSpacing.s4),
+              Text(
+                offer.description,
+                maxLines: _descriptionLines,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.secondaryText,
                 ),
-                if (condition.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.s2),
-                  Text(
-                    condition,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.primaryDark,
-                      fontWeight: AppTextStyles.medium,
+              ),
+            ],
+            if (hasReward || countsDown) ...[
+              const SizedBox(height: AppSpacing.s12),
+              Wrap(
+                spacing: AppSpacing.s8,
+                runSpacing: AppSpacing.s8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (hasReward) OfferRewardChip(offer: offer),
+                  if (countsDown)
+                    // The chip's clock cannot wrap: on a narrow card or a
+                    // large text size it shrinks instead of overflowing.
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: CountdownChip(endsAt: endsAt!, clock: clock),
                     ),
-                  ),
                 ],
-                if (offer.description.isNotEmpty) ...[
-                  const SizedBox(height: AppSpacing.s4),
-                  Text(
-                    offer.description,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.secondaryText,
-                    ),
-                  ),
-                ],
-                if (cap != null) ...[
-                  const SizedBox(height: AppSpacing.s4),
-                  Text(
-                    'offers.max_discount'.tr(
-                      namedArgs: {'amount': Formatters.price(cap)},
-                    ),
-                    style: AppTextStyles.captionLarge.copyWith(
-                      color: AppColors.tertiaryText,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
+              ),
+            ],
+            OfferTerms(offer: offer, showsEndDate: !countsDown),
+          ],
+        ),
       ),
     );
   }

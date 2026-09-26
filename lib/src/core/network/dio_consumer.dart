@@ -4,6 +4,7 @@ import 'api_base_options.dart';
 import 'api_consumer.dart';
 import 'api_envelope.dart';
 import 'api_exception_mapper.dart';
+import 'api_payload.dart';
 
 /// The ONE and only Dio wrapper for request/response calls. In the app the
 /// shared [Dio] arrives fully configured from `service_locator.dart` (the SSE
@@ -14,7 +15,9 @@ import 'api_exception_mapper.dart';
 ///     `{ success, statusCode, statusMessage, results, error }` wrapper;
 ///   * translates every `DioException` (and a 2xx with `success: false`) into
 ///     a typed `AppException` through [ApiExceptionMapper], so no Dio type
-///     leaks above this boundary.
+///     leaks above this boundary;
+///   * sends [ApiPayload.emptyBody] (`{}`) when a POST / PUT / PATCH / DELETE
+///     has no body — the backend rejects a JSON content type with none.
 ///
 /// Interceptor order matters and is fixed in `config/di/service_locator.dart`:
 /// auth (Bearer + 401 refresh) → app headers → 429 retry → debug log.
@@ -48,7 +51,7 @@ class DioConsumer implements ApiConsumer {
   }) => _request(
     () => _dio.post<dynamic>(
       path,
-      data: body,
+      data: body ?? ApiPayload.emptyBody,
       queryParameters: queryParameters,
       options: Options(headers: headers),
     ),
@@ -63,7 +66,7 @@ class DioConsumer implements ApiConsumer {
   }) => _request(
     () => _dio.put<dynamic>(
       path,
-      data: body,
+      data: body ?? ApiPayload.emptyBody,
       queryParameters: queryParameters,
       options: Options(headers: headers),
     ),
@@ -78,7 +81,7 @@ class DioConsumer implements ApiConsumer {
   }) => _request(
     () => _dio.patch<dynamic>(
       path,
-      data: body,
+      data: body ?? ApiPayload.emptyBody,
       queryParameters: queryParameters,
       options: Options(headers: headers),
     ),
@@ -93,7 +96,7 @@ class DioConsumer implements ApiConsumer {
   }) => _request(
     () => _dio.delete<dynamic>(
       path,
-      data: body,
+      data: body ?? ApiPayload.emptyBody,
       queryParameters: queryParameters,
       options: Options(headers: headers),
     ),

@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
-import '../entities/delivery_slot_entity.dart';
+import '../../../../core/domain/entities/delivery_slot_entity.dart';
 import '../repositories/checkout_repository.dart';
 
 /// Days that still have a bookable window.

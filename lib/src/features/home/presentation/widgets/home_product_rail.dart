@@ -4,16 +4,18 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../domain/entities/home_section_entity.dart';
 import 'home_accent_palette.dart';
+import 'home_layout.dart';
 import 'home_product_strip.dart';
 import 'home_product_tile.dart';
+import 'home_reveal_item.dart';
 import 'home_section_block.dart';
 
 /// A product rail of the home feed: a lazily built horizontal strip
 /// ([HomeRailLayout.slider]) or a wrapping grid ([HomeRailLayout.grid]).
-/// "View all" opens the collection behind the rail.
+/// The arrow opens the collection behind the rail.
 ///
-/// A rail the backend themed (`deals` / `sale` / `featured`) becomes a tinted
-/// card inset from the page; a standard rail stays a white band.
+/// A rail the backend themed (`deals` / `sale` / `featured`) runs on a tinted
+/// band; a standard rail stays on the white page.
 class HomeProductRail extends StatelessWidget {
   const HomeProductRail({
     super.key,
@@ -28,22 +30,18 @@ class HomeProductRail extends StatelessWidget {
 
   static const int _gridColumns = 2;
 
-  /// Gutter inside a themed block, which is already inset from the page.
-  static const double _insetGutter = AppSpacing.s10;
-
   @override
   Widget build(BuildContext context) {
     final products = section.products;
-    final isThemed = section.theme != HomeSectionTheme.standard;
-    final gutter = isThemed ? _insetGutter : AppSpacing.pageMargin;
     return HomeSectionBlock(
       section: section,
       onSeeAll: section.hasViewAll ? onViewAll : null,
       fill: HomeAccentPalette.blockFill(section.theme),
-      inset: isThemed,
       child: section.layout == HomeRailLayout.grid
           ? Padding(
-              padding: EdgeInsetsDirectional.symmetric(horizontal: gutter),
+              padding: const EdgeInsetsDirectional.symmetric(
+                horizontal: HomeLayout.gutter,
+              ),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final width =
@@ -54,23 +52,25 @@ class HomeProductRail extends StatelessWidget {
                     spacing: AppSpacing.s8,
                     runSpacing: AppSpacing.s12,
                     children: [
-                      for (final product in products)
-                        HomeProductTile(
+                      for (final (index, product) in products.indexed)
+                        HomeRevealItem(
                           key: ValueKey<String>(product.id),
-                          product: product,
-                          width: width,
-                          onOpen: onOpenProduct,
+                          index: index,
+                          axis: Axis.vertical,
+                          child: HomeProductTile(
+                            product: product,
+                            width: width,
+                            onOpen: onOpenProduct,
+                            // Names of a row line up, tagged or not.
+                            alignsTagLine: true,
+                          ),
                         ),
                     ],
                   );
                 },
               ),
             )
-          : HomeProductStrip(
-              products: products,
-              onOpenProduct: onOpenProduct,
-              gutter: gutter,
-            ),
+          : HomeProductStrip(products: products, onOpenProduct: onOpenProduct),
     );
   }
 }

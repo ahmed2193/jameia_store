@@ -7,7 +7,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../domain/entities/product_reviews.dart';
 import 'pdp_rating_stars.dart';
 
-/// One customer review: stars, who and when, title and text.
+/// One customer review, flat: who and when, the stars, the title and text.
 class PdpReviewTile extends StatelessWidget {
   const PdpReviewTile({super.key, required this.review});
 
@@ -18,38 +18,41 @@ class PdpReviewTile extends StatelessWidget {
     final date = DateFormat.yMMMd(context.locale.languageCode)
         .format(review.createdAt.toLocal());
     return Padding(
-      padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
+      padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              PdpRatingStars(rating: review.rating),
-              const SizedBox(width: AppSpacing.s8),
               Expanded(
                 child: Text(
                   review.customerName,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.captionLarge.copyWith(
-                    fontWeight: AppTextStyles.medium,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: AppColors.primaryText,
+                    fontWeight: AppTextStyles.bold,
                   ),
                 ),
               ),
+              const SizedBox(width: AppSpacing.s8),
               Text(
                 date,
                 style: AppTextStyles.captionLarge.copyWith(
-                  color: AppColors.tertiaryText,
+                  color: AppColors.secondaryText,
                 ),
               ),
             ],
           ),
+          const SizedBox(height: AppSpacing.s4),
+          PdpRatingStars(rating: review.rating),
           if (review.title.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.s4),
+            const SizedBox(height: AppSpacing.s6),
             Text(
               review.title,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: AppTextStyles.bold,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.primaryText,
+                fontWeight: AppTextStyles.medium,
               ),
             ),
           ],
@@ -57,7 +60,7 @@ class PdpReviewTile extends StatelessWidget {
             const SizedBox(height: AppSpacing.s2),
             Text(
               review.body,
-              style: AppTextStyles.bodyMedium.copyWith(
+              style: AppTextStyles.bodyLarge.copyWith(
                 color: AppColors.secondaryText,
               ),
             ),

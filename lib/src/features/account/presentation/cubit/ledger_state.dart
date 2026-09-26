@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/ledger.dart';
+import '../../domain/entities/ledger_change.dart';
 import '../../domain/entities/ledger_entry.dart';
 
 enum LedgerStatus { initial, loading, loaded, error }
@@ -16,6 +17,8 @@ class LedgerState<T extends LedgerEntry> extends Equatable {
     Ledger<T>? ledger,
     this.isLoadingMore = false,
     this.loadMoreFailed = false,
+    this.change = LedgerChange.none,
+    this.changeSerial = 0,
     this.failure,
     this.failedAction,
   }) : ledger = ledger ?? Ledger<T>.empty();
@@ -26,6 +29,15 @@ class LedgerState<T extends LedgerEntry> extends Equatable {
 
   /// The last next-page request failed (the footer offers a retry).
   final bool loadMoreFailed;
+
+  /// What the last pull-to-refresh that moved something changed (balance
+  /// delta, new lines); [LedgerChange.none] until then. Kept until the next
+  /// such refresh — the screen reacts to [changeSerial], not to its value.
+  final LedgerChange change;
+
+  /// Bumped by every refresh that brought a [change]; each bump plays the
+  /// balance delta / new-line highlight once.
+  final int changeSerial;
 
   /// Transient — cleared on every [copyWith]; the page localizes it.
   final Failure? failure;
@@ -44,6 +56,8 @@ class LedgerState<T extends LedgerEntry> extends Equatable {
     Ledger<T>? ledger,
     bool? isLoadingMore,
     bool? loadMoreFailed,
+    LedgerChange? change,
+    int? changeSerial,
     Failure? failure,
     LedgerAction? failedAction,
   }) => LedgerState<T>(
@@ -51,6 +65,8 @@ class LedgerState<T extends LedgerEntry> extends Equatable {
     ledger: ledger ?? this.ledger,
     isLoadingMore: isLoadingMore ?? this.isLoadingMore,
     loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
+    change: change ?? this.change,
+    changeSerial: changeSerial ?? this.changeSerial,
     failure: failure,
     failedAction: failedAction,
   );
@@ -61,6 +77,8 @@ class LedgerState<T extends LedgerEntry> extends Equatable {
     ledger,
     isLoadingMore,
     loadMoreFailed,
+    change,
+    changeSerial,
     failure,
     failedAction,
   ];

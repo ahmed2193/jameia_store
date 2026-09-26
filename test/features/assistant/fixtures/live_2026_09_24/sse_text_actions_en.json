@@ -1,0 +1,188 @@
+[
+ {
+  "ms": 512,
+  "event": "message",
+  "data": "",
+  "comment": ": connected"
+ },
+ {
+  "ms": 513,
+  "event": "message_start",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\"}",
+  "comment": null
+ },
+ {
+  "ms": 514,
+  "event": "user_message",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"message\":{\"_id\":\"6ab511459e3ba2a7a933b066\",\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"role\":\"user\",\"content\":\"Show me fresh milk\",\"blocks\":[],\"feedback\":null,\"createdAt\":\"2026-09-24T12:02:13.722Z\",\"updatedAt\":\"2026-09-24T12:02:13.722Z\"}}",
+  "comment": null
+ },
+ {
+  "ms": 3297,
+  "event": "tool_start",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_y4wn7ha3fLUYzAyd7J3JQQPv\"}",
+  "comment": null
+ },
+ {
+  "ms": 3303,
+  "event": "tool_end",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_y4wn7ha3fLUYzAyd7J3JQQPv\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 3831,
+  "event": "text_delta",
+  "data": "{\"delta\":\"I\"}",
+  "comment": null
+ },
+ {
+  "ms": 3832,
+  "event": "text_delta",
+  "data": "{\"delta\":\" couldn't\"}",
+  "comment": null
+ },
+ {
+  "ms": 3850,
+  "event": "text_delta",
+  "data": "{\"delta\":\" find\"}",
+  "comment": null
+ },
+ {
+  "ms": 3850,
+  "event": "text_delta",
+  "data": "{\"delta\":\" fresh\"}",
+  "comment": null
+ },
+ {
+  "ms": 3859,
+  "event": "text_delta",
+  "data": "{\"delta\":\" milk\"}",
+  "comment": null
+ },
+ {
+  "ms": 3860,
+  "event": "text_delta",
+  "data": "{\"delta\":\" in\"}",
+  "comment": null
+ },
+ {
+  "ms": 3876,
+  "event": "text_delta",
+  "data": "{\"delta\":\" stock\"}",
+  "comment": null
+ },
+ {
+  "ms": 3876,
+  "event": "text_delta",
+  "data": "{\"delta\":\" right\"}",
+  "comment": null
+ },
+ {
+  "ms": 3884,
+  "event": "text_delta",
+  "data": "{\"delta\":\" now\"}",
+  "comment": null
+ },
+ {
+  "ms": 3884,
+  "event": "text_delta",
+  "data": "{\"delta\":\".\"}",
+  "comment": null
+ },
+ {
+  "ms": 3896,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Would\"}",
+  "comment": null
+ },
+ {
+  "ms": 3897,
+  "event": "text_delta",
+  "data": "{\"delta\":\" you\"}",
+  "comment": null
+ },
+ {
+  "ms": 3927,
+  "event": "text_delta",
+  "data": "{\"delta\":\" like\"}",
+  "comment": null
+ },
+ {
+  "ms": 3928,
+  "event": "text_delta",
+  "data": "{\"delta\":\" me\"}",
+  "comment": null
+ },
+ {
+  "ms": 3941,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 3942,
+  "event": "text_delta",
+  "data": "{\"delta\":\" check\"}",
+  "comment": null
+ },
+ {
+  "ms": 3953,
+  "event": "text_delta",
+  "data": "{\"delta\":\" for\"}",
+  "comment": null
+ },
+ {
+  "ms": 3953,
+  "event": "text_delta",
+  "data": "{\"delta\":\" other\"}",
+  "comment": null
+ },
+ {
+  "ms": 3978,
+  "event": "text_delta",
+  "data": "{\"delta\":\" types\"}",
+  "comment": null
+ },
+ {
+  "ms": 3978,
+  "event": "text_delta",
+  "data": "{\"delta\":\" of\"}",
+  "comment": null
+ },
+ {
+  "ms": 3987,
+  "event": "text_delta",
+  "data": "{\"delta\":\" milk\"}",
+  "comment": null
+ },
+ {
+  "ms": 3987,
+  "event": "text_delta",
+  "data": "{\"delta\":\" or\"}",
+  "comment": null
+ },
+ {
+  "ms": 3997,
+  "event": "text_delta",
+  "data": "{\"delta\":\" dairy\"}",
+  "comment": null
+ },
+ {
+  "ms": 3997,
+  "event": "text_delta",
+  "data": "{\"delta\":\" products\"}",
+  "comment": null
+ },
+ {
+  "ms": 4020,
+  "event": "text_delta",
+  "data": "{\"delta\":\"?\"}",
+  "comment": null
+ },
+ {
+  "ms": 4035,
+  "event": "message_end",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"message\":{\"_id\":\"6ab511499e3ba2a7a933b068\",\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"role\":\"assistant\",\"content\":\"I couldn't find fresh milk in stock right now. Would you like me to check for other types of milk or dairy products?\",\"blocks\":[{\"kind\":\"text\",\"text\":\"I couldn't find fresh milk in stock right now. Would you like me to check for other types of milk or dairy products?\"},{\"kind\":\"actions\",\"suggestions\":[{\"label\":\"Show the best deals\",\"prompt\":\"Show me the most discounted products on sale\"},{\"label\":\"Sort by cheapest\",\"prompt\":\"Show me the cheapest products\"}]}],\"feedback\":null,\"createdAt\":\"2026-09-24T12:02:13.722Z\",\"updatedAt\":\"2026-09-24T12:02:13.722Z\"}}",
+  "comment": null
+ }
+]

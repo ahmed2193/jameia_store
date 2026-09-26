@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/navigation/navigation.dart';
 import '../../../features/account/presentation/pages/loyalty_page.dart';
+import '../../../features/account/presentation/pages/loyalty_rewards_page.dart';
 import '../../../features/account/presentation/pages/mine_about_page.dart';
 import '../../../features/account/presentation/pages/mine_delivery_code_page.dart';
 import '../../../features/account/presentation/pages/mine_settings_page.dart';
@@ -57,6 +58,14 @@ final List<RouteBase> accountRoutes = <RouteBase>[
       key: state.pageKey,
       name: state.uri.path,
       child: const LoyaltyPage(),
+    ),
+  ),
+  GoRoute(
+    path: Routes.loyaltyRewards,
+    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+      key: state.pageKey,
+      name: state.uri.path,
+      child: const LoyaltyRewardsPage(),
     ),
   ),
 ];

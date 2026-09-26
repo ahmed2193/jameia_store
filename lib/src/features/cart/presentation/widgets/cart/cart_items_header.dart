@@ -2,15 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
-import '../../../../../core/responsive/app_size.dart';
+import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/haptics.dart';
+import '../../../../../core/widgets/jameia_section_header.dart';
+import '../../../../../core/widgets/jameia_text_link.dart';
 import '../../cubit/cart_cubit.dart';
 import 'cart_clear_dialog.dart';
 
-/// "3 items · Clear cart" over the lines. The Cart tab has no app bar of its
-/// own (the tab's switch sits there), so this row carries the clear action.
+/// "3 items · Clear cart" over the lines — the page's lead heading, in both
+/// hosts (the Cart tab has no bar; the pushed page's bar has no actions).
+/// The link stays in place but greys out while nothing can be cleared.
 class CartItemsHeader extends StatelessWidget {
   const CartItemsHeader({super.key});
 
@@ -22,26 +23,24 @@ class CartItemsHeader extends StatelessWidget {
         cubit.state.cart.lines.isNotEmpty && !cubit.state.isBusy,
       ),
     );
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            'cart.items_count'.tr(namedArgs: {'count': '$count'}),
-            style: AppTextStyles.headingMedium.copyWith(
-              color: AppColors.primaryText,
-              fontWeight: AppTextStyles.bold,
-            ),
-          ),
-        ),
-        TextButton.icon(
-          onPressed: canClear
-              ? () => CartClearDialog.confirmAndClear(context)
-              : null,
-          style: TextButton.styleFrom(foregroundColor: AppColors.error),
-          icon: const Icon(JameiaIcons.delete, size: AppSize.s18),
-          label: Text('cart.clear'.tr()),
-        ),
-      ],
+    return JameiaSectionHeader(
+      title: 'cart.items_count'.tr(namedArgs: {'count': '$count'}),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.gutter,
+        AppSpacing.s16,
+        AppSpacing.gutter,
+        AppSpacing.s8,
+      ),
+      trailing: JameiaTextLink(
+        label: 'cart.clear'.tr(),
+        navigates: false,
+        onTap: canClear
+            ? () {
+                Haptics.selection();
+                CartClearDialog.confirmAndClear(context);
+              }
+            : null,
+      ),
     );
   }
 }

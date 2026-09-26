@@ -32,12 +32,20 @@ class OtpCubit extends Cubit<OtpState> with SafeCubitMixin<OtpState> {
   Timer? _countdown;
 
   /// Accepts typed or pasted input; the rules live in [OtpChallenge].
-  void codeChanged(String raw) => safeEmit(
-    state.copyWith(
-      code: OtpChallenge.normalizeCode(raw),
-      status: OtpStatus.idle,
-    ),
-  );
+  /// Ignored while the code is being checked or was accepted, and a caret
+  /// move (same digits) is not an edit — a refused code stays refused.
+  void codeChanged(String raw) {
+    if (state.isLocked) return;
+    final code = OtpChallenge.normalizeCode(raw);
+    if (code == state.code) return;
+    safeEmit(
+      state.copyWith(
+        code: code,
+        status: OtpStatus.idle,
+        clearCodeFailure: true,
+      ),
+    );
+  }
 
   Future<void> verify() async {
     if (!state.canVerify) return;
@@ -46,8 +54,17 @@ class OtpCubit extends Cubit<OtpState> with SafeCubitMixin<OtpState> {
       VerifyOtpParams(phone: state.phone, code: state.code),
     );
     result.fold(
-      (failure) =>
-          safeEmit(state.copyWith(status: OtpStatus.error, failure: failure)),
+      (failure) {
+        final refused = OtpChallenge.isRefusedCode(failure);
+        safeEmit(
+          state.copyWith(
+            status: OtpStatus.error,
+            failure: failure,
+            codeFailure: refused ? failure : null,
+            rejections: refused ? state.rejections + 1 : null,
+          ),
+        );
+      },
       (customer) => safeEmit(
         state.copyWith(status: OtpStatus.verified, customer: customer),
       ),
@@ -56,7 +73,8 @@ class OtpCubit extends Cubit<OtpState> with SafeCubitMixin<OtpState> {
 
   Future<void> resend() async {
     if (!state.canResend) return;
-    safeEmit(state.copyWith(isResending: true));
+    // A new code is on its way: the refusal of the old one no longer applies.
+    safeEmit(state.copyWith(isResending: true, clearCodeFailure: true));
     final result = await _sendOtp(SendOtpParams(phone: state.phone));
     result.fold(
       (failure) => safeEmit(

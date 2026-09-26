@@ -1,0 +1,266 @@
+[
+ {
+  "ms": 602,
+  "event": "message",
+  "data": "",
+  "comment": ": connected"
+ },
+ {
+  "ms": 602,
+  "event": "message_start",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\"}",
+  "comment": null
+ },
+ {
+  "ms": 603,
+  "event": "user_message",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"message\":{\"_id\":\"6ab5115d9e3ba2a7a933b069\",\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"role\":\"user\",\"content\":\"Show me butter and eggs\",\"blocks\":[],\"feedback\":null,\"createdAt\":\"2026-09-24T12:02:37.188Z\",\"updatedAt\":\"2026-09-24T12:02:37.188Z\"}}",
+  "comment": null
+ },
+ {
+  "ms": 2294,
+  "event": "tool_start",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_nOm9saImNs6rmW9X5jaO8L0C\"}",
+  "comment": null
+ },
+ {
+  "ms": 2296,
+  "event": "tool_end",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_nOm9saImNs6rmW9X5jaO8L0C\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 2298,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"products\",\"products\":[{\"_id\":\"6aa6010d06da786e3f5658f8\",\"name\":\"Lurpak Butter 200g\",\"slug\":\"lurpak-butter-200g\",\"type\":\"standard\",\"price\":899,\"proPrice\":null,\"compareAt\":1050,\"image\":\"https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop\",\"stock\":19,\"tags\":[\"fresh\",\"best-seller\"],\"unitOfSale\":\"piece\",\"ratingAverage\":3,\"ratingCount\":2}]}}",
+  "comment": null
+ },
+ {
+  "ms": 2299,
+  "event": "tool_start",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_IBqdjcxygtBJAXveqAxCIhsY\"}",
+  "comment": null
+ },
+ {
+  "ms": 2301,
+  "event": "tool_end",
+  "data": "{\"name\":\"search_products\",\"callId\":\"call_IBqdjcxygtBJAXveqAxCIhsY\",\"ok\":true}",
+  "comment": null
+ },
+ {
+  "ms": 2305,
+  "event": "block",
+  "data": "{\"block\":{\"kind\":\"products\",\"products\":[{\"_id\":\"6aa601198a2745ca86163638\",\"name\":\"Fresh Eggs (30)\",\"slug\":\"fresh-eggs-30\",\"type\":\"standard\",\"price\":2250,\"proPrice\":null,\"compareAt\":2813,\"image\":\"https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&h=600&fit=crop\",\"stock\":57,\"tags\":[\"6aa5ffb85233feadc5c41502\",\"fresh\",\"best-seller\"],\"unitOfSale\":\"pack\",\"ratingAverage\":4,\"ratingCount\":2}]}}",
+  "comment": null
+ },
+ {
+  "ms": 3552,
+  "event": "text_delta",
+  "data": "{\"delta\":\"Here\"}",
+  "comment": null
+ },
+ {
+  "ms": 3552,
+  "event": "text_delta",
+  "data": "{\"delta\":\" are\"}",
+  "comment": null
+ },
+ {
+  "ms": 3580,
+  "event": "text_delta",
+  "data": "{\"delta\":\" the\"}",
+  "comment": null
+ },
+ {
+  "ms": 3581,
+  "event": "text_delta",
+  "data": "{\"delta\":\" options\"}",
+  "comment": null
+ },
+ {
+  "ms": 3606,
+  "event": "text_delta",
+  "data": "{\"delta\":\" available\"}",
+  "comment": null
+ },
+ {
+  "ms": 3607,
+  "event": "text_delta",
+  "data": "{\"delta\":\":\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 3630,
+  "event": "text_delta",
+  "data": "{\"delta\":\"-\"}",
+  "comment": null
+ },
+ {
+  "ms": 3630,
+  "event": "text_delta",
+  "data": "{\"delta\":\" L\"}",
+  "comment": null
+ },
+ {
+  "ms": 3642,
+  "event": "text_delta",
+  "data": "{\"delta\":\"ur\"}",
+  "comment": null
+ },
+ {
+  "ms": 3642,
+  "event": "text_delta",
+  "data": "{\"delta\":\"pak\"}",
+  "comment": null
+ },
+ {
+  "ms": 3659,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Butter\"}",
+  "comment": null
+ },
+ {
+  "ms": 3659,
+  "event": "text_delta",
+  "data": "{\"delta\":\" \"}",
+  "comment": null
+ },
+ {
+  "ms": 3670,
+  "event": "text_delta",
+  "data": "{\"delta\":\"200\"}",
+  "comment": null
+ },
+ {
+  "ms": 3670,
+  "event": "text_delta",
+  "data": "{\"delta\":\"g\"}",
+  "comment": null
+ },
+ {
+  "ms": 3705,
+  "event": "text_delta",
+  "data": "{\"delta\":\"\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 3705,
+  "event": "text_delta",
+  "data": "{\"delta\":\"-\"}",
+  "comment": null
+ },
+ {
+  "ms": 3719,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Fresh\"}",
+  "comment": null
+ },
+ {
+  "ms": 3720,
+  "event": "text_delta",
+  "data": "{\"delta\":\" Eggs\"}",
+  "comment": null
+ },
+ {
+  "ms": 3734,
+  "event": "text_delta",
+  "data": "{\"delta\":\" (\"}",
+  "comment": null
+ },
+ {
+  "ms": 3734,
+  "event": "text_delta",
+  "data": "{\"delta\":\"30\"}",
+  "comment": null
+ },
+ {
+  "ms": 3747,
+  "event": "text_delta",
+  "data": "{\"delta\":\" pack\"}",
+  "comment": null
+ },
+ {
+  "ms": 3747,
+  "event": "text_delta",
+  "data": "{\"delta\":\")\\n\\n\"}",
+  "comment": null
+ },
+ {
+  "ms": 3763,
+  "event": "text_delta",
+  "data": "{\"delta\":\"Would\"}",
+  "comment": null
+ },
+ {
+  "ms": 3763,
+  "event": "text_delta",
+  "data": "{\"delta\":\" you\"}",
+  "comment": null
+ },
+ {
+  "ms": 3781,
+  "event": "text_delta",
+  "data": "{\"delta\":\" like\"}",
+  "comment": null
+ },
+ {
+  "ms": 3781,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 3811,
+  "event": "text_delta",
+  "data": "{\"delta\":\" add\"}",
+  "comment": null
+ },
+ {
+  "ms": 3811,
+  "event": "text_delta",
+  "data": "{\"delta\":\" any\"}",
+  "comment": null
+ },
+ {
+  "ms": 3854,
+  "event": "text_delta",
+  "data": "{\"delta\":\" of\"}",
+  "comment": null
+ },
+ {
+  "ms": 3854,
+  "event": "text_delta",
+  "data": "{\"delta\":\" these\"}",
+  "comment": null
+ },
+ {
+  "ms": 3867,
+  "event": "text_delta",
+  "data": "{\"delta\":\" to\"}",
+  "comment": null
+ },
+ {
+  "ms": 3868,
+  "event": "text_delta",
+  "data": "{\"delta\":\" your\"}",
+  "comment": null
+ },
+ {
+  "ms": 3881,
+  "event": "text_delta",
+  "data": "{\"delta\":\" cart\"}",
+  "comment": null
+ },
+ {
+  "ms": 3881,
+  "event": "text_delta",
+  "data": "{\"delta\":\"?\"}",
+  "comment": null
+ },
+ {
+  "ms": 3945,
+  "event": "message_end",
+  "data": "{\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"message\":{\"_id\":\"6ab511609e3ba2a7a933b06b\",\"conversationId\":\"6ab511459e3ba2a7a933b065\",\"role\":\"assistant\",\"content\":\"Here are the options available:\\n- Lurpak Butter 200g\\n- Fresh Eggs (30 pack)\\n\\nWould you like to add any of these to your cart?\",\"blocks\":[{\"kind\":\"text\",\"text\":\"Here are the options available:\\n- Lurpak Butter 200g\\n- Fresh Eggs (30 pack)\\n\\nWould you like to add any of these to your cart?\"},{\"kind\":\"products\",\"products\":[{\"_id\":\"6aa6010d06da786e3f5658f8\",\"name\":\"Lurpak Butter 200g\",\"slug\":\"lurpak-butter-200g\",\"type\":\"standard\",\"price\":899,\"proPrice\":null,\"compareAt\":1050,\"image\":\"https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=600&fit=crop\",\"stock\":19,\"tags\":[\"fresh\",\"best-seller\"],\"unitOfSale\":\"piece\",\"ratingAverage\":3,\"ratingCount\":2}]},{\"kind\":\"products\",\"products\":[{\"_id\":\"6aa601198a2745ca86163638\",\"name\":\"Fresh Eggs (30)\",\"slug\":\"fresh-eggs-30\",\"type\":\"standard\",\"price\":2250,\"proPrice\":null,\"compareAt\":2813,\"image\":\"https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=600&h=600&fit=crop\",\"stock\":57,\"tags\":[\"6aa5ffb85233feadc5c41502\",\"fresh\",\"best-seller\"],\"unitOfSale\":\"pack\",\"ratingAverage\":4,\"ratingCount\":2}]},{\"kind\":\"actions\",\"suggestions\":[{\"label\":\"Show the best deals\",\"prompt\":\"Show me the most discounted products on sale\"},{\"label\":\"Sort by cheapest\",\"prompt\":\"Show me the cheapest products\"}]}],\"feedback\":null,\"createdAt\":\"2026-09-24T12:02:37.188Z\",\"updatedAt\":\"2026-09-24T12:02:37.188Z\"}}",
+  "comment": null
+ }
+]

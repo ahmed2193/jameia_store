@@ -9,7 +9,7 @@ import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../domain/entities/branch_entity.dart';
 import '../../domain/entities/checkout_draft.dart';
 import '../../domain/entities/delivery_selection_entity.dart';
-import '../../domain/entities/delivery_slot_entity.dart';
+import '../../../../core/domain/entities/delivery_slot_entity.dart';
 import '../../domain/usecases/get_branches_usecase.dart';
 import '../../domain/usecases/get_delivery_slots_usecase.dart';
 import '../../domain/usecases/place_order_usecase.dart';

@@ -12,8 +12,9 @@ import '../../cubit/loyalty_program_cubit.dart';
 import '../../cubit/profile_cubit.dart';
 import '../../cubit/profile_state.dart';
 
-/// "Earn N points when you fill this in" — only while the store runs the
-/// profile bonus and the saved profile is not complete yet.
+/// "Earn N points when you fill this in" — a warm points pill (the Rewards
+/// colours), only while the store runs the profile bonus and the saved
+/// profile is not complete yet.
 class ProfileBonusHint extends StatelessWidget {
   const ProfileBonusHint({super.key});
 
@@ -29,36 +30,42 @@ class ProfileBonusHint extends StatelessWidget {
                   : program.profileBonusFor(customer);
               if (points <= 0) return const SizedBox.shrink();
               return Padding(
-                padding: const EdgeInsetsDirectional.only(top: AppSpacing.s8),
-                child: Container(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AppSpacing.s10,
-                    vertical: AppSpacing.s6,
+                padding: const EdgeInsetsDirectional.only(top: AppSpacing.s10),
+                child: DecoratedBox(
+                  decoration: const BoxDecoration(
+                    color: AppColors.accent3Light,
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(AppRadius.r3),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: AppColors.brandLightBg,
-                    borderRadius: BorderRadius.circular(AppRadius.chip),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.stars_rounded,
-                        size: AppSize.s16,
-                        color: AppColors.primaryDark,
-                      ),
-                      const SizedBox(width: AppSpacing.s6),
-                      Flexible(
-                        child: Text(
-                          'profile.profile_bonus_hint'.tr(
-                            namedArgs: {'pts': '$points'},
-                          ),
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.primaryDark,
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      AppSpacing.s8,
+                      AppSpacing.s6,
+                      AppSpacing.s12,
+                      AppSpacing.s6,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.stars_rounded,
+                          size: AppSize.s18,
+                          color: AppColors.accent3Dark,
+                        ),
+                        const SizedBox(width: AppSpacing.s6),
+                        Flexible(
+                          child: Text(
+                            'profile.profile_bonus_hint'.tr(
+                              namedArgs: {'pts': '$points'},
+                            ),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.voucherBrown,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );

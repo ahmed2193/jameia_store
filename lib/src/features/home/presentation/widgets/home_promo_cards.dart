@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../config/theme/app_spacing.dart';
 import '../../domain/entities/home_link.dart';
 import '../../domain/entities/home_section_entity.dart';
+import 'home_layout.dart';
+import 'home_reveal_item.dart';
 import 'home_promo_card_tile.dart';
 import 'home_section_block.dart';
 
-/// "Shop by occasion": a lazily built horizontal strip of coloured link cards.
+/// "Shop by occasion": a lazily built row of storefront tiles, each a link.
 class HomePromoCards extends StatelessWidget {
   const HomePromoCards({
     super.key,
@@ -25,20 +26,24 @@ class HomePromoCards extends StatelessWidget {
     return HomeSectionBlock(
       section: section,
       child: SizedBox(
-        // The square artwork plus the caption lines under it, which grow
-        // with the reader's text scale.
+        // The square tile plus the title lines under it, which grow with the
+        // reader's text scale.
         height: HomePromoCardTile.cellHeight(context),
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.pageMargin,
+            horizontal: HomeLayout.gutter,
           ),
           itemCount: cards.length,
-          separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s8),
-          itemBuilder: (context, index) => HomePromoCardTile(
+          separatorBuilder: (_, _) => const SizedBox(width: HomeLayout.itemGap),
+          itemBuilder: (context, index) => HomeRevealItem(
             key: ValueKey(cards[index].id),
-            card: cards[index],
-            onTap: () => onOpenLink(cards[index].link, cards[index].title),
+            index: index,
+            child: HomePromoCardTile(
+              card: cards[index],
+              index: index,
+              onTap: () => onOpenLink(cards[index].link, cards[index].title),
+            ),
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/network/api_headers.dart';
 import 'package:jameia_mart/src/core/network/event_stream_client.dart';
+import 'package:jameia_mart/src/core/network/interceptors/rate_limit_retry_interceptor.dart';
 
 import 'network_test_fakes.dart';
 
@@ -382,4 +383,322 @@ void main() {
       }
     });
   });
+
+  group('send (one-shot POST)', () {
+    const path = '/v1/assistant/messages';
+    const body = <String, Object?>{'message': 'hi'};
+    late FakeHttpClientAdapter adapter;
+
+    DioEventStreamClient build(
+      FakeHttpClientAdapter transport, {
+      Duration sendIdleTimeout = DioEventStreamClient.defaultSendIdleTimeout,
+      List<Interceptor> Function(Dio dio)? interceptors,
+    }) {
+      adapter = transport;
+      final dio = Dio()..httpClientAdapter = adapter;
+      if (interceptors != null) dio.interceptors.addAll(interceptors(dio));
+      return DioEventStreamClient(
+        dio,
+        wait: (_) async => fail('send must never wait to reconnect'),
+        sendIdleTimeout: sendIdleTimeout,
+      );
+    }
+
+    ResponseBody frames(String text) => ResponseBody(
+      Stream.value(utf8.encode(text)),
+      200,
+      headers: {
+        Headers.contentTypeHeader: [ApiHeaders.eventStreamMediaType],
+      },
+    );
+
+    test('POSTs the body as a text/event-stream request and completes when '
+        'the server closes', () async {
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => frames(
+            // The live host sends the comment + the first two frames in ONE
+            // chunk.
+            ': connected\n\n'
+            'event: message_start\ndata: {"conversationId":"c1"}\n\n'
+            'event: text_delta\ndata: {"delta":"Hi"}\n\n'
+            'event: message_end\ndata: {"conversationId":"c1"}\n\n',
+          ),
+        ),
+      );
+
+      final events = await client.send(path, data: body).toList();
+
+      expect(events.map((e) => e.event), [
+        'message_start',
+        'text_delta',
+        'message_end',
+      ]);
+      expect(events[1].json, {'delta': 'Hi'});
+      final request = adapter.requests.single;
+      expect(request.method, 'POST');
+      expect(request.path, path);
+      expect(request.data, body);
+      expect(request.responseType, ResponseType.stream);
+      expect(request.receiveTimeout, Duration.zero);
+      expect(
+        request.headers[ApiHeaders.accept],
+        ApiHeaders.eventStreamMediaType,
+      );
+    });
+
+    test('POSTs {} when no body is given', () async {
+      final client = build(FakeHttpClientAdapter((_, _) => frames('')));
+
+      await client.send(path).drain<void>();
+
+      expect(adapter.requests.single.data, <String, dynamic>{});
+    });
+
+    test(
+      'a clean close without frames completes empty — never re-POSTs',
+      () async {
+        final client = build(FakeHttpClientAdapter((_, _) => frames('')));
+
+        await expectLater(client.send(path, data: body), emitsDone);
+        expect(adapter.requests, hasLength(1));
+      },
+    );
+
+    test('a 400 envelope before the stream keeps its backend code', () async {
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => envelope(
+            status: 400,
+            statusMessage: 'VALIDATION_ERROR',
+            errorMessage: 'message is required',
+            errorData: const [
+              {'key': 'message', 'message': 'required'},
+            ],
+          ),
+        ),
+      );
+
+      await expectLater(
+        client.send(path, data: body),
+        emitsInOrder([
+          emitsError(
+            isA<BadRequestException>()
+                .having((e) => e.code, 'code', 'VALIDATION_ERROR')
+                .having((e) => e.message, 'message', 'message is required')
+                .having((e) => e.details, 'details', hasLength(1)),
+          ),
+          emitsDone,
+        ]),
+      );
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('a 401 envelope → UnauthorizedException with its code', () async {
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => envelope(
+            status: 401,
+            statusMessage: 'AUTHENTICATION_REQUIRED',
+            errorMessage: 'Sign in',
+          ),
+        ),
+      );
+
+      await expectLater(
+        client.send(path, data: body),
+        emitsError(
+          isA<UnauthorizedException>().having(
+            (e) => e.code,
+            'code',
+            'AUTHENTICATION_REQUIRED',
+          ),
+        ),
+      );
+    });
+
+    test('a 429 without the retry interceptor → RateLimitedException with '
+        'Retry-After', () async {
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => envelope(
+            status: 429,
+            statusMessage: 'RATE_LIMITED',
+            errorMessage: 'Slow down',
+            headers: const {
+              ApiHeaders.retryAfter: ['7'],
+            },
+          ),
+        ),
+      );
+
+      await expectLater(
+        client.send(path, data: body),
+        emitsError(
+          isA<RateLimitedException>()
+              .having((e) => e.code, 'code', 'RATE_LIMITED')
+              .having(
+                (e) => e.retryAfter,
+                'retryAfter',
+                const Duration(seconds: 7),
+              ),
+        ),
+      );
+    });
+
+    test('RateLimitRetryInterceptor retries a 429 before the stream opens, '
+        'then the reply streams', () async {
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, call) => call == 0
+              ? envelope(status: 429, statusMessage: 'RATE_LIMITED')
+              : frames('event: message_start\ndata: {}\n\n'),
+        ),
+        interceptors: (dio) => [
+          RateLimitRetryInterceptor(dio: dio, wait: (_) async {}),
+        ],
+      );
+
+      final events = await client.send(path, data: body).toList();
+
+      expect(events.single.event, 'message_start');
+      expect(adapter.requests, hasLength(2));
+      expect(adapter.requests.last.data, body);
+    });
+
+    test('a 5xx is terminal (no reconnect) and keeps its status', () async {
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => envelope(
+            status: 503,
+            statusMessage: 'SERVICE_UNAVAILABLE',
+            errorMessage: 'down',
+          ),
+        ),
+      );
+
+      await expectLater(
+        client.send(path, data: body),
+        emitsInOrder([
+          emitsError(
+            isA<ServerException>()
+                .having((e) => e.statusCode, 'statusCode', 503)
+                .having((e) => e.code, 'code', 'SERVICE_UNAVAILABLE'),
+          ),
+          emitsDone,
+        ]),
+      );
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('a non-JSON error body still maps by status', () async {
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => ResponseBody.fromString('<html>bad gateway</html>', 502),
+        ),
+      );
+
+      await expectLater(
+        client.send(path, data: body),
+        emitsError(
+          isA<ServerException>().having((e) => e.statusCode, 'statusCode', 502),
+        ),
+      );
+    });
+
+    test(
+      'a connection error before the stream → NoInternetConnection',
+      () async {
+        final client = build(
+          FakeHttpClientAdapter(
+            (options, _) => throw DioException.connectionError(
+              requestOptions: options,
+              reason: 'offline',
+            ),
+          ),
+        );
+
+        await expectLater(
+          client.send(path, data: body),
+          emitsInOrder([
+            emitsError(isA<NoInternetConnectionException>()),
+            emitsDone,
+          ]),
+        );
+        expect(adapter.requests, hasLength(1));
+      },
+    );
+
+    test('a break MID-stream keeps what arrived, then ONE NetworkException '
+        'and done', () async {
+      final bodyStream = StreamController<List<int>>();
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => ResponseBody(bodyStream.stream.cast(), 200),
+        ),
+      );
+      final received = <Object>[];
+      final done = Completer<void>();
+      client
+          .send(path, data: body)
+          .listen(received.add, onError: received.add, onDone: done.complete);
+
+      bodyStream.add(utf8.encode('event: text_delta\ndata: {"delta":"a"}\n\n'));
+      await Future<void>.delayed(Duration.zero);
+      bodyStream.addError(const SocketExceptionLike('connection reset'));
+      await bodyStream.close();
+      await done.future;
+
+      expect(received, hasLength(2));
+      expect(received.first, isA<ServerSentEvent>());
+      expect(received.last, isA<NetworkException>());
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('silence past the idle watchdog → RequestTimeoutException', () async {
+      final silent = StreamController<List<int>>();
+      addTearDown(silent.close);
+      final client = build(
+        FakeHttpClientAdapter(
+          (_, _) => ResponseBody(silent.stream.cast(), 200),
+        ),
+        sendIdleTimeout: const Duration(milliseconds: 30),
+      );
+
+      await expectLater(
+        client.send(path, data: body),
+        emitsInOrder([emitsError(isA<RequestTimeoutException>()), emitsDone]),
+      );
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('cancelling the subscription cancels the request', () async {
+      final open = StreamController<List<int>>();
+      addTearDown(() => unawaited(open.close()));
+      final reached = Completer<void>();
+      final client = build(
+        FakeHttpClientAdapter((_, _) {
+          reached.complete();
+          return ResponseBody(open.stream.cast(), 200);
+        }),
+      );
+
+      final subscription = client.send(path, data: body).listen((_) {});
+      await reached.future;
+      await Future<void>.delayed(Duration.zero);
+      await subscription.cancel();
+
+      expect(adapter.requests.single.cancelToken?.isCancelled, isTrue);
+    });
+  });
+}
+
+/// A raw, non-Dio transport error like the one a dropped socket raises.
+class SocketExceptionLike implements Exception {
+  const SocketExceptionLike(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'SocketException: $message';
 }

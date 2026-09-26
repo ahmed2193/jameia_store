@@ -1,17 +1,14 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../config/routes/route_args/category_args.dart';
-import '../../../../config/routes/route_args/product_listing_args.dart';
-import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../cubit/search_state.dart';
-import 'search_discover_section.dart';
+import 'search_brands_section.dart';
+import 'search_categories_section.dart';
+import 'search_recents_section.dart';
 
 /// The search screen before the customer types: recent terms (device), the
-/// store's top-level categories and its brands (backend). Each block hides
-/// itself while it is empty.
+/// store's top-level categories and its brands (backend). A block with
+/// nothing to show is left out. Dragging the list puts the keyboard away.
 class SearchDiscoverView extends StatelessWidget {
   const SearchDiscoverView({
     super.key,
@@ -32,34 +29,18 @@ class SearchDiscoverView extends StatelessWidget {
     final categories = state.discover.categories;
     final brands = state.discover.brands;
     return ListView(
-      padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s24),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.section),
       children: [
-        SearchDiscoverSection(
-          title: 'search.recent'.tr(),
-          labels: recents,
-          onTapIndex: (index) => onTerm(recents[index]),
-          actionLabel: 'search.clear_recent'.tr(),
-          onAction: onClearRecents,
-        ),
-        SearchDiscoverSection(
-          title: 'search.popular_categories'.tr(),
-          labels: [for (final category in categories) category.name],
-          onTapIndex: (index) => context.push(
-            Routes.category,
-            extra: CategoryArgs.of(categories[index]),
+        if (recents.isNotEmpty)
+          SearchRecentsSection(
+            terms: recents,
+            onTerm: onTerm,
+            onClear: onClearRecents,
           ),
-        ),
-        SearchDiscoverSection(
-          title: 'search.brands'.tr(),
-          labels: [for (final brand in brands) brand.name],
-          onTapIndex: (index) => context.push(
-            Routes.productListing,
-            extra: ProductListingArgs.brand(
-              slug: brands[index].slug,
-              title: brands[index].name,
-            ),
-          ),
-        ),
+        if (categories.isNotEmpty)
+          SearchCategoriesSection(categories: categories),
+        if (brands.isNotEmpty) SearchBrandsSection(brands: brands),
       ],
     );
   }

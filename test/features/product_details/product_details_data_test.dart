@@ -5,7 +5,14 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
+import 'package:jameia_mart/src/core/data/models/brand_model.dart';
+import 'package:jameia_mart/src/core/data/models/category_model.dart';
+import 'package:jameia_mart/src/core/data/models/offer_model.dart';
+import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/network/dio_consumer.dart';
@@ -16,6 +23,7 @@ import 'package:jameia_mart/src/features/product_details/data/models/product_det
 import 'package:jameia_mart/src/features/product_details/data/models/product_reviews_model.dart';
 import 'package:jameia_mart/src/features/product_details/data/repositories/product_details_repository_impl.dart';
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
+import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
 
 import '../../core/network/network_test_fakes.dart';
 
@@ -49,6 +57,89 @@ class _ScriptedRemote implements ProductDetailsRemoteDataSource {
       requestedPage: page,
     );
   }
+}
+
+/// The live `GET /v1/offers` rows (2026-09-26), plus an item offer and an
+/// inactive one.
+const List<Map<String, dynamic>> _offerRows = [
+  {
+    '_id': 'of-free-delivery',
+    'name': 'Free delivery over 5 KWD',
+    'status': 'active',
+    'trigger': {'type': 'cart_subtotal', 'min': 5000},
+    'reward': {'type': 'free_delivery'},
+    'priority': 10,
+    'stackable': true,
+    'endsAt': '2027-12-31T23:59:00.000Z',
+  },
+  {
+    '_id': 'of-dairy',
+    'name': '2 KWD off dairy (3 items)',
+    'status': 'active',
+    'trigger': {
+      'type': 'category_quantity',
+      'categoryId': '6aa5ffb85233feadc5c41513',
+      'minQuantity': 3,
+    },
+    'reward': {'type': 'fixed_discount', 'amount': 2000},
+    'priority': 30,
+    'stackable': true,
+    'endsAt': '2027-12-31T23:59:59.000Z',
+  },
+  {
+    '_id': 'of-rice',
+    'name': 'Buy 2 get 1 free',
+    'status': 'active',
+    'trigger': {
+      'type': 'item_quantity',
+      'productId': '6aa6010d06da786e3f5658f9',
+      'minQuantity': 2,
+    },
+    'reward': {
+      'type': 'free_product',
+      'productId': '6aa6010d06da786e3f5658f9',
+      'quantity': 1,
+    },
+    'priority': 20,
+    'endsAt': '2026-01-01T00:00:00.000Z',
+  },
+  {
+    '_id': 'of-off',
+    'name': 'Archived',
+    'status': 'archived',
+    'trigger': {'type': 'cart_subtotal', 'min': 1},
+    'reward': {'type': 'free_delivery'},
+  },
+];
+
+/// The shared catalogue datasource, offers only.
+class _ScriptedCatalog implements CatalogRemoteDataSource {
+  Object? error;
+
+  @override
+  Future<List<OfferModel>> getOffers() async {
+    final current = error;
+    if (current != null) throw current;
+    return [for (final row in _offerRows) OfferModel.fromJson(row)];
+  }
+
+  @override
+  Future<List<CategoryModel>> getCategories({bool refresh = false}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<BrandModel>> getBrands({
+    required int page,
+    required int limit,
+    String? search,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<ProductsPageModel> getProducts({
+    required CatalogProductQuery query,
+    required int page,
+    required int limit,
+  }) => throw UnimplementedError();
 }
 
 void main() {
@@ -278,7 +369,10 @@ void main() {
   group('ProductDetailsRepositoryImpl', () {
     test('maps to entities; 404 becomes ServerFailure(404)', () async {
       final remote = _ScriptedRemote();
-      final repository = ProductDetailsRepositoryImpl(remote);
+      final repository = ProductDetailsRepositoryImpl(
+        remote,
+        _ScriptedCatalog(),
+      );
 
       final ok = await repository.getProduct('basmati-rice-5kg');
       expect(ok.isRight(), isTrue);
@@ -296,6 +390,81 @@ void main() {
         isA<ServerFailure>().having((f) => f.statusCode, 'statusCode', 404),
       );
       expect(reviews.isLeft(), isTrue);
+    });
+  });
+
+  group('cart offers on the product page', () {
+    late _ScriptedCatalog catalog;
+    late ProductDetailsRepositoryImpl repository;
+    late GetProductOfferUseCase getOffer;
+    final today = DateTime.utc(2026, 9, 26);
+
+    setUp(() {
+      catalog = _ScriptedCatalog();
+      repository = ProductDetailsRepositoryImpl(_ScriptedRemote(), catalog);
+      getOffer = GetProductOfferUseCase(repository);
+    });
+
+    test('offers: active only, highest priority first, targets kept', () async {
+      final offers = (await repository.getOffers()).getOrElse(
+        () => throw StateError('left'),
+      );
+
+      expect(offers.map((o) => o.id), ['of-dairy', 'of-rice', 'of-free-delivery']);
+      expect(offers.first.triggerType, OfferTriggerType.categoryQuantity);
+      expect(offers.first.categoryId, '6aa5ffb85233feadc5c41513');
+      expect(offers[1].productId, '6aa6010d06da786e3f5658f9');
+      expect(offers.last.productId, isNull);
+    });
+
+    test('a variant of a dairy sub-category gets the dairy offer', () async {
+      final milk = _detail('product_variant.json');
+      expect(milk.offerCategoryIds, [
+        '6aa5ffb85233feadc5c41514',
+        '6aa5ffb85233feadc5c41513',
+      ]);
+
+      final offer = await getOffer(
+        GetProductOfferParams(
+          productId: milk.product.id,
+          categoryIds: milk.offerCategoryIds,
+          now: today,
+        ),
+      );
+
+      expect(offer.getOrElse(() => null)?.name, '2 KWD off dairy (3 items)');
+    });
+
+    test('an item offer names its product; an ended one is skipped', () async {
+      final rice = _detail('product_standard.json');
+      final params = GetProductOfferParams(
+        productId: rice.product.id,
+        categoryIds: rice.offerCategoryIds,
+        now: DateTime.utc(2025, 12, 1),
+      );
+
+      expect((await getOffer(params)).getOrElse(() => null)?.id, 'of-rice');
+
+      final later = GetProductOfferParams(
+        productId: rice.product.id,
+        categoryIds: rice.offerCategoryIds,
+        now: today,
+      );
+      expect(
+        (await getOffer(later)).getOrElse(() => throw StateError('left')),
+        isNull,
+        reason: 'the rice offer ended; the subtotal one counts every product',
+      );
+    });
+
+    test('a failure stays a Left (the page shows no tag)', () async {
+      catalog.error = const NoInternetConnectionException();
+
+      final result = await getOffer(
+        GetProductOfferParams(productId: 'x', now: today),
+      );
+
+      expect(result.isLeft(), isTrue);
     });
   });
 }

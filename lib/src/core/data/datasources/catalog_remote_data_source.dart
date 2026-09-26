@@ -7,11 +7,13 @@ import '../mappers/catalog_product_query_mapper.dart';
 import '../models/brand_model.dart';
 import '../models/category_model.dart';
 import '../models/json_read.dart';
+import '../models/offer_model.dart';
 import '../models/products_page_model.dart';
 
 /// The catalogue reads more than one feature needs — the product list (shop,
-/// search, discovery, product page), the category tree (home, shop, search) and
-/// the brand list (search, discovery). One shared datasource instead of a copy
+/// search, discovery, product page, the cart's deals sheet), the category tree
+/// (home, shop, search, the deals sheet), the brand list (search, discovery)
+/// and the cart offers (the product page's promo tag). One shared datasource instead of a copy
 /// per feature; a route only one feature reads (home feed, product detail,
 /// collections, recipes …) stays in that feature.
 ///
@@ -37,6 +39,12 @@ abstract class CatalogRemoteDataSource {
     required int limit,
     String? search,
   });
+
+  /// `GET /v1/offers?page=1&limit=100` — the store's cart promotions (one
+  /// page is the whole list in practice). Kept like the category tree for
+  /// [CatalogRemoteDataSourceImpl.categoryTreeTtl]: every product page reads
+  /// it for its promo tag.
+  Future<List<OfferModel>> getOffers();
 }
 
 class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
@@ -56,6 +64,7 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
   static const String pageField = 'page';
   static const String limitField = 'limit';
   static const String searchField = 'search';
+  static const int maxOffers = 100;
   static const String _logName = 'CatalogRemoteDataSource';
 
   /// How long the category tree is reused. Browsing reads it on every screen
@@ -70,6 +79,12 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
   /// names by `Accept-Language`, so a switch must not reuse it.
   String? _categoriesLanguage;
   DateTime? _categoriesReadAt;
+
+  List<OfferModel>? _offers;
+
+  /// Offer names are resolved by `Accept-Language` too.
+  String? _offersLanguage;
+  DateTime? _offersReadAt;
 
   @override
   Future<ProductsPageModel> getProducts({
@@ -133,5 +148,32 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
       BrandModel.fromJson,
       logName: _logName,
     );
+  }
+
+  @override
+  Future<List<OfferModel>> getOffers() async {
+    final language = _locale.languageCode;
+    final cached = _offers;
+    final readAt = _offersReadAt;
+    if (cached != null &&
+        _offersLanguage == language &&
+        readAt != null &&
+        _now().difference(readAt) < categoryTreeTtl) {
+      return cached;
+    }
+    final results = await _api.get(
+      EndPoints.offers,
+      queryParameters: <String, dynamic>{pageField: 1, limitField: maxOffers},
+    );
+    final payload = ApiPayload.asMap(results, EndPoints.offers);
+    final rows = JsonRead.rows(
+      payload[dataKey],
+      OfferModel.fromJson,
+      logName: _logName,
+    );
+    _offers = rows;
+    _offersLanguage = language;
+    _offersReadAt = _now();
+    return rows;
   }
 }

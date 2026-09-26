@@ -15,10 +15,15 @@ class BrandedRefresh extends StatelessWidget {
     super.key,
     required this.onRefresh,
     required this.child,
+    this.edgeOffset = 0,
   });
 
   final Future<void> Function() onRefresh;
   final Widget child;
+
+  /// How far down the spinner starts: the height of a bar pinned over the
+  /// top of the list, so the spinner comes out from under it.
+  final double edgeOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +32,7 @@ class BrandedRefresh extends StatelessWidget {
       color: AppColors.brandForeground,
       backgroundColor: AppColors.primary,
       displacement: 36,
+      edgeOffset: edgeOffset,
       child: child,
     );
   }

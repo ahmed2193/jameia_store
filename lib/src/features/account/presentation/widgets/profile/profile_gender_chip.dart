@@ -1,48 +1,59 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_colors.dart';
-import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
+import '../../../../../core/motion/spring_curve.dart';
+import 'profile_gender_chip_surface.dart';
 
-/// One option in the gender selector — filled brand chip when selected,
-/// hairline outline otherwise.
+/// One option of the gender selector. Selecting it fades the fill to the
+/// brand colour (colour: [AppMotion.fast], never overshooting) while the
+/// corners spring from soft square to pill ([AppSprings.snappy]); reduced
+/// motion switches both at once. A selection haptic fires only when the
+/// choice actually changes; screen readers hear it as one option of an
+/// exclusive group.
 class ProfileGenderChip extends StatelessWidget {
   const ProfileGenderChip({
     super.key,
     required this.label,
     required this.selected,
-    required this.onTap,
+    required this.onSelected,
   });
 
   final String label;
   final bool selected;
-  final VoidCallback onTap;
+  final VoidCallback onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return PressScale(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: MotionGuard.duration(context, AppMotion.fast),
-        curve: MotionGuard.curve(context, AppMotion.signature),
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AppSpacing.s14,
-          vertical: AppSpacing.s8,
-        ),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.white,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          border: Border.all(
-            color: selected ? AppColors.primary : AppColors.divider,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: selected ? AppColors.brandForeground : AppColors.primaryText,
-            fontWeight: selected ? AppTextStyles.bold : AppTextStyles.regular,
+    final target = selected ? 1.0 : 0.0;
+    final spring = AppSprings.snappy;
+    return MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        inMutuallyExclusiveGroup: true,
+        child: PressScale(
+          haptic: null,
+          onTap: () {
+            if (selected) return;
+            Haptics.selection();
+            onSelected();
+          },
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: target),
+            duration: MotionGuard.duration(context, AppMotion.fast),
+            curve: AppMotion.signature,
+            builder: (context, tint, _) => TweenAnimationBuilder<double>(
+              tween: Tween<double>(end: target),
+              duration: MotionGuard.duration(context, spring.duration),
+              curve: spring,
+              builder: (context, round, _) => ProfileGenderChipSurface(
+                label: label,
+                tint: tint,
+                round: round,
+              ),
+            ),
           ),
         ),
       ),

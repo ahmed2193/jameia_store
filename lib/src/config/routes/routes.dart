@@ -65,6 +65,11 @@ class Routes {
   static const String mineDeliveryCode = '/mine-delivery-code';
   static const String wallet = '/wallet'; // balance + transactions (signed-in)
   static const String loyalty = '/loyalty'; // points + history (signed-in)
+  static const String loyaltyRewards =
+      '/loyalty-rewards'; // points → basket discount tiers (signed-in)
+  // Shopping assistant (streaming chat) — extra: AssistantChatArgs?
+  static const String assistant = '/assistant';
+  static const String assistantHistory = '/assistant/history';
   static const String customerService = '/customer-service';
   static const String customerServiceQuestion = '/customer-service-question';
   static const String imChat = '/im-chat';

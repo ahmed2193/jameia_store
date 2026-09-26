@@ -19,6 +19,9 @@
 //   POST   /v1/account/addresses (Bearer)     -> {address}  (label, lat, lng, city required; the first address or isDefault:true becomes the only default)
 //   PATCH  /v1/account/addresses/:id (Bearer) -> {address}  (changed fields only; "" clears floor/apartment/notes; isDefault:true unsets the others)
 //   DELETE /v1/account/addresses/:id (Bearer) -> {message}
+//   GET  /v1/account/subscription (Bearer)        -> subscription | null
+//   POST /v1/account/subscription {planId} (Bearer) -> subscription (409 RESOURCE_EXISTS while one is active)
+//   POST /v1/account/subscription/cancel (Bearer) -> subscription (status cancelled + cancelAtPeriodEnd; 404 when nothing to cancel)
 // Test knobs:
 //   ?expire=1  on /v1/account/me   -> always 401 TOKEN_EXPIRED (forces refresh path)
 //   POST /__admin/expire-access    -> current access tokens become invalid (next call 401 -> refresh works)
@@ -31,6 +34,9 @@
 //   POST /__admin/addresses/fail/:status/:n   -> next n address requests (after the Bearer check) answer :status (500 INTERNAL_ERROR, 404 …)
 //   POST /__admin/addresses/delay/:ms         -> address replies wait :ms (in-flight UI, double tap → one request)
 //   POST /__admin/ledger/fail/:status/:n      -> next n wallet / loyalty requests (after the Bearer check) answer :status
+//   POST /__admin/subscription/fail/:status/:n -> next n subscription requests (after the Bearer check) answer :status
+//   POST /__admin/subscription/delay/:ms       -> subscription replies wait :ms (subscribe / cancel in flight)
+//   POST /__admin/subscription/reset           -> no subscription, customer.pro inactive
 //   POST /__admin/profile/reset               -> sign-up state again: name = phone, no dateOfBirth / gender / householdSize, bonus not yet paid
 //   Cart / orders knobs live in routes_commerce.js (see its header):
 //   POST /__admin/cart/out-of-stock/:productId, /__admin/cart/stock/:id/:n,
@@ -44,7 +50,7 @@ const { handleAdmin, handleCommerce } = require('./routes_commerce.js');
 const PORT = Number(process.env.MOCK_API_PORT || 5055);
 const OTP = process.env.OTP || '1234';
 
-const state = { access: new Set(), refresh: new Set(), rateLimit: 0, expiresIn: 900, log: [], sse: new Set(), addressFail: { status: 500, n: 0 }, addressDelay: 0, ledgerFail: { status: 500, n: 0 }, profileBonusPaid: false };
+const state = { access: new Set(), refresh: new Set(), rateLimit: 0, expiresIn: 900, log: [], sse: new Set(), addressFail: { status: 500, n: 0 }, addressDelay: 0, ledgerFail: { status: 500, n: 0 }, profileBonusPaid: false, subscription: null, subscriptionFail: { status: 500, n: 0 }, subscriptionDelay: 0 };
 const customer = {
   _id: '507f1f77bcf86cd799439011', name: 'Ahmed', phone: '+96512345678', email: 'ahmed@jm3eia.com',
   dateOfBirth: null, gender: 'male', householdSize: null, status: 'active', language: 'en',
@@ -178,6 +184,48 @@ function handleAddresses(req, res, pathname, body) {
   if (state.addressDelay > 0) setTimeout(reply, state.addressDelay); else reply();
 }
 
+// --- Pro subscription (OpenAPI: /v1/account/subscription, docs: account.html) ---
+// Plans come from the captured `subscription-plans` snapshot. The docs say a
+// plan is paid from the wallet, but the spec documents no error code for a
+// short wallet, so the mock does not charge it. Cancel follows the docs
+// literally: `cancelled` + `cancelAtPeriodEnd: true` while the period runs.
+const PLAN_FIXTURES = require('./catalog_fixtures.json');
+const planFor = (lang, id) => (PLAN_FIXTURES[`${lang}/subscription-plans`].data || []).find((p) => p._id === id);
+function handleSubscription(req, res, pathname, body) {
+  if (!authed(req)) return fail(res, 401, 'AUTHENTICATION_REQUIRED', localized(req, 'Sign in to continue', 'سجّل الدخول للمتابعة'));
+  if (state.subscriptionFail.n > 0) {
+    state.subscriptionFail.n--;
+    const status = state.subscriptionFail.status;
+    return fail(res, status, ADDRESS_FAIL_CODES[status] || 'INTERNAL_ERROR', localized(req, 'Something went wrong, try again', 'حدث خطأ، حاول مرة أخرى'));
+  }
+  const reply = () => {
+    const sub = state.subscription;
+    if (sub && sub.status !== 'expired' && Date.parse(sub.currentPeriodEnd) <= Date.now()) {
+      sub.status = 'expired'; customer.pro = { active: false, expiresAt: sub.currentPeriodEnd, subscriptionId: sub._id };
+    }
+    if (pathname === '/v1/account/subscription' && req.method === 'GET') return ok(res, state.subscription, 'DATA_LOADED');
+    if (req.method !== 'POST') return fail(res, 404, 'RESOURCE_NOT_FOUND', 'Not found');
+    if (pathname.endsWith('/cancel')) {
+      if (!sub || sub.status !== 'active' || sub.cancelAtPeriodEnd) return fail(res, 404, 'RESOURCE_NOT_FOUND', localized(req, 'No active subscription', 'لا يوجد اشتراك فعّال'));
+      Object.assign(sub, { status: 'cancelled', cancelAtPeriodEnd: true, cancelledAt: new Date().toISOString() });
+      return ok(res, sub, 'UPDATED');
+    }
+    if (typeof body.planId !== 'string' || !/^[0-9a-fA-F]{24}$/.test(body.planId)) {
+      return fail(res, 400, 'VALIDATION_ERROR', localized(req, 'Validation failed', 'فشل التحقق'), [{ key: 'planId', message: 'must match pattern "^[0-9a-fA-F]{24}$"' }]);
+    }
+    const lang = localized(req, 'en', 'ar');
+    const plan = planFor(lang, body.planId);
+    if (!plan) return fail(res, 404, 'RESOURCE_NOT_FOUND', localized(req, 'Plan not found', 'الخطة غير موجودة'));
+    if (sub && sub.status === 'active' && !sub.cancelAtPeriodEnd) return fail(res, 409, 'RESOURCE_EXISTS', localized(req, 'You already have an active subscription', 'لديك اشتراك فعّال بالفعل'));
+    const start = new Date(), end = new Date(start);
+    end.setMonth(end.getMonth() + (plan.interval === 'year' ? 12 : 1) * plan.intervalCount);
+    state.subscription = { _id: oid(), planId: plan._id, planName: plan.name, interval: plan.interval, intervalCount: plan.intervalCount, price: plan.price, status: 'active', currentPeriodStart: start.toISOString(), currentPeriodEnd: end.toISOString(), cancelledAt: null, cancelAtPeriodEnd: false };
+    customer.pro = { active: true, expiresAt: end.toISOString(), subscriptionId: state.subscription._id };
+    return ok(res, state.subscription, 'CREATED');
+  };
+  if (state.subscriptionDelay > 0) setTimeout(reply, state.subscriptionDelay); else reply();
+}
+
 http.createServer((req, res) => {
   let raw = '';
   req.on('data', (c) => (raw += c));
@@ -187,6 +235,11 @@ http.createServer((req, res) => {
     try { body = raw ? JSON.parse(raw) : {}; } catch { return fail(res, 400, 'VALIDATION_ERROR', 'Bad JSON'); }
     state.log.push({ t: new Date().toISOString(), m: req.method, p: pathname, auth: bearer(req), lang: req.headers['accept-language'], cart: req.headers['x-cart-token'], guest: req.headers['x-assistant-guest'], body });
     console.log(`${req.method} ${pathname} auth=${bearer(req) ? bearer(req).slice(0, 12) : '-'} lang=${req.headers['accept-language'] || '-'} guest=${(req.headers['x-assistant-guest'] || '-').slice(0, 8)} body=${raw}`);
+    // Like the live host (Fastify): a write with a JSON content type and no
+    // body is a 500 — the app must send `{}` (ApiPayload.emptyBody).
+    if (!raw && !['GET', 'HEAD'].includes(req.method) && /application\/json/i.test(req.headers['content-type'] || '')) {
+      return fail(res, 500, 'INTERNAL_ERROR', "Body cannot be empty when content-type is set to 'application/json'");
+    }
 
     // admin knobs
     if (pathname === '/__admin/expire-access') { state.access.clear(); return ok(res, { cleared: true }); }
@@ -213,6 +266,13 @@ http.createServer((req, res) => {
     if (pathname.startsWith('/__admin/addresses/delay/')) { state.addressDelay = Number(pathname.split('/').pop()); return ok(res, { delay: state.addressDelay }); }
     const ledgerFailKnob = pathname.match(/^\/__admin\/ledger\/fail\/(\d{3})\/(\d+)$/);
     if (ledgerFailKnob) { state.ledgerFail = { status: Number(ledgerFailKnob[1]), n: Number(ledgerFailKnob[2]) }; return ok(res, state.ledgerFail); }
+    const subscriptionFailKnob = pathname.match(/^\/__admin\/subscription\/fail\/(\d{3})\/(\d+)$/);
+    if (subscriptionFailKnob) { state.subscriptionFail = { status: Number(subscriptionFailKnob[1]), n: Number(subscriptionFailKnob[2]) }; return ok(res, state.subscriptionFail); }
+    if (pathname.startsWith('/__admin/subscription/delay/')) { state.subscriptionDelay = Number(pathname.split('/').pop()); return ok(res, { delay: state.subscriptionDelay }); }
+    if (pathname === '/__admin/subscription/reset') {
+      state.subscription = null; customer.pro = { active: false, expiresAt: null, subscriptionId: null };
+      return ok(res, { reset: true });
+    }
     if (pathname === '/__admin/profile/reset') {
       Object.assign(customer, { name: customer.phone, email: null, dateOfBirth: null, gender: null, householdSize: null });
       state.profileBonusPaid = false;
@@ -223,6 +283,7 @@ http.createServer((req, res) => {
       const answered = handleAdmin(pathname, (results) => ok(res, results));
       if (answered !== false) return answered;
     }
+    if (require('./assistant.js').handleAssistant({ req, res, pathname, query, body, customer, otp: OTP, authed: authed(req), lang: localized(req, 'en', 'ar'), takeRateLimit: () => state.rateLimit > 0 && state.rateLimit-- > 0, ok: (results, statusMessage) => ok(res, results, statusMessage), fail: (status, statusMessage, message, data, headers) => fail(res, status, statusMessage, message, data, headers) })) return; // assistant routes + knobs: see assistant.js
     if (state.rateLimit > 0) { state.rateLimit--; return fail(res, 429, 'RATE_LIMITED', localized(req, 'Too many requests', 'طلبات كثيرة جدًا'), [], { 'Retry-After': '1' }); }
 
     // auth
@@ -268,6 +329,11 @@ http.createServer((req, res) => {
     // addresses: GET/POST /v1/account/addresses, PATCH/DELETE /v1/account/addresses/:addressId
     if (pathname === '/v1/account/addresses' || pathname.startsWith('/v1/account/addresses/')) {
       return handleAddresses(req, res, pathname, body);
+    }
+
+    // Pro subscription: GET|POST /v1/account/subscription, POST .../cancel
+    if (pathname === '/v1/account/subscription' || pathname === '/v1/account/subscription/cancel') {
+      return handleSubscription(req, res, pathname, body);
     }
 
     // wallet + loyalty ledgers
@@ -336,7 +402,7 @@ http.createServer((req, res) => {
     })) return;
 
     if (req.method === 'GET' && pathname === '/v1/init') {
-      return ok(res, { store: { name: 'Jm3eia', tagline: 'mock', defaultLocale: 'en', assistant: { enabled: true, allowGuests: true }, loyalty: LOYALTY }, user: authed(req) ? customer : null, cartToken: 'cart_' + crypto.randomBytes(4).toString('hex') }, 'DATA_LOADED');
+      return ok(res, { store: { name: 'Jm3eia', tagline: 'mock', defaultLocale: 'en', assistant: { enabled: true, allowGuests: true }, loyalty: LOYALTY, pro: { enabled: true, perks: { freeDelivery: true, pointsMultiplier: 2, discountPercent: 5 } } }, user: authed(req) ? customer : null, cartToken: 'cart_' + crypto.randomBytes(4).toString('hex') }, 'DATA_LOADED');
     }
     return fail(res, 404, 'RESOURCE_NOT_FOUND', 'Not found');
   });

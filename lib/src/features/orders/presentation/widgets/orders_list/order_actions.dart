@@ -7,27 +7,28 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../../../../../core/widgets/app_outline_button.dart';
+import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/jameia_secondary_button.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_state.dart';
-import '../../../domain/entities/cancel_order_request.dart';
 import '../../cubit/orders_cubit.dart';
 import 'cancel_order_sheet.dart';
 
 /// What the customer can do with an order from the list: cancel (while the
-/// API allows), rate a delivered order, reorder any past order.
+/// API allows), rate a delivered order, reorder any past order — compact
+/// white pills side by side. The row owns its top gap, so an order with no
+/// action leaves no empty space at the foot of its card.
 class OrderActions extends StatelessWidget {
   const OrderActions({super.key, required this.order});
 
   final OrderEntity order;
 
+  /// The card-action size of a compact secondary pill.
+  static const double _actionHeight = AppSize.s44;
+
   Future<void> _cancel(BuildContext context) async {
     final cubit = context.read<OrdersCubit>();
-    final request = await showJameiaBottomSheet<CancelOrderRequest>(
-      context,
-      isScrollControlled: true,
-      builder: (_) => CancelOrderSheet(orderId: order.id),
-    );
+    final request = await CancelOrderSheet.show(context, orderId: order.id);
     if (request != null) await cubit.cancel(request);
   }
 
@@ -48,29 +49,38 @@ class OrderActions extends StatelessWidget {
     );
     final buttons = <Widget>[
       if (order.canCancel)
-        AppOutlineButton(
+        JameiaSecondaryButton(
           label: 'orders.cancel_order'.tr(),
+          compact: true,
+          height: _actionHeight,
           onPressed: cancelling ? null : () => _cancel(context),
         ),
       if (order.canReview)
-        AppOutlineButton(
+        JameiaSecondaryButton(
           label: 'orders.review'.tr(),
+          compact: true,
+          height: _actionHeight,
           onPressed: () => context.push(Routes.orderReview, extra: order.id),
         ),
       if (order.isTerminal)
-        AppOutlineButton(
+        JameiaSecondaryButton(
           label: 'orders.reorder'.tr(),
+          compact: true,
+          height: _actionHeight,
           onPressed: reordering ? null : () => _reorder(context),
         ),
     ];
     if (buttons.isEmpty) return const SizedBox.shrink();
-    return Row(
-      children: [
-        for (var i = 0; i < buttons.length; i++) ...[
-          if (i > 0) const SizedBox(width: AppSpacing.s8),
-          Expanded(child: buttons[i]),
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(top: AppSpacing.s16),
+      child: Row(
+        children: [
+          for (var i = 0; i < buttons.length; i++) ...[
+            if (i > 0) const SizedBox(width: AppSpacing.s8),
+            Expanded(child: buttons[i]),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

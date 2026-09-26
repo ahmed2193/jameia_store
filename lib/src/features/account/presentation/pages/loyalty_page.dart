@@ -36,9 +36,12 @@ class LoyaltyPage extends StatelessWidget {
           child: LedgerBody<LoyaltyEntryEntity>(
             header: const LoyaltyHeader(),
             entryBuilder: (entry) => LoyaltyEntryTile(entry: entry),
+            entryDate: (entry) => entry.createdAt,
             emptyIcon: Icons.stars_outlined,
             emptyMessage: 'loyalty.empty'.tr(),
             signInMessage: 'loyalty.sign_in_prompt'.tr(),
+            todayLabel: 'loyalty.today'.tr(),
+            yesterdayLabel: 'loyalty.yesterday'.tr(),
           ),
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/navigation/navigation.dart';
+import '../../../core/navigation/jameia_shared_axis_page.dart';
 import '../../../features/orders/presentation/pages/order_invoice_page.dart';
 import '../../../features/orders/presentation/pages/order_review_page.dart';
 import '../../../features/orders/presentation/pages/order_tracking_page.dart';
@@ -10,6 +10,8 @@ import '../routes.dart';
 
 /// Order lifecycle: tracking, product reviews, invoice. Each takes the order
 /// id as `extra`; without one the placeholder page explains the dead link.
+/// They are forward steps of one flow (checkout → tracking → invoice /
+/// review), so they use the shared-X-axis motion (mirrored in RTL).
 final List<RouteBase> ordersRoutes = <RouteBase>[
   GoRoute(
     path: Routes.orderTracking,
@@ -28,12 +30,12 @@ final List<RouteBase> ordersRoutes = <RouteBase>[
   ),
 ];
 
-JameiaTransitionPage<Object?> _orderPage(
+JameiaSharedAxisPage<Object?> _orderPage(
   GoRouterState state,
   Widget Function(String orderId) build,
 ) {
   final orderId = state.extra;
-  return JameiaTransitionPage<Object?>(
+  return JameiaSharedAxisPage<Object?>(
     key: state.pageKey,
     name: state.uri.path,
     child: orderId is String && orderId.isNotEmpty

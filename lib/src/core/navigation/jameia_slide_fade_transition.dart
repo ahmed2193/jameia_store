@@ -9,7 +9,11 @@ import '../motion/motion.dart';
 /// §2): 300ms ease-out. Shared by [JameiaTransitionPage] (enter/exit curve pair)
 /// and [JameiaSlideUpTransitionPage] (enter curve on both legs). Gated by
 /// [MotionGuard] so reduced motion degrades to an instant cut.
-class JameiaSlideFadeTransition extends StatelessWidget {
+///
+/// Stateful so the curve is built once: the route rebuilds this on every tick
+/// of its own and of the route above it, and a CurvedAnimation made in build()
+/// would leave one more listener on the (long-lived) route animation each time.
+class JameiaSlideFadeTransition extends StatefulWidget {
   const JameiaSlideFadeTransition({
     super.key,
     required this.animation,
@@ -31,21 +35,49 @@ class JameiaSlideFadeTransition extends StatelessWidget {
   final Widget child;
 
   @override
+  State<JameiaSlideFadeTransition> createState() =>
+      _JameiaSlideFadeTransitionState();
+}
+
+class _JameiaSlideFadeTransitionState extends State<JameiaSlideFadeTransition> {
+  static final Tween<Offset> _slide = Tween<Offset>(
+    begin: AppMotion.pageSlideBegin,
+    end: AppMotion.pageSlideEnd,
+  );
+
+  late CurvedAnimation _curved = _make();
+
+  CurvedAnimation _make() => CurvedAnimation(
+    parent: widget.animation,
+    curve: widget.curve,
+    reverseCurve: widget.reverseCurve,
+  );
+
+  @override
+  void didUpdateWidget(JameiaSlideFadeTransition oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animation != widget.animation ||
+        oldWidget.curve != widget.curve ||
+        oldWidget.reverseCurve != widget.reverseCurve) {
+      _curved.dispose();
+      _curved = _make();
+    }
+  }
+
+  @override
+  void dispose() {
+    _curved.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (MotionGuard.reduced(context)) return child;
-    final curved = CurvedAnimation(
-      parent: animation,
-      curve: curve,
-      reverseCurve: reverseCurve,
-    );
+    if (MotionGuard.reduced(context)) return widget.child;
     return FadeTransition(
-      opacity: curved,
+      opacity: _curved,
       child: SlideTransition(
-        position: Tween<Offset>(
-          begin: AppMotion.pageSlideBegin,
-          end: AppMotion.pageSlideEnd,
-        ).animate(curved),
-        child: child,
+        position: _curved.drive(_slide),
+        child: widget.child,
       ),
     );
   }

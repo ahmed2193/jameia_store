@@ -3,15 +3,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/motion.dart';
-import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/paging_dots.dart';
 import '../../domain/entities/home_slide_entity.dart';
+import 'home_carousel_page.dart';
+import 'home_reveal_scope.dart';
 import 'home_slide_card.dart';
 
-/// The hero carousel of the home feed (`slides[]`): a peeking [PageView] with
-/// paging dots that advances by itself — unless the customer asked for reduced
-/// motion, or there is a single slide.
+/// The hero banners of the home feed (`slides[]`): wide rounded banners in a
+/// [PageView] whose neighbours peek at the edges, a step smaller, while the
+/// artwork drifts against the swipe. They advance by themselves — unless the
+/// customer asked for reduced motion, a screen reader is on, or there is a
+/// single slide — but not under a finger (letting go starts a full dwell on
+/// the banner it left) nor while the banners are off screen. The banner
+/// keeps the storefront's proportion at any screen width.
 class HomeSlidesCarousel extends StatefulWidget {
   const HomeSlidesCarousel({super.key, required this.slides});
 
@@ -24,14 +29,29 @@ class HomeSlidesCarousel extends StatefulWidget {
 class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
   static const double _viewportFraction = 0.92;
 
+  /// Half the room between two banners.
+  static const double _pageGap = AppSpacing.s6;
+
+  /// Width : height of a banner.
+  static const double _aspectRatio = 2.35;
+
   final PageController _controller = PageController(
     viewportFraction: _viewportFraction,
   );
   Timer? _autoAdvance;
+  int _fingers = 0;
+
+  /// Reduced motion, or a screen reader walking the page.
+  bool _still = false;
+  bool _onScreen = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _still =
+        MotionGuard.reduced(context) ||
+        MediaQuery.accessibleNavigationOf(context);
+    _onScreen = HomeRevealScope.onScreenOf(context);
     _rearm();
   }
 
@@ -46,7 +66,9 @@ class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
 
   void _rearm() {
     _autoAdvance?.cancel();
-    if (widget.slides.length < 2 || MotionGuard.reduced(context)) return;
+    if (widget.slides.length < 2 || _still || !_onScreen || _fingers > 0) {
+      return;
+    }
     _autoAdvance = Timer.periodic(AppMotion.carousel, (_) => _next());
   }
 
@@ -55,6 +77,16 @@ class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
     _autoAdvance?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _touch(PointerDownEvent event) {
+    _fingers++;
+    _autoAdvance?.cancel();
+  }
+
+  void _lift(PointerEvent event) {
+    if (_fingers > 0) _fingers--;
+    _rearm();
   }
 
   void _next() {
@@ -76,30 +108,41 @@ class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
   Widget build(BuildContext context) {
     final slides = widget.slides;
     if (slides.isEmpty) return const SizedBox.shrink();
-    return Column(
-      children: [
-        SizedBox(
-          height: AppSize.s170,
-          child: PageView.builder(
-            controller: _controller,
-            itemCount: slides.length,
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AppSpacing.s4,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bannerWidth =
+            constraints.maxWidth * _viewportFraction - 2 * _pageGap;
+        return SizedBox(
+          height: bannerWidth / _aspectRatio,
+          child: Listener(
+            onPointerDown: _touch,
+            onPointerUp: _lift,
+            onPointerCancel: _lift,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: slides.length,
+              // A soft click as the finger carries in the next banner.
+              onPageChanged: (_) {
+                if (_fingers > 0) Haptics.selection();
+              },
+              itemBuilder: (context, index) => HomeCarouselPage(
+                controller: _controller,
+                index: index,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.symmetric(
+                    horizontal: _pageGap,
+                  ),
+                  child: HomeSlideCard(
+                    slide: slides[index],
+                    controller: _controller,
+                    index: index,
+                  ),
+                ),
               ),
-              child: HomeSlideCard(slide: slides[index]),
             ),
           ),
-        ),
-        if (slides.length > 1)
-          Padding(
-            padding: const EdgeInsetsDirectional.only(
-              top: AppSpacing.s8,
-              bottom: AppSpacing.s4,
-            ),
-            child: PagingDots(controller: _controller, count: slides.length),
-          ),
-      ],
+        );
+      },
     );
   }
 }

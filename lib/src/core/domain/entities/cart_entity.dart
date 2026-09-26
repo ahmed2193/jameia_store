@@ -106,6 +106,20 @@ class CartEntity extends Equatable {
 
   bool get canCheckout => checkoutBlock == null;
 
+  /// What the basket bars say about delivery, in fils: `0` = free, more =
+  /// the fee the server quotes (express included), `null` = nothing to say
+  /// (an empty basket, pickup, or no fee quoted yet).
+  int? get deliveryQuoteFils {
+    if (isEmpty || isPickup) return null;
+    if (totals.freeDelivery) return 0;
+    return totals.deliveryFeeFils > 0 ? totals.deliveryFeeFils : null;
+  }
+
+  double? get deliveryQuoteKd {
+    final fils = deliveryQuoteFils;
+    return fils == null ? null : fils / CatalogProductEntity.filsPerDinar;
+  }
+
   /// The line [ref] points at, compared on its fields so no `CartLineRef`
   /// is allocated per line (every visible tile calls this on every emission).
   CartLineEntity? lineFor(CartLineRef ref) {
