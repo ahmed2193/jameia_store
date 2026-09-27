@@ -8,7 +8,8 @@ import 'package:jameia_mart/src/features/account/data/datasources/wallet_remote_
 import 'package:jameia_mart/src/features/account/data/mappers/loyalty_mapper.dart';
 import 'package:jameia_mart/src/features/account/data/mappers/wallet_mapper.dart';
 import 'package:jameia_mart/src/features/account/data/models/loyalty_entry_model.dart';
-import 'package:jameia_mart/src/features/account/data/models/loyalty_program_model.dart';
+import 'package:jameia_mart/src/core/data/mappers/loyalty_program_mapper.dart';
+import 'package:jameia_mart/src/core/data/models/loyalty_program_model.dart';
 import 'package:jameia_mart/src/features/account/data/models/wallet_entry_model.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/loyalty_entry_entity.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/wallet_entry_entity.dart';

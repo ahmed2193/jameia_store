@@ -105,7 +105,13 @@ class CartRepositoryImpl with BaseRepositoryMixin implements CartRepository {
     return out.stream;
   }
 
-  void _emit({Failure? failure, CartAction failedAction = CartAction.none}) {
+  /// [cause]: the server-confirmed action whose reply this snapshot carries
+  /// (see [CartSnapshot.cause]).
+  void _emit({
+    Failure? failure,
+    CartAction failedAction = CartAction.none,
+    CartAction cause = CartAction.none,
+  }) {
     final next = CartSnapshot(
       cart: _server.project(_pending),
       isRestored: _restored,
@@ -114,6 +120,7 @@ class CartRepositoryImpl with BaseRepositoryMixin implements CartRepository {
       isUnsynced: _unsynced,
       failure: failure,
       failedAction: failedAction,
+      cause: cause,
       revision: _snapshot.revision + 1,
     );
     // A failure always goes out (two equal-looking ones must both be seen);
@@ -527,9 +534,14 @@ class CartRepositoryImpl with BaseRepositoryMixin implements CartRepository {
       await _flushTask();
       try {
         _acceptServerCart(await _request(call));
-        _emit();
+        // Tagged, so a listener knows the customer asked for this change.
+        _emit(cause: action);
       } on AppException catch (error) {
-        _emit(failure: mapToFailure(error), failedAction: action);
+        _emit(
+          failure: mapToFailure(error),
+          failedAction: action,
+          cause: action,
+        );
         rethrow;
       }
     }),

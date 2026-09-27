@@ -6,6 +6,7 @@ import '../motion/motion.dart';
 // GoRouter config (`config/routes`) builds every page through these, and
 // features present sheets/dialogs through [showJameiaBottomSheet] /
 // [showJameiaDialog] — one motion language for all navigation.
+export 'jameia_fade_through_page.dart';
 export 'jameia_slide_up_transition_page.dart';
 export 'jameia_snack_bar.dart';
 export 'jameia_transition_page.dart';
@@ -15,6 +16,8 @@ export 'route_observer.dart';
 /// (500ms `large` variant for big sheets). One place for the sheet duration /
 /// curve so features stop relying on Material's default 250ms/standard curve.
 /// [MotionGuard] collapses motion when reduced. MOTION_AND_NAVIGATION.md §6.
+/// [elevation] lets a transparent sheet (one that draws its own card) drop
+/// the Material shadow.
 Future<T?> showJameiaBottomSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
@@ -22,6 +25,7 @@ Future<T?> showJameiaBottomSheet<T>(
   bool isScrollControlled = false,
   Color? backgroundColor,
   ShapeBorder? shape,
+  double? elevation,
 }) {
   final base = large ? AppMotion.sheetLarge : AppMotion.page; // 500ms : 300ms
   return showModalBottomSheet<T>(
@@ -29,6 +33,7 @@ Future<T?> showJameiaBottomSheet<T>(
     isScrollControlled: isScrollControlled,
     backgroundColor: backgroundColor,
     shape: shape,
+    elevation: elevation,
     sheetAnimationStyle: AnimationStyle(
       duration: MotionGuard.duration(context, base),
       reverseDuration: MotionGuard.duration(context, AppMotion.medium),

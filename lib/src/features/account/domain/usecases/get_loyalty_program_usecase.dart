@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
-import '../entities/loyalty_program.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 import '../repositories/loyalty_repository.dart';
 
 /// The store's loyalty programme (rates, minimum, bonuses).

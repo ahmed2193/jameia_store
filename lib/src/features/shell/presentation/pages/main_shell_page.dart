@@ -56,24 +56,28 @@ class _MainShellPageState extends State<MainShellPage> {
       buildWhen: (p, c) => p.locale != c.locale,
       builder: (context, state) {
         final tabs = widget.tabs;
+        // Keyed by language so a switch recreates the tab Elements (and thus
+        // their State): strings a tab caches in State would otherwise stay
+        // in the old language. Cost: tab scroll resets on a language switch.
+        final body = IndexedStack(
+          key: ValueKey(state.languageCode),
+          index: _index,
+          children: [
+            tabs.home(context),
+            tabs.search(context),
+            ShellBasketTab(
+              tabs: tabs,
+              active: _index == ShellBottomNav.cartTab,
+              onBrowse: () => _select(ShellBottomNav.homeTab),
+            ),
+            tabs.mine(context),
+          ],
+        );
+        final overlay = tabs.overlay;
         return Scaffold(
-          // Keyed by language so a switch recreates the tab Elements (and thus
-          // their State): strings a tab caches in State would otherwise stay
-          // in the old language. Cost: tab scroll resets on a language switch.
-          body: IndexedStack(
-            key: ValueKey(state.languageCode),
-            index: _index,
-            children: [
-              tabs.home(context),
-              tabs.search(context),
-              ShellBasketTab(
-                tabs: tabs,
-                active: _index == ShellBottomNav.cartTab,
-                onBrowse: () => _select(ShellBottomNav.homeTab),
-              ),
-              tabs.mine(context),
-            ],
-          ),
+          // The overlay (the assistant's buddy) floats over the tab bodies,
+          // above the bottom nav; the bodies pass through it untouched.
+          body: overlay == null ? body : overlay(ShellTab.values[_index], body),
           bottomNavigationBar: ShellBottomNav(
             index: _index,
             cartIconKey: _cartIconKey,

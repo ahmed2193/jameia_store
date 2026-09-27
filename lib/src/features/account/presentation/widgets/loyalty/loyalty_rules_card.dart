@@ -5,7 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../domain/entities/loyalty_program.dart';
+import '../../../../../core/domain/entities/loyalty_program.dart';
 import 'loyalty_rule_row.dart';
 
 /// "How it works": earn rate, what a point is worth, the redemption minimum

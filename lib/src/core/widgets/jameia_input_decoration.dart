@@ -20,30 +20,44 @@ abstract final class JameiaInputDecoration {
     borderSide: BorderSide(color: AppColors.divider, width: AppSize.s1),
   );
 
+  static const OutlineInputBorder _refused = OutlineInputBorder(
+    borderRadius: _radius,
+    borderSide: BorderSide(color: AppColors.error, width: AppSize.s1),
+  );
+
   static const OutlineInputBorder _focused = OutlineInputBorder(
     borderRadius: _radius,
     borderSide: BorderSide(color: AppColors.primaryText, width: AppSize.s1_5),
   );
 
-  /// [counterText] `''` hides the counter of a `maxLength` field.
+  /// [counterText] `''` hides the counter of a `maxLength` field. [error]
+  /// draws the resting outline in [AppColors.error] while the text below
+  /// the field says what is wrong (a refused code); the focused outline
+  /// stays ink.
   static InputDecoration outlined({
     required String hintText,
     String? counterText,
-  }) => InputDecoration(
-    hintText: hintText,
-    counterText: counterText,
-    filled: true,
-    fillColor: AppColors.white,
-    isDense: true,
-    contentPadding: const EdgeInsetsDirectional.symmetric(
-      horizontal: AppSpacing.s16,
-      vertical: AppSpacing.s14,
-    ),
-    hintStyle: AppTextStyles.itemTitle.copyWith(color: AppColors.tertiaryText),
-    counterStyle: AppTextStyles.meta,
-    border: _idle,
-    enabledBorder: _idle,
-    disabledBorder: _idle,
-    focusedBorder: _focused,
-  );
+    bool error = false,
+  }) {
+    final resting = error ? _refused : _idle;
+    return InputDecoration(
+      hintText: hintText,
+      counterText: counterText,
+      filled: true,
+      fillColor: AppColors.white,
+      isDense: true,
+      contentPadding: const EdgeInsetsDirectional.symmetric(
+        horizontal: AppSpacing.s16,
+        vertical: AppSpacing.s14,
+      ),
+      hintStyle: AppTextStyles.itemTitle.copyWith(
+        color: AppColors.tertiaryText,
+      ),
+      counterStyle: AppTextStyles.meta,
+      border: resting,
+      enabledBorder: resting,
+      disabledBorder: _idle,
+      focusedBorder: _focused,
+    );
+  }
 }

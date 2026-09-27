@@ -26,6 +26,8 @@ class Routes {
   static const String skuModal = '/sku-modal';
   static const String cartPreview = '/cart-preview';
   static const String checkout = '/checkout'; // order confirm
+  // Coupons + offers for the open checkout; extra: String? branchId.
+  static const String checkoutVouchers = '/checkout-vouchers';
 
   // Backend catalogue (jm3eia API) — slugs travel in immutable args classes
   static const String categories = '/categories'; // the whole category tree

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/domain/entities/auth_customer_entity.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
-import '../../domain/entities/loyalty_program.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 import '../../domain/entities/profile_update.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/update_profile_usecase.dart';

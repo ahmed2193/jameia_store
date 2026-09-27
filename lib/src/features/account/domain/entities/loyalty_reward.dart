@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'loyalty_program.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 
 /// One redemption tier on the Rewards screen: spend [points] for a basket
 /// discount worth [valueFils] (`POST /v1/cart/loyalty {points}`).

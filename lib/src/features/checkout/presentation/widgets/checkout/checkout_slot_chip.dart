@@ -8,10 +8,11 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// One delivery window in the slot sheet: a 36 dp pill inside a 44 dp tap
-/// target. Selected → ink fill and a white label; bookable → white with a
-/// hairline; full → a muted fill that ignores taps. The fill cross-fades and
-/// the pill dips a little under the finger.
+/// One delivery window in the slot sheet, as a Keeta choice: a 36 dp box
+/// (8 dp corners) inside a 44 dp tap target. Selected → a light brand fill,
+/// a brand hairline and bold letters; bookable → white with a grey
+/// hairline; full → a muted fill that ignores taps. The fill and border
+/// cross-fade and the box dips a little under the finger.
 class CheckoutSlotChip extends StatelessWidget {
   const CheckoutSlotChip({
     super.key,
@@ -31,25 +32,27 @@ class CheckoutSlotChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fill = selected
-        ? AppColors.primaryText
+        ? AppColors.brandLightBg
         : enabled
         ? AppColors.white
         : AppColors.smallBackground;
-    final ink = selected
-        ? AppColors.white
+    final side = selected
+        ? const BorderSide(color: AppColors.primary)
         : enabled
-        ? AppColors.primaryText
-        : AppColors.disabledText;
-    final side = !selected && enabled
         ? const BorderSide(color: AppColors.divider)
         : BorderSide.none;
+    final style = selected
+        ? AppTextStyles.label.copyWith(fontWeight: AppTextStyles.bold)
+        : AppTextStyles.label.copyWith(
+            color: enabled ? AppColors.primaryText : AppColors.disabledText,
+          );
     return Semantics(
       button: true,
       selected: selected,
       enabled: enabled,
       label: label,
       excludeSemantics: true,
-      // The pill's own gesture sits under excludeSemantics: without this a
+      // The box's own gesture sits under excludeSemantics: without this a
       // screen reader would announce a button it cannot press.
       onTap: enabled ? onTap : null,
       child: PressScale(
@@ -66,18 +69,24 @@ class CheckoutSlotChip extends StatelessWidget {
               curve: AppMotion.signature,
               constraints: const BoxConstraints(minHeight: AppSize.s36),
               padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AppSpacing.s16,
+                horizontal: AppSpacing.s12,
                 vertical: AppSpacing.s6,
               ),
+              alignment: Alignment.center,
               decoration: ShapeDecoration(
                 color: fill,
-                shape: StadiumBorder(side: side),
+                shape: RoundedRectangleBorder(
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(AppSize.r8),
+                  ),
+                  side: side,
+                ),
               ),
               child: Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.label.copyWith(color: ink),
+                style: style,
               ),
             ),
           ),

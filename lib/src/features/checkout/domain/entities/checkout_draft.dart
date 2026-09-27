@@ -37,13 +37,6 @@ class CheckoutDraft extends Equatable {
   bool get needsSlot => timing == DeliveryTiming.scheduled && slot == null;
   bool get notesTooLong => notes.length > maxNotesLength;
 
-  /// Everything `POST /v1/orders` needs is chosen and valid.
-  bool get isComplete =>
-      hasDestination &&
-      !needsSlot &&
-      !notesTooLong &&
-      paymentMethod != OrderPaymentMethod.other;
-
   CheckoutDraft copyWith({
     FulfillmentMode? mode,
     String? addressId,
@@ -61,6 +54,20 @@ class CheckoutDraft extends Equatable {
     slot: clearSlot ? null : slot ?? this.slot,
     paymentMethod: paymentMethod ?? this.paymentMethod,
     notes: notes ?? this.notes,
+  );
+
+  /// This draft with the destination of [other] — its mode, address and
+  /// branch, nulls included — and everything else (timing, slot, payment,
+  /// notes) kept. Puts a destination back after the server refused a new
+  /// one, so the page never shows an address the order would not go to.
+  CheckoutDraft withDestinationOf(CheckoutDraft other) => CheckoutDraft(
+    mode: other.mode,
+    addressId: other.addressId,
+    branchId: other.branchId,
+    timing: timing,
+    slot: slot,
+    paymentMethod: paymentMethod,
+    notes: notes,
   );
 
   @override

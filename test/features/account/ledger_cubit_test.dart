@@ -5,7 +5,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/loyalty_program.dart';
+import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/wallet_entry_entity.dart';
 import 'package:jameia_mart/src/features/account/domain/usecases/get_ledger_usecase.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/ledger_cubit.dart';

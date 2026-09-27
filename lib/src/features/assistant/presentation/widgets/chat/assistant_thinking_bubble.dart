@@ -11,6 +11,7 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/branded_dot_loader.dart';
+import '../mascot/assistant_mascot_mood.dart';
 import 'assistant_avatar.dart';
 import 'assistant_tool_labels.dart';
 
@@ -60,7 +61,7 @@ class _AssistantThinkingBubbleState extends State<AssistantThinkingBubble> {
             .tr();
     return Row(
       children: [
-        const AssistantAvatar(),
+        const AssistantAvatar(mood: AssistantMascotMood.talking),
         const SizedBox(width: AppSpacing.s8),
         Flexible(
           child: Semantics(

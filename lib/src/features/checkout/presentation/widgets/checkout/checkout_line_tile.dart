@@ -6,10 +6,10 @@ import '../../../../../core/domain/entities/cart_line_ref.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import 'checkout_line_row.dart';
 
-/// The row of the cart line [lineRef]. It selects that one line (compared by
-/// value), so a re-price after a destination change rebuilds only the rows
-/// whose line actually changed — and only the visible ones, since the list
-/// builds lazily.
+/// The items-sheet row of the cart line [lineRef]. It selects that one line
+/// (compared by value), so a re-price after a destination change rebuilds
+/// only the rows whose line actually changed — and only the visible ones,
+/// since the list builds lazily.
 class CheckoutLineTile extends StatelessWidget {
   const CheckoutLineTile({super.key, required this.lineRef});
 
@@ -21,9 +21,7 @@ class CheckoutLineTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final line = context.select<CartCubit, CartLineEntity?>(
-      (cubit) => cubit.state.cart.lines
-          .where((line) => line.ref == lineRef)
-          .firstOrNull,
+      (cubit) => cubit.state.cart.lineFor(lineRef),
     );
     if (line == null) return const SizedBox.shrink();
     return CheckoutLineRow(line: line);

@@ -23,7 +23,7 @@ class AssistantChatTitle extends StatelessWidget {
     );
     return Row(
       children: [
-        const AssistantAvatar(size: AppSize.s32),
+        const AssistantAvatar(size: AppSize.s32, alive: true),
         const SizedBox(width: AppSpacing.s8),
         Expanded(
           child: Column(

@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 ///     Material3 1.4.0 — as `m3_sys_motion_duration_*` and `m3_sys_motion_easing_*`.
 ///     The durations/curves below map directly onto those tokens (cited inline).
 ///   • `assets/splash_lottie_default.json` — the one real Lottie (v5.7.1, fr=50,
-///     op=92 ⇒ 1.84s) grounds the splash timing.
+///     op=92 ⇒ 1.84s); the talabat-style splash keeps to that ~2 s range.
 ///   • `assets/*.fsh` GLSL shaders ground `core/motion/shader_transition.dart`.
 /// Values tagged [INFERENCE] have no exact apk token and are reasoned choices.
 class AppMotion {
@@ -115,15 +115,36 @@ class AppMotion {
   static const Duration lottieFollowStore = Duration(milliseconds: 2000);
   static const Duration lottieDotLoader = Duration(milliseconds: 1600);
 
-  // ── Splash intro (grounded: splash_lottie_default.json, fr=50 op=92 ⇒ 1.84s) ─
-  /// Branded splash fade-in + gentle Ken-Burns zoom-settle length. One-shot,
-  /// gated by [MotionGuard] (reduced-motion → instant). 1600ms sits just under
-  /// the real splash Lottie's 1.84s so the art settles before navigation.
-  static const Duration splashKenBurns = Duration(milliseconds: 1600);
+  // ── Splash (talabat-style brand intro, features/splash) ────────────────────
+  // One-shot runs from the launch-screen frame to the hand-off, gated by
+  // [MotionGuard]. talabat's own intro is ~2 s of logo motion on the brand
+  // colour; ours stay in that range. [INFERENCE] — design choices.
+  /// Cart hops, glides into the "J" and the name springs up around it.
+  static const Duration splashWordmark = Duration(milliseconds: 2000);
 
-  /// Ken-Burns start scale for the splash art — settles 1.08 → 1.0 (subtle
-  /// push-in). [INFERENCE] — a design choice, not encoded in the Lottie.
-  static const double splashZoomBegin = 1.08;
+  /// Groceries drop into the cart before it becomes the "J".
+  static const Duration splashBasket = Duration(milliseconds: 2350);
+
+  /// A white disc bursts out of the cart into the full-colour logo on white.
+  static const Duration splashBurst = Duration(milliseconds: 2000);
+
+  /// Reduced motion: how long the finished logo stays before the hand-off.
+  static const Duration splashReducedHold = Duration(milliseconds: 700);
+
+  /// The launch frame stays still this long after it reached the screen, so
+  /// the OS splash's exit cross-fade ends on an identical picture before
+  /// anything moves.
+  static const Duration splashHandOffHold = Duration(milliseconds: 250);
+
+  /// Longest wait for the engine to report the first rasterized frame before
+  /// the intro starts anyway (test bindings never report frame timings).
+  static const Duration splashFirstFrameWait = Duration(milliseconds: 600);
+
+  /// A ring of colour spreading from a finger on the splash.
+  static const Duration splashTapRipple = Duration(milliseconds: 700);
+
+  /// The cart's happy hop when it is tapped on the splash.
+  static const Duration splashCartHop = Duration(milliseconds: 520);
 
   // ── Curves — Material 3 `m3_sys_motion_easing_*` (resources.arsc) ──────────
   /// Signature enter curve = `m3_sys_motion_easing_legacy_decelerate` =

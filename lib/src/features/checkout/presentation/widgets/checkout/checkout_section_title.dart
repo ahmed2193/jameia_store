@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/widgets/jameia_section_header.dart';
 
-/// Title above a checkout section: the flow's bold group heading in the page
-/// gutter, 24 dp above and 8 dp below (docs/design_system.md).
+/// Title above a checkout section, Keeta-style: 18 sp bold in the 12 dp
+/// gutter, 20 dp above and 12 dp below.
 class CheckoutSectionTitle extends StatelessWidget {
   const CheckoutSectionTitle(this.text, {super.key});
 
@@ -12,9 +12,17 @@ class CheckoutSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JameiaSectionHeader(
-      title: text,
-      titleStyle: AppTextStyles.groupTitle,
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.s12,
+        AppSpacing.s20,
+        AppSpacing.s12,
+        AppSpacing.s12,
+      ),
+      child: Semantics(
+        header: true,
+        child: Text(text, style: AppTextStyles.groupTitle),
+      ),
     );
   }
 }

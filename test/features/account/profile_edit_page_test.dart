@@ -22,7 +22,7 @@ import 'package:jameia_mart/src/config/theme/app_theme.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/utils/formatters.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/loyalty_program.dart';
+import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/loyalty_program_cubit.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/profile_cubit.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/setting_cubit.dart';

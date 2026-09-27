@@ -39,6 +39,11 @@ class DeliverySlotEntity extends Equatable {
   /// What `POST /v1/orders` needs to book it.
   bool get isSelectable => isBookable && templateId.isNotEmpty;
 
+  /// The same window as [other] — same day, same template. A re-read
+  /// carries a fresh capacity, so `==` is not enough.
+  bool isSameWindow(DeliverySlotEntity other) =>
+      date == other.date && templateId == other.templateId;
+
   @override
   List<Object?> get props => [
     templateId,

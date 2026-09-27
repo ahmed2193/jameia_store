@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/design/jameia_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/jameia_mark_icon.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import 'shell_nav_item.dart';
@@ -45,8 +46,10 @@ class ShellBottomNav extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
+                // Home wears the app icon's cart: it lights up as the icon
+                // itself when selected.
                 child: ShellNavItem(
-                  icon: Icons.home_rounded,
+                  icon: JameiaMarkIcon(active: index == homeTab),
                   label: 'tab_home'.tr(),
                   selected: index == homeTab,
                   onTap: () => onTap(homeTab),
@@ -54,7 +57,7 @@ class ShellBottomNav extends StatelessWidget {
               ),
               Expanded(
                 child: ShellNavItem(
-                  icon: Icons.search_rounded,
+                  icon: const Icon(Icons.search_rounded),
                   label: 'tab_search'.tr(),
                   selected: index == searchTab,
                   onTap: () => onTap(searchTab),
@@ -65,7 +68,7 @@ class ShellBottomNav extends StatelessWidget {
                 child: BlocSelector<CartCubit, CartState, int>(
                   selector: (state) => state.totalQty,
                   builder: (context, count) => ShellNavItem(
-                    icon: JameiaIcons.cart,
+                    icon: const Icon(JameiaIcons.cart),
                     label: 'tab_cart'.tr(),
                     selected: index == cartTab,
                     badge: count,
@@ -76,7 +79,7 @@ class ShellBottomNav extends StatelessWidget {
               ),
               Expanded(
                 child: ShellNavItem(
-                  icon: Icons.person_rounded,
+                  icon: const Icon(Icons.person_rounded),
                   label: 'tab_mine'.tr(),
                   selected: index == mineTab,
                   onTap: () => onTap(mineTab),

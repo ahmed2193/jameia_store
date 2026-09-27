@@ -7,8 +7,9 @@ import '../../../../../core/domain/entities/cart_entity.dart';
 import '../../../../../core/widgets/jameia_segmented_control.dart';
 import '../../cubit/checkout_cubit.dart';
 
-/// Delivery / pickup switch: a pill segmented control whose dark thumb glides
-/// to the chosen mode (a selection haptic only when the mode changes).
+/// Delivery / pickup switch at the top of the page's first block: a pill
+/// segmented control in the 12 dp Keeta gutter whose dark thumb glides to
+/// the chosen mode (a selection haptic only when the mode changes).
 class CheckoutModeToggle extends StatelessWidget {
   const CheckoutModeToggle({super.key});
 
@@ -26,10 +27,10 @@ class CheckoutModeToggle extends StatelessWidget {
     );
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.gutter,
-        AppSpacing.s16,
-        AppSpacing.gutter,
-        0,
+        AppSpacing.s12,
+        AppSpacing.s12,
+        AppSpacing.s12,
+        AppSpacing.s4,
       ),
       child: JameiaSegmentedControl<FulfillmentMode>(
         values: _modes,

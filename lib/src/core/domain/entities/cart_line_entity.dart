@@ -52,6 +52,24 @@ class CartLineEntity extends Equatable {
     return compareAt != null && compareAt > unitPriceFils;
   }
 
+  /// What one unit saves against its struck [compareAtFils]; `0` without a
+  /// discount.
+  int get unitSavingFils => hasDiscount ? compareAtFils! - unitPriceFils : 0;
+
+  /// What the whole line saves (`(compareAt − unitPrice) × quantity`).
+  int get savingFils => unitSavingFils * quantity;
+
+  /// Whole percent off, rounded the way the catalogue card rounds it
+  /// (`CatalogProductEntity.discountPercent`), so the same product never
+  /// shows two different percentages; `null` without a discount.
+  int? get savePercent => hasDiscount
+      ? ((unitSavingFils * _percent) / compareAtFils!).round()
+      : null;
+
+  double get savingKd => savingFils / CatalogProductEntity.filsPerDinar;
+
+  static const int _percent = 100;
+
   double get unitPriceKd => unitPriceFils / CatalogProductEntity.filsPerDinar;
   double get lineTotalKd => lineTotalFils / CatalogProductEntity.filsPerDinar;
 

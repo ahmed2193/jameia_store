@@ -82,6 +82,44 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
       expect(find.text('bag'), findsOneWidget);
     });
+
+    testWidgets('CT-F1 a counted float rests', (tester) async {
+      const float = FloatLoop(
+        count: 6,
+        period: Duration(milliseconds: 100),
+        child: Text('hint'),
+      );
+      await tester.pumpWidget(_host(float));
+      expect(tester.hasRunningAnimations, isTrue);
+
+      await tester.pumpAndSettle();
+      expect(tester.hasRunningAnimations, isFalse);
+      // Six legs end where they started (no offset left over).
+      final rest = tester.getTopLeft(find.text('hint'));
+      expect(
+        tester
+            .widget<Transform>(
+              find
+                  .ancestor(
+                    of: find.text('hint'),
+                    matching: find.byType(Transform),
+                  )
+                  .first,
+            )
+            .transform
+            .getTranslation()
+            .y,
+        0,
+      );
+
+      // A MediaQuery change reaches didChangeDependencies; the float that
+      // already played does not start again.
+      await tester.pumpWidget(_host(float, reduced: true));
+      await tester.pumpWidget(_host(float));
+      await tester.pump();
+      expect(tester.hasRunningAnimations, isFalse);
+      expect(tester.getTopLeft(find.text('hint')), rest);
+    });
   });
 
   group('CountUpText', () {

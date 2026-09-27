@@ -8,11 +8,24 @@ import '../motion/spring_curve.dart';
 import '../responsive/app_size.dart';
 import 'jameia_segment.dart';
 
-/// Pill SEGMENTED CONTROL with one dark thumb that glides (a calm spring,
+/// The thumb of a [JameiaSegmentedControl].
+enum JameiaSegmentTone {
+  /// A dark ink thumb with white labels (settings' language switch).
+  dark,
+
+  /// Keeta's choice language: a mint thumb with a green hairline, the
+  /// chosen label bold deep green and its icon green (checkout's delivery /
+  /// pickup switch).
+  brandSoft,
+}
+
+/// Pill SEGMENTED CONTROL with one thumb that glides (a calm spring,
 /// [AppSprings.calm]) under the selected segment — the language switch in
 /// settings, any two-to-four way choice. Equal-width segments share the
 /// width; a selection haptic fires only when the value actually changes; the
-/// thumb follows RTL. Reduced motion → the thumb jumps.
+/// thumb follows RTL. [tone] picks the thumb (see [JameiaSegmentTone]);
+/// [iconOf] puts an 18 dp glyph before each label. Reduced motion → the
+/// thumb jumps and the colours change at once.
 class JameiaSegmentedControl<T> extends StatelessWidget {
   const JameiaSegmentedControl({
     super.key,
@@ -21,9 +34,28 @@ class JameiaSegmentedControl<T> extends StatelessWidget {
     required this.labelOf,
     required this.onChanged,
     this.height = AppSize.s44,
+    this.tone = JameiaSegmentTone.dark,
+    this.iconOf,
   });
 
   static const double _inset = AppSpacing.s4;
+
+  static const BorderRadius _pill = BorderRadius.all(
+    Radius.circular(AppRadius.pill),
+  );
+
+  static const BoxDecoration _darkThumb = BoxDecoration(
+    color: AppColors.primaryText,
+    borderRadius: _pill,
+  );
+
+  static const BoxDecoration _brandSoftThumb = BoxDecoration(
+    color: AppColors.brandWash,
+    border: Border.fromBorderSide(
+      BorderSide(color: AppColors.primary, width: AppSize.s1),
+    ),
+    borderRadius: _pill,
+  );
 
   final List<T> values;
   final T selected;
@@ -32,17 +64,22 @@ class JameiaSegmentedControl<T> extends StatelessWidget {
   /// `null` = the whole control is disabled (e.g. while a change runs).
   final ValueChanged<T>? onChanged;
   final double height;
+  final JameiaSegmentTone tone;
+
+  /// An optional glyph before each label.
+  final IconData? Function(T value)? iconOf;
 
   @override
   Widget build(BuildContext context) {
     final index = values.indexOf(selected);
     final change = onChanged;
+    final iconOf = this.iconOf;
     return Container(
       height: height,
       padding: const EdgeInsets.all(_inset),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.smallBackground,
-        borderRadius: BorderRadius.circular(AppRadius.pill),
+        borderRadius: _pill,
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -60,13 +97,10 @@ class JameiaSegmentedControl<T> extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   width: width,
-                  child: const DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryText,
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(AppRadius.pill),
-                      ),
-                    ),
+                  child: DecoratedBox(
+                    decoration: tone == JameiaSegmentTone.brandSoft
+                        ? _brandSoftThumb
+                        : _darkThumb,
                   ),
                 ),
               Row(
@@ -76,6 +110,8 @@ class JameiaSegmentedControl<T> extends StatelessWidget {
                       child: JameiaSegment(
                         label: labelOf(value),
                         selected: value == selected,
+                        tone: tone,
+                        icon: iconOf?.call(value),
                         onTap: change == null
                             ? null
                             : () {

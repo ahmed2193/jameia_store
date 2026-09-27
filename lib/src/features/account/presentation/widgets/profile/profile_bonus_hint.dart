@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/auth_customer_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../domain/entities/loyalty_program.dart';
+import '../../../../../core/domain/entities/loyalty_program.dart';
 import '../../cubit/loyalty_program_cubit.dart';
 import '../../cubit/profile_cubit.dart';
 import '../../cubit/profile_state.dart';

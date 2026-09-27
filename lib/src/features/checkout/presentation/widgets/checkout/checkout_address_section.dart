@@ -6,14 +6,15 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/domain/entities/jameia_address_entity.dart';
 import '../../../../../core/utils/address_display.dart';
+import '../../../../../core/utils/formatters.dart';
 import '../../../../address/presentation/cubit/address_book_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_destination_row.dart';
-import 'checkout_section.dart';
 
-/// Delivery destination: the chosen saved address (from the app-global
-/// address book) with the zone the server resolved, or the prompt to pick
-/// one. Tapping opens the address list, which pops the picked address.
+/// Delivery destination as one flat row: the chosen saved address (from the
+/// app-global address book) with the zone the server resolved, or the
+/// prompt to pick one. Tapping opens the address list, which pops the
+/// picked address (a guest lands on that list's own sign-in prompt).
 class CheckoutAddressSection extends StatelessWidget {
   const CheckoutAddressSection({super.key});
 
@@ -26,34 +27,28 @@ class CheckoutAddressSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final addressId = context.select<CheckoutCubit, String?>(
-      (cubit) => cubit.state.draft.addressId,
-    );
-    final zone = context.select<CheckoutCubit, String>(
-      (cubit) => cubit.state.selection?.zoneName ?? '',
-    );
-    final selecting = context.select<CheckoutCubit, bool>(
-      (cubit) => cubit.state.isSelecting,
-    );
+    // Values only: a notes keystroke writes a new draft but rebuilds
+    // nothing here.
+    final (addressId, zone, selecting) = context
+        .select<CheckoutCubit, (String?, String, bool)>(
+          (cubit) => (
+            cubit.state.draft.addressId,
+            cubit.state.selection?.zoneName ?? '',
+            cubit.state.isSelecting,
+          ),
+        );
     final address = context.select<AddressBookCubit, JameiaAddressEntity?>(
       (cubit) => addressId == null ? null : cubit.state.book.byId(addressId),
     );
-    return CheckoutSection(
-      title: 'checkout.address_title'.tr(),
-      child: CheckoutDestinationRow(
-        icon: Icons.location_on_outlined,
-        title: address == null
-            ? 'checkout.address_choose'.tr()
-            : address.tagText,
-        subtitle: address == null
-            ? null
-            : zone.isEmpty
-            ? address.shortPlace
-            : '${address.shortPlace} · $zone',
-        chosen: address != null,
-        selecting: selecting,
-        onTap: () => _choose(context),
-      ),
+    return CheckoutDestinationRow(
+      icon: Icons.location_on_outlined,
+      title: address == null
+          ? 'checkout.address_choose'.tr()
+          : zone.isEmpty
+          ? address.shortPlace
+          : '${address.tagText}${Formatters.middot}$zone',
+      selecting: selecting,
+      onTap: () => _choose(context),
     );
   }
 }

@@ -23,6 +23,7 @@ class OfferModel {
     this.priority = 0,
     this.stackable = false,
     this.endsAt,
+    this.branchIds = const <String>[],
   });
 
   static const String mongoIdKey = '_id';
@@ -44,6 +45,7 @@ class OfferModel {
   static const String priorityKey = 'priority';
   static const String stackableKey = 'stackable';
   static const String endsAtKey = 'endsAt';
+  static const String branchIdsKey = 'branchIds';
   static const String activeStatus = 'active';
 
   /// Throws [ParsingException] without an id.
@@ -73,6 +75,7 @@ class OfferModel {
       priority: JsonRead.integer(json[priorityKey]) ?? 0,
       stackable: JsonRead.flag(json[stackableKey]),
       endsAt: JsonRead.dateTime(json[endsAtKey]),
+      branchIds: JsonRead.strings(json[branchIdsKey]),
     );
   }
 
@@ -103,4 +106,7 @@ class OfferModel {
   final int priority;
   final bool stackable;
   final DateTime? endsAt;
+
+  /// The branches the offer runs at (non-string rows skipped); empty = all.
+  final List<String> branchIds;
 }

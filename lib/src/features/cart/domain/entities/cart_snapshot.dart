@@ -17,6 +17,7 @@ class CartSnapshot extends Equatable {
     this.isUnsynced = false,
     this.failure,
     this.failedAction = CartAction.none,
+    this.cause = CartAction.none,
     this.revision = 0,
   });
 
@@ -42,6 +43,13 @@ class CartSnapshot extends Equatable {
   /// The most recent failed operation, cleared on the next snapshot.
   final Failure? failure;
   final CartAction failedAction;
+
+  /// The server-confirmed action (coupon, loyalty, express …) whose reply
+  /// this snapshot carries; [CartAction.none] for taps, syncs, fetches and
+  /// restores. The snapshot stream is asynchronous, so it lands AFTER the
+  /// action's own result: a listener tells "the customer did this" from
+  /// "the server changed it" by this, never by the busy flag.
+  final CartAction cause;
 
   /// Bumps on every emission so two equal-looking failures still reach
   /// listeners.
@@ -70,5 +78,6 @@ class CartSnapshot extends Equatable {
     isUnsynced,
     failure,
     failedAction,
+    cause,
   ];
 }

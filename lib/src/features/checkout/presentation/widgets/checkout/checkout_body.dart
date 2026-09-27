@@ -1,83 +1,106 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/motion/motion.dart';
-import '../../../../../core/motion/size_fade_switcher.dart';
 import '../../../../../core/responsive/content_clamp.dart';
 import '../../cubit/checkout_cubit.dart';
 import '../../cubit/checkout_state.dart';
-import 'checkout_address_section.dart';
-import 'checkout_branch_section.dart';
-import 'checkout_items_section.dart';
-import 'checkout_mode_toggle.dart';
-import 'checkout_notes_field.dart';
+import 'checkout_band.dart';
+import 'checkout_info_section.dart';
+import 'checkout_options_section.dart';
+import 'checkout_order_summary.dart';
 import 'checkout_payment_section.dart';
 import 'checkout_place_order_bar.dart';
-import 'checkout_summary.dart';
-import 'checkout_timing_section.dart';
+import 'checkout_rail_section.dart';
+import 'checkout_receipt.dart';
+import 'checkout_savings_hint.dart';
+import 'checkout_savings_section.dart';
+import 'checkout_ui_controller.dart';
+import 'checkout_where_when_block.dart';
 
-/// The loaded checkout: destination, timing, payment, notes, items, totals
-/// and the sticky place-order bar. Each section selects its own slice; the
-/// items build lazily. The rows paint their ink on the card Materials they
-/// sit on, over the white Scaffold.
+/// The loaded checkout, in Keeta's order: where and when (Block A), the
+/// deals rail, then order summary + instant savings + order totals in one
+/// block, payment, additional options and "good to know" — white blocks on
+/// grey bands in ONE scroll view — over the pinned place-order bar, with
+/// the savings hint riding on the bar's button.
 ///
-/// Placing the order resets the cart while this page is still on screen
-/// under the tracking page's entrance, so the scroll view's motion freezes
-/// from then on: nothing resizes, folds or rolls behind the transition.
+/// Each section selects its own slice, so this body builds once: it only
+/// watches whether the order was placed. The page's [CheckoutUiController]
+/// (provided with the page) carries the signals between them.
+///
+/// Any scroll the customer makes (a drag on the page or on the rail)
+/// dismisses the savings hint for the visit. Placing the order resets the
+/// cart while this page is still on screen under the tracking page's
+/// entrance, so the scroll view's motion freezes from then on: nothing
+/// resizes, folds or rolls behind the transition.
 class CheckoutBody extends StatelessWidget {
   const CheckoutBody({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final isPickup = context.select<CheckoutCubit, bool>(
-      (cubit) => cubit.state.draft.isPickup,
-    );
     final placed = context.select<CheckoutCubit, bool>(
       (cubit) => cubit.state.status == CheckoutStatus.placed,
     );
-    final destination = isPickup
-        ? const CheckoutBranchSection()
-        : const CheckoutAddressSection();
+    final ui = context.read<CheckoutUiController>();
     return ContentClamp(
-      child: Column(
+      child: Stack(
         children: [
-          Expanded(
-            child: TickerMode(
-              enabled: !placed,
-              child: CustomScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                slivers: [
-                  const SliverToBoxAdapter(child: CheckoutModeToggle()),
-                  SliverToBoxAdapter(
-                    // The address and the branch section swap in place: the
-                    // height eases to the new one while the old fades out.
-                    // Reduced motion swaps at once — and skips the switcher,
-                    // whose AnimatedSize trips a layout assertion at a zero
-                    // duration.
-                    child: MotionGuard.reduced(context)
-                        ? destination
-                        : SizeFadeSwitcher(
-                            stateKey: isPickup,
-                            child: destination,
+          Column(
+            children: [
+              Expanded(
+                child: TickerMode(
+                  enabled: !placed,
+                  child: NotificationListener<UserScrollNotification>(
+                    onNotification: (notification) {
+                      if (notification.direction != ScrollDirection.idle) {
+                        ui.hintDismissed.value = true;
+                      }
+                      return false;
+                    },
+                    // The route's primary scroll view: a blocked tap on
+                    // "Place order" scrolls it back to the top.
+                    child: const CustomScrollView(
+                      primary: true,
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      slivers: [
+                        SliverToBoxAdapter(child: CheckoutWhereWhenBlock()),
+                        SliverToBoxAdapter(child: CheckoutRailSection()),
+                        SliverToBoxAdapter(
+                          child: CheckoutBand(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                CheckoutOrderSummary(),
+                                CheckoutSavingsSection(),
+                                CheckoutReceipt(),
+                              ],
+                            ),
                           ),
-                  ),
-                  const SliverToBoxAdapter(child: CheckoutTimingSection()),
-                  const SliverToBoxAdapter(child: CheckoutPaymentSection()),
-                  const SliverToBoxAdapter(child: CheckoutNotesField()),
-                  const CheckoutItemsSection(),
-                  const SliverPadding(
-                    padding: EdgeInsetsDirectional.only(
-                      bottom: AppSpacing.section,
+                        ),
+                        SliverToBoxAdapter(
+                          child: CheckoutBand(child: CheckoutPaymentSection()),
+                        ),
+                        SliverToBoxAdapter(
+                          child: CheckoutBand(child: CheckoutOptionsSection()),
+                        ),
+                        SliverToBoxAdapter(
+                          child: CheckoutBand(child: CheckoutInfoSection()),
+                        ),
+                        SliverToBoxAdapter(
+                          child: SizedBox(height: AppSpacing.s24),
+                        ),
+                      ],
                     ),
-                    sliver: SliverToBoxAdapter(child: CheckoutSummary()),
                   ),
-                ],
+                ),
               ),
-            ),
+              const CheckoutPlaceOrderBar(),
+            ],
           ),
-          const CheckoutPlaceOrderBar(),
+          const CheckoutSavingsHint(),
         ],
       ),
     );

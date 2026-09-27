@@ -164,6 +164,7 @@ void main() {
       adapter = FakeHttpClientAdapter((_, _) => okBody(orderJson()));
       final dataSource = CheckoutRemoteDataSourceImpl(
         DioConsumer(Dio()..httpClientAdapter = adapter),
+        FakeLocaleProvider('en'),
       );
 
       final order = await dataSource.placeOrder(<String, dynamic>{

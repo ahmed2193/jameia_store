@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
@@ -231,6 +233,34 @@ void main() {
       );
       await dataSource.getOffers();
       expect(adapter.requests, hasLength(3));
+    });
+
+    test('two readers while the first read is in flight share it', () async {
+      final reply = Completer<void>();
+      final dataSource = build(
+        FakeHttpClientAdapter((_, _) async {
+          await reply.future;
+          return okBody({
+            'data': [
+              {'_id': 'of-free', 'name': 'Free delivery'},
+            ],
+            'pagination': {
+              'total': 1,
+              'page': 1,
+              'limit': 100,
+              'hasMore': false,
+            },
+          });
+        }),
+      );
+
+      final checkout = dataSource.getOffers();
+      final vouchers = dataSource.getOffers();
+      reply.complete();
+
+      expect((await checkout).single.id, 'of-free');
+      expect((await vouchers).single.id, 'of-free');
+      expect(adapter.requests, hasLength(1));
     });
   });
 

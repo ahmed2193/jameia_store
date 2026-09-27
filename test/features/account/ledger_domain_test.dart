@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/loyalty_program.dart';
+import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/wallet_entry_entity.dart';
 
 WalletEntryEntity _entry(String id, {int amount = 100}) => WalletEntryEntity(

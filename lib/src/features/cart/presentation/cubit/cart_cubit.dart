@@ -93,6 +93,7 @@ class CartCubit extends Cubit<CartState> with SafeCubitMixin<CartState> {
         isUnsynced: snapshot.isUnsynced,
         failure: snapshot.failure,
         failedAction: snapshot.failedAction,
+        changedBy: snapshot.cause,
         quantityByProduct: snapshot.cart.quantityByProduct,
         revision: snapshot.revision,
       ),

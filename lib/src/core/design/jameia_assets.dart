@@ -37,6 +37,20 @@ class JameiaAssets {
   static const String offerVoucher = 'assets/svg/offer_voucher.svg';
   static const String offerGift = 'assets/svg/offer_gift.svg';
 
+  // ── Checkout glyphs (drawn for the Keeta-style checkout, colour baked in) ──
+  // The "Coupons & offers" disc of the Instant-savings card, the offer ticket
+  // of the vouchers page, the "Enter coupon code" tag, the express badge
+  // (19×13), and the payment / points plates (22 dp).
+  static const String checkoutVoucherDisc =
+      'assets/svg/checkout_voucher_disc.svg';
+  static const String checkoutTicket = 'assets/svg/checkout_ticket.svg';
+  static const String checkoutCodeTag = 'assets/svg/checkout_code_tag.svg';
+  static const String checkoutExpressBolt =
+      'assets/svg/checkout_express_bolt.svg';
+  static const String checkoutWallet = 'assets/svg/checkout_wallet.svg';
+  static const String checkoutCash = 'assets/svg/checkout_cash.svg';
+  static const String checkoutPoints = 'assets/svg/checkout_points.svg';
+
   // ── Brand / logo (home) ─────────────────────────────────────────────────────
   /// The JameiaMart app icon (square, wordmark on the green tile) — the store
   /// badge at the head of home. 1024 px: decode it at the size it is shown.

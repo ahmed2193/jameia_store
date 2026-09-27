@@ -28,6 +28,10 @@ class FlyToCart {
 
   static GlobalKey? get _targetKey => _targets.isEmpty ? null : _targets.last;
 
+  /// Where a flight launched now would land (the top of the target stack).
+  @visibleForTesting
+  static GlobalKey? get debugTarget => _targetKey;
+
   /// Register the base cart badge/icon as the flight destination. Call once (e.g.
   /// in the shell); calling again replaces the base entry (e.g. on shell rebuild).
   static void registerTarget(GlobalKey key) {

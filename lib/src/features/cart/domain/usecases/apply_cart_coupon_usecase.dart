@@ -14,12 +14,10 @@ class ApplyCartCouponUseCase implements UseCase<Unit, ApplyCartCouponParams> {
 
   @override
   Future<Either<Failure, Unit>> call(ApplyCartCouponParams params) {
-    final code = params.code.trim();
-    if (code.length < CartCouponEntity.minCodeLength ||
-        code.length > CartCouponEntity.maxCodeLength) {
+    if (!CartCouponEntity.acceptsCode(params.code)) {
       return Future.value(const Left(ValidationFailure('coupon code length')));
     }
-    return _repository.applyCoupon(code);
+    return _repository.applyCoupon(params.code.trim());
   }
 }
 

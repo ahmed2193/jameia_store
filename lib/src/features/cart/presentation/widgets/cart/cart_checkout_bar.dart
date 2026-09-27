@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/cart_entity.dart';
+import '../../../../../core/domain/entities/cart_savings.dart';
 import '../../../../../core/motion/blocked_tap_shake.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
@@ -113,7 +114,7 @@ class _CartCheckoutBarState extends State<CartCheckoutBar> {
                     child: CartBarSummary(
                       count: state.totalQty,
                       amountKd: state.isUpdating ? null : totals.totalKd,
-                      struckKd: totals.totalBeforeDiscountKd,
+                      struckKd: CartSavings.of(state.cart).struckTotalKd,
                       deliveryKd: state.cart.deliveryQuoteKd,
                       placeholder: 'cart.updating'.tr(),
                       targetKey: widget.inSheet ? _basket : null,

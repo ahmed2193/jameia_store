@@ -3,7 +3,7 @@ import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/ledger_page_model.dart';
 import '../models/loyalty_entry_model.dart';
-import '../models/loyalty_program_model.dart';
+import '../../../../core/data/models/loyalty_program_model.dart';
 
 /// Receives the envelope's `results` (unwrapped by `DioConsumer`); throws
 /// `AppException` only. Bearer + refresh are automatic (`AuthInterceptor`).

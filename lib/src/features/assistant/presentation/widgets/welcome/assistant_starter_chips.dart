@@ -10,6 +10,7 @@ import '../../../domain/entities/assistant_starter.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 import '../chat/assistant_entrance.dart';
 import '../chat/assistant_suggestion_chip.dart';
+import 'assistant_starter_icons.dart';
 
 /// Four ways to start, picked for this moment ("Complete my cart" when the
 /// cart has something, breakfast in the morning, dinner in the evening,
@@ -20,15 +21,6 @@ class AssistantStarterChips extends StatelessWidget {
 
   static const Duration _stagger = Duration(milliseconds: 40);
   static const Offset _fromStart = Offset(-0.06, 0);
-
-  static IconData _iconOf(AssistantStarter starter) => switch (starter) {
-    AssistantStarter.completeCart => Icons.shopping_basket_outlined,
-    AssistantStarter.breakfast => Icons.egg_alt_outlined,
-    AssistantStarter.dinner => Icons.restaurant_outlined,
-    AssistantStarter.offers => Icons.local_offer_outlined,
-    AssistantStarter.order => Icons.local_shipping_outlined,
-    AssistantStarter.delivery => Icons.schedule_rounded,
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +47,7 @@ class AssistantStarterChips extends StatelessWidget {
             curve: AppMotion.signature,
             child: AssistantSuggestionChip(
               label: starter.labelKey.tr(),
-              icon: _iconOf(starter),
+              icon: starter.icon,
               onTap: canSend
                   ? () => context.read<AssistantChatCubit>().send(
                       starter.promptKey.tr(),

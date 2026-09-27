@@ -10,10 +10,18 @@ import '../responsive/app_size.dart';
 /// tall, a highlight on press. Read as one element unless [mergeSemantics] is
 /// false — turn it off when [trailing] is its own control (a switch, a ✕, a
 /// link) so a screen reader can still reach it.
+///
+/// [dense] is the flat Keeta row (checkout): at least 52 dp, a 20 dp leading
+/// icon 12 dp in from the edge, the text [denseGap] after it, a quiet 12 sp
+/// grey sub-line and a small 16 dp grey chevron. A custom [leading] keeps its
+/// own size — give it 20 dp art so the text starts at [denseTextStart].
+/// [divider] draws a hairline under the row from the text start to the end
+/// edge (RTL-safe), the way Keeta separates stacked flat rows.
 class JameiaListRow extends StatelessWidget {
   const JameiaListRow({
     super.key,
     required this.title,
+    this.titleStyle,
     this.subtitle,
     this.subtitleMaxLines,
     this.subtitleWidget,
@@ -24,12 +32,38 @@ class JameiaListRow extends StatelessWidget {
     this.destructive = false,
     this.enabled = true,
     this.mergeSemantics = true,
+    this.dense = false,
+    this.divider = false,
     this.onTap,
   });
 
   static const double _disabledOpacity = 0.45;
 
+  /// The dense row's geometry, public so a block under a dense row (a card
+  /// that starts at the text column) lines up with it.
+  static const double denseMinHeight = AppSize.s52;
+  static const double denseInset = AppSpacing.s12;
+  static const double denseLeadSize = AppSize.s20;
+  static const double denseGap = AppSpacing.s12;
+
+  /// Where a dense row's text starts, from its start edge.
+  static const double denseTextStart = denseInset + denseLeadSize + denseGap;
+
+  /// The dense row's chevron.
+  static const double denseChevronSize = AppSize.s16;
+
+  static const BoxDecoration _hairline = BoxDecoration(
+    border: Border(
+      bottom: BorderSide(color: AppColors.divider, width: AppSize.s1),
+    ),
+  );
+  static const BoxDecoration _plain = BoxDecoration();
+
   final String title;
+
+  /// The title's type (e.g. `itemTitleStrong` for a heading-like row); its
+  /// colour is always the row's ink. Defaults to `itemTitle`.
+  final TextStyle? titleStyle;
   final String? subtitle;
   final int? subtitleMaxLines;
 
@@ -48,6 +82,12 @@ class JameiaListRow extends StatelessWidget {
   final bool destructive;
   final bool enabled;
   final bool mergeSemantics;
+
+  /// The flat Keeta variant (see the class note).
+  final bool dense;
+
+  /// A hairline under the row, from the text start to the end edge.
+  final bool divider;
   final VoidCallback? onTap;
 
   @override
@@ -55,66 +95,99 @@ class JameiaListRow extends StatelessWidget {
     final ink = destructive ? AppColors.errorDeep : AppColors.primaryText;
     final lead =
         leading ??
-        (icon == null ? null : Icon(icon, size: AppSize.s24, color: ink));
+        (icon == null
+            ? null
+            : Icon(
+                icon,
+                size: dense ? denseLeadSize : AppSize.s24,
+                color: ink,
+              ));
+    final inset = dense ? denseInset : AppSpacing.gutter;
+    final subStyle = dense
+        ? AppTextStyles.bodySmall.copyWith(color: AppColors.labelGrey)
+        : AppTextStyles.meta;
+    const vertical = AppSpacing.s12;
     final tap = enabled ? onTap : null;
     final row = InkWell(
       onTap: tap,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: AppSize.s56),
-        child: Padding(
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.gutter,
-            vertical: AppSpacing.s12,
-          ),
-          child: Row(
-            children: [
-              if (lead != null) ...[
-                lead,
-                const SizedBox(width: AppSpacing.s16),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTextStyles.itemTitle.copyWith(color: ink),
+      child: Padding(
+        padding: EdgeInsetsDirectional.only(start: inset),
+        child: Row(
+          children: [
+            if (lead != null) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: vertical),
+                child: lead,
+              ),
+              SizedBox(width: dense ? denseGap : AppSpacing.s16),
+            ],
+            Expanded(
+              child: DecoratedBox(
+                decoration: divider ? _hairline : _plain,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: dense ? denseMinHeight : AppSize.s56,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.only(
+                      end: inset,
+                      top: vertical,
+                      bottom: vertical,
                     ),
-                    if (subtitleWidget != null) ...[
-                      const SizedBox(height: AppSpacing.s2),
-                      DefaultTextStyle.merge(
-                        style: AppTextStyles.meta,
-                        child: subtitleWidget!,
-                      ),
-                    ] else if (subtitle != null && subtitle!.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.s2),
-                      Text(
-                        subtitle!,
-                        maxLines: subtitleMaxLines,
-                        overflow: subtitleMaxLines == null
-                            ? null
-                            : TextOverflow.ellipsis,
-                        style: AppTextStyles.meta,
-                      ),
-                    ],
-                  ],
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                title,
+                                style: (titleStyle ?? AppTextStyles.itemTitle)
+                                    .copyWith(color: ink),
+                              ),
+                              if (subtitleWidget != null) ...[
+                                const SizedBox(height: AppSpacing.s2),
+                                DefaultTextStyle.merge(
+                                  style: subStyle,
+                                  child: subtitleWidget!,
+                                ),
+                              ] else if (subtitle != null &&
+                                  subtitle!.isNotEmpty) ...[
+                                const SizedBox(height: AppSpacing.s2),
+                                Text(
+                                  subtitle!,
+                                  maxLines: subtitleMaxLines,
+                                  overflow: subtitleMaxLines == null
+                                      ? null
+                                      : TextOverflow.ellipsis,
+                                  style: subStyle,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        if (trailing != null) ...[
+                          const SizedBox(width: AppSpacing.s8),
+                          trailing!,
+                        ],
+                        if (showChevron && tap != null) ...[
+                          const SizedBox(width: AppSpacing.s4),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: dense ? denseChevronSize : AppSize.s24,
+                            color: dense
+                                ? AppColors.secondaryText
+                                : AppColors.tertiaryText,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              if (trailing != null) ...[
-                const SizedBox(width: AppSpacing.s8),
-                trailing!,
-              ],
-              if (showChevron && tap != null) ...[
-                const SizedBox(width: AppSpacing.s4),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  size: AppSize.s24,
-                  color: AppColors.tertiaryText,
-                ),
-              ],
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -6,10 +6,6 @@ class AppConstants {
 
   static const String appName = 'JameiaMart';
 
-  /// Full-screen splash artwork (dark-navy product shot). Painted by the Flutter
-  /// splash screen; the Android ≤11 / iOS native frames use the same image.
-  static const String splashImage = 'assets/images/splash_screen.png';
-
   // ── Networking ─────────────────────────────────────────────────────────────
   // The API host is build-time config: `AppEnv.apiBaseUrl` (`--dart-define`).
   static const Duration connectTimeout = Duration(seconds: 20);
@@ -29,9 +25,6 @@ class AppConstants {
   static const String kOnboardingSeen = 'onboarding_seen';
 
   // ── Timing (business/bootstrap delays — NOT motion; motion lives in AppMotion)
-  // 1.8s ≥ the 1.6s splash Ken-Burns (AppMotion.splashKenBurns) so the art
-  // settles before the shell replaces the splash.
-  static const Duration splashMinDuration = Duration(milliseconds: 1800);
   static const Duration fakeNetworkLatency = Duration(milliseconds: 400);
 
   /// 1-second wall-clock tick for countdowns (flash sale) — a business timer,
@@ -248,9 +241,6 @@ class SuiRadius {
 
   /// 24dp input-pill corner — chat composer / search composer field.
   static const double inputPill = 24;
-
-  /// 28dp splash logo-container corner.
-  static const double logoTile = 28;
 }
 
 /// SUI home-layout sizes ([FACT] `dimen/sui_space_*` + screenshot-derived

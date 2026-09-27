@@ -2,64 +2,72 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/motion/motion.dart';
-import '../../../../config/theme/app_colors.dart';
+import 'splash_scene_painter.dart';
+import 'splash_status_bar.dart';
+import 'splash_tagline.dart';
+import 'splash_touch.dart';
+import 'splash_touch_surface.dart';
+import 'splash_variant.dart';
 
-/// JameiaMart branded splash motion. Shows the full-bleed brand splash art
-/// ([AppConstants.splashImage]) on a white surface with a gentle entrance —
-/// fade-in → rise → Ken-Burns scale-settle ([AppMotion.splashZoomBegin] → 1.0
-/// across [AppMotion.splashKenBurns] on the [AppMotion.decelerate] curve) so the
-/// art fades up, lifts and comes to rest just before navigation.
+/// Plays one talabat-style JameiaMart intro ([SplashVariant]) from the
+/// launch-screen frame to the finished lockup, then calls [onFinished].
 ///
-/// [onFinished] fires EXACTLY ONCE — when the entrance settles, or after a
-/// failsafe elapses (whichever lands first), which drives the hand-off to the
-/// next route.
+/// The first frame repeats the native splash exactly (the same cart, centred,
+/// on the same green), so the hand-over from the OS splash cannot be seen.
+/// Nothing moves until that frame is really on screen: the clock starts
+/// [AppMotion.splashHandOffHold] after the engine reports the first frame
+/// rasterized (or after [AppMotion.splashFirstFrameWait] at most), so a slow
+/// first frame or the OS splash's exit cross-fade never eats the opening.
+/// The whole scene is one [CustomPaint] driven by one controller: it repaints
+/// every frame without rebuilding widgets.
 ///
-/// Reduced-motion ([MotionGuard.reduced] / `disableAnimations`): the art is shown
-/// statically and [onFinished] is invoked after a short fixed delay so navigation
-/// still proceeds without any motion.
+/// It also answers the finger ([SplashTouch]): a ring of colour where it
+/// touches, the glow leaning towards it, a hop (and a light haptic) when the
+/// cart is tapped. Touch never changes how long the intro plays.
+///
+/// [onFinished] fires EXACTLY ONCE — when the intro ends, or after a failsafe
+/// of twice its length (plus the start delay), whichever lands first. Reduced
+/// motion shows the finished lockup straight away and hands off after
+/// [AppMotion.splashReducedHold].
 class SplashPlayer extends StatefulWidget {
-  const SplashPlayer({super.key, required this.onFinished});
+  const SplashPlayer({
+    super.key,
+    required this.variant,
+    required this.onFinished,
+  });
 
-  /// Called once when the brand moment has settled — drives navigation.
+  final SplashVariant variant;
+
+  /// Called once when the intro is over — drives navigation.
   final VoidCallback onFinished;
+
+  /// Longest time from the first frame to the start of the motion.
+  static Duration get maxStartDelay =>
+      AppMotion.splashFirstFrameWait + AppMotion.splashHandOffHold;
 
   @override
   State<SplashPlayer> createState() => _SplashPlayerState();
 }
 
 class _SplashPlayerState extends State<SplashPlayer>
-    with SingleTickerProviderStateMixin {
-  /// Drives the fade + rise + Ken-Burns scale-settle over the full splash window.
-  late final AnimationController _entrance = AnimationController(
+    with TickerProviderStateMixin {
+  late final AnimationController _clock = AnimationController(
     vsync: this,
-    duration: AppMotion.splashKenBurns,
+    duration: widget.variant.choreography.duration,
   );
 
-  late final Animation<double> _fade = CurvedAnimation(
-    parent: _entrance,
-    curve: const Interval(0, 0.5, curve: Curves.easeOutCubic),
-  );
-
-  late final Animation<double> _scale = Tween<double>(
-    begin: AppMotion.splashZoomBegin,
-    end: 1,
-  ).animate(CurvedAnimation(parent: _entrance, curve: AppMotion.decelerate));
-
-  late final Animation<Offset> _rise = Tween<Offset>(
-    begin: const Offset(0, 0.035),
-    end: Offset.zero,
-  ).animate(CurvedAnimation(parent: _entrance, curve: AppMotion.decelerate));
-
+  bool _started = false;
+  bool _clockStarted = false;
   bool _finished = false;
-
-  /// Absolute failsafe: hands off even if the entrance controller never runs
-  /// (e.g. it is never started). Idempotent via [_finishOnce], so the normal
-  /// completion path wins; this only fires if nothing else did.
   Timer? _failsafe;
+  Timer? _reducedHold;
+  Timer? _firstFrameWait;
+  Timer? _handOffHold;
 
-  /// Fires [SplashPlayer.onFinished] at most once.
+  /// Touch reactions; `null` under reduced motion.
+  SplashTouch? _touch;
+
   void _finishOnce() {
     if (_finished) return;
     _finished = true;
@@ -69,62 +77,80 @@ class _SplashPlayerState extends State<SplashPlayer>
   @override
   void initState() {
     super.initState();
-    // The Ken-Burns window is the upper bound: when the scale settles, hand off.
-    _entrance.addStatusListener((s) {
-      if (s == AnimationStatus.completed) _finishOnce();
-    });
-    // Never let the app hang on the splash: hand off after twice the entrance
-    // window even if the controller never completed.
-    _failsafe = Timer(AppMotion.splashKenBurns * 2, _finishOnce);
+    // Never let the app hang on the splash.
+    _failsafe = Timer(
+      widget.variant.choreography.duration * 2 + SplashPlayer.maxStartDelay,
+      _finishOnce,
+    );
+  }
 
-    // Start after the first frame so the art is mounted before motion begins.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (MotionGuard.reduced(context)) {
-        // Static art; hand off after a short fixed beat so navigation still
-        // proceeds with motion disabled.
-        Future<void>.delayed(const Duration(milliseconds: 300), _finishOnce);
-      } else {
-        _entrance.forward(from: 0);
-      }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (MotionGuard.reduced(context)) {
+      _clock.value = 1;
+      _reducedHold = Timer(AppMotion.splashReducedHold, _finishOnce);
+      return;
+    }
+    _touch = SplashTouch(this);
+    _clock.addStatusListener((status) {
+      if (status == AnimationStatus.completed) _finishOnce();
+    });
+    unawaited(
+      WidgetsBinding.instance.waitUntilFirstFrameRasterized.then(
+        (_) => _startAfterHold(),
+      ),
+    );
+    _firstFrameWait = Timer(AppMotion.splashFirstFrameWait, _startAfterHold);
+  }
+
+  /// Holds the launch frame a beat, then runs the intro — once.
+  void _startAfterHold() {
+    if (_clockStarted || !mounted) return;
+    _clockStarted = true;
+    _firstFrameWait?.cancel();
+    _handOffHold = Timer(AppMotion.splashHandOffHold, () {
+      if (mounted) _clock.forward();
     });
   }
 
   @override
   void dispose() {
     _failsafe?.cancel();
-    _entrance.dispose();
+    _reducedHold?.cancel();
+    _firstFrameWait?.cancel();
+    _handOffHold?.cancel();
+    _touch?.dispose();
+    _clock.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final reduced = MotionGuard.reduced(context);
-    return ColoredBox(
-      color: AppColors.white,
+    final choreography = widget.variant.choreography;
+    return SplashStatusBar(
+      clock: _clock,
+      choreography: choreography,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          FadeTransition(
-            opacity: reduced ? const AlwaysStoppedAnimation<double>(1) : _fade,
-            child: SlideTransition(
-              position: reduced
-                  ? const AlwaysStoppedAnimation<Offset>(Offset.zero)
-                  : _rise,
-              child: ScaleTransition(
-                scale: reduced
-                    ? const AlwaysStoppedAnimation<double>(1)
-                    : _scale,
-                child: RepaintBoundary(
-                  child: Image.asset(
-                    AppConstants.splashImage,
-                    fit: BoxFit.cover,
-                    gaplessPlayback: true,
-                  ),
+          SplashTouchSurface(
+            clock: _clock,
+            choreography: choreography,
+            touch: _touch,
+            child: RepaintBoundary(
+              child: CustomPaint(
+                painter: SplashScenePainter(
+                  clock: _clock,
+                  choreography: choreography,
+                  touch: _touch,
                 ),
               ),
             ),
           ),
+          SplashTagline(clock: _clock, choreography: choreography),
         ],
       ),
     );

@@ -86,6 +86,12 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
   String? _offersLanguage;
   DateTime? _offersReadAt;
 
+  /// The offers read in flight and the language it asked in: a second
+  /// reader (the checkout and its "Coupons & offers" page open together)
+  /// shares it instead of sending the same request again.
+  Future<List<OfferModel>>? _offersInFlight;
+  String? _offersInFlightLanguage;
+
   @override
   Future<ProductsPageModel> getProducts({
     required CatalogProductQuery query,
@@ -161,6 +167,21 @@ class CatalogRemoteDataSourceImpl implements CatalogRemoteDataSource {
         _now().difference(readAt) < categoryTreeTtl) {
       return cached;
     }
+    final inFlight = _offersInFlight;
+    if (inFlight != null && _offersInFlightLanguage == language) {
+      return inFlight;
+    }
+    final read = _readOffers(language);
+    _offersInFlight = read;
+    _offersInFlightLanguage = language;
+    try {
+      return await read;
+    } finally {
+      if (identical(_offersInFlight, read)) _offersInFlight = null;
+    }
+  }
+
+  Future<List<OfferModel>> _readOffers(String language) async {
     final results = await _api.get(
       EndPoints.offers,
       queryParameters: <String, dynamic>{pageField: 1, limitField: maxOffers},

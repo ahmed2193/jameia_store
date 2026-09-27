@@ -19,6 +19,7 @@ class CartState extends Equatable {
     this.busyAction = CartAction.none,
     this.failure,
     this.failedAction = CartAction.none,
+    this.changedBy = CartAction.none,
     this.quantityByProduct = const <String, int>{},
     this.revision = 0,
   });
@@ -42,6 +43,13 @@ class CartState extends Equatable {
   /// the next [copyWith]. The page shows `failure.localizedMessage`.
   final Failure? failure;
   final CartAction failedAction;
+
+  /// Transient like [failure]: the server-confirmed action whose reply
+  /// brought this cart ([CartSnapshot.cause]); [CartAction.none] otherwise.
+  /// It stays true on the state that carries the new cart, even though
+  /// [busyAction] was already cleared before that cart arrived — so "the
+  /// customer removed the coupon" is told from "the server dropped it".
+  final CartAction changedBy;
 
   /// Product id → pieces, precomputed so tiles select one int.
   final Map<String, int> quantityByProduct;
@@ -70,6 +78,7 @@ class CartState extends Equatable {
     CartAction? busyAction,
     Failure? failure,
     CartAction? failedAction,
+    CartAction? changedBy,
     Map<String, int>? quantityByProduct,
     int? revision,
   }) => CartState(
@@ -81,6 +90,7 @@ class CartState extends Equatable {
     busyAction: busyAction ?? this.busyAction,
     failure: failure,
     failedAction: failedAction ?? CartAction.none,
+    changedBy: changedBy ?? CartAction.none,
     quantityByProduct: quantityByProduct ?? this.quantityByProduct,
     revision: revision ?? this.revision,
   );
@@ -99,5 +109,6 @@ class CartState extends Equatable {
     busyAction,
     failure,
     failedAction,
+    changedBy,
   ];
 }

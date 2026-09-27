@@ -53,6 +53,12 @@ class CartTotalsEntity extends Equatable {
   int get deliveryFeeWithoutExpressFils =>
       (deliveryFeeFils - expressSurchargeFils).clamp(0, deliveryFeeFils);
 
+  /// Delivery costs nothing: the server says so ([freeDelivery]) AND charges
+  /// no delivery fee (the express surcharge aside). The one definition of
+  /// "free delivery" every screen shows: a flag with a fee still charged is
+  /// not free.
+  bool get deliveryIsFree => freeDelivery && deliveryFeeWithoutExpressFils == 0;
+
   double get subtotalKd => subtotalFils / CatalogProductEntity.filsPerDinar;
   double get discountKd => discountFils / CatalogProductEntity.filsPerDinar;
   double get couponDiscountKd =>
@@ -70,8 +76,10 @@ class CartTotalsEntity extends Equatable {
   double get totalKd => totalFils / CatalogProductEntity.filsPerDinar;
   double get minOrderKd => minOrderFils / CatalogProductEntity.filsPerDinar;
 
-  /// What the order would cost without its discounts — the struck amount
-  /// beside [totalFils] in the checkout bar; `null` without a discount.
+  /// The total plus the server's discounts; `null` without a discount. The
+  /// struck amount in both bars (cart and checkout) is
+  /// `CartSavings.struckTotalFils`, which also counts item promotions and a
+  /// waived delivery fee.
   int? get totalBeforeDiscountFils =>
       hasDiscount ? totalFils + discountFils : null;
 
@@ -79,6 +87,7 @@ class CartTotalsEntity extends Equatable {
     final fils = totalBeforeDiscountFils;
     return fils == null ? null : fils / CatalogProductEntity.filsPerDinar;
   }
+
   double get shortfallKd => shortfallFils / CatalogProductEntity.filsPerDinar;
 
   /// The same totals with the subtotal re-summed from projected lines; the

@@ -6,7 +6,7 @@ import 'package:jameia_mart/src/features/account/data/datasources/loyalty_remote
 import 'package:jameia_mart/src/features/account/data/datasources/wallet_remote_data_source.dart';
 import 'package:jameia_mart/src/features/account/data/models/ledger_page_model.dart';
 import 'package:jameia_mart/src/features/account/data/models/loyalty_entry_model.dart';
-import 'package:jameia_mart/src/features/account/data/models/loyalty_program_model.dart';
+import 'package:jameia_mart/src/core/data/models/loyalty_program_model.dart';
 import 'package:jameia_mart/src/features/account/data/models/wallet_entry_model.dart';
 import 'package:jameia_mart/src/features/account/data/repositories/loyalty_repository_impl.dart';
 import 'package:jameia_mart/src/features/account/data/repositories/wallet_repository_impl.dart';

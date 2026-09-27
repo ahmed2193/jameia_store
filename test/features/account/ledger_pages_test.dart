@@ -21,7 +21,7 @@ import 'package:jameia_mart/src/config/theme/app_theme.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/loyalty_entry_entity.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/loyalty_program.dart';
+import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/wallet_entry_entity.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/ledger_cubit.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/loyalty_program_cubit.dart';

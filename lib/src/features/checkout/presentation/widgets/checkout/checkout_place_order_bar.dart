@@ -1,94 +1,78 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/widgets/jameia_bar_total.dart';
+import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/widgets/jameia_bottom_bar.dart';
-import '../../../../../core/widgets/jameia_submit_button.dart';
-import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
 import '../../cubit/checkout_state.dart';
-import 'checkout_summary.dart';
+import 'checkout_bar_line.dart';
+import 'checkout_bar_total.dart';
+import 'checkout_place_button.dart';
 
-/// Sticky footer: the total and "Place order". One tap places once; the
-/// button waits while the cart still syncs or a destination is being
-/// selected. The total stays mounted under the "—" so a re-quote rolls its
-/// digits; the button turns into a check when the order is placed.
+/// The pinned place-order bar: the total (and the struck total) over the
+/// rotating fact line at the start, "Place order" at the end. Three
+/// separate widgets, so a rotation, a roll of the total and a change of the
+/// button never rebuild one another.
+///
+/// While checkout is open the total is where products added on the page
+/// fly to (the rail's "+"); the previous target comes back when the bar
+/// goes.
 ///
 /// Placing empties the cart while this page is still on screen under the
-/// tracking page's entrance, so the total freezes from then on: it keeps
-/// the amount just placed instead of rolling down to zero. Only the check
-/// still pops.
-class CheckoutPlaceOrderBar extends StatelessWidget {
+/// tracking page's entrance, so the total and the line freeze from then on:
+/// the total keeps the amount just placed, the line stops rotating. Only
+/// the button's check still pops.
+class CheckoutPlaceOrderBar extends StatefulWidget {
   const CheckoutPlaceOrderBar({super.key});
 
   @override
+  State<CheckoutPlaceOrderBar> createState() => _CheckoutPlaceOrderBarState();
+}
+
+class _CheckoutPlaceOrderBarState extends State<CheckoutPlaceOrderBar> {
+  final GlobalKey _total = GlobalKey(debugLabel: 'checkout.barTotal');
+
+  @override
+  void initState() {
+    super.initState();
+    FlyToCart.pushTarget(_total);
+  }
+
+  @override
+  void dispose() {
+    FlyToCart.popTarget(_total);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final canPlace = context.select<CheckoutCubit, bool>(
-      (cubit) => cubit.state.canPlace,
-    );
-    final placing = context.select<CheckoutCubit, bool>(
-      (cubit) => cubit.state.isPlacing,
-    );
     final placed = context.select<CheckoutCubit, bool>(
       (cubit) => cubit.state.status == CheckoutStatus.placed,
     );
-    final cartReady = context.select<CartCubit, bool>(
-      (cubit) =>
-          !cubit.state.isUpdating &&
-          !cubit.state.isBusy &&
-          cubit.state.cart.canCheckout,
-    );
-    final totalKd = context.select<CartCubit, double>(
-      (cubit) => cubit.state.cart.totals.totalKd,
-    );
-    final quoted = context.select<CheckoutCubit, bool>(
-      (cubit) => cubit.state.selection != null,
-    );
     return JameiaBottomBar(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      padding: const EdgeInsetsDirectional.symmetric(
+        horizontal: AppSpacing.s12,
+        vertical: AppSpacing.s8,
+      ),
+      child: Row(
         children: [
-          TickerMode(
-            enabled: !placed,
-            child: Row(
-              children: [
-                // The amount keeps its width; a long label at large text
-                // ellipsizes instead.
-                Expanded(
-                  child: Text(
-                    'checkout.summary_total'.tr(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.itemTitle,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.s12),
-                JameiaBarTotal(
-                  kd: quoted ? totalKd : null,
-                  placeholder: CheckoutSummary.unquoted,
-                  style: AppTextStyles.groupTitle,
-                  placeholderStyle: AppTextStyles.groupTitle.copyWith(
-                    color: AppColors.secondaryText,
-                  ),
-                ),
-              ],
+          Expanded(
+            child: TickerMode(
+              enabled: !placed,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  KeyedSubtree(key: _total, child: const CheckoutBarTotal()),
+                  const SizedBox(height: AppSpacing.s2),
+                  const CheckoutBarLine(),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: AppSpacing.s12),
-          JameiaSubmitButton(
-            label: placing
-                ? 'checkout.placing'.tr()
-                : 'checkout.place_order'.tr(),
-            loading: placing,
-            success: placed,
-            successLabel: 'checkout.order_placed'.tr(),
-            enabled: canPlace && cartReady,
-            onPressed: () => context.read<CheckoutCubit>().placeOrder(),
-          ),
+          const SizedBox(width: AppSpacing.s12),
+          const CheckoutPlaceButton(),
         ],
       ),
     );

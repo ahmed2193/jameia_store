@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/loyalty_entry_entity.dart';
-import '../../../domain/entities/loyalty_program.dart';
+import '../../../../../core/domain/entities/loyalty_program.dart';
 import '../../cubit/ledger_cubit.dart';
 import '../../cubit/ledger_state.dart';
 import '../../cubit/loyalty_program_cubit.dart';

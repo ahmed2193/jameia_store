@@ -1,0 +1,42 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../cubit/checkout_cubit.dart';
+import 'checkout_savings_figure.dart';
+
+/// "Coupons & offers": the voucher disc, the title and, under it, what the
+/// coupon and the offers save ([CheckoutSavingsFigure]). A tap opens the
+/// "Coupons & offers" page with the serving branch, so that page can leave
+/// out offers limited to other branches (a navigation row: no haptic).
+class CheckoutCouponsRow extends StatelessWidget {
+  const CheckoutCouponsRow({super.key});
+
+  /// The voucher disc (visual spec: 25 dp).
+  static const double discSize = AppSize.s25;
+
+  @override
+  Widget build(BuildContext context) {
+    return JameiaListRow(
+      dense: true,
+      leading: SvgPicture.asset(
+        JameiaAssets.checkoutVoucherDisc,
+        width: discSize,
+        height: discSize,
+        excludeFromSemantics: true,
+      ),
+      title: 'checkout.savings_coupons'.tr(),
+      subtitleWidget: const CheckoutSavingsFigure(),
+      onTap: () => context.push(
+        Routes.checkoutVouchers,
+        extra: context.read<CheckoutCubit>().state.selection?.branchId,
+      ),
+    );
+  }
+}

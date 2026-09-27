@@ -28,6 +28,7 @@ class OfferEntity extends Equatable {
     this.freeQuantity = 0,
     this.stackable = false,
     this.endsAt,
+    this.branchIds = const <String>[],
   });
 
   static const int filsPerDinar = 1000;
@@ -66,6 +67,9 @@ class OfferEntity extends Equatable {
   final bool stackable;
   final DateTime? endsAt;
 
+  /// The branches the offer runs at; empty = every branch.
+  final List<String> branchIds;
+
   double get minSubtotalKd => minSubtotalFils / filsPerDinar;
   double get amountKd => amountFils / filsPerDinar;
   double? get maxDiscountKd {
@@ -76,6 +80,11 @@ class OfferEntity extends Equatable {
   /// Still running at [now] (the list route already filters, this guards a
   /// page left open past the end).
   bool isLiveAt(DateTime now) => endsAt == null || endsAt!.isAfter(now);
+
+  /// Whether the offer runs at [branchId]. An offer limited to some branches
+  /// is not available while no branch is known.
+  bool availableAt(String? branchId) =>
+      branchIds.isEmpty || (branchId != null && branchIds.contains(branchId));
 
   /// Whether this offer counts [product] itself or one of [categoryIds]
   /// (the product's category and its parent) — the offers a product page
@@ -105,5 +114,6 @@ class OfferEntity extends Equatable {
     freeQuantity,
     stackable,
     endsAt,
+    branchIds,
   ];
 }

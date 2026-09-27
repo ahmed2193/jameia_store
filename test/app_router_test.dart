@@ -66,6 +66,7 @@ import 'package:jameia_mart/src/features/auth/presentation/pages/login_page.dart
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/cart/presentation/pages/cart_preview_page.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/pages/checkout_page.dart';
+import 'package:jameia_mart/src/features/checkout/presentation/pages/checkout_vouchers_page.dart';
 import 'package:jameia_mart/src/features/coupons/presentation/pages/history_coupons_page.dart';
 import 'package:jameia_mart/src/features/coupons/presentation/pages/my_coupons_page.dart';
 import 'package:jameia_mart/src/features/coupons/presentation/pages/order_coupons_page.dart';
@@ -199,6 +200,20 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
   const _RouteCase(Routes.cartPreview, CartPreviewPage),
   const _RouteCase(Routes.checkout, CheckoutPage),
   _RouteCase(
+    Routes.checkoutVouchers,
+    CheckoutVouchersPage,
+    note: 'the serving branch travels as a String extra',
+    extra: (_) => 'b1',
+    verify: (t, extra) =>
+        expect(_page<CheckoutVouchersPage>(t).branchId, extra),
+  ),
+  _RouteCase(
+    Routes.checkoutVouchers,
+    CheckoutVouchersPage,
+    note: 'no branch known yet',
+    verify: (t, _) => expect(_page<CheckoutVouchersPage>(t).branchId, isNull),
+  ),
+  _RouteCase(
     Routes.productDetail,
     ProductDetailPage,
     extra: (_) => const ProductDetailArgs(slug: 'basmati-rice-5kg'),
@@ -318,8 +333,7 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
     AssistantChatPage,
     note: 'past conversation',
     extra: (_) => const AssistantChatArgs(conversationId: 'c1'),
-    verify: (t, _) =>
-        expect(_page<AssistantChatPage>(t).conversationId, 'c1'),
+    verify: (t, _) => expect(_page<AssistantChatPage>(t).conversationId, 'c1'),
   ),
   const _RouteCase(Routes.assistantHistory, AssistantHistoryPage),
   const _RouteCase(Routes.customerService, CustomerServicePage),

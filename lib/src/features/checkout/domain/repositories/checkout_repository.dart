@@ -4,10 +4,12 @@ import '../../../../core/domain/entities/order_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/branch_entity.dart';
 import '../entities/checkout_draft.dart';
+import '../entities/checkout_store_rules.dart';
 import '../entities/delivery_selection_entity.dart';
 import '../../../../core/domain/entities/delivery_slot_entity.dart';
 
-/// Delivery choices and order placement (`/v1/delivery/*`, `POST /v1/orders`).
+/// Delivery choices, the store rules and order placement (`/v1/delivery/*`,
+/// `GET /v1/init`, `POST /v1/orders`).
 abstract class CheckoutRepository {
   /// Branches the customer may pick up from; cached for the session.
   Future<Either<Failure, List<BranchEntity>>> getBranches();
@@ -24,6 +26,10 @@ abstract class CheckoutRepository {
   Future<Either<Failure, DeliverySelectionEntity>> selectPickupBranch(
     String branchId,
   );
+
+  /// The store settings checkout obeys (cash on delivery, loyalty, Pro
+  /// perk, maintenance); kept per language for a few minutes.
+  Future<Either<Failure, CheckoutStoreRules>> getStoreRules();
 
   /// Turns the server cart into an order.
   Future<Either<Failure, OrderEntity>> placeOrder(CheckoutDraft draft);

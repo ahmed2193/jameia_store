@@ -19,7 +19,7 @@ import 'package:jameia_mart/src/core/motion/confetti_burst.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/loyalty_entry_entity.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/loyalty_program.dart';
+import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/loyalty_reward.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/loyalty_rewards.dart';
 import 'package:jameia_mart/src/features/account/domain/repositories/loyalty_repository.dart';

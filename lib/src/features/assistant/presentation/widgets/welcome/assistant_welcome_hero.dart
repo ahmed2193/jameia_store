@@ -37,7 +37,7 @@ class AssistantWelcomeHero extends StatelessWidget {
             ),
             child: Center(
               child: PopScale.onMount(
-                child: AssistantAvatar(size: AppSize.s64),
+                child: AssistantAvatar(size: AppSize.s72, alive: true),
               ),
             ),
           ),

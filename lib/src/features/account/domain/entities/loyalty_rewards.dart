@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import 'loyalty_program.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 import 'loyalty_reward.dart';
 
 /// The Rewards screen: the customer's points [balance] and the redemption

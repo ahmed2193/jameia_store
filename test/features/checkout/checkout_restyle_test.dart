@@ -1,8 +1,10 @@
-// The restyled checkout (docs/design_system.md): a white page of grouped
-// rows, a gliding delivery / pickup switch, checkable choice rows, slot pills
-// in a sheet, flat item rows and a pinned bar whose total stays hidden until
-// the server priced the destination. It reads the same in Arabic (money stays
-// one left-to-right run) and fits a 360 dp phone at 1.3× text.
+// The Keeta-style checkout as a whole page: where and when on top, then the
+// order summary, instant savings and the scalloped order totals, payment,
+// additional options and "good to know" on white blocks over grey bands, and
+// the pinned bar whose total stays hidden until the server priced the
+// destination. Timing, the note and the items live in sheets. It reads the
+// same in Arabic (money stays one left-to-right run) and fits a 360 dp phone
+// at 1.3× text.
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,6 +15,7 @@ import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
+import 'package:jameia_mart/src/core/motion/motion.dart';
 import 'package:jameia_mart/src/core/widgets/jameia_close_button.dart';
 import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
 import 'package:jameia_mart/src/core/widgets/option_row.dart';
@@ -24,16 +27,24 @@ import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft
 import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_body.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_branch_sheet.dart';
+import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_card_text.dart';
+import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_row.dart';
+import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_mode_toggle.dart';
+import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_payment_icon.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_order_bar.dart';
+import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_receipt.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_chip.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_summary.dart';
+import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_timing_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/cart_test_fixtures.dart';
 import '../cart/fake_cart_repository.dart';
 import 'checkout_test_harness.dart';
 import 'fake_checkout_repository.dart';
+
+/// One frame at 60 Hz.
+const Duration _frame = Duration(milliseconds: 16);
 
 void main() {
   late FakeCartRepository cartRepository;
@@ -147,26 +158,51 @@ void main() {
     matching: matching,
   );
 
+  Finder inToggle(Finder matching) =>
+      find.descendant(of: find.byType(CheckoutModeToggle), matching: matching);
+
+  Finder inEtaRow(Finder matching) =>
+      find.descendant(of: find.byType(CheckoutEtaRow), matching: matching);
+
+  /// The "Expected" row → the timing sheet → "Schedule" → the slot sheet.
+  Future<void> openSlotSheet(WidgetTester tester, String schedule) async {
+    await tester.tap(find.byType(CheckoutEtaRow));
+    await tester.pumpAndSettle();
+    expect(find.byType(CheckoutTimingSheet), findsOneWidget);
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CheckoutTimingSheet),
+        matching: find.text(schedule),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('renders every section in English', (tester) async {
     await checkoutCubit.start(defaultAddressId: 'a1');
     await pump(tester);
 
-    expect(find.text('Delivery'), findsOneWidget);
-    expect(find.text('Pickup'), findsOneWidget);
-    expect(find.text('Deliver to'), findsOneWidget);
-    // An address is chosen: "Change" instead of the prompt.
-    expect(find.text('Change'), findsOneWidget);
+    expect(inToggle(find.text('Delivery')), findsOneWidget);
+    expect(inToggle(find.text('Pickup')), findsOneWidget);
+    // An address is chosen: its row, not the prompt.
     expect(find.text('Choose a delivery address'), findsNothing);
-    expect(find.text('When'), findsOneWidget);
-    expect(find.text('Payment'), findsOneWidget);
+    expect(inEtaRow(find.text('Expected')), findsOneWidget);
+    expect(inEtaRow(find.text('45 min')), findsOneWidget);
+    expect(find.text('Order summary'), findsOneWidget);
+    // Rice × 2 + oil × 1; the rows themselves live in the items sheet.
+    expect(find.text('3 pcs'), findsOneWidget);
+    expect(find.text('Basmati rice'), findsNothing);
+    expect(find.text('Instant savings'), findsOneWidget);
+    expect(find.text('Coupons & offers'), findsOneWidget);
+    expect(find.text('Order totals'), findsOneWidget);
+    expect(find.text('Payment method'), findsOneWidget);
+    expect(find.text('Cash on delivery'), findsOneWidget);
+    expect(find.text('Additional options'), findsOneWidget);
     expect(find.text('Notes for the store'), findsOneWidget);
-    expect(find.text('Items'), findsOneWidget);
-    expect(find.text('Basmati rice'), findsOneWidget);
-    expect(find.text('Olive oil'), findsOneWidget);
-    expect(find.text('× 2'), findsOneWidget);
-    expect(find.text('KD 1.200'), findsOneWidget);
-    expect(find.text('Payment summary'), findsOneWidget);
-    expect(find.text('Place order'), findsOneWidget);
+    expect(find.text('Good to know'), findsOneWidget);
+    expect(find.text('FAQ'), findsOneWidget);
+    expect(find.text('Terms of service'), findsOneWidget);
+    expect(inBar(find.text('Place order')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -181,10 +217,10 @@ void main() {
       Directionality.of(tester.element(find.byType(CheckoutBody))),
       TextDirection.rtl,
     );
-    expect(find.text('ملخص الدفع'), findsOneWidget);
+    expect(find.text('إجمالي الطلب'), findsOneWidget);
     final subtotal = find
         .descendant(
-          of: find.byType(CheckoutSummary),
+          of: find.byType(CheckoutReceipt),
           matching: find.byType(JameiaMoneyText),
         )
         .first;
@@ -216,6 +252,8 @@ void main() {
           textScale: 1.3,
         );
         expect(tester.takeException(), isNull);
+        // One scroll view for the whole page.
+        expect(find.byType(CustomScrollView), findsOneWidget);
         // Scroll through the whole page so every section is laid out.
         for (var i = 0; i < 8; i++) {
           await tester.drag(
@@ -225,7 +263,10 @@ void main() {
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull);
         }
-        expect(find.byType(CheckoutSummary), findsOneWidget);
+        expect(
+          find.byType(CheckoutReceipt, skipOffstage: false),
+          findsOneWidget,
+        );
       },
     );
   }
@@ -233,17 +274,21 @@ void main() {
   testWidgets('the mode switch moves the page to pickup', (tester) async {
     await checkoutCubit.start(defaultAddressId: 'a1');
     await pump(tester);
-    expect(find.text('Pick up from'), findsNothing);
+    expect(find.byType(CheckoutEtaCardText), findsOneWidget);
 
-    await tester.tap(find.text('Pickup'));
+    await tester.tap(inToggle(find.text('Pickup')));
     await tester.pumpAndSettle();
 
     expect(checkoutCubit.state.draft.mode, FulfillmentMode.pickup);
-    expect(find.text('Pick up from'), findsOneWidget);
     expect(find.text('Choose a branch'), findsOneWidget);
-    expect(find.text('Deliver to'), findsNothing);
-    // Pickup has no delivery timing: that section folded away.
-    expect(find.text('When'), findsNothing);
+    expect(find.text('Choose a delivery address'), findsNothing);
+    // Pickup has no delivery timing: no card, and the row only informs.
+    expect(find.byType(CheckoutEtaCardText), findsNothing);
+    expect(inEtaRow(find.text('Ready for pickup')), findsOneWidget);
+    expect(inEtaRow(find.text('Expected')), findsNothing);
+    await tester.tap(find.byType(CheckoutEtaRow));
+    await tester.pumpAndSettle();
+    expect(find.byType(CheckoutTimingSheet), findsNothing);
   });
 
   testWidgets('choice rows are checkable; a short wallet ignores taps', (
@@ -283,6 +328,13 @@ void main() {
         isEnabled: false,
       ),
     );
+    // Each method leads with its plate (the cash note, the wallet).
+    for (final row in [cod, wallet]) {
+      expect(
+        find.descendant(of: row, matching: find.byType(CheckoutPaymentIcon)),
+        findsOneWidget,
+      );
+    }
 
     await tester.tap(wallet);
     await tester.pumpAndSettle();
@@ -297,8 +349,7 @@ void main() {
     await checkoutCubit.start(defaultAddressId: 'a1');
     await pump(tester);
 
-    await tester.tap(find.text('Schedule'));
-    await tester.pumpAndSettle();
+    await openSlotSheet(tester, 'Schedule');
     expect(find.byType(CheckoutSlotSheet), findsOneWidget);
     expect(find.text('Delivery windows'), findsOneWidget);
     expect(find.byType(CheckoutSlotChip), findsNWidgets(2));
@@ -366,18 +417,17 @@ void main() {
     await checkoutCubit.start(defaultAddressId: 'a1');
     await pump(tester, locale: ar, size: const Size(360, 800), textScale: 1.3);
 
-    final schedule = find.text('جدولة');
     await tester.scrollUntilVisible(
-      schedule,
+      inEtaRow(find.text('الوصول المتوقع')),
       200,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    await tester.tap(schedule);
-    await tester.pumpAndSettle();
+    await openSlotSheet(tester, 'جدولة');
     expect(find.byType(CheckoutSlotSheet), findsOneWidget);
     expect(tester.takeException(), isNull);
-    // ✕ closes it the way a barrier tap does: nothing booked.
+    // ✕ in the floating disc closes it the way a barrier tap does: nothing
+    // booked.
     await tester.tap(find.byType(JameiaCloseButton));
     await tester.pumpAndSettle();
     expect(find.byType(CheckoutSlotSheet), findsNothing);
@@ -403,15 +453,25 @@ void main() {
   ) async {
     await checkoutCubit.start(defaultAddressId: 'a1');
     await pump(tester, reduceMotion: true);
-    expect(find.text('When'), findsOneWidget);
+    expect(inEtaRow(find.text('Expected')), findsOneWidget);
+    expect(find.byType(CheckoutEtaCardText), findsOneWidget);
 
     await tester.runAsync(() => checkoutCubit.setMode(FulfillmentMode.pickup));
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('Pick up from'), findsOneWidget);
-    expect(find.text('Deliver to'), findsNothing);
-    expect(find.text('When'), findsNothing);
+    expect(find.text('Choose a branch'), findsOneWidget);
+    expect(find.text('Choose a delivery address'), findsNothing);
+    expect(inEtaRow(find.text('Ready for pickup')), findsOneWidget);
+    expect(find.byType(CheckoutEtaCardText), findsNothing);
+    // Unpriced again, the bar's total and the receipt's figures swap to
+    // "—" through a fade-through: a plain AppMotion.fast fade under
+    // reduced motion (the one documented exception). An animation reports
+    // done on the first frame past its duration; then nothing ticks.
+    await tester.pump(AppMotion.fast);
+    await tester.pump(_frame);
+    expect(tester.hasRunningAnimations, isFalse);
+    await tester.pump(const Duration(seconds: 10));
     expect(tester.hasRunningAnimations, isFalse);
   });
 }

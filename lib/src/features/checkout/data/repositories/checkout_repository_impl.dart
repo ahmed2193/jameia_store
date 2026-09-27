@@ -6,12 +6,14 @@ import '../../../../core/domain/entities/order_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/branch_entity.dart';
 import '../../domain/entities/checkout_draft.dart';
+import '../../domain/entities/checkout_store_rules.dart';
 import '../../domain/entities/delivery_selection_entity.dart';
 import '../../../../core/domain/entities/delivery_slot_entity.dart';
 import '../../domain/repositories/checkout_repository.dart';
 import '../datasources/checkout_remote_data_source.dart';
 import '../datasources/delivery_remote_data_source.dart';
 import '../mappers/checkout_mapper.dart';
+import '../mappers/store_rules_mapper.dart';
 
 class CheckoutRepositoryImpl
     with BaseRepositoryMixin
@@ -40,6 +42,10 @@ class CheckoutRepositoryImpl
   Future<Either<Failure, DeliverySelectionEntity>> selectPickupBranch(
     String branchId,
   ) => execute(() async => (await _delivery.selectBranch(branchId)).toEntity());
+
+  @override
+  Future<Either<Failure, CheckoutStoreRules>> getStoreRules() =>
+      execute(() async => (await _checkout.getStoreRules()).toEntity());
 
   @override
   Future<Either<Failure, OrderEntity>> placeOrder(CheckoutDraft draft) =>

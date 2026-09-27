@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/config/routes/route_args/shell_tabs.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:jameia_mart/src/core/widgets/jameia_mark_icon.dart';
 import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
 import 'package:jameia_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
 import 'package:jameia_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
@@ -218,5 +219,30 @@ void main() {
 
     expect(find.text('Cart'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
+  });
+
+  testWidgets('Home wears the app icon mark, lit only while selected', (
+    tester,
+  ) async {
+    final taps = <int>[];
+    Widget nav(int index) =>
+        ShellBottomNav(index: index, cartIconKey: GlobalKey(), onTap: taps.add);
+
+    await pump(tester, nav(ShellBottomNav.homeTab));
+    expect(find.byIcon(Icons.home_rounded), findsNothing);
+    expect(
+      tester.widget<JameiaMarkIcon>(find.byType(JameiaMarkIcon)).active,
+      isTrue,
+    );
+
+    await pump(tester, nav(ShellBottomNav.searchTab));
+    expect(
+      tester.widget<JameiaMarkIcon>(find.byType(JameiaMarkIcon)).active,
+      isFalse,
+    );
+    expect(find.byIcon(Icons.search_rounded), findsOneWidget);
+
+    await tester.tap(find.byType(JameiaMarkIcon));
+    expect(taps, [ShellBottomNav.homeTab]);
   });
 }

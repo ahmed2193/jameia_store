@@ -94,6 +94,12 @@ class CartEntity extends Equatable {
   double get expressSurchargeOfferedKd =>
       expressSurchargeOfferedFils / CatalogProductEntity.filsPerDinar;
 
+  /// The fee express adds, in dinar: what the order pays once express is
+  /// on, else what the cart offers it for.
+  double get expressFeeKd => totals.expressSurchargeFils > 0
+      ? totals.expressSurchargeKd
+      : expressSurchargeOfferedKd;
+
   /// `null` when checkout may proceed.
   CartCheckoutBlock? get checkoutBlock {
     if (lines.isEmpty) return CartCheckoutBlock.empty;
@@ -106,12 +112,13 @@ class CartEntity extends Equatable {
 
   bool get canCheckout => checkoutBlock == null;
 
-  /// What the basket bars say about delivery, in fils: `0` = free, more =
-  /// the fee the server quotes (express included), `null` = nothing to say
-  /// (an empty basket, pickup, or no fee quoted yet).
+  /// What the basket bars say about delivery, in fils: `0` = free
+  /// ([CartTotalsEntity.deliveryIsFree]), more = the fee the server quotes
+  /// (express included), `null` = nothing to say (an empty basket, pickup,
+  /// or no fee quoted yet).
   int? get deliveryQuoteFils {
     if (isEmpty || isPickup) return null;
-    if (totals.freeDelivery) return 0;
+    if (totals.deliveryIsFree) return 0;
     return totals.deliveryFeeFils > 0 ? totals.deliveryFeeFils : null;
   }
 

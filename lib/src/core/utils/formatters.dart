@@ -15,6 +15,10 @@ class Formatters {
 
   static bool get _isAr => (Intl.defaultLocale ?? 'en').startsWith('ar');
 
+  /// Between two short parts of one line ("Home · Salmiya", "Tomorrow ·
+  /// 10:00 – 12:00"); the same in both languages.
+  static const String middot = ' · ';
+
   /// Localized currency label: `KD` (en) ↔ `د.ك` (ar).
   static String get currency => _isAr ? 'د.ك' : 'KD';
 
@@ -36,14 +40,30 @@ class Formatters {
   static final Map<String, DateFormat> _dateTimeFormats =
       <String, DateFormat>{};
 
-  /// "21 Sept 2026, 10:42" in [languageCode]; empty without a date. The
-  /// format is cached per language because `DateFormat` parses its skeleton
-  /// on construction and a list builds dozens of rows.
+  /// "21 Sept 2026, 10:42" in [languageCode]'s own pattern (Arabic keeps its
+  /// month names and ص / م), Western digits like every other number in the
+  /// app; empty without a date. The format is cached per language because
+  /// `DateFormat` parses its skeleton on construction and a list builds
+  /// dozens of rows.
   static String dateTime(String languageCode, DateTime? at) {
     if (at == null) return '';
     final format = _dateTimeFormats.putIfAbsent(
       languageCode,
-      () => DateFormat.yMMMd(languageCode).add_jm(),
+      () => DateFormat.yMMMd(languageCode).add_jm()..useNativeDigits = false,
+    );
+    return format.format(at.toLocal());
+  }
+
+  static final Map<String, DateFormat> _clockFormats = <String, DateFormat>{};
+
+  /// A clock time, "5:55 PM", in [languageCode]'s own `jm` pattern with
+  /// Western digits (Arabic reads "1:25 ص"; the same policy as
+  /// [dateTime]); [at] is shown in local time. Cached per language, like
+  /// [dateTime].
+  static String clock(String languageCode, DateTime at) {
+    final format = _clockFormats.putIfAbsent(
+      languageCode,
+      () => DateFormat.jm(languageCode)..useNativeDigits = false,
     );
     return format.format(at.toLocal());
   }
@@ -64,12 +84,13 @@ class Formatters {
   static String isolate(String text) =>
       text.isEmpty ? text : '$_isolateStart$text$_isolateEnd';
 
-  /// "21 Sept 2026" in [languageCode]; empty without a date.
+  /// "Tue, 22 Sept 2026" in [languageCode]'s own pattern (Arabic keeps its
+  /// day and month names), Western digits; empty without a date.
   static String date(String languageCode, DateTime? at) {
     if (at == null) return '';
     final format = _dateFormats.putIfAbsent(
       languageCode,
-      () => DateFormat.yMMMEd(languageCode),
+      () => DateFormat.yMMMEd(languageCode)..useNativeDigits = false,
     );
     return format.format(at.toLocal());
   }

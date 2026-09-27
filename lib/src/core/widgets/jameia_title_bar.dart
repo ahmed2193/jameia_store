@@ -11,10 +11,15 @@ import 'round_back_button.dart';
 /// The white title bar of every pushed screen (docs/design_system.md): the
 /// outlined round back button, a start-aligned title, optional actions and a
 /// hairline shadow. Use as `Scaffold.appBar`.
+///
+/// An optional [subtitle] stacks a grey second line under the title (the
+/// Keeta "Checkout / Keemart" header); the title then steps down to 16 bold
+/// so both lines sit in the same bar height. Null or empty → one line.
 class JameiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
   const JameiaTitleBar({
     super.key,
     required this.title,
+    this.subtitle,
     this.actions = const [],
     this.showBack = true,
     this.leading,
@@ -23,6 +28,10 @@ class JameiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
   static const double height = AppSize.s64;
 
   final String title;
+
+  /// A grey line under the title (a store and branch name). Hidden when null
+  /// or empty.
+  final String? subtitle;
   final List<Widget> actions;
   final bool showBack;
 
@@ -38,6 +47,21 @@ class JameiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
     final canPop = ModalRoute.of(context)?.impliesAppBarDismissal ?? false;
     final lead =
         leading ?? (showBack && canPop ? const RoundBackButton() : null);
+    final second = subtitle;
+    final hasSubtitle = second != null && second.isNotEmpty;
+    final heading = Semantics(
+      header: true,
+      child: Text(
+        title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: hasSubtitle
+            ? AppTextStyles.headingMedium.copyWith(
+                fontWeight: AppTextStyles.bold,
+              )
+            : AppTextStyles.barTitle,
+      ),
+    );
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: DecoratedBox(
@@ -61,15 +85,21 @@ class JameiaTitleBar extends StatelessWidget implements PreferredSizeWidget {
                   ] else
                     const SizedBox(width: AppSpacing.s4),
                   Expanded(
-                    child: Semantics(
-                      header: true,
-                      child: Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.barTitle,
-                      ),
-                    ),
+                    child: hasSubtitle
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              heading,
+                              Text(
+                                second,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.meta,
+                              ),
+                            ],
+                          )
+                        : heading,
                   ),
                   ...actions,
                 ],

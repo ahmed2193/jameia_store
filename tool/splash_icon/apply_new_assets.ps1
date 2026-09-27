@@ -1,22 +1,21 @@
 # =============================================================================
-# apply_new_assets.ps1 - rebuild JameiaMart app-icon + splash source assets from
-# two inputs, WHITE splash background, wide wordmark composed onto a soft GREEN
-# gradient (so a round/squircle launcher mask never clips the wordmark).
+# apply_new_assets.ps1 - rebuild the IN-APP logo tile (JameiaAssets.appLogo,
+# shown by home / login / about): the wide wordmark composed onto a soft GREEN
+# gradient.
 #
-#   powershell -File tool\splash_icon\apply_new_assets.ps1 `
-#       -IconPath "C:\path\app_icon.png" -SplashPath "C:\path\splash.png"
+#   powershell -File tool\splash_icon\apply_new_assets.ps1 -IconPath "C:\path\app_icon.png"
 #
-# Outputs (consumed afterwards by flutter_launcher_icons + flutter_native_splash):
-#   assets/launcher/app_icon.png         1024^2  adaptive FOREGROUND (green grad + wordmark @0.64w)
-#   assets/launcher/app_icon_square.png  1024^2  iOS + legacy square  (green grad + wordmark @0.86w)
-#   assets/launcher/a12_splash.png       1152^2  Android-12 native splash icon (green grad + wordmark @0.62w)
-#   assets/images/splash_screen.png      1080x2339 full-bleed (BoxFit.cover) splash art on white
+# The launcher ICONS and the native SPLASH are no longer built here: both are
+# the vector cart mark of features/splash, rendered by
+# tool/splash/render_app_icons_test.dart and render_native_splash_test.dart.
+#
+# Output:
+#   assets/launcher/app_icon_square.png  1024^2  in-app logo tile (green grad + wordmark @0.94w)
 #
 # GDI+ (System.Drawing) only - no ImageMagick / Python. Windows PowerShell 5.1.
 # =============================================================================
 param(
   [string]$IconPath   = 'C:\Users\Fawaly\Downloads\app_icon.png',
-  [string]$SplashPath = 'C:\Users\Fawaly\Downloads\splash.png',
   [string]$Root       = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 )
 $ErrorActionPreference = 'Stop'
@@ -132,40 +131,20 @@ function Compose-Icon([int]$size, [double]$widthFrac, $logo, $g1, $g2) {
   return $canvas
 }
 
-$white = [System.Drawing.Color]::White
 $g1 = [System.Drawing.Color]::FromArgb(255, 0xEA, 0xF7, 0xE6)   # #EAF7E6 gradient top
 $g2 = [System.Drawing.Color]::FromArgb(255, 0xCD, 0xEB, 0xC2)   # #CDEBC2 gradient bottom
 $launcher = Join-Path $Root 'assets\launcher'
-$images   = Join-Path $Root 'assets\images'
 
 Write-Host 'Keying wordmark off white...'
 $icoRaw   = New-Object System.Drawing.Bitmap($IconPath)
 $icoKeyed = Convert-WhiteToAlpha $icoRaw 232 250
 $icoTight = Get-AlphaCrop $icoKeyed 0.02
 
-Write-Host 'Composing icons on green gradient...'
-$fg = Compose-Icon 1024 0.78 $icoTight $g1 $g2
-Save-Png $fg (Join-Path $launcher 'app_icon.png'); $fg.Dispose()
+Write-Host 'Composing the logo tile on green gradient...'
 
 $sq = Compose-Icon 1024 0.94 $icoTight $g1 $g2
 Save-Png $sq (Join-Path $launcher 'app_icon_square.png'); $sq.Dispose()
 
-$a12 = Compose-Icon 1152 0.72 $icoTight $g1 $g2
-Save-Png $a12 (Join-Path $launcher 'a12_splash.png'); $a12.Dispose()
-
 $icoRaw.Dispose(); $icoKeyed.Dispose(); $icoTight.Dispose()
-
-Write-Host 'Building full-bleed splash 1080x2339...'
-$spl = New-Object System.Drawing.Bitmap($SplashPath)
-$cw = 1080; $ch = 2339
-$scale = [Math]::Max($cw / [double]$spl.Width, $ch / [double]$spl.Height)
-$iw = [int][Math]::Round($spl.Width * $scale)
-$ih = [int][Math]::Round($spl.Height * $scale)
-$ix = [int][Math]::Round(($cw - $iw) / 2)
-$iy = [int][Math]::Round(($ch - $ih) / 2)
-$splash = New-Canvas $cw $ch $white
-Draw-Scaled $splash $spl $ix $iy $iw $ih
-Save-Png $splash (Join-Path $images 'splash_screen.png')
-$splash.Dispose(); $spl.Dispose()
 
 Write-Host 'DONE'

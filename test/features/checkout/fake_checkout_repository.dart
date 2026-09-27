@@ -4,10 +4,12 @@ import 'package:dartz/dartz.dart';
 import 'package:jameia_mart/src/core/data/mappers/order_mapper.dart';
 import 'package:jameia_mart/src/core/data/models/order_model.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
 import 'package:jameia_mart/src/core/domain/entities/order_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/checkout/domain/entities/branch_entity.dart';
 import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
 import 'package:jameia_mart/src/features/checkout/domain/entities/delivery_selection_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
 import 'package:jameia_mart/src/features/checkout/domain/repositories/checkout_repository.dart';
@@ -25,10 +27,25 @@ class FakeCheckoutRepository implements CheckoutRepository {
   Completer<void>? selectGate;
   Completer<void>? placeGate;
 
+  /// When set, the next slots read waits on it.
+  Completer<void>? slotsGate;
+
   Failure? branchesFailure;
   Failure? slotsFailure;
   Failure? selectFailure;
   Failure? placeFailure;
+  Failure? rulesFailure;
+
+  /// What `GET /v1/init` answers: the store name and a running loyalty
+  /// programme (1 fils a point, from 100 points).
+  CheckoutStoreRules rules = const CheckoutStoreRules(
+    storeName: 'Jm3eia',
+    loyalty: LoyaltyProgram(
+      enabled: true,
+      minRedeemPoints: 100,
+      redemptionPerPoint: 1,
+    ),
+  );
 
   List<BranchEntity> branches = const <BranchEntity>[
     BranchEntity(id: 'b1', name: 'Salmiya', supportsPickup: true),
@@ -68,6 +85,11 @@ class FakeCheckoutRepository implements CheckoutRepository {
   Future<Either<Failure, List<DeliverySlotDayEntity>>>
   getDeliverySlots() async {
     calls.add('slots');
+    final gate = slotsGate;
+    if (gate != null) {
+      slotsGate = null;
+      await gate.future;
+    }
     final failure = slotsFailure;
     slotsFailure = null;
     return failure == null ? Right(days) : Left(failure);
@@ -108,6 +130,14 @@ class FakeCheckoutRepository implements CheckoutRepository {
         etaMinutes: 45,
       ),
     );
+  }
+
+  @override
+  Future<Either<Failure, CheckoutStoreRules>> getStoreRules() async {
+    calls.add('rules');
+    final failure = rulesFailure;
+    rulesFailure = null;
+    return failure == null ? Right(rules) : Left(failure);
   }
 
   @override

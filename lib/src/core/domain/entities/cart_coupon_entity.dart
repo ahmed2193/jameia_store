@@ -10,6 +10,13 @@ class CartCouponEntity extends Equatable {
   static const int minCodeLength = 2;
   static const int maxCodeLength = 32;
 
+  /// Whether [code], trimmed, has a length the API accepts: the one rule
+  /// the apply use case and every code field check.
+  static bool acceptsCode(String code) {
+    final length = code.trim().length;
+    return length >= minCodeLength && length <= maxCodeLength;
+  }
+
   final String code;
   final int discountFils;
 

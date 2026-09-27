@@ -33,6 +33,7 @@ extension OfferMapper on OfferModel {
     freeQuantity: rewardQuantity,
     stackable: stackable,
     endsAt: endsAt,
+    branchIds: branchIds,
   );
 }
 

@@ -31,6 +31,17 @@ class AppColors {
   /// text on white (5:1) — the search screens' highlights and links.
   static const Color brandDeep = Color(0xFF15803D);
 
+  /// Chosen / applied surface: Keeta's selected-choice mint (#EFFFF4);
+  /// lighter than [brandLightBg].
+  static const Color brandWash = Color(0xFFF0FDF4);
+
+  /// Receipt paper: Keeta's receipt fill (neutral c2); neutral, where
+  /// [smallBackground] is slate.
+  static const Color receiptPaper = Color(0xFFF5F6FA);
+
+  /// Press highlight: [primary] at 10 %, the one brand touch tint.
+  static const Color pressTint = Color(0x1A22C55E);
+
   /// The dark rim around the white "sticker" letters of the buy buttons and
   /// deal tags (`StickerText`): near-black green, so it reads on the brand
   /// green and on the red deal tag alike.
@@ -222,6 +233,9 @@ class AppColors {
   static const Color couponBadgeRed = Color(
     0xFFF14E24,
   ); // checkout coupon count badge red
+  static const Color tooltipFill = Color(
+    0xFF333333,
+  ); // checkout savings-hint bubble + tail (solid, not an alpha scrim)
   static const Color couponStripBrown = Color(
     0xFF893C00,
   ); // search coupon strip icon/text

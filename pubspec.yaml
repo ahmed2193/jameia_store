@@ -95,9 +95,9 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   bloc_test: ^10.0.0
 
-  # App-icon + native-splash generation for the JameiaMart re-skin. Config blocks
-  # live at the bottom of this file; source art in assets/launcher + assets/images
-  # (produced by tool/splash_icon/apply_new_assets.ps1).
+  # App-icon + native-splash generation. Config blocks live at the bottom of
+  # this file; icon art in assets/app_icon, splash mark in assets/splash (both
+  # rendered by tool/splash/*_test.dart from the splash painter).
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.8
 
@@ -109,8 +109,9 @@ flutter:
     - assets/data/
     - assets/data/jameia/
     - assets/images/
-    # JameiaMart launcher/splash source art (read by flutter_launcher_icons +
-    # flutter_native_splash: app_icon, app_icon_square, a12_splash).
+    # The in-app logo tile (JameiaAssets.appLogo). The app icon art
+    # (assets/app_icon/) and the native splash mark (assets/splash/) are
+    # generator inputs only and are NOT bundled.
     - assets/launcher/
     # Vector glyphs (jameia search scan-line, ported from jm3eia).
     - assets/svg/
@@ -185,37 +186,50 @@ flutter:
         - asset: assets/fonts/wm_c_iconfont.ttf
 
 # ─────────────────────────────────────────────────────────────────────────────
-# JameiaMart app-icon generation (flutter_launcher_icons). Source art built by
-# tool/splash_icon/apply_new_assets.ps1. Regenerate with:
+# JameiaMart app icon (flutter_launcher_icons) — talabat-style, the same mark as
+# the splash: the white cart on brand green (AppColors.primary). The art is
+# rendered from the splash painter itself (generator inputs, not bundled):
+#     flutter test tool/splash/render_app_icons_test.dart
 #     dart run flutter_launcher_icons
-# The adaptive FOREGROUND (app_icon.png) is an opaque green-gradient tile with the
-# whole wordmark centered, so adaptive_icon_background is only parallax insurance.
+# Android: adaptive icon = green background + the cart inside the 66/108 dp
+# safe zone (inset 0: the art already carries its padding), monochrome layer
+# for Android 13+ themed icons. iOS: opaque square + iOS 18 dark / tinted.
 # ─────────────────────────────────────────────────────────────────────────────
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/launcher/app_icon_square.png"
-  adaptive_icon_foreground: "assets/launcher/app_icon.png"
-  adaptive_icon_background: "#EAF7E6"
+  image_path: "assets/app_icon/icon_ios.png"
+  adaptive_icon_foreground: "assets/app_icon/icon_foreground.png"
+  adaptive_icon_background: "#22C55E"
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: "assets/app_icon/icon_monochrome.png"
   remove_alpha_ios: true
+  background_color_ios: "#22C55E"
+  image_path_ios_dark_transparent: "assets/app_icon/icon_ios_dark.png"
+  image_path_ios_tinted_grayscale: "assets/app_icon/icon_ios_dark.png"
+  desaturate_tinted_to_grayscale_ios: true
   min_sdk_android: 21
 
 # ─────────────────────────────────────────────────────────────────────────────
-# JameiaMart native splash (flutter_native_splash). WHITE background (the art has
-# its own white bg + baked tagline). Full-bleed on Android ≤11 / iOS; Android 12+
-# shows white + the centered wordmark icon. Regenerate with:
+# JameiaMart native splash (flutter_native_splash) — talabat-style: brand green
+# (AppColors.primary) with the white cart mark centred, identical to the first
+# frame of the Flutter splash (features/splash), which then animates it into
+# the full logo. The mark is rendered from the splash painter itself:
+#     flutter test tool/splash/render_native_splash_test.dart
 #     dart run flutter_native_splash:create
+# splash_mark.png is 1152² read as 4× → a 288 dp/pt box on every platform
+# (Android 12+ icon, Android ≤11 centred bitmap, iOS LaunchImage).
 # ─────────────────────────────────────────────────────────────────────────────
 flutter_native_splash:
-  color: "#FFFFFF"
-  background_image: assets/images/splash_screen.png
+  color: "#22C55E"
+  image: assets/splash/splash_mark.png
+  android_gravity: center
+  ios_content_mode: center
   android: true
   ios: true
   web: false
   fullscreen: false
-  ios_content_mode: scaleAspectFill
 
   android_12:
-    color: "#FFFFFF"
-    image: assets/launcher/a12_splash.png
-    icon_background_color: "#FFFFFF"
+    color: "#22C55E"
+    image: assets/splash/splash_mark.png

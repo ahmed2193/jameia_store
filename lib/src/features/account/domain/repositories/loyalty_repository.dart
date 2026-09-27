@@ -3,7 +3,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/ledger.dart';
 import '../entities/loyalty_entry_entity.dart';
-import '../entities/loyalty_program.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 
 /// The customer's loyalty points and the store's programme on the jm3eia
 /// backend: https://docs.jm3eia.store/developers/account.html

@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
-import '../../domain/entities/loyalty_program.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 import '../../domain/usecases/get_loyalty_program_usecase.dart';
 
 /// The store's loyalty programme for the screen that shows it (the points

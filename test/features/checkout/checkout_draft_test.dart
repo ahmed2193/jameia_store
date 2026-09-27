@@ -15,10 +15,13 @@ void main() {
     available: true,
   );
 
-  group('completeness', () {
+  // Whether the order may go at all is CheckoutBlockReason.resolve's job
+  // (place_order_usecase_test / checkout_block_reason_test); the draft only
+  // answers these.
+  group('what the draft knows', () {
     test('delivery needs an address', () {
-      expect(const CheckoutDraft().isComplete, isFalse);
-      expect(const CheckoutDraft(addressId: 'a1').isComplete, isTrue);
+      expect(const CheckoutDraft().hasDestination, isFalse);
+      expect(const CheckoutDraft(addressId: 'a1').hasDestination, isTrue);
     });
 
     test('pickup needs a branch, not an address', () {
@@ -26,8 +29,8 @@ void main() {
         mode: FulfillmentMode.pickup,
         addressId: 'a1',
       );
-      expect(draft.isComplete, isFalse);
-      expect(draft.copyWith(branchId: 'b1').isComplete, isTrue);
+      expect(draft.hasDestination, isFalse);
+      expect(draft.copyWith(branchId: 'b1').hasDestination, isTrue);
     });
 
     test('a scheduled order needs a slot', () {
@@ -36,8 +39,7 @@ void main() {
         timing: DeliveryTiming.scheduled,
       );
       expect(draft.needsSlot, isTrue);
-      expect(draft.isComplete, isFalse);
-      expect(draft.copyWith(slot: slot).isComplete, isTrue);
+      expect(draft.copyWith(slot: slot).needsSlot, isFalse);
     });
 
     test('notes over the API limit block the order', () {
@@ -46,7 +48,6 @@ void main() {
         notes: 'x' * (CheckoutDraft.maxNotesLength + 1),
       );
       expect(draft.notesTooLong, isTrue);
-      expect(draft.isComplete, isFalse);
     });
 
     test('leaving the scheduled timing drops the slot', () {

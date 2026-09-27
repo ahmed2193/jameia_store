@@ -1,5 +1,8 @@
 import 'package:flutter/widgets.dart';
 
+/// The main shell's tabs, in bottom-nav order.
+enum ShellTab { home, search, cart, mine }
+
 /// What the main shell shows in each tab. The router builds these, because
 /// only `config/routes` may import pages of several features: the shell just
 /// places them.
@@ -15,6 +18,7 @@ class ShellTabs {
     required this.cart,
     required this.orderHistory,
     required this.mine,
+    this.overlay,
   });
 
   final WidgetBuilder home;
@@ -30,4 +34,8 @@ class ShellTabs {
   final Widget Function(bool active) orderHistory;
 
   final WidgetBuilder mine;
+
+  /// Floats over the tab bodies ([child]) — the assistant's buddy — told
+  /// which [ShellTab] is on screen. `null`: nothing floats.
+  final Widget Function(ShellTab tab, Widget child)? overlay;
 }

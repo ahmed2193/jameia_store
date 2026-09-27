@@ -8,7 +8,8 @@ import '../../../../core/responsive/app_size.dart';
 import 'shell_nav_badge.dart';
 
 /// One bottom-nav destination: icon (scaled up a touch when selected), label,
-/// and an optional count badge.
+/// and an optional count badge. The [icon] takes its size and colour from
+/// the item, so pass a plain `const Icon(...)` (or a `JameiaMarkIcon`).
 class ShellNavItem extends StatelessWidget {
   const ShellNavItem({
     super.key,
@@ -20,7 +21,7 @@ class ShellNavItem extends StatelessWidget {
     this.iconKey,
   });
 
-  final IconData icon;
+  final Widget icon;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -56,11 +57,13 @@ class ShellNavItem extends StatelessWidget {
                     scale: selected ? _selectedScale : _restScale,
                     duration: MotionGuard.duration(context, AppMotion.fast),
                     curve: MotionGuard.curve(context, AppMotion.signature),
-                    child: Icon(
-                      icon,
+                    child: SizedBox.square(
                       key: iconKey,
-                      size: AppSize.s24,
-                      color: color,
+                      dimension: AppSize.s24,
+                      child: IconTheme.merge(
+                        data: IconThemeData(size: AppSize.s24, color: color),
+                        child: icon,
+                      ),
                     ),
                   ),
                   if (badge > 0)
