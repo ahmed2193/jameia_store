@@ -179,7 +179,7 @@ void main() {
           FakeHttpClientAdapter((_, _) => okBody(_walletPage())),
         );
 
-        final page = await dataSource.getLedger(page: 1, limit: 20);
+        final page = (await dataSource.getLedger(page: 1, limit: 20)).model;
 
         final request = adapter.requests.single;
         expect(request.method, 'GET');
@@ -210,7 +210,7 @@ void main() {
         ),
       );
 
-      final page = await dataSource.getLedger(page: 1, limit: 20);
+      final page = (await dataSource.getLedger(page: 1, limit: 20)).model;
 
       expect(page.items.map((e) => e.id), ['ok']);
     });
@@ -251,7 +251,7 @@ void main() {
       final ledger = (await dataSource.getLedger(
         page: 2,
         limit: 20,
-      )).toEntity();
+      )).model.toEntity();
 
       expect(adapter.requests.single.path, EndPoints.accountLoyalty);
       expect(adapter.requests.single.queryParameters, {'page': 2, 'limit': 20});

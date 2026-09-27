@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/domain/entities/data_snapshot.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/notification_entity.dart';
 import '../entities/notifications_feed.dart';
@@ -10,8 +11,18 @@ import '../entities/notifications_feed.dart';
 ///
 /// Reference: https://docs.jm3eia.store/developers/ (Notifications, Push).
 abstract class NotificationsRepository {
+  /// `GET /v1/notifications?page=1&limit[&status=unread]` — the first page
+  /// (plus the global unread counter): the copy saved on the device first
+  /// (offline too), then the server's (skipped while the copy is fresh,
+  /// unless [forceRefresh]); failures on the error channel.
+  Stream<DataSnapshot<NotificationsFeed>> watchFirstPage({
+    required int limit,
+    bool unreadOnly = false,
+    bool forceRefresh = false,
+  });
+
   /// `GET /v1/notifications?page&limit[&status=unread]` — one page plus the
-  /// global unread counter.
+  /// global unread counter, from the server only.
   Future<Either<Failure, NotificationsFeed>> getNotifications({
     required int page,
     required int limit,

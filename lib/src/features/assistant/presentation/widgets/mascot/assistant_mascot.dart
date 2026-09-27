@@ -5,13 +5,15 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import 'assistant_mascot_gesture.dart';
 import 'assistant_mascot_hop.dart';
 import 'assistant_mascot_mood.dart';
 import 'assistant_mascot_painter.dart';
 import 'assistant_mascot_pose.dart';
 
 /// The assistant's face: a painted mascot that eases between [mood]s, looks
-/// where it is told ([look]), hops for joy whenever [cheer] changes and —
+/// where it is told ([look]), hops for joy whenever [cheer] changes, waves
+/// its sprout whenever [wave] changes, winks whenever [wink] changes and —
 /// while [alive] — blinks and glances around on its own.
 ///
 /// Nothing loops: each gesture runs a short controller and stops, so a
@@ -27,6 +29,8 @@ class AssistantMascot extends StatefulWidget {
     this.outlined = false,
     this.alive = true,
     this.cheer,
+    this.wave,
+    this.wink,
   });
 
   final double size;
@@ -44,6 +48,12 @@ class AssistantMascot extends StatefulWidget {
   /// Every new value plays one happy hop.
   final Object? cheer;
 
+  /// Every new value waves the sprout once (hello).
+  final Object? wave;
+
+  /// Every new value plays one wink.
+  final Object? wink;
+
   @override
   State<AssistantMascot> createState() => _AssistantMascotState();
 }
@@ -56,6 +66,8 @@ class _AssistantMascotState extends State<AssistantMascot>
   static const Duration _hopLength = Duration(milliseconds: 720);
   static const Duration _lookEase = Duration(milliseconds: 240);
   static const Duration _glanceHold = Duration(milliseconds: 900);
+  static const Duration _waveLength = Duration(milliseconds: 900);
+  static const Duration _winkLength = Duration(milliseconds: 420);
 
   static const int _blinkMinMs = 3000;
   static const int _blinkSpreadMs = 4000;
@@ -92,12 +104,22 @@ class _AssistantMascotState extends State<AssistantMascot>
     duration: _lookEase,
     value: 1,
   );
+  late final AnimationController _wave = AnimationController(
+    vsync: this,
+    duration: _waveLength,
+  );
+  late final AnimationController _wink = AnimationController(
+    vsync: this,
+    duration: _winkLength,
+  );
   late final Listenable _frame = Listenable.merge([
     _blink,
     _mood,
     _mouth,
     _hop,
     _eyes,
+    _wave,
+    _wink,
   ]);
 
   late AssistantMascotPose _moodFrom = widget.mood.pose;
@@ -129,6 +151,8 @@ class _AssistantMascotState extends State<AssistantMascot>
     }
     if (oldWidget.look != widget.look) _lookAt(widget.look);
     if (oldWidget.cheer != widget.cheer && widget.cheer != null) _run(_hop);
+    if (oldWidget.wave != widget.wave && widget.wave != null) _run(_wave);
+    if (oldWidget.wink != widget.wink && widget.wink != null) _run(_wink);
     if (oldWidget.alive != widget.alive) {
       _syncAmbient(widget.alive && !_reduced && _onScreen);
     }
@@ -143,10 +167,12 @@ class _AssistantMascotState extends State<AssistantMascot>
       );
 
   /// Plays [controller] from the start, or jumps to its end under reduced
-  /// motion (a hop then simply does not happen).
+  /// motion (a hop, a wave or a wink then simply does not happen).
   void _run(AnimationController controller) {
     if (_reduced) {
-      controller.value = controller == _hop ? 0 : 1;
+      final gesture =
+          controller == _hop || controller == _wave || controller == _wink;
+      controller.value = gesture ? 0 : 1;
       return;
     }
     controller.forward(from: 0);
@@ -242,9 +268,11 @@ class _AssistantMascotState extends State<AssistantMascot>
       sway:
           mood.sway +
           look.dx * _swayWithLook +
-          (hopping ? AssistantMascotHop.sway(hop) : 0),
+          (hopping ? AssistantMascotHop.sway(hop) : 0) +
+          (_wave.isAnimating ? AssistantMascotGesture.wave(_wave.value) : 0),
       twinkle: math.max(mood.twinkle, joy),
       surprise: mood.surprise,
+      wink: _wink.isAnimating ? AssistantMascotGesture.wink(_wink.value) : 0,
     );
   }
 
@@ -257,6 +285,8 @@ class _AssistantMascotState extends State<AssistantMascot>
     _mouth.dispose();
     _hop.dispose();
     _eyes.dispose();
+    _wave.dispose();
+    _wink.dispose();
     super.dispose();
   }
 

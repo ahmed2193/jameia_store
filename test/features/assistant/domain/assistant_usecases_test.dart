@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_action_result.dart';
@@ -18,6 +19,7 @@ import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant
 import 'package:jameia_mart/src/features/assistant/domain/usecases/rate_assistant_message_usecase.dart';
 import 'package:jameia_mart/src/features/assistant/domain/usecases/request_assistant_handoff_usecase.dart';
 import 'package:jameia_mart/src/features/assistant/domain/usecases/send_assistant_message_usecase.dart';
+import 'package:jameia_mart/src/features/assistant/domain/usecases/watch_assistant_conversations_usecase.dart';
 
 /// Records every call; answers with the scripted value.
 class _RecordingRepository implements AssistantRepository {
@@ -40,6 +42,15 @@ class _RecordingRepository implements AssistantRepository {
   }) async {
     calls.add('list:$page:$limit');
     return _answer(AssistantConversationsFeed.empty);
+  }
+
+  @override
+  Stream<DataSnapshot<AssistantConversationsFeed>> watchFirstPage({
+    required int limit,
+    bool forceRefresh = false,
+  }) {
+    calls.add('watch:$limit:$forceRefresh');
+    return const Stream.empty();
   }
 
   @override
@@ -111,6 +122,16 @@ void main() {
     await useCase(const GetAssistantConversationsParams(page: 0, limit: 500));
     await useCase(const GetAssistantConversationsParams(page: 3, limit: 0));
     expect(repository.calls, ['list:1:20', 'list:1:100', 'list:3:1']);
+  });
+
+  test('the history\'s first page: 20 by default, the limit clamped, '
+      'a forced read passed on', () async {
+    final useCase = WatchAssistantConversationsUseCase(repository);
+    await useCase(const WatchAssistantConversationsParams()).drain<void>();
+    await useCase(
+      const WatchAssistantConversationsParams(limit: 500, forceRefresh: true),
+    ).drain<void>();
+    expect(repository.calls, ['watch:20:false', 'watch:100:true']);
   });
 
   test('one conversation by id', () async {

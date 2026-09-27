@@ -10,7 +10,6 @@ import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/navigation/navigation.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../cubit/pro_membership_cubit.dart';
 import '../cubit/pro_membership_state.dart';
@@ -20,8 +19,9 @@ import 'pro_success_sheet.dart';
 /// a new subscription bursts confetti over [child] and, as the burst peaks,
 /// opens the welcome sheet; a cancelled renewal is toasted. Either way the
 /// session is re-read so `isPro` (member prices everywhere) follows. A
-/// failed action is toasted too (a failed first load is the body's error
-/// view instead).
+/// failure on the loaded page is answered too — offline, a failed reload
+/// only nudges the banner and a failed subscribe / cancel says it needs the
+/// internet (a failed first load is the body's error view instead).
 class ProOutcomeListener extends StatefulWidget {
   const ProOutcomeListener({super.key, required this.child});
 
@@ -82,7 +82,7 @@ class _ProOutcomeListenerState extends State<ProOutcomeListener> {
     final failure = state.failure;
     // A failed first load is rendered inline by the body, not toasted.
     if (failure == null || state.status == ProMembershipStatus.error) return;
-    showJameiaSnackBar(context, failure.localizedMessage);
+    showFailureSnackBar(context, failure, action: state.actionFailed);
   }
 
   @override

@@ -33,6 +33,10 @@ class ProBrandsCubit extends Cubit<ProBrandsState>
     );
   }
 
+  /// The connection came back: ask again when no brand could be shown yet.
+  Future<void> onReconnected() =>
+      state.brands.isEmpty ? load() : Future<void>.value();
+
   /// Frozen so no widget can mutate the state. An unchanged reply emits
   /// nothing (Bloc would let a first equal emit through).
   void _show(List<BrandEntity> brands) {

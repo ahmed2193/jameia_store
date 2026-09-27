@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/product_reviews.dart';
 
@@ -11,6 +12,7 @@ class ProductReviewsState extends Equatable {
     this.reviews = ProductReviews.empty,
     this.isLoadingMore = false,
     this.loadMoreFailed = false,
+    this.freshness = DataFreshness.none,
     this.failure,
   });
 
@@ -19,7 +21,12 @@ class ProductReviewsState extends Equatable {
   final bool isLoadingMore;
   final bool loadMoreFailed;
 
-  /// Transient — cleared on every [copyWith]; the section localizes it.
+  /// How fresh the first page is (the device copy, a failed refresh …).
+  final DataFreshness freshness;
+
+  /// Transient with [ProductReviewsStatus.loaded] (cleared on the next
+  /// [copyWith]); with [ProductReviewsStatus.error] the reason, kept while
+  /// the status stays `error`. The section localizes it.
   final Failure? failure;
 
   bool get isLoaded => status == ProductReviewsStatus.loaded;
@@ -31,14 +38,21 @@ class ProductReviewsState extends Equatable {
     ProductReviews? reviews,
     bool? isLoadingMore,
     bool? loadMoreFailed,
+    DataFreshness? freshness,
     Failure? failure,
-  }) => ProductReviewsState(
-    status: status ?? this.status,
-    reviews: reviews ?? this.reviews,
-    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-    loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
-    failure: failure,
-  );
+  }) {
+    final nextStatus = status ?? this.status;
+    return ProductReviewsState(
+      status: nextStatus,
+      reviews: reviews ?? this.reviews,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
+      freshness: freshness ?? this.freshness,
+      failure:
+          failure ??
+          (nextStatus == ProductReviewsStatus.error ? this.failure : null),
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -46,6 +60,7 @@ class ProductReviewsState extends Equatable {
     reviews,
     isLoadingMore,
     loadMoreFailed,
+    freshness,
     failure,
   ];
 }

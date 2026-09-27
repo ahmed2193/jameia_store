@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:jameia_mart/src/core/data/mappers/order_mapper.dart';
 import 'package:jameia_mart/src/core/data/models/order_model.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/domain/entities/order_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/orders/domain/entities/cancel_order_request.dart';
@@ -10,12 +11,21 @@ import 'package:jameia_mart/src/features/orders/domain/entities/orders_page.dart
 import 'package:jameia_mart/src/features/orders/domain/entities/product_review_request.dart';
 import 'package:jameia_mart/src/features/orders/domain/repositories/orders_repository.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
 import 'order_test_fixtures.dart';
 
 /// Scripted orders repository: records the calls, can hold one open and can
 /// fail the next call of a kind.
+///
+/// The `watch…` reads stream like the cached repository: the saved copy
+/// ([savedFirstPage] / [savedOrder]) first when set — a forced read skips
+/// it — then the scripted reply, recorded as the same `getOrders:1` /
+/// `getOrder:<id>` call.
 class FakeOrdersRepository implements OrdersRepository {
   final List<String> calls = <String>[];
+
+  /// The `forceRefresh` of every `watch…` read, in order.
+  final List<bool> forcedReads = <bool>[];
 
   /// Gate for the next [getOrders] call (a stale page in flight).
   Completer<void>? listGate;
@@ -42,8 +52,24 @@ class FakeOrdersRepository implements OrdersRepository {
   String detailStatus = 'placed';
   int reviewCalls = 0;
 
+  /// The device copies a `watch…` read shows first.
+  OrdersPage? savedFirstPage;
+  OrderEntity? savedOrder;
+
   OrderEntity order({String id = 'o1', String status = 'placed'}) =>
       OrderModel.fromJson(orderJson(id: id, status: status)).toEntity();
+
+  @override
+  Stream<DataSnapshot<OrdersPage>> watchFirstPage({
+    required int limit,
+    bool forceRefresh = false,
+  }) {
+    forcedReads.add(forceRefresh);
+    return networkRead(
+      getOrders(page: 1, limit: limit),
+      saved: forceRefresh ? null : savedFirstPage,
+    );
+  }
 
   @override
   Future<Either<Failure, OrdersPage>> getOrders({
@@ -72,6 +98,18 @@ class FakeOrdersRepository implements OrdersRepository {
         hasMore: page < pages,
         total: pages,
       ),
+    );
+  }
+
+  @override
+  Stream<DataSnapshot<OrderEntity>> watchOrder(
+    String orderId, {
+    bool forceRefresh = false,
+  }) {
+    forcedReads.add(forceRefresh);
+    return networkRead(
+      getOrder(orderId),
+      saved: forceRefresh ? null : savedOrder,
     );
   }
 

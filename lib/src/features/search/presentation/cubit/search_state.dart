@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/error/failures.dart';
 import '../../domain/entities/recent_searches.dart';
 import '../../domain/entities/search_discover.dart';
 
@@ -11,6 +12,7 @@ class SearchState extends Equatable {
     this.discover = SearchDiscover.empty,
     this.suggestions = const <CatalogProductEntity>[],
     this.isSuggesting = false,
+    this.suggestFailure,
   });
 
   /// What is in the field right now.
@@ -24,14 +26,32 @@ class SearchState extends Equatable {
   /// A suggestions request for the current [query] is pending.
   final bool isSuggesting;
 
+  /// Why the suggestions for the current [query] could not load; cleared by
+  /// the next keystroke. A `NetworkFailure` turns the list into the offline
+  /// one (recent terms + "search needs a connection").
+  final Failure? suggestFailure;
+
   bool get isTyping => query.trim().isNotEmpty;
 
   /// Past terms that match what is typed, offered above the products.
   List<String> get recentMatches => recents.matching(query);
 
+  /// Offline, the past terms that match what is typed — or, when none does,
+  /// every past term: something to tap instead of an empty list.
+  List<String> get offlineTerms {
+    final matches = recentMatches;
+    return matches.isNotEmpty ? matches : recents.terms;
+  }
+
   /// Nothing to list yet: the first product request for this text is still
   /// running (later keystrokes keep the previous matches on screen).
   bool get isAwaitingSuggestions => isSuggesting && suggestions.isEmpty;
+
+  /// The list while typing is the offline one — the recent terms and "search
+  /// needs a connection", no bone rows, no spinner: the request failed for
+  /// want of a connection, or the app is [offline] with nothing to show.
+  bool showsOfflineList({required bool offline}) =>
+      suggestFailure is NetworkFailure || (offline && suggestions.isEmpty);
 
   SearchState copyWith({
     String? query,
@@ -39,12 +59,17 @@ class SearchState extends Equatable {
     SearchDiscover? discover,
     List<CatalogProductEntity>? suggestions,
     bool? isSuggesting,
+    Failure? suggestFailure,
+    bool clearSuggestFailure = false,
   }) => SearchState(
     query: query ?? this.query,
     recents: recents ?? this.recents,
     discover: discover ?? this.discover,
     suggestions: suggestions ?? this.suggestions,
     isSuggesting: isSuggesting ?? this.isSuggesting,
+    suggestFailure: clearSuggestFailure
+        ? null
+        : (suggestFailure ?? this.suggestFailure),
   );
 
   @override
@@ -54,5 +79,6 @@ class SearchState extends Equatable {
     discover,
     suggestions,
     isSuggesting,
+    suggestFailure,
   ];
 }

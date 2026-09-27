@@ -7,6 +7,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/content_clamp.dart';
 import '../../../../../core/widgets/branded_refresh.dart';
+import '../../../../../core/widgets/screen_stale_notice.dart';
 import '../../../domain/entities/ledger.dart';
 import '../../../domain/entities/ledger_change.dart';
 import '../../../domain/entities/ledger_entry.dart';
@@ -16,9 +17,10 @@ import 'ledger_dates.dart';
 import 'ledger_day_sliver.dart';
 import 'ledger_load_more_row.dart';
 
-/// The loaded history as a pull-to-refresh scroll: [header] first, then the
-/// entries grouped by day under pinned day titles (or [empty]), then the
-/// load-more sentinel while the server has more.
+/// The loaded history as a pull-to-refresh scroll: the "Updated … ago" note
+/// over a saved or failed history, [header], then the entries grouped by
+/// day under pinned day titles (or [empty]), then the load-more sentinel
+/// while the server has more.
 ///
 /// Motion, all from two controllers owned here: the first rows cascade in
 /// once when the list first appears (never on a refresh, a later page or a
@@ -162,6 +164,9 @@ class _LedgerListState<T extends LedgerEntry> extends State<LedgerList<T>>
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
+              SliverToBoxAdapter(
+                child: ScreenStaleNotice<LedgerCubit<T>, LedgerState<T>>(),
+              ),
               SliverToBoxAdapter(child: widget.header),
               if (days.isEmpty)
                 SliverFillRemaining(hasScrollBody: false, child: widget.empty),
@@ -182,8 +187,10 @@ class _LedgerListState<T extends LedgerEntry> extends State<LedgerList<T>>
                   freshIds: _fresh,
                   flash: _flashColor,
                 ),
+              // A lazy sliver: the sentinel is built — and asks for the
+              // next page — only once it scrolls into reach.
               if (ledger.hasMore && !ledger.isEmpty)
-                SliverToBoxAdapter(child: LedgerLoadMoreRow<T>()),
+                SliverList.list(children: [LedgerLoadMoreRow<T>()]),
               SliverPadding(
                 padding: EdgeInsetsDirectional.only(
                   bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.s16,

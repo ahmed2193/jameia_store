@@ -52,6 +52,38 @@ void main() {
     clearCache = FakeClearCachedAddressesUseCase();
   });
 
+  group('onReconnected', () {
+    test('a book the server has not answered for syncs now', () async {
+      getCached.result = Right(copyOf(cachedBook, ownerId: customerA));
+      getAddresses.result = const Left(NetworkFailure());
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+      expect(cubit.state.book, cachedBook);
+      expect(cubit.state.isSynced, isFalse);
+
+      getAddresses.result = Right(serverBook);
+      await cubit.onReconnected();
+
+      expect(cubit.state.isSynced, isTrue);
+      expect(cubit.state.book, serverBook);
+    });
+
+    test(
+      'a synced book, or one never started (a guest), asks nothing',
+      () async {
+        final cubit = build();
+        addTearDown(cubit.close);
+
+        await cubit.onReconnected();
+        await cubit.start(customerId: customerA);
+        await cubit.onReconnected();
+
+        expect(getAddresses.calls, 1);
+      },
+    );
+  });
+
   group('start', () {
     blocTest<AddressBookCubit, AddressBookState>(
       'nothing cached: loading → server book (synced), saved for the customer',

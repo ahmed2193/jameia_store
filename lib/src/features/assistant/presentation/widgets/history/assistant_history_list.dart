@@ -33,9 +33,7 @@ class AssistantHistoryList extends StatelessWidget {
           itemCount: count,
           itemBuilder: (_, index) {
             if (index == rows.length) {
-              // Keyed by page: each merged page mounts a fresh sentinel, so a
-              // page that adds no row cannot leave it waiting forever.
-              return AssistantHistoryLoadMoreRow(key: ValueKey<int>(feed.page));
+              return const AssistantHistoryLoadMoreRow();
             }
             return switch (rows[index]) {
               AssistantHistoryHeaderRow(:final bucket) =>

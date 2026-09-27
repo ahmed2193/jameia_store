@@ -7,17 +7,19 @@ import '../../../../config/routes/routes.dart';
 import '../../../../core/domain/entities/jameia_address_entity.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/utils/address_display.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../../../address/presentation/cubit/address_book_cubit.dart';
 import '../../../address/presentation/cubit/address_book_state.dart';
 import '../../../assistant/presentation/cubit/assistant_availability_cubit.dart';
 import '../../../notifications/presentation/cubit/unread_notifications_cubit.dart';
 import '../../../notifications/presentation/cubit/unread_notifications_state.dart';
+import '../../../store_mode/presentation/cubit/pro_status_cubit.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import 'home_hero_delegate.dart';
 
-/// The home header. The store row comes from the launch snapshot (name, Pro
-/// programme, the zone's delivery time). The delivery line always shows the
+/// The home header. The store row comes from the launch snapshot (name, the
+/// zone's delivery time), with the "pro" tag of a Jm3eia Pro member (the
+/// app-global Pro status — a guest, a non-member and a status not known yet
+/// see the plain store name). The delivery line always shows the
 /// customer's default saved address, live from the app-global address book;
 /// without one (a guest, an empty book) it falls back to the store's
 /// delivery area, then to a prompt. Tapping it opens the saved addresses, and
@@ -35,7 +37,7 @@ class HomeHeaderSliver extends StatelessWidget {
     if (picked is! JameiaAddressEntity) return;
     final failure = await addressBook.makeDefault(picked.id);
     if (failure != null && context.mounted) {
-      showJameiaSnackBar(context, failure.localizedMessage);
+      showFailureSnackBar(context, failure, action: true);
     }
   }
 
@@ -45,6 +47,10 @@ class HomeHeaderSliver extends StatelessWidget {
     final fallbackPlace = delivery?.placeName ?? '';
     final showAssistant = context.select<AssistantAvailabilityCubit, bool>(
       (availability) => availability.state.isAvailable,
+    );
+    // The "pro" tag is the member's: it pops in when the perks switch on.
+    final isMember = context.select<ProStatusCubit, bool>(
+      (status) => status.state.membership.hasBenefits,
     );
     // Rebuilds only when the default address or the unread badge changes.
     return BlocSelector<
@@ -66,7 +72,7 @@ class HomeHeaderSliver extends StatelessWidget {
                 storeName: bootstrap.storeName.isNotEmpty
                     ? bootstrap.storeName
                     : 'home.jameia'.tr(),
-                isPro: bootstrap.pro.enabled,
+                isPro: isMember,
                 etaMinutes: delivery?.etaMinutes ?? 0,
                 placeLabel:
                     defaultAddress?.shortPlace ??

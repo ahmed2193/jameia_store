@@ -14,16 +14,20 @@ import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/catalog_recipe_tag.dart';
 import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/screen_stale_notice.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../domain/entities/recipe_detail.dart';
+import '../cubit/recipe_detail_cubit.dart';
+import '../cubit/recipe_detail_state.dart';
 import 'recipe_ingredient_tile.dart';
 import 'recipe_section_card.dart';
 import 'recipe_step_tile.dart';
 
-/// The loaded recipe: photo header, title / teaser / tags / time, the
-/// ingredients as store products (each with its cart control, plus "add all"),
-/// then the steps in cooking order.
+/// The loaded recipe: photo header, the "Updated … ago" note over a saved
+/// copy (its prices and stock may have moved), title / teaser / tags / time,
+/// the ingredients as store products (each with its cart control, plus "add
+/// all"), then the steps in cooking order.
 class RecipeDetailView extends StatelessWidget {
   const RecipeDetailView({super.key, required this.detail});
 
@@ -66,6 +70,7 @@ class RecipeDetailView extends StatelessWidget {
         ),
         SliverList.list(
           children: [
+            const ScreenStaleNotice<RecipeDetailCubit, RecipeDetailState>(),
             RecipeSectionCard(
               title: '',
               child: Column(

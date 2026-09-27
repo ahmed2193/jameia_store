@@ -6,12 +6,19 @@ import 'motion.dart';
 /// opening / closing its height while it fades — never on mount. While
 /// closing it keeps drawing the last child it had while [visible], so the
 /// caller may pass an empty child once the data is gone. Closed → the child
-/// is not built. Reduced motion → at once.
+/// is not built. Reduced motion → at once. [onClosed] fires once the block is
+/// fully closed (a host that makes room for it can give the room back then).
 class CollapseReveal extends StatefulWidget {
-  const CollapseReveal({super.key, required this.visible, required this.child});
+  const CollapseReveal({
+    super.key,
+    required this.visible,
+    required this.child,
+    this.onClosed,
+  });
 
   final bool visible;
   final Widget child;
+  final VoidCallback? onClosed;
 
   @override
   State<CollapseReveal> createState() => _CollapseRevealState();
@@ -37,7 +44,14 @@ class _CollapseRevealState extends State<CollapseReveal>
 
   void _onStatus(AnimationStatus status) {
     // Fully closed: rebuild once so the child is dropped.
-    if (status.isDismissed && mounted) setState(() {});
+    if (!status.isDismissed || !mounted) return;
+    setState(() {});
+    if (widget.onClosed == null) return;
+    // After this frame: a reduced-motion close lands inside the parent's
+    // build, which must not be marked dirty from there.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !widget.visible) widget.onClosed?.call();
+    });
   }
 
   @override

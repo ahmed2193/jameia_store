@@ -108,24 +108,29 @@ lib/
     │   ├── data/
     │   │   ├── jameia_repository.dart       # offline in-memory backend (datasources only!)
     │   │   ├── jameia/                      # catalogue loader + raw catalogue models
-    │   │   ├── models/                      # shared DTOs
+    │   │   ├── datasources/                 # shared datasources: catalogue remote + cache, CacheSlots (cache_slots.dart)
+    │   │   ├── models/                      # shared DTOs, RemotePayload (model + raw `results` to keep)
     │   │   ├── mappers/                     # shared DTO ⇄ entity mappers (barrel: mappers.dart)
-    │   │   └── repositories/base_repository_mixin.dart
+    │   │   └── repositories/                # base_repository_mixin.dart, cached_repository_mixin.dart (cache-then-network)
     │   ├── design/               # JameiaIcons, JameiaAssets
     │   ├── domain/
-    │   │   ├── entities/                    # shared framework-free entities (barrel: entities.dart)
+    │   │   ├── entities/                    # shared framework-free entities (barrel: entities.dart),
+    │   │   │                                #   incl. DataSnapshot / DataFreshness (where data came from, how old)
     │   │   └── localization/localized_pick.dart
     │   ├── error/                # exceptions.dart, failures.dart
     │   ├── motion/               # AppMotion, MotionGuard, motion widgets
     │   ├── navigation/           # transition pages, showJameiaDialog / showJameiaBottomSheet, navigatorKey
     │   ├── network/              # ApiConsumer/DioConsumer, EndPoints, ApiEnvelope, ApiStatus, ApiHeaders,
-    │   │                         # ApiExceptionMapper, interceptors/ (auth, headers, 429 retry, log),
-    │   │                         # TokenRefresher, EventStreamClient (SSE), LocaleProvider,
-    │   │                         # SessionExpiryNotifier, NetworkInfo
+    │   │                         # ApiExceptionMapper, interceptors/ (auth, headers, 429 retry,
+    │   │                         # reachability signal, log), TokenRefresher, EventStreamClient (SSE),
+    │   │                         # LocaleProvider, SessionExpiryNotifier, NetworkInfo (reachability monitor)
     │   ├── responsive/           # AppSize, Breakpoints
-    │   ├── storage/              # LocalStorage (prefs), SessionStore (keychain: tokens + guest ids), initCoreStorage()
-    │   ├── usecase/usecase.dart  # UseCase / SyncUseCase / StreamUseCase / NoParams
-    │   ├── utils/                # formatters, context extensions, SafeCubitMixin (utils/performance)
+    │   ├── storage/              # LocalStorage (prefs), SessionStore (keychain: tokens + guest ids), initCoreStorage(),
+    │   │                         # json_cache_store.dart (JsonCacheStore: on-device API response cache),
+    │   │                         # CacheKey, CacheNamespace, CacheOwner
+    │   ├── usecase/              # usecase.dart (UseCase / SyncUseCase / StreamUseCase / NoParams), WatchParams
+    │   ├── utils/                # formatters, relative age, context extensions,
+    │   │                         # SafeCubitMixin + SnapshotLoaderMixin (utils/performance)
     │   └── widgets/              # shared UI (one widget per file)
     └── features/<feature>/
         ├── data/
@@ -147,8 +152,8 @@ lib/
 Nothing else is allowed inside a feature: no `screens/`, `util/`, `utils/`, `popups/`,
 `helpers/`, `models/` outside `data/`, and no files at the presentation root.
 
-Features: account, address, assistant, auth, cart, checkout, coupons, discovery, home, language,
-marketing, notifications, orders, product_details, recipes, search, shell, shop, splash,
+Features: account, address, assistant, auth, cart, checkout, connectivity, coupons, discovery, home,
+language, marketing, notifications, orders, product_details, recipes, search, shell, shop, splash,
 store_mode, support.
 `shell` and `splash` have no data dependency, so they may contain only `presentation/`.
 
@@ -161,7 +166,7 @@ Widget ──reads──▶ Cubit ──calls──▶ UseCase ──calls──
                                                           ▲ implements
                                               RepositoryImpl with BaseRepositoryMixin
                                                           │ calls
-                                                      DataSource ──▶ ApiConsumer (Dio) | JameiaRepository | LocalStorage | SessionStore
+                                                      DataSource ──▶ ApiConsumer (Dio) | JameiaRepository | LocalStorage | SessionStore | JsonCacheStore
 Errors:  DataSource throws AppException → BaseRepositoryMixin maps it to Failure
          → UseCase returns Left(Failure) → Cubit emits status: error + message → Widget shows the error UI
 ```
@@ -191,7 +196,9 @@ Errors:  DataSource throws AppException → BaseRepositoryMixin maps it to Failu
 | Navigation | GoRouter: `context.push / go / pushReplacement / pop` + `Routes.*` + `extra:` | `Navigator.push*`, `pushNamed`, `MaterialPageRoute` |
 | Transitions | `JameiaTransitionPage` / `JameiaSlideUpTransitionPage` in `pageBuilder:` | `GoRoute(builder:)` (go_router 18 falls back to no transition) |
 | Dialogs / sheets | `showJameiaDialog` / `showJameiaBottomSheet` | raw `showDialog` / `showModalBottomSheet` |
-| Transient messages / screen states | `showJameiaSnackBar(context, text)` (`core/navigation/jameia_snack_bar.dart`); `AppLoader`, `ErrorView(message:, onRetry:)`, `EmptyStateView(...)`, `BrandedRefresh` from `core/widgets` | raw `ScaffoldMessenger`; hand-rolled loader / error / empty views per feature |
+| Transient messages / screen states | `showJameiaSnackBar(context, text)` (`core/navigation/jameia_snack_bar.dart`); a failure → `showFailureSnackBar(context, failure, action: …)` (same file: a read that failed in transport → no snack of its own, the connection check and the banner speak — offline it nudges the banner; a failed action for want of a connection → `connectivity.action_needs_internet` once + nudge; else `localizedMessage`); `AppLoader`, `ErrorView(message:, onRetry:)`, `EmptyStateView(...)`, `BrandedRefresh`, `FailureView(failure:, onRetry:)` (a `NetworkFailure` → `JameiaStateView.checking` + a live check while the app does not know it is offline, then a reload by itself or `JameiaStateView.offline`) from `core/widgets` | raw `ScaffoldMessenger`; hand-rolled loader / error / empty / offline views per feature; `core.no_internet` / `core.request_timeout` snack bars while the banner shows |
+| Connectivity | `ConnectivityCubit` (`features/connectivity`, app-global; fed by `NetworkInfo` — probes only while the app is in the foreground — and `ReachabilitySignalInterceptor`) drives the banner — offline only after the 1.5 s debounce AND a confirming live check, so one slow probe (the first one at launch) never shows it. Everything else reads `ConnectivityScope` (`core/widgets`): `isOfflineOf(context)` / `readIsOffline`, `reconnectEpochOf`, `nudge(context)`, `confirmOnline(context)` (live check before a submit that is never queued), `recheckerOf(context)` (`FailureView`'s check; at most one automatic retry per `AppConstants.readRetryGap`). A page cubit's `onReconnected()` runs from `ReconnectRefresh`; the app-global cubits' from `app.dart`'s reconnect listener | a raw checker (`InternetConnection`, `connectivity_plus`, `NetworkInfo`) in a feature; a pre-check before every request; a retry timer / loop in a feature; a 5xx treated as "offline" |
+| Offline cache | `JsonCacheStore` (`core/storage`) only through a feature's `*_cache_data_source.dart` (`CacheSlots.of(namespace, id:, parse:)`; `CacheNamespace`: scope public / owner / customer, fresh TTL, max age, max entries, version) → repository `with CachedRepositoryMixin` (`cachedRead(cache:, fetch:, toEntity:, forceRefresh:)` → `Stream<DataSnapshot<T>>`, a `Failure` on its error channel after any copy; `keepReply(slot, raw)` for a mutation reply) → watch use case (`StreamUseCase`, `WatchParams.cached` / `.fresh`) → cubit `with SnapshotLoaderMixin` (`followSnapshots`, `refreshOnReconnect`) → state `DataFreshness freshness` → `StaleDataNotice` / `CubitStaleNotice` | SharedPreferences / `LocalStorage` for payloads; tokens, OTPs, headers, checkout data or assistant transcripts in the cache; a cache read in a repository without the mixin, a cubit or a widget; a full-screen error over cached data |
 | State | Cubit + one immutable Equatable state + `SafeCubitMixin` (`safeEmit`) | multiple state classes per screen, `emit` after close |
 | Logging | `log()` from `dart:developer` | `print`, `debugPrint` |
 
@@ -210,7 +217,9 @@ Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/d
   via `POST /v1/auth/refresh` BEFORE the request when the stored token is about to expire,
   and once on a 401; `SessionExpiryNotifier` when the refresh is rejected) →
   `AppHeadersInterceptor` (`Accept-Language`, guest ids while signed out) →
-  `RateLimitRetryInterceptor` (429 backoff) → `NetworkLogInterceptor` (debug only: full
+  `RateLimitRetryInterceptor` (429 backoff) → `ReachabilitySignalInterceptor` (any HTTP
+  response = reachable; a transport failure asks `NetworkInfo` to re-check; a 5xx is never
+  "offline") → `NetworkLogInterceptor` (debug only: full
   request/response trace under the `api` log name, secrets masked;
   `--dart-define=API_LOG_SECRETS=true` reveals them).
 - `text/event-stream` routes (`EndPoints.streamingPaths`) bypass the envelope: call them
@@ -230,14 +239,26 @@ Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/d
 4. **Behaviors every API screen has:** loading, loaded, empty, error + retry, **signed-out**
    (`UnauthorizedFailure` on a customer route → sign-in prompt → `context.go(Routes.login)`;
    always `go`, never `push`, so page cubits are rebuilt for the new session; never a
-   pre-check of the session), offline (= the error view with `core.no_internet`). Pagination guards re-entry and drops a stale page (generation counter).
+   pre-check of the session), **offline** (the offline screen contract: a screen with a device
+   copy paints it at once and, while offline or after a failed refresh, shows the stale note
+   "Updated … ago" — never a full-screen error over data; with nothing saved, `FailureView`
+   says "Checking your connection…" until the app knows, then reloads or shows
+   `JameiaStateView.offline` — never "No connection" straight away; a failed "load more" shows `LoadMoreOfflineNote`; a
+   background failure goes through `showFailureSnackBar`), **reconnect refresh** (`ReconnectRefresh`
+   → cubit `onReconnected()` → `refreshOnReconnect(needed: stale || error)`: at most one request
+   per stale screen). Pagination guards re-entry and drops a stale page (generation counter).
+   Nothing is queued offline except the cart's coalesced deltas: a submit keeps its draft and says
+   it needs the internet; place order / cancel order run `ConnectivityScope.confirmOnline` first.
    A submit cannot fire twice and a background reload never overwrites a draft or an in-flight save.
    `PATCH` sends only the changed fields (`null` = clear, absent = unchanged).
 5. **Shared customer snapshot:** any reply that carries the customer object goes back to
    `AuthSessionCubit.updateCustomer(...)` from the page listener; never a second copy or a
    second DTO (`core/data/models/customer_model.dart`).
 6. **Session-bound work** (badges, live streams, syncing a preference, dropping per-customer
-   state) starts / stops in `app.dart`'s listener on `AuthSessionCubit`, not in a page.
+   state) starts / stops in `app.dart`'s listener on `AuthSessionCubit`, not in a page. The
+   customer's cached data (customer-scope namespaces) is wiped by the auth local datasource on
+   sign-out / expiry; reconnect catch-up of an app-global cubit is its `onReconnected()`,
+   called from `app.dart`'s `ConnectivityCubit` listener.
 7. **Verify on a device** (`jameia-api-verify`): read the `api` / `auth` / `sse` trace (IDE
    Debug Console or DevTools Logging — `dart:developer` output is NOT in the `flutter run`
    terminal or logcat; `scripts/vm_log_tail.dart` tails it for agents), use the bundled mock
@@ -307,7 +328,8 @@ sign-in / sign-out and refetches on a locale change.
   `dartz` or return `Either`.
 - Remote datasources depend on `ApiConsumer` only (plus `EventStreamClient` for a
   `text/event-stream` route). Local datasources depend on `JameiaRepository` /
-  `LocalStorage` / `SessionStore`. A remote datasource documents each method with its
+  `LocalStorage` / `SessionStore`; cache datasources (`*_cache_data_source.dart`) on
+  `CacheSlots` (→ `JsonCacheStore`) only. A remote datasource documents each method with its
   `METHOD /v1/path`, guards the payload with `ApiPayload.asMap`, and never sees the envelope.
 - DTOs (`data/models/`): `fromJson` with named key constants and `is` checks; a missing
   identity field throws `ParsingException`, anything else falls back to a default; unknown
@@ -321,6 +343,8 @@ sign-in / sign-out and refetches on a locale change.
   `core/data/mappers/` (`mappers.dart` barrel).
 - Repository impls: `class XRepositoryImpl with BaseRepositoryMixin implements XRepository`,
   and every method is `execute(() => …)` / `executeSync(() => …)` that maps DTO → entity.
+  A cached read adds `CachedRepositoryMixin` and returns `cachedRead(...)`; the remote
+  datasource then returns `RemotePayload(model, raw)` so the raw `results` can be kept.
 
 ### Presentation (`features/*/presentation/**`)
 - Allowed imports: domain, `core/domain`, `core/widgets`, `core/navigation`, `core/motion`,
@@ -333,14 +357,20 @@ sign-in / sign-out and refetches on a locale change.
   `sl`, `BuildContext`, widgets, `navigatorKey` or `package:flutter/material|widgets`
   (`foundation.dart` is fine).
 - **Cross-feature imports** are allowed only for another feature's `presentation/cubit/` and
-  only for app-global cubits: `CartCubit`, `StoreModeCubit`, `LocalizationCubit`,
+  only for app-global cubits: `CartCubit`, `ProStatusCubit` (where the customer stands with
+  Jm3eia Pro — guest / prospect / renewing / ending / lapsed, `core/domain/entities/
+  pro_membership_entity.dart`; the app root starts / stops it with the session, the Pro page
+  `apply()`s its fresher answer; the home "pro" tag + Pro banner, the Mine Pro row and the cart
+  nudge read it — never an upsell to a member), `LocalizationCubit`,
   `SettingCubit`, `AuthSessionCubit` (sign-in state + the customer snapshot; `signOut()` from
   settings, `signedIn()` from the OTP page, `updateCustomer()` from edit-profile, `expired` →
   the app root routes to login), `UnreadNotificationsCubit` (unread badge; the app root starts
   / stops it with the session, the inbox calls `set()`), `AddressBookCubit` (the saved
   addresses; the app root starts / stops it with the session), `AssistantAvailabilityCubit`
   (whether the store runs the assistant — `/v1/init`, read once, retried on failure; the home
-  header disc and the Mine row show the entry). Anything else two features
+  header disc and the Mine row show the entry), `ConnectivityCubit` (unknown / online / offline
+  / back online + the reconnect epoch; only `app.dart` and the banner host read it — pages and
+  core widgets read `ConnectivityScope`). Anything else two features
   share moves to `core/`. Features never import
   other features' pages or widgets; they navigate through `Routes`.
 
@@ -537,7 +567,7 @@ Adding a screen:
 - Location: `test/` (feature tests may use `test/features/<f>/…`, core tests `test/core/…`).
 - DI setup for widget/cubit tests:
   `TestWidgetsFlutterBinding.ensureInitialized(); SharedPreferences.setMockInitialValues({}); await setupServiceLocator();`
-  then provide app-global cubits (`CartCubit`, `StoreModeCubit`, …) with `BlocProvider.value`.
+  then provide app-global cubits (`CartCubit`, `ProStatusCubit`, …) with `BlocProvider.value`.
 - Cubits: `bloc_test` with fake/mocked use cases. Repositories: test the exception → Failure
   mapping. Mappers: test round-trips. Navigation: `test/app_router_test.dart`.
 - API layers (recipe: `jameia-api-testing` skill): no test touches the network or the real
@@ -548,6 +578,16 @@ Adding a screen:
   `FlutterSecureStorage.setMockInitialValues({})` and provide `AuthSessionCubit` +
   `UnreadNotificationsCubit` with the other app-global cubits. Cubit tests cover the races
   (stale page after refresh, double submit, reload during save) with gated fake use cases.
+- Offline & cache: `registerFakeNetworkInfo()` (`FakeNetworkInfo`, network_test_fakes) BEFORE
+  `setupServiceLocator()` so nothing probes the internet; `InMemoryJsonCacheStore` +
+  `testNamespace` (`test/core/storage/cache_test_fakes.dart`; the file store is tested on a temp
+  dir only); `networkRead(future, saved:)` + `savedSnapshotAt` / `networkSnapshotAt`
+  (`test/core/data/snapshot_test_fakes.dart`) for fake watch use cases — an `async*` body,
+  because `asyncExpand` never completes under a widget test's fake clock;
+  `FakeCatalogRemoteDataSource` (`test/core/data/catalog_test_fakes.dart`);
+  `FakeConnectivityRepository` + `buildConnectivityCubit`
+  (`test/features/connectivity/connectivity_test_fakes.dart`). An offline widget test wraps the
+  page in `ConnectivityScope(isOffline: true, reconnectEpoch: 0, onNudge: …, onCheckNow: …)`.
 - Every new use case, mapper or cubit behavior gets a test. Never delete or weaken a
   test to make a change pass.
 

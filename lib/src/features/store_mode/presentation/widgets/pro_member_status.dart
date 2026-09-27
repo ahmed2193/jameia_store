@@ -9,11 +9,13 @@ import '../../domain/entities/pro_membership.dart';
 import '../cubit/pro_membership_cubit.dart';
 import '../cubit/pro_membership_state.dart';
 import 'pro_cancel_renewal_button.dart';
+import 'pro_ending_notice.dart';
 import 'pro_member_card.dart';
 
 /// A member's side of the greeting card: "You're a Pro member", their Pro
 /// member card (plan, renewal / benefits date) and, while the membership
-/// still renews, the cancel action.
+/// still renews, the cancel action — once cancelled, the notice that it
+/// will not renew and until when the perks stay on.
 class ProMemberStatus extends StatelessWidget {
   const ProMemberStatus({super.key});
 
@@ -41,6 +43,9 @@ class ProMemberStatus extends StatelessWidget {
             if (subscription.canCancel) ...[
               const SizedBox(height: AppSpacing.s8),
               const ProCancelRenewalButton(),
+            ] else if (subscription.cancelAtPeriodEnd) ...[
+              const SizedBox(height: AppSpacing.s12),
+              ProEndingNotice(periodEnd: subscription.currentPeriodEnd),
             ],
           ],
         );

@@ -1,35 +1,48 @@
 // Category browsing + product listings: the browse tree the rows are built
-// from, the repository, the request bounds of GetProductsUseCase, and the
-// cubits' races (a filter change while a page is in flight, a failed page,
-// re-entry, a stale tree).
+// from, the repository (the saved first page / tree / brands, then the
+// server's), the request bounds of GetProductsUseCase, and the cubits' races
+// (a filter change while a page is in flight, a failed page, re-entry, a
+// stale tree) plus the offline contract (a saved copy at once, a list that
+// never blanks, the reconnect refresh).
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/brand_model.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:jameia_mart/src/core/data/datasources/catalog_cache_data_source.dart';
+import 'package:jameia_mart/src/core/data/models/catalog_results.dart';
 import 'package:jameia_mart/src/core/data/models/category_model.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
 import 'package:jameia_mart/src/core/data/models/product_model.dart';
 import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
 import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:jameia_mart/src/core/usecase/watch_params.dart';
 import 'package:jameia_mart/src/features/shop/data/repositories/catalog_browse_repository_impl.dart';
 import 'package:jameia_mart/src/features/shop/domain/entities/category_browse.dart';
 import 'package:jameia_mart/src/features/shop/domain/repositories/catalog_browse_repository.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_brands_usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_category_tree_usecase.dart';
 import 'package:jameia_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
+import 'package:jameia_mart/src/features/shop/domain/usecases/watch_brands_usecase.dart';
+import 'package:jameia_mart/src/features/shop/domain/usecases/watch_category_tree_usecase.dart';
+import 'package:jameia_mart/src/features/shop/domain/usecases/watch_products_usecase.dart';
+import 'package:jameia_mart/src/features/shop/presentation/cubit/brands_cubit.dart';
+import 'package:jameia_mart/src/features/shop/presentation/cubit/brands_state.dart';
 import 'package:jameia_mart/src/features/shop/presentation/cubit/category_browse_cubit.dart';
 import 'package:jameia_mart/src/features/shop/presentation/cubit/category_browse_state.dart';
 import 'package:jameia_mart/src/features/shop/presentation/cubit/product_listing_cubit.dart';
 import 'package:jameia_mart/src/features/shop/presentation/cubit/product_listing_state.dart';
+
+import '../../core/data/catalog_test_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
+import 'shop_test_fakes.dart';
 
 /// Three levels, exactly like the backend tree: a root, its sub-category and
 /// that one's own children — plus a second root to switch tabs to.
@@ -94,7 +107,7 @@ class _GatedGetProducts implements GetProductsUseCase {
 }
 
 /// The brand filter's source: counts how often the list asks for it.
-class _CountingGetBrands implements GetBrandsUseCase {
+class _CountingWatchBrands implements WatchBrandsUseCase {
   int calls = 0;
   Either<Failure, List<BrandEntity>> result = const Right([
     BrandEntity(id: 'b1', slug: 'almarai', name: 'Almarai'),
@@ -102,13 +115,31 @@ class _CountingGetBrands implements GetBrandsUseCase {
   ]);
 
   @override
-  Future<Either<Failure, List<BrandEntity>>> call(NoParams params) async {
+  Stream<DataSnapshot<List<BrandEntity>>> call(WatchParams params) {
     calls++;
-    return result;
+    return networkRead(Future.value(result));
   }
 }
 
-class _RecordingRepository implements CatalogBrowseRepository {
+/// The first-page read of a listing, scripted per query: the saved page (if
+/// any, and not forced), then the server's reply or its failure.
+class _ScriptedWatchProducts implements WatchProductsUseCase {
+  final Map<CatalogProductQuery, CatalogProductsPage> saved = {};
+  Either<Failure, CatalogProductsPage> Function(CatalogProductQuery query)
+  network = (_) => Right(_page(1, ['server'], hasMore: true));
+  final List<WatchProductsParams> requests = [];
+
+  @override
+  Stream<DataSnapshot<CatalogProductsPage>> call(WatchProductsParams params) {
+    requests.add(params);
+    return networkRead(
+      Future.value(network(params.query)),
+      saved: params.forceRefresh ? null : saved[params.query],
+    );
+  }
+}
+
+class _RecordingRepository extends FakeCatalogBrowseRepository {
   int? lastPage;
   int? lastLimit;
   final List<bool> treeReads = [];
@@ -123,10 +154,6 @@ class _RecordingRepository implements CatalogBrowseRepository {
   }
 
   @override
-  Future<Either<Failure, List<BrandEntity>>> getBrands() async =>
-      const Right(<BrandEntity>[]);
-
-  @override
   Future<Either<Failure, CatalogProductsPage>> getProducts({
     required CatalogProductQuery query,
     required int page,
@@ -138,17 +165,53 @@ class _RecordingRepository implements CatalogBrowseRepository {
   }
 }
 
-class _ScriptedCatalog implements CatalogRemoteDataSource {
+/// `results` of `GET /v1/categories` and of one `GET /v1/products` page.
+const Map<String, Object?> _categoriesJson = {
+  CatalogResults.dataKey: [
+    {
+      CategoryModel.idKey: 'c1',
+      CategoryModel.slugKey: 'fresh-food',
+      CategoryModel.nameKey: 'Fresh Food',
+    },
+    {
+      CategoryModel.idKey: 'c2',
+      CategoryModel.slugKey: 'apples',
+      CategoryModel.parentIdKey: 'c1',
+    },
+  ],
+};
+
+const Map<String, Object?> _productsJson = {
+  ProductsPageModel.dataKey: [
+    {
+      ProductModel.idKey: 'p1',
+      ProductModel.slugKey: 'p-1',
+      ProductModel.priceKey: 1250,
+    },
+  ],
+  ProductsPageModel.paginationKey: {
+    ProductsPageModel.totalKey: 1,
+    ProductsPageModel.pageKey: 1,
+    ProductsPageModel.hasMoreKey: false,
+  },
+};
+
+class _ScriptedCatalog extends FakeCatalogRemoteDataSource {
   Object? error;
+  int productFetches = 0;
 
   @override
-  Future<List<CategoryModel>> getCategories({bool refresh = false}) async {
+  Future<List<CategoryModel>> getCategories({bool refresh = false}) async =>
+      (await fetchCategories()).model;
+
+  @override
+  Future<RemotePayload<List<CategoryModel>>> fetchCategories() async {
     final current = error;
     if (current != null) throw current;
-    return const [
-      CategoryModel(id: 'c1', slug: 'fresh-food', name: 'Fresh Food'),
-      CategoryModel(id: 'c2', slug: 'apples', parentId: 'c1'),
-    ];
+    return RemotePayload(
+      CatalogResults.categories(_categoriesJson),
+      _categoriesJson,
+    );
   }
 
   @override
@@ -156,34 +219,32 @@ class _ScriptedCatalog implements CatalogRemoteDataSource {
     required CatalogProductQuery query,
     required int page,
     required int limit,
-  }) async {
-    final current = error;
-    if (current != null) throw current;
-    return ProductsPageModel(
-      items: const [ProductModel(id: 'p1', slug: 'p-1', price: 1250)],
-      total: 1,
-      page: page,
-      limit: limit,
-      hasMore: false,
-    );
-  }
+  }) async =>
+      (await fetchProducts(query: query, page: page, limit: limit)).model;
 
   @override
-  Future<List<BrandModel>> getBrands({
+  Future<RemotePayload<ProductsPageModel>> fetchProducts({
+    required CatalogProductQuery query,
     required int page,
     required int limit,
-    String? search,
-  }) async => const <BrandModel>[];
-
-  @override
-  Future<List<OfferModel>> getOffers() async => const <OfferModel>[];
+  }) async {
+    productFetches++;
+    final current = error;
+    if (current != null) throw current;
+    return RemotePayload(
+      CatalogResults.products(_productsJson, page: page),
+      _productsJson,
+    );
+  }
 }
 
 CategoryBrowseCubit _browseCubit(
   CatalogBrowseRepository repository, {
   String baseSlug = '',
-}) =>
-    CategoryBrowseCubit(GetCategoryTreeUseCase(repository), baseSlug: baseSlug);
+}) => CategoryBrowseCubit(
+  WatchCategoryTreeUseCase(repository),
+  baseSlug: baseSlug,
+);
 
 void main() {
   group('CategoryBrowse', () {
@@ -315,7 +376,6 @@ void main() {
         expect(cubit.state.status, CategoryBrowseStatus.loaded);
         expect(cubit.state.browse.activeSlug, 'fresh-food');
         expect(cubit.state.failure, isA<ServerFailure>());
-        expect(const GetCategoryTreeParams(), const GetCategoryTreeParams());
         await cubit.close();
       },
     );
@@ -338,11 +398,72 @@ void main() {
 
   group('CatalogBrowseRepositoryImpl', () {
     late _ScriptedCatalog catalog;
+    late InMemoryJsonCacheStore store;
     late CatalogBrowseRepositoryImpl repository;
 
     setUp(() {
       catalog = _ScriptedCatalog();
-      repository = CatalogBrowseRepositoryImpl(catalog);
+      store = InMemoryJsonCacheStore();
+      repository = CatalogBrowseRepositoryImpl(
+        catalog,
+        cache: CatalogCacheDataSourceImpl(
+          CacheSlots(
+            store: store,
+            owner: CacheOwner(),
+            locale: FakeLocaleProvider('en'),
+          ),
+        ),
+      );
+    });
+
+    const dairy = CatalogProductQuery(categorySlug: 'dairy');
+
+    test('a first page is saved per query and painted from the copy', () async {
+      await repository.watchFirstPage(query: dairy, limit: 20).drain<void>();
+      await pumpEventQueue();
+
+      final reopened = await repository
+          .watchFirstPage(query: dairy, limit: 20)
+          .toList();
+      final other = await repository
+          .watchFirstPage(query: const CatalogProductQuery(), limit: 20)
+          .toList();
+
+      expect(reopened.single.isFromCache, isTrue);
+      expect(reopened.single.data.products.single.priceFils, 1250);
+      expect(other.single.origin, SnapshotOrigin.network);
+      expect(catalog.productFetches, 2, reason: 'a fresh copy ends the read');
+    });
+
+    test(
+      'pull to refresh skips the copy; later pages are never saved',
+      () async {
+        await repository.watchFirstPage(query: dairy, limit: 20).drain<void>();
+        await pumpEventQueue();
+
+        final refreshed = await repository
+            .watchFirstPage(query: dairy, limit: 20, forceRefresh: true)
+            .toList();
+        await repository.getProducts(query: dairy, page: 2, limit: 20);
+        await pumpEventQueue();
+
+        expect(refreshed.single.origin, SnapshotOrigin.network);
+        expect(store.writes, 2, reason: 'page 1 twice, page 2 never');
+      },
+    );
+
+    test('offline: the saved tree, then the failure', () async {
+      await repository.watchCategoryTree().drain<void>();
+      await pumpEventQueue();
+      catalog.error = const NoInternetConnectionException();
+
+      await expectLater(
+        repository.watchCategoryTree(forceRefresh: true),
+        emitsError(isA<NetworkFailure>()),
+      );
+      final offline = await repository.watchCategoryTree().first;
+      expect(offline.isFromCache, isTrue);
+      expect(offline.data.roots.single.slug, 'fresh-food');
     });
 
     test('builds the tree and maps products (fils kept)', () async {
@@ -401,13 +522,18 @@ void main() {
 
   group('ProductListingCubit', () {
     const query = CatalogProductQuery(categorySlug: 'fresh-food');
-    late _CountingGetBrands brands;
+    late _CountingWatchBrands brands;
 
-    setUp(() => brands = _CountingGetBrands());
+    setUp(() => brands = _CountingWatchBrands());
 
     test('loads, pages, merges and stops at the end', () async {
       final gate = _GatedGetProducts();
-      final cubit = ProductListingCubit(gate, brands, query: query);
+      final cubit = ProductListingCubit(
+        WatchProductsFromGet(gate),
+        gate,
+        brands,
+        query: query,
+      );
 
       final first = cubit.load();
       expect(cubit.state.status, ProductListingStatus.loading);
@@ -431,7 +557,12 @@ void main() {
       'browsing to another category restarts the list, keeping sort',
       () async {
         final gate = _GatedGetProducts();
-        final cubit = ProductListingCubit(gate, brands, query: query);
+        final cubit = ProductListingCubit(
+          WatchProductsFromGet(gate),
+          gate,
+          brands,
+          query: query,
+        );
         final first = cubit.load();
         gate.calls[0].complete(Right(_page(1, ['a'], hasMore: true)));
         await first;
@@ -463,7 +594,12 @@ void main() {
 
     test('a sort change restarts at page 1 and drops the stale page', () async {
       final gate = _GatedGetProducts();
-      final cubit = ProductListingCubit(gate, brands, query: query);
+      final cubit = ProductListingCubit(
+        WatchProductsFromGet(gate),
+        gate,
+        brands,
+        query: query,
+      );
       final first = cubit.load();
       gate.calls[0].complete(Right(_page(1, ['a'], hasMore: true)));
       await first;
@@ -486,7 +622,12 @@ void main() {
 
     test('a failed page keeps the list and stops paging until retry', () async {
       final gate = _GatedGetProducts();
-      final cubit = ProductListingCubit(gate, brands, query: query);
+      final cubit = ProductListingCubit(
+        WatchProductsFromGet(gate),
+        gate,
+        brands,
+        query: query,
+      );
       final first = cubit.load();
       gate.calls[0].complete(Right(_page(1, ['a'], hasMore: true)));
       await first;
@@ -514,7 +655,12 @@ void main() {
       'toggles are server-side filters; same sort does not reload',
       () async {
         final gate = _GatedGetProducts();
-        final cubit = ProductListingCubit(gate, brands, query: query);
+        final cubit = ProductListingCubit(
+          WatchProductsFromGet(gate),
+          gate,
+          brands,
+          query: query,
+        );
         final first = cubit.load();
         gate.calls[0].complete(Right(_page(1, ['a'], hasMore: false)));
         await first;
@@ -537,7 +683,12 @@ void main() {
       'the brand filter reads the brands once and restarts the list',
       () async {
         final gate = _GatedGetProducts();
-        final cubit = ProductListingCubit(gate, brands, query: query);
+        final cubit = ProductListingCubit(
+          WatchProductsFromGet(gate),
+          gate,
+          brands,
+          query: query,
+        );
         final first = cubit.load();
         gate.calls[0].complete(Right(_page(1, ['a'], hasMore: false)));
         await first;
@@ -567,6 +718,7 @@ void main() {
     test('a list that IS a brand does not offer the brand filter', () async {
       final gate = _GatedGetProducts();
       final cubit = ProductListingCubit(
+        WatchProductsFromGet(gate),
         gate,
         brands,
         query: const CatalogProductQuery(brandSlug: 'almarai'),
@@ -587,7 +739,12 @@ void main() {
       'a failed first load is the error state; a failed refresh is not',
       () async {
         final gate = _GatedGetProducts();
-        final cubit = ProductListingCubit(gate, brands, query: query);
+        final cubit = ProductListingCubit(
+          WatchProductsFromGet(gate),
+          gate,
+          brands,
+          query: query,
+        );
         final first = cubit.load();
         gate.calls[0].complete(const Left(NetworkFailure('offline')));
         await first;
@@ -606,4 +763,210 @@ void main() {
       },
     );
   });
+
+  group('ProductListingCubit offline', () {
+    const query = CatalogProductQuery(categorySlug: 'fresh-food');
+    late _ScriptedWatchProducts watch;
+    late _GatedGetProducts pages;
+
+    ProductListingCubit build() =>
+        ProductListingCubit(watch, pages, NoBrands(), query: query);
+
+    setUp(() {
+      watch = _ScriptedWatchProducts();
+      pages = _GatedGetProducts();
+    });
+
+    test('a saved first page paints at once, then the server\'s', () async {
+      watch.saved[query] = _page(1, ['saved'], hasMore: true);
+      final cubit = build();
+      final states = <ProductListingState>[];
+      final subscription = cubit.stream.listen(states.add);
+
+      await cubit.load();
+      await subscription.cancel();
+
+      final loaded = states.where((s) => s.isLoaded).toList();
+      expect(loaded.first.products.products.single.id, 'saved');
+      expect(loaded.first.freshness.fromCache, isTrue);
+      expect(cubit.state.products.products.single.id, 'server');
+      expect(cubit.state.freshness.isStale, isFalse);
+      await cubit.close();
+    });
+
+    test('a reload (language switch) never blanks a loaded list', () async {
+      final cubit = build();
+      await cubit.load();
+      final states = <ProductListingState>[];
+      final subscription = cubit.stream.listen(states.add);
+
+      watch.network = (_) => const Left(NetworkFailure());
+      await cubit.load();
+      await subscription.cancel();
+
+      expect(states.every((s) => s.isLoaded), isTrue);
+      expect(cubit.state.products.products.single.id, 'server');
+      expect(cubit.state.freshness.refreshFailed, isTrue);
+      await cubit.close();
+    });
+
+    test(
+      'offline, a filter shows its saved page, or the offline state',
+      () async {
+        final sorted = query.copyWith(sort: CatalogProductSort.priceLowToHigh);
+        watch.saved[sorted] = _page(1, ['cheap'], hasMore: false);
+        final cubit = build();
+        await cubit.load();
+        watch.network = (_) => const Left(NetworkFailure());
+
+        await cubit.setSort(CatalogProductSort.priceLowToHigh);
+        expect(cubit.state.status, ProductListingStatus.loaded);
+        expect(cubit.state.products.products.single.id, 'cheap');
+        expect(cubit.state.freshness.isStale, isTrue);
+
+        await cubit.toggleOnSaleOnly();
+        expect(cubit.state.status, ProductListingStatus.error);
+        expect(cubit.state.failure, isA<NetworkFailure>());
+        await cubit.close();
+      },
+    );
+
+    test(
+      'reconnect: a stale first page refreshes once, then nothing',
+      () async {
+        watch
+          ..saved[query] = _page(1, ['saved'], hasMore: false)
+          ..network = (_) => const Left(NetworkFailure());
+        final cubit = build();
+        await cubit.load();
+
+        watch.network = (_) => Right(_page(1, ['back'], hasMore: false));
+        await Future.wait([cubit.onReconnected(), cubit.onReconnected()]);
+        expect(
+          [for (final r in watch.requests) r.forceRefresh],
+          [false, true],
+          reason: 'single-flight, and forced',
+        );
+        expect(cubit.state.products.products.single.id, 'back');
+
+        await cubit.onReconnected();
+        expect(watch.requests, hasLength(2));
+        await cubit.close();
+      },
+    );
+
+    test('reconnect retries a next page that failed offline', () async {
+      final cubit = build();
+      await cubit.load();
+      final more = cubit.loadMore();
+      pages.calls[0].complete(const Left(NetworkFailure()));
+      await more;
+      expect(cubit.state.loadMoreFailed, isTrue);
+
+      final retried = cubit.onReconnected();
+      pages.calls[1].complete(Right(_page(2, ['next'], hasMore: false)));
+      await retried;
+
+      expect(
+        [for (final p in cubit.state.products.products) p.id],
+        ['server', 'next'],
+      );
+      expect(watch.requests, hasLength(1), reason: 'page 1 was fresh');
+      await cubit.close();
+    });
+  });
+
+  group('CategoryBrowseCubit offline', () {
+    test('a saved tree paints at once; reconnect refreshes it once', () async {
+      final repository = _SavedTreeRepository();
+      final cubit = _browseCubit(repository);
+
+      await cubit.load();
+      expect(cubit.state.status, CategoryBrowseStatus.loaded);
+      expect(cubit.state.freshness.isStale, isTrue);
+      expect(cubit.state.browse.activeSlug, 'fresh-food');
+
+      repository.network = Right(_tree);
+      await Future.wait([cubit.onReconnected(), cubit.onReconnected()]);
+      expect(repository.reads, [false, true]);
+      expect(cubit.state.freshness.isStale, isFalse);
+
+      await cubit.onReconnected();
+      expect(repository.reads, [false, true]);
+      await cubit.close();
+    });
+
+    test('nothing saved + offline: the error keeps its reason', () async {
+      final repository = _RecordingRepository()
+        ..tree = const Left(NetworkFailure());
+      final cubit = _browseCubit(repository);
+
+      await cubit.load();
+      cubit.select(0, null);
+
+      expect(cubit.state.status, CategoryBrowseStatus.error);
+      expect(cubit.state.failure, isA<NetworkFailure>());
+      await cubit.close();
+    });
+  });
+
+  group('BrandsCubit', () {
+    test(
+      'loads; a failed refresh keeps the list; reconnect refreshes',
+      () async {
+        final brands = _CountingWatchBrands();
+        final cubit = BrandsCubit(brands);
+
+        await cubit.load();
+        expect(cubit.state.status, BrandsStatus.loaded);
+        expect(cubit.state.brands, hasLength(2));
+
+        brands.result = const Left(NetworkFailure());
+        await cubit.refresh();
+        expect(cubit.state.status, BrandsStatus.loaded);
+        expect(cubit.state.brands, hasLength(2));
+        expect(cubit.state.freshness.refreshFailed, isTrue);
+
+        brands.result = const Right([
+          BrandEntity(id: 'b3', slug: 'nadec', name: 'Nadec'),
+        ]);
+        await cubit.onReconnected();
+        expect(cubit.state.brands.single.slug, 'nadec');
+        expect(brands.calls, 3);
+
+        await cubit.onReconnected();
+        expect(brands.calls, 3, reason: 'fresh: nothing to do');
+        await cubit.close();
+      },
+    );
+
+    test('nothing saved + offline is the error, with its reason', () async {
+      final brands = _CountingWatchBrands()
+        ..result = const Left(NetworkFailure());
+      final cubit = BrandsCubit(brands);
+
+      await cubit.load();
+
+      expect(cubit.state.status, BrandsStatus.error);
+      expect(cubit.state.failure, isA<NetworkFailure>());
+      await cubit.close();
+    });
+  });
+}
+
+/// The tree saved on the device, then the server's reply ([network]).
+class _SavedTreeRepository extends FakeCatalogBrowseRepository {
+  Either<Failure, CatalogCategoryTree> network = const Left(NetworkFailure());
+  final List<bool> reads = [];
+
+  @override
+  Stream<DataSnapshot<CatalogCategoryTree>> watchCategoryTree({
+    bool forceRefresh = false,
+  }) {
+    reads.add(forceRefresh);
+    return networkRead(
+      Future.value(network),
+      saved: forceRefresh ? null : _tree,
+    );
+  }
 }

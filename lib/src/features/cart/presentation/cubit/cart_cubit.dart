@@ -33,9 +33,9 @@ import 'cart_state.dart';
 /// server); server-confirmed actions run one at a time ([CartState.isBusy]).
 ///
 /// Session-bound: the app root calls [onSignedIn] / [onSignedOut] /
-/// [onGuestSession] from its `AuthSessionCubit` listener and
+/// [onGuestSession] from its `AuthSessionCubit` listener,
 /// [onLocaleChanged] when the language flips (line names are localized by
-/// the server).
+/// the server) and [onReconnected] when the connection comes back.
 class CartCubit extends Cubit<CartState> with SafeCubitMixin<CartState> {
   CartCubit({
     required this._watch,
@@ -119,6 +119,22 @@ class CartCubit extends Cubit<CartState> with SafeCubitMixin<CartState> {
   /// Line names come resolved for `Accept-Language`.
   Future<void> onLocaleChanged() async =>
       _logFailure(await _fetch(const NoParams()));
+
+  /// The connection came back: the taps still owed go out now (the retry
+  /// back-off starts over); with none owed the cart is read again — it may
+  /// have changed while the app was offline. Nothing the customer did not
+  /// already owe is sent, and nothing is reported from here: a failed sync
+  /// reaches the cart through its snapshot as always.
+  Future<void> onReconnected() async {
+    final result = state.hasPendingChanges
+        ? await _flush(const NoParams())
+        : await _fetch(const NoParams());
+    result.fold(
+      (failure) =>
+          log('reconnect catch-up: ${failure.message}', name: _logName),
+      (_) {},
+    );
+  }
 
   /// The order took the cart with it.
   Future<void> onOrderPlaced() async {

@@ -2,12 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
 
 import 'fake_orders_repository.dart';
 
 import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_state.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 
 void main() {
   late FakeOrdersRepository repository;
@@ -15,7 +15,7 @@ void main() {
   OrderTrackingCubit build() {
     repository = FakeOrdersRepository();
     return OrderTrackingCubit(
-      getOrder: GetOrderUseCase(repository),
+      watchOrder: WatchOrderUseCase(repository),
       cancelOrder: CancelOrderUseCase(repository),
       pollInterval: const Duration(milliseconds: 5),
     );

@@ -26,8 +26,10 @@ import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_line_quan
 import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
 import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 
 import '../auth/auth_test_fakes.dart';
+import '../store_mode/pro_status_fakes.dart';
 import 'fake_cart_repository.dart';
 
 /// A started [CartCubit] with every use case on [repository].
@@ -62,16 +64,19 @@ AuthSessionCubit buildGuestSession() => AuthSessionCubit(
 
 /// Pushes [snapshot], then pumps [home] — or [router] — under
 /// EasyLocalization (en + ar, starting in [locale]) with [cart] and
-/// [session] provided. [builder] wraps the app (a MediaQuery override);
-/// [loadDelay] is real time for a translation file not read yet. Bounded
-/// pumps only (the page's fade-through from the loader): nothing here may
-/// loop, but a settle would hide it.
+/// [session] provided, and the app-global Pro status: [proStatus], or an
+/// idle one (standing unknown — no Pro nudge, no "pro" tag). [builder]
+/// wraps the app (a MediaQuery override); [loadDelay] is real time for a
+/// translation file not read yet. Bounded pumps only (the page's
+/// fade-through from the loader): nothing here may loop, but a settle would
+/// hide it.
 Future<void> pumpCartHost(
   WidgetTester tester, {
   required FakeCartRepository repository,
   required CartCubit cart,
   required AuthSessionCubit session,
   required CartSnapshot snapshot,
+  ProStatusCubit? proStatus,
   Widget? home,
   GoRouter? router,
   Locale locale = const Locale('en'),
@@ -91,6 +96,10 @@ Future<void> pumpCartHost(
           providers: [
             BlocProvider<CartCubit>.value(value: cart),
             BlocProvider<AuthSessionCubit>.value(value: session),
+            if (proStatus != null)
+              BlocProvider<ProStatusCubit>.value(value: proStatus)
+            else
+              BlocProvider<ProStatusCubit>(create: (_) => buildProStatus()),
           ],
           child: Builder(
             builder: (context) => router != null

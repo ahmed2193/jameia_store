@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/navigation.dart';
-import '../../../../core/utils/failure_message.dart';
+import '../../../../core/navigation/screen_failure_listener.dart';
 import '../cubit/notifications_cubit.dart';
 import '../cubit/notifications_state.dart';
 import '../cubit/unread_notifications_cubit.dart';
@@ -13,8 +13,11 @@ import '../widgets/notifications_app_bar.dart';
 import '../widgets/notifications_body.dart';
 
 /// Customer inbox (`GET /v1/notifications`, signed-in only). Composes the app
-/// bar + body, keeps the app-global unread badge in step with what the inbox
-/// knows, and surfaces the one-shot outcomes (toast, request failures).
+/// bar + body, keeps the app-global unread badge in step with what the
+/// server said (never with the device copy), and surfaces the one-shot
+/// outcomes: the "all read" toast, and failures the shared way — offline a
+/// failed read or read mark only nudges the banner (the row flips back and
+/// the banner already says why), a failed next page is the footer's.
 class NotificationsPage extends StatelessWidget {
   const NotificationsPage({super.key});
 
@@ -22,27 +25,17 @@ class NotificationsPage extends StatelessWidget {
     NotificationsState previous,
     NotificationsState current,
   ) =>
-      previous.status != current.status ||
+      previous.knowsServerCount != current.knowsServerCount ||
       previous.feed.unreadCount != current.feed.unreadCount ||
-      current.failure != null ||
       current.allMarkedRead;
 
   void _onState(BuildContext context, NotificationsState state) {
-    if (state.isLoaded) {
+    if (state.knowsServerCount) {
       context.read<UnreadNotificationsCubit>().set(state.feed.unreadCount);
     }
     if (state.allMarkedRead) {
       showJameiaSnackBar(context, 'notifications.all_read_toast'.tr());
     }
-    final failure = state.failure;
-    // A failed first load is rendered inline by the body, not toasted.
-    if (failure == null || state.status == NotificationsStatus.error) return;
-    showJameiaSnackBar(
-      context,
-      state.failedAction == NotificationsAction.loadMore
-          ? 'notifications.load_more_failed'.tr()
-          : failure.localizedMessage,
-    );
   }
 
   @override
@@ -52,11 +45,14 @@ class NotificationsPage extends StatelessWidget {
       child: BlocListener<NotificationsCubit, NotificationsState>(
         listenWhen: _shouldListen,
         listener: _onState,
-        child: const Scaffold(
-          backgroundColor: AppColors.white,
-          appBar: NotificationsAppBar(),
-          body: NotificationsBody(),
-        ),
+        child:
+            const ScreenFailureListener<NotificationsCubit, NotificationsState>(
+              child: Scaffold(
+                backgroundColor: AppColors.white,
+                appBar: NotificationsAppBar(),
+                body: NotificationsBody(),
+              ),
+            ),
       ),
     );
   }

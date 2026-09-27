@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/domain/entities/pro_membership_entity.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import 'mine_menu_entry.dart';
 import 'mine_menu_section.dart';
-import 'mine_pro_active_chip.dart';
+import 'mine_pro_status_chip.dart';
 import 'mine_tone.dart';
 
 /// The Mine menu in three titled cards — shopping, wallet & rewards, help &
@@ -22,7 +23,8 @@ class MineMenuGroup extends StatelessWidget {
     this.customerUnreadCount = 0,
     this.notificationsUnread = 0,
     this.showAssistant = false,
-    this.isProMember = false,
+    this.proMembership,
+    this.proOffered = false,
     this.firstEntranceIndex = 0,
   });
 
@@ -35,8 +37,12 @@ class MineMenuGroup extends StatelessWidget {
   /// The store runs the Jm3eia Assistant → its cell shows.
   final bool showAssistant;
 
-  /// An active Jm3eia Pro member → "Active" on the Pro row.
-  final bool isProMember;
+  /// Where the customer stands with Pro → the Pro row's chip (renews, ends,
+  /// join, rejoin); `null` while not known yet (no chip).
+  final ProMembershipEntity? proMembership;
+
+  /// The store sells Pro to this customer: the join chips may show.
+  final bool proOffered;
 
   /// Stagger slot of the first card (the cards above take the earlier ones).
   final int firstEntranceIndex;
@@ -64,6 +70,7 @@ class MineMenuGroup extends StatelessWidget {
         tone: MineTone.orange,
       ),
     ];
+    final pro = proMembership;
     final rewards = <MineMenuEntry>[
       MineMenuEntry(
         icon: Icons.account_balance_wallet_outlined,
@@ -82,7 +89,9 @@ class MineMenuGroup extends StatelessWidget {
         label: 'pro.title'.tr(),
         route: Routes.proMembership,
         tone: MineTone.pro,
-        trailing: isProMember ? const MineProActiveChip() : null,
+        trailing: pro == null
+            ? null
+            : MineProStatusChip(membership: pro, offered: proOffered),
       ),
       // Referral gift — wm_c_iconfont has no reward glyph, only the word 賞.
       MineMenuEntry(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/service_locator.dart';
+import '../../domain/entities/assistant_thought_place.dart';
 import '../cubit/assistant_buddy_cubit.dart';
 import '../widgets/buddy/assistant_buddy_layer.dart';
 
@@ -11,19 +12,21 @@ import '../widgets/buddy/assistant_buddy_layer.dart';
 ///
 /// Not a route: the router hands it to the shell, which wraps its tab bodies
 /// with it. [place] names the tab under it; [greetHere] / [launcherHere]
-/// say what the buddy may do there.
+/// say what the buddy may do there, [thoughtPlace] what its lines favour.
 class AssistantBuddyLayerPage extends StatelessWidget {
   const AssistantBuddyLayerPage({
     super.key,
     required this.place,
     required this.greetHere,
     required this.launcherHere,
+    this.thoughtPlace = AssistantThoughtPlace.elsewhere,
     required this.child,
   });
 
   final String place;
   final bool greetHere;
   final bool launcherHere;
+  final AssistantThoughtPlace thoughtPlace;
   final Widget child;
 
   @override
@@ -34,6 +37,7 @@ class AssistantBuddyLayerPage extends StatelessWidget {
         place: place,
         greetHere: greetHere,
         launcherHere: launcherHere,
+        thoughtPlace: thoughtPlace,
         child: child,
       ),
     );

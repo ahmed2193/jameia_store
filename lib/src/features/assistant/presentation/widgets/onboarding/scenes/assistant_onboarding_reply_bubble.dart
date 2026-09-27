@@ -25,6 +25,7 @@ class AssistantOnboardingReplyBubble extends StatelessWidget {
   final bool answered;
 
   static const double _dots = AppSize.s24;
+  static const int _maxLines = 2;
   static const BoxDecoration _bubble = BoxDecoration(
     color: AppColors.white,
     borderRadius: BorderRadiusDirectional.only(
@@ -47,27 +48,31 @@ class AssistantOnboardingReplyBubble extends StatelessWidget {
         children: [
           const AssistantAvatar(size: AppSize.s22),
           const SizedBox(width: AppSpacing.s6),
-          DecoratedBox(
-            decoration: _bubble,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AppSpacing.s12,
-                vertical: AppSpacing.s8,
-              ),
-              child: PopSwitcher(
-                stateKey: answered,
-                alignment: AlignmentDirectional.centerStart,
-                child: answered
-                    ? Text(
-                        'assistant.onboarding_demo_answer'.tr(),
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color: AppColors.primaryText,
+          Flexible(
+            child: DecoratedBox(
+              decoration: _bubble,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.symmetric(
+                  horizontal: AppSpacing.s12,
+                  vertical: AppSpacing.s8,
+                ),
+                child: PopSwitcher(
+                  stateKey: answered,
+                  alignment: AlignmentDirectional.centerStart,
+                  child: answered
+                      ? Text(
+                          'assistant.onboarding_demo_answer'.tr(),
+                          maxLines: _maxLines,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            color: AppColors.primaryText,
+                          ),
+                        )
+                      : const BrandedDotLoader(
+                          size: _dots,
+                          color: AppColors.primary,
                         ),
-                      )
-                    : const BrandedDotLoader(
-                        size: _dots,
-                        color: AppColors.primary,
-                      ),
+                ),
               ),
             ),
           ),

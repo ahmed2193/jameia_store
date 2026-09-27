@@ -23,9 +23,14 @@ class _BrandedDotLoaderState extends State<BrandedDotLoader>
   );
 
   @override
-  void initState() {
-    super.initState();
-    if (!WidgetsBinding.instance.disableAnimations) _c.repeat();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reduced motion (the OS flag or a MediaQuery override) → no ticker.
+    if (MotionGuard.reduced(context)) {
+      _c.stop();
+    } else if (!_c.isAnimating) {
+      _c.repeat();
+    }
   }
 
   @override

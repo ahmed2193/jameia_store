@@ -34,6 +34,31 @@ void main() {
     if (!watchLive.controller.isClosed) await watchLive.controller.close();
   });
 
+  group('onReconnected', () {
+    test('a signed-in badge is probed again; a stopped one is not', () async {
+      final cubit = UnreadNotificationsCubit(
+        getNotifications: getNotifications,
+      );
+      addTearDown(cubit.close);
+
+      await cubit.onReconnected(); // never started
+      expect(getNotifications.calls, isEmpty);
+
+      getNotifications.result = const Left(NetworkFailure());
+      await cubit.start();
+      expect(cubit.state.unreadCount, 0);
+
+      getNotifications.result = Right(probe);
+      await cubit.onReconnected();
+      expect(cubit.state.unreadCount, 5);
+      expect(getNotifications.calls, hasLength(2));
+
+      cubit.stop();
+      await cubit.onReconnected();
+      expect(getNotifications.calls, hasLength(2));
+    });
+  });
+
   group('start', () {
     blocTest<UnreadNotificationsCubit, UnreadNotificationsState>(
       'probes one item for unreadCount, then goes live',

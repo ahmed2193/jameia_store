@@ -1,28 +1,39 @@
-// Offers + CMS pages: DTOs fed with the live offers payload, datasource,
-// repository failure mapping, the "still running" rule and the cubits.
+// Offers + CMS pages: DTOs fed with the live offers payload, the pages
+// datasource, the repository (device copy first, failure mapping), the
+// "still running" rule and the cubits (saved copy, stale data, reconnect).
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:jameia_mart/src/core/data/datasources/catalog_cache_data_source.dart';
+import 'package:jameia_mart/src/core/data/mappers/offer_mapper.dart';
+import 'package:jameia_mart/src/core/data/models/catalog_results.dart';
+import 'package:jameia_mart/src/core/data/models/offer_model.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/network/dio_consumer.dart';
 import 'package:jameia_mart/src/core/network/end_points.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:jameia_mart/src/features/marketing/data/datasources/promotions_cache_data_source.dart';
 import 'package:jameia_mart/src/features/marketing/data/datasources/promotions_remote_data_source.dart';
-import 'package:jameia_mart/src/core/data/mappers/offer_mapper.dart';
 import 'package:jameia_mart/src/features/marketing/data/models/content_page_model.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
 import 'package:jameia_mart/src/features/marketing/data/repositories/promotions_repository_impl.dart';
 import 'package:jameia_mart/src/features/marketing/domain/entities/content_page_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/features/marketing/domain/repositories/promotions_repository.dart';
-import 'package:jameia_mart/src/features/marketing/domain/usecases/get_content_page_usecase.dart';
-import 'package:jameia_mart/src/features/marketing/domain/usecases/get_offers_usecase.dart';
+import 'package:jameia_mart/src/features/marketing/domain/usecases/watch_content_page_usecase.dart';
+import 'package:jameia_mart/src/features/marketing/domain/usecases/watch_offers_usecase.dart';
 import 'package:jameia_mart/src/features/marketing/presentation/cubit/content_page_cubit.dart';
 import 'package:jameia_mart/src/features/marketing/presentation/cubit/content_page_state.dart';
 import 'package:jameia_mart/src/features/marketing/presentation/cubit/offers_cubit.dart';
 import 'package:jameia_mart/src/features/marketing/presentation/cubit/offers_state.dart';
 
+import '../../core/data/catalog_test_fakes.dart';
+import '../../core/data/snapshot_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
 
 /// Rows of `GET /v1/offers` on the live host (2026-09-17), plus one inactive.
 const List<Map<String, dynamic>> _liveOffers = [
@@ -64,38 +75,106 @@ const List<Map<String, dynamic>> _liveOffers = [
   },
 ];
 
+const ContentPageEntity _about = ContentPageEntity(
+  kind: ContentPageKind.about,
+  title: 'About',
+  body: 'Hi',
+);
+
+/// Scripted reads streamed like the cached repository: the saved copy first
+/// (when set), then the scripted reply. Each read records its
+/// `forceRefresh`.
 class _FakeRepository implements PromotionsRepository {
   Either<Failure, List<OfferEntity>> offers = const Right(<OfferEntity>[]);
-  Either<Failure, ContentPageEntity> page = const Right(
-    ContentPageEntity(kind: ContentPageKind.about, title: 'About', body: 'Hi'),
-  );
+  List<OfferEntity>? savedOffers;
+  Either<Failure, ContentPageEntity> page = const Right(_about);
+  ContentPageEntity? savedPage;
+  final List<bool> offerReads = [];
+  final List<bool> pageReads = [];
 
   @override
-  Future<Either<Failure, List<OfferEntity>>> getOffers() async => offers;
+  Stream<DataSnapshot<List<OfferEntity>>> watchOffers({
+    bool forceRefresh = false,
+  }) {
+    offerReads.add(forceRefresh);
+    return networkRead(Future.value(offers), saved: savedOffers);
+  }
 
   @override
-  Future<Either<Failure, ContentPageEntity>> getContentPage(
-    ContentPageKind kind,
-  ) async => page;
+  Stream<DataSnapshot<ContentPageEntity>> watchContentPage(
+    ContentPageKind kind, {
+    bool forceRefresh = false,
+  }) {
+    pageReads.add(forceRefresh);
+    return networkRead(Future.value(page), saved: savedPage);
+  }
 }
 
 class _ScriptedRemote implements PromotionsRemoteDataSource {
   Object? error;
+  int pageReads = 0;
 
   @override
-  Future<List<OfferModel>> getOffers() async {
+  Future<RemotePayload<ContentPageModel>> getPage(String slug) async {
+    pageReads++;
     final current = error;
     if (current != null) throw current;
-    return [for (final row in _liveOffers) OfferModel.fromJson(row)];
-  }
-
-  @override
-  Future<ContentPageModel> getPage(String slug) async {
-    final current = error;
-    if (current != null) throw current;
-    return ContentPageModel(slug: slug, title: 'About Jm3eia', body: 'Text');
+    final raw = <String, dynamic>{
+      'slug': slug,
+      'title': 'About Jm3eia',
+      'body': 'Text',
+    };
+    return RemotePayload(ContentPageModel.fromJson(raw), raw);
   }
 }
+
+/// The shared catalogue read of the offers, answering the live rows.
+class _ScriptedCatalog extends FakeCatalogRemoteDataSource {
+  Object? error;
+  int offerReads = 0;
+
+  @override
+  Future<RemotePayload<List<OfferModel>>> fetchOffers() async {
+    offerReads++;
+    final current = error;
+    if (current != null) throw current;
+    final raw = <String, dynamic>{
+      CatalogResults.dataKey: _liveOffers,
+      'pagination': {'total': 3, 'page': 1, 'limit': 100, 'hasMore': false},
+    };
+    return RemotePayload(CatalogResults.offers(raw), raw);
+  }
+}
+
+CacheSlots _slots() => CacheSlots(
+  store: InMemoryJsonCacheStore(),
+  owner: CacheOwner(),
+  locale: FakeLocaleProvider('en'),
+);
+
+PromotionsRepositoryImpl _repository(
+  _ScriptedRemote remote,
+  _ScriptedCatalog catalog, {
+  CacheSlots? slots,
+}) {
+  final cache = slots ?? _slots();
+  return PromotionsRepositoryImpl(
+    remote,
+    catalog,
+    cache: PromotionsCacheDataSourceImpl(cache),
+    catalogCache: CatalogCacheDataSourceImpl(cache),
+  );
+}
+
+OffersCubit _offersCubit(_FakeRepository repository) => OffersCubit(
+  WatchOffersUseCase(repository),
+  now: () => DateTime.utc(2026, 9, 17),
+);
+
+ContentPageCubit _pageCubit(_FakeRepository repository) => ContentPageCubit(
+  WatchContentPageUseCase(repository),
+  kind: ContentPageKind.about,
+);
 
 void main() {
   group('offers (live payload)', () {
@@ -135,23 +214,45 @@ void main() {
       );
     });
 
-    test('GetOffersUseCase leaves out an offer that already ended', () async {
-      final repository = _FakeRepository()
-        ..offers = Right([
-          OfferEntity(id: 'old', name: 'old', endsAt: DateTime.utc(2026, 9, 1)),
-          OfferEntity(id: 'live', name: 'live', endsAt: DateTime.utc(2027)),
-          const OfferEntity(id: 'open', name: 'open-ended'),
-        ]);
+    test(
+      'WatchOffersUseCase leaves out an ended offer, the saved copy too',
+      () async {
+        final ended = OfferEntity(
+          id: 'old',
+          name: 'old',
+          endsAt: DateTime.utc(2026, 9, 1),
+        );
+        const openEnded = OfferEntity(id: 'open', name: 'open-ended');
+        final repository = _FakeRepository()
+          ..savedOffers = [ended, openEnded]
+          ..offers = Right([
+            ended,
+            OfferEntity(id: 'live', name: 'live', endsAt: DateTime.utc(2027)),
+            openEnded,
+          ]);
+        final watch = WatchOffersUseCase(repository);
 
-      final offers = await GetOffersUseCase(repository)(
-        GetOffersParams(now: DateTime.utc(2026, 9, 17)),
-      );
+        final snapshots = await watch(
+          WatchOffersParams(now: DateTime.utc(2026, 9, 17)),
+        ).toList();
+        await watch(
+          WatchOffersParams(now: DateTime.utc(2026, 9, 17), forceRefresh: true),
+        ).drain<void>();
 
-      expect(
-        [for (final offer in offers.getOrElse(() => [])) offer.id],
-        ['live', 'open'],
-      );
-    });
+        expect(
+          [
+            for (final snapshot in snapshots)
+              [for (final offer in snapshot.data) offer.id],
+          ],
+          [
+            ['open'],
+            ['live', 'open'],
+          ],
+        );
+        expect(snapshots.first.isFromCache, isTrue);
+        expect(repository.offerReads, [false, true]);
+      },
+    );
   });
 
   group('content pages', () {
@@ -163,131 +264,234 @@ void main() {
       expect(ContentPageKind.ofSlug('faq'), ContentPageKind.faq);
       expect(ContentPageKind.ofSlug('careers'), isNull);
     });
+
+    test('a saved page parses back with the DTO; public, one per slug', () {
+      final cache = PromotionsCacheDataSourceImpl(_slots());
+      final about = cache.page('about')!;
+
+      expect(about.namespace.name, 'marketing.page');
+      expect(
+        about.parse({'slug': 'about', 'title': 'About', 'body': 'Hi'}).body,
+        'Hi',
+      );
+      expect(
+        () => about.parse(const ['not', 'a', 'page']),
+        throwsA(isA<ParsingException>()),
+      );
+    });
   });
 
   group('PromotionsRemoteDataSourceImpl', () {
-    late FakeHttpClientAdapter adapter;
-
-    PromotionsRemoteDataSourceImpl build(FakeHttpClientAdapter transport) {
-      adapter = transport;
-      return PromotionsRemoteDataSourceImpl(
+    test('getPage GETs /v1/pages/:slug and keeps the raw results', () async {
+      final adapter = FakeHttpClientAdapter(
+        (_, _) => okBody({
+          'slug': 'about',
+          'title': 'About Jm3eia',
+          'body': 'Jm3eia is your neighborhood grocery.',
+        }),
+      );
+      final dataSource = PromotionsRemoteDataSourceImpl(
         DioConsumer(Dio()..httpClientAdapter = adapter),
-      );
-    }
-
-    test('getOffers GETs /v1/offers and skips a malformed row', () async {
-      final dataSource = build(
-        FakeHttpClientAdapter(
-          (_, _) => okBody({
-            'data': [
-              ..._liveOffers,
-              {'name': 'no id'},
-            ],
-            'pagination': {
-              'total': 4,
-              'page': 1,
-              'limit': 100,
-              'hasMore': false,
-            },
-          }),
-        ),
-      );
-
-      final offers = await dataSource.getOffers();
-
-      expect(adapter.requests.single.path, EndPoints.offers);
-      expect(adapter.requests.single.queryParameters, {
-        'page': 1,
-        'limit': 100,
-      });
-      expect(offers, hasLength(3));
-    });
-
-    test('getPage GETs /v1/pages/:slug', () async {
-      final dataSource = build(
-        FakeHttpClientAdapter(
-          (_, _) => okBody({
-            'slug': 'about',
-            'title': 'About Jm3eia',
-            'body': 'Jm3eia is your neighborhood grocery.',
-          }),
-        ),
       );
 
       final page = await dataSource.getPage('about');
 
       expect(adapter.requests.single.path, EndPoints.page('about'));
-      expect(page.title, 'About Jm3eia');
+      expect(page.model.title, 'About Jm3eia');
+      expect((page.raw as Map)['slug'], 'about');
     });
   });
 
   group('PromotionsRepositoryImpl', () {
     test('maps entities; exceptions become failures', () async {
       final remote = _ScriptedRemote();
-      final repository = PromotionsRepositoryImpl(remote);
+      final catalog = _ScriptedCatalog();
+      final repository = _repository(remote, catalog);
 
-      final offers = await repository.getOffers();
-      final page = await repository.getContentPage(ContentPageKind.about);
-      expect(offers.getOrElse(() => []), hasLength(2));
-      expect(
-        page.getOrElse(() => throw StateError('left')).kind,
-        ContentPageKind.about,
+      final offers = await repository.watchOffers().last;
+      final page = await repository
+          .watchContentPage(ContentPageKind.about)
+          .last;
+      expect(offers.data, hasLength(2));
+      expect(page.data.kind, ContentPageKind.about);
+      expect(page.data.title, 'About Jm3eia');
+
+      catalog.error = const RequestTimeoutException();
+      remote.error = const NotFoundException('Page not found');
+      await expectLater(
+        repository.watchOffers(forceRefresh: true),
+        emitsError(isA<TimeoutFailure>()),
       );
+      await expectLater(
+        repository.watchContentPage(ContentPageKind.faq),
+        emitsError(isA<NotFoundFailure>()),
+      );
+    });
 
-      remote.error = const RequestTimeoutException();
-      final failed = await repository.getOffers();
+    test('offers and a page paint from the device copy', () async {
+      final remote = _ScriptedRemote();
+      final catalog = _ScriptedCatalog();
+      final slots = _slots();
+      final repository = _repository(remote, catalog, slots: slots);
+      await repository.watchOffers().drain<void>();
+      await repository.watchContentPage(ContentPageKind.about).drain<void>();
+      await pumpEventQueue();
+      catalog.error = const NoInternetConnectionException();
+      remote.error = const NoInternetConnectionException();
+
+      final offers = await repository.watchOffers().toList();
+      final page = await repository
+          .watchContentPage(ContentPageKind.about)
+          .toList();
+
+      expect(offers.single.isFromCache, isTrue);
+      expect(offers.single.data, hasLength(2));
+      expect(page.single.isFromCache, isTrue);
+      expect(page.single.data.body, 'Text');
+      expect(catalog.offerReads, 1, reason: 'a fresh copy ends the read');
+      expect(remote.pageReads, 1);
+      // The catalogue's own entry: the product page and the checkout read
+      // the same copy.
       expect(
-        failed.swap().getOrElse(() => throw StateError('right')),
-        isA<TimeoutFailure>(),
+        await CatalogCacheDataSourceImpl(slots).offers()!.read(),
+        isNotNull,
       );
     });
   });
 
-  group('cubits', () {
-    test(
-      'OffersCubit: error → retry → loaded; a failed refresh keeps the list',
-      () async {
-        final repository = _FakeRepository()
-          ..offers = const Left(NetworkFailure('offline'));
-        final cubit = OffersCubit(
-          GetOffersUseCase(repository),
-          now: () => DateTime.utc(2026, 9, 17),
-        );
+  group('OffersCubit', () {
+    test('error → retry → loaded; a failed refresh keeps the list', () async {
+      final repository = _FakeRepository()
+        ..offers = const Left(NetworkFailure('offline'));
+      final cubit = _offersCubit(repository);
 
-        await cubit.load();
-        expect(cubit.state.status, OffersStatus.error);
+      await cubit.load();
+      expect(cubit.state.status, OffersStatus.error);
+      expect(cubit.state.failure, isA<NetworkFailure>());
 
-        repository.offers = const Right([OfferEntity(id: 'a', name: 'A')]);
-        await cubit.load();
-        expect(cubit.state.offers.single.id, 'a');
+      repository.offers = const Right([OfferEntity(id: 'a', name: 'A')]);
+      await cubit.load();
+      expect(cubit.state.offers.single.id, 'a');
+      expect(cubit.state.failure, isNull);
 
-        repository.offers = const Left(ServerFailure('down'));
-        await cubit.refresh();
-        expect(cubit.state.status, OffersStatus.loaded);
-        expect(cubit.state.offers.single.id, 'a');
-        expect(cubit.state.failure, isA<ServerFailure>());
-        await cubit.close();
-      },
-    );
+      repository.offers = const Left(ServerFailure('down'));
+      await cubit.refresh();
+      expect(cubit.state.status, OffersStatus.loaded);
+      expect(cubit.state.offers.single.id, 'a');
+      expect(cubit.state.failure, isA<ServerFailure>());
+      expect(cubit.state.freshness.refreshFailed, isTrue);
+      expect(repository.offerReads, [false, false, true]);
+      await cubit.close();
+    });
 
-    test('ContentPageCubit loads the page; an error is retryable', () async {
+    test('offline with a saved copy: the saved offers, marked stale', () async {
+      final repository = _FakeRepository()
+        ..savedOffers = const [OfferEntity(id: 'a', name: 'A')]
+        ..offers = const Left(NetworkFailure());
+      final cubit = _offersCubit(repository);
+
+      await cubit.load();
+
+      expect(cubit.state.status, OffersStatus.loaded);
+      expect(cubit.state.offers.single.id, 'a');
+      expect(cubit.state.freshness.fetchedAt, savedSnapshotAt);
+      expect(cubit.state.freshness.fromCache, isTrue);
+      expect(cubit.state.freshness.refreshFailed, isTrue);
+      expect(cubit.state.failure, isA<NetworkFailure>());
+      await cubit.close();
+    });
+
+    test('reconnect refreshes a saved list once, never a fresh one', () async {
+      final repository = _FakeRepository()
+        ..offers = const Right([OfferEntity(id: 'a', name: 'A')]);
+      final cubit = _offersCubit(repository);
+      await cubit.load();
+
+      await cubit.onReconnected();
+      expect(repository.offerReads, [false], reason: 'fresh: no request');
+
+      repository
+        ..savedOffers = const [OfferEntity(id: 'a', name: 'A')]
+        ..offers = const Left(NetworkFailure());
+      await cubit.load();
+      expect(cubit.state.freshness.isStale, isTrue);
+
+      repository
+        ..savedOffers = null
+        ..offers = const Right([OfferEntity(id: 'b', name: 'B')]);
+      await cubit.onReconnected();
+
+      expect(repository.offerReads, [false, false, true]);
+      expect(cubit.state.offers.single.id, 'b');
+      expect(cubit.state.freshness.isStale, isFalse);
+      await cubit.close();
+    });
+
+    test('reconnect after the full-screen error loads the list', () async {
+      final repository = _FakeRepository()
+        ..offers = const Left(NetworkFailure());
+      final cubit = _offersCubit(repository);
+      await cubit.load();
+      expect(cubit.state.status, OffersStatus.error);
+
+      repository.offers = const Right([OfferEntity(id: 'a', name: 'A')]);
+      await cubit.onReconnected();
+
+      expect(cubit.state.status, OffersStatus.loaded);
+      expect(cubit.state.offers.single.id, 'a');
+      expect(repository.offerReads, [false, true]);
+      await cubit.close();
+    });
+  });
+
+  group('ContentPageCubit', () {
+    test('loads the page; an error is retryable', () async {
       final repository = _FakeRepository()
         ..page = const Left(
           ServerFailure('Validation failed', statusCode: 400),
         );
-      final cubit = ContentPageCubit(
-        GetContentPageUseCase(repository),
-        kind: ContentPageKind.about,
-      );
+      final cubit = _pageCubit(repository);
 
       await cubit.load();
       expect(cubit.state.status, ContentPageStatus.error);
+      expect(cubit.state.failure, isA<ServerFailure>());
 
       repository.page = const Right(
         ContentPageEntity(kind: ContentPageKind.about, title: 'T', body: 'B'),
       );
       await cubit.load();
       expect(cubit.state.page?.body, 'B');
+      expect(cubit.state.failure, isNull);
+      await cubit.close();
+    });
+
+    test('a failed reload keeps the saved page and marks it stale', () async {
+      final repository = _FakeRepository()
+        ..savedPage = _about
+        ..page = const Left(NetworkFailure());
+      final cubit = _pageCubit(repository);
+
+      await cubit.load();
+
+      expect(cubit.state.status, ContentPageStatus.loaded);
+      expect(cubit.state.page, _about);
+      expect(cubit.state.freshness.fromCache, isTrue);
+      expect(cubit.state.freshness.refreshFailed, isTrue);
+      await cubit.close();
+    });
+
+    test('reconnect refreshes a saved or failed page', () async {
+      final repository = _FakeRepository()..page = const Left(NetworkFailure());
+      final cubit = _pageCubit(repository);
+      await cubit.load();
+      expect(cubit.state.status, ContentPageStatus.error);
+
+      repository.page = const Right(_about);
+      await cubit.onReconnected();
+      await cubit.onReconnected();
+
+      expect(cubit.state.page, _about);
+      expect(repository.pageReads, [false, true], reason: 'fresh after one');
       await cubit.close();
     });
   });

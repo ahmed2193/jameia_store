@@ -40,10 +40,38 @@ class AppConstants {
   /// Home search-pill trending-hint rotation dwell (business timer, not motion).
   static const Duration searchHintRotate = Duration(seconds: 3);
 
-  /// Connectivity poll cadence for [ConnectivityCubit] (business timer, not
-  /// motion). Reachability is re-checked at this interval to flip the offline
-  /// banner online/offline.
+  /// Reachability re-check cadence WHILE OFFLINE (business timer, not motion):
+  /// short, so the app notices the connection coming back quickly.
   static const Duration connectivityPoll = Duration(seconds: 3);
+
+  /// Reachability re-check cadence while online: only catches a connection
+  /// that drops while the customer is idle (a failed request re-checks at
+  /// once). Two probes a minute stay far under the 300 / 60 s rate limit.
+  static const Duration connectivityPollOnline = Duration(seconds: 30);
+
+  /// Longest one reachability probe waits for its host.
+  static const Duration connectivityProbeTimeout = Duration(seconds: 5);
+
+  /// How long the monitor must keep reporting "unreachable" before the app
+  /// says it is offline — a Wi-Fi ↔ mobile handover never flickers the banner.
+  static const Duration offlineDebounce = Duration(milliseconds: 1500);
+
+  /// How long the "Back online" confirmation stays before the banner closes.
+  static const Duration backOnlineHold = Duration(seconds: 2);
+
+  /// Shortest time the banner says "Reconnecting…" after a tap, so a check
+  /// that fails at once (airplane mode) is still seen to run.
+  static const Duration connectivityRetryDwell = Duration(milliseconds: 700);
+
+  /// Longest random wait before a screen refreshes on reconnect, so the
+  /// screens that come back together do not hit the backend in one instant.
+  static const Duration reconnectJitter = Duration(milliseconds: 600);
+
+  /// A screen whose first load failed for want of a connection, while the
+  /// app did not know it was offline, checks the connection and — reachable
+  /// after all — loads again by itself. At most one such automatic retry in
+  /// this window app-wide, so a backend that is down is never hammered.
+  static const Duration readRetryGap = Duration(seconds: 15);
 
   /// Search/filter typeahead debounce (business timer, not motion).
   static const Duration searchDebounce = Duration(milliseconds: 300);

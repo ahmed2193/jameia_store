@@ -10,7 +10,6 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../cubit/login_cubit.dart';
 import '../cubit/login_state.dart';
 import '../widgets/login/login_body.dart';
@@ -21,11 +20,14 @@ import '../widgets/login/login_body.dart';
 /// [sessionExpired] arrives as the route extra (set by the app root when the
 /// network layer gave up refreshing) rather than from `AuthSessionCubit`, so
 /// this page stays independent of the app-global providers (router tests pump
-/// it alone) and the notice is scoped to that one navigation.
+/// it alone) and the notice is scoped to that one navigation. [returnTo]
+/// (from `LoginArgs`) travels on to the OTP step, which reopens that page
+/// once the customer is signed in.
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key, this.sessionExpired = false});
+  const LoginPage({super.key, this.sessionExpired = false, this.returnTo});
 
   final bool sessionExpired;
+  final String? returnTo;
 
   void _onStatus(BuildContext context, LoginState state) {
     switch (state.status) {
@@ -37,13 +39,17 @@ class LoginPage extends StatelessWidget {
           extra: OtpVerifyArgs(
             phone: challenge.phone,
             debugCode: challenge.debugCode,
+            returnTo: returnTo,
           ),
         );
       case LoginStatus.error:
-        showJameiaSnackBar(
-          context,
-          state.failure?.localizedMessage ?? 'core.something_went_wrong'.tr(),
-        );
+        final failure = state.failure;
+        if (failure == null) {
+          showJameiaSnackBar(context, 'core.something_went_wrong'.tr());
+        } else {
+          // Asking for a code: offline it says so, the number stays typed.
+          showFailureSnackBar(context, failure, action: true);
+        }
       case LoginStatus.initial:
       case LoginStatus.sending:
         break;

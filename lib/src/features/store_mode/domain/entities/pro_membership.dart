@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/pro_membership_entity.dart';
+
 /// How often a Pro plan renews.
 enum ProBillingInterval { month, year, other }
 
@@ -210,6 +212,23 @@ class ProSubscription extends Equatable {
 
   /// Active and not already cancelled: the only state "cancel" applies to.
   bool get canCancel => isActive && !cancelAtPeriodEnd;
+
+  /// Where this subscription leaves the customer: renewing, cancelled with
+  /// the perks still on until [currentPeriodEnd] (ending), or run out
+  /// (lapsed — expired, or cancelled with nothing left to run). A status the
+  /// app does not know is no membership.
+  ProMembershipEntity get membership => ProMembershipEntity(
+    standing: hasBenefits
+        ? (cancelAtPeriodEnd ? ProStanding.ending : ProStanding.active)
+        : switch (status) {
+            ProSubscriptionStatus.expired ||
+            ProSubscriptionStatus.cancelled => ProStanding.lapsed,
+            ProSubscriptionStatus.active ||
+            ProSubscriptionStatus.other => ProStanding.prospect,
+          },
+    periodEnd: currentPeriodEnd,
+    planName: planName,
+  );
 
   @override
   List<Object?> get props => [

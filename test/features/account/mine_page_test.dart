@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/routes.dart';
 import 'package:jameia_mart/src/config/theme/app_theme.dart';
@@ -33,10 +34,14 @@ import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
+import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_test_fakes.dart';
 import '../notifications/notifications_test_fakes.dart';
+import '../store_mode/pro_status_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
 
 class _Availability implements GetAssistantAvailabilityUseCase {
   _Availability(this.enabled);
@@ -88,6 +93,8 @@ const List<String> _destinations = [
 void main() {
   late AuthSessionCubit session;
   late UnreadNotificationsCubit unread;
+  late FakeProStatusRepository proRepository;
+  late ProStatusCubit proStatus;
   final availabilities = <AssistantAvailabilityCubit>[];
 
   setUpAll(() async {
@@ -95,6 +102,9 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
     await EasyLocalization.ensureInitialized();
+    // The Pro row's "Ends Oct 17".
+    await initializeDateFormatting('en');
+    registerFakeNetworkInfo();
     await setupServiceLocator();
   });
 
@@ -112,11 +122,15 @@ void main() {
         const Left(UnauthorizedFailure()),
       ),
     );
+    // Idle (standing unknown: no Pro chip) until a test settles it.
+    proRepository = FakeProStatusRepository();
+    proStatus = buildProStatus(proRepository);
   });
 
   tearDown(() async {
     await session.close();
     await unread.close();
+    await proStatus.close();
     for (final cubit in availabilities) {
       await cubit.close();
     }
@@ -179,6 +193,7 @@ void main() {
               BlocProvider<AssistantAvailabilityCubit>.value(
                 value: availability,
               ),
+              BlocProvider<ProStatusCubit>.value(value: proStatus),
             ],
             child: Builder(
               builder: (context) => MaterialApp.router(
@@ -219,6 +234,7 @@ void main() {
   testWidgets('guest: the sign-in header opens login; no assistant row', (
     tester,
   ) async {
+    proStatus.stop();
     await pump(tester);
 
     expect(find.text('Sign in or register'), findsNWidgets(2));
@@ -230,6 +246,8 @@ void main() {
     expect(find.text('Jm3eia Assistant'), findsNothing);
     expect(find.text('PRO'), findsNothing);
     expect(find.text('Active'), findsNothing);
+    // Pro is on offer: the Pro row invites the guest in.
+    expect(find.text('Join'), findsOneWidget);
     // A guest's balances are zero; the overview counts still show.
     expect(tester.widget<RollingNumber>(find.byType(RollingNumber)).value, 0);
     expect(
@@ -251,13 +269,23 @@ void main() {
     tester,
   ) async {
     session.signedIn(_member);
+    proRepository.subscription = const Right(
+      ProSubscription(
+        id: 's1',
+        planId: 'monthly',
+        status: ProSubscriptionStatus.active,
+      ),
+    );
+    await proStatus.start(_member);
     await pump(tester, assistant: true);
 
     // The open header and the (hidden) collapsed bar both carry the name.
     expect(find.text('Ahmed Al-Fawaly'), findsNWidgets(2));
     expect(find.text('+96550001122'), findsOneWidget);
     expect(find.byType(MineProBadge), findsOneWidget);
+    // No renewal date on this subscription: the plain "Active".
     expect(find.text('Active'), findsOneWidget);
+    expect(find.text('Join'), findsNothing);
     expect(find.text('Jm3eia Assistant'), findsOneWidget);
     expect(
       tester.widget<RollingNumber>(find.byType(RollingNumber)).value,
@@ -269,6 +297,40 @@ void main() {
     await frames(tester, 5);
     expect(find.text('route:${Routes.profileEdit}'), findsOneWidget);
 
+    await teardownApp(tester);
+  });
+
+  testWidgets('the Pro row follows the standing: ends on a date, or rejoin', (
+    tester,
+  ) async {
+    session.signedIn(_member);
+    proRepository.subscription = Right(
+      ProSubscription(
+        id: 's1',
+        planId: 'monthly',
+        status: ProSubscriptionStatus.cancelled,
+        cancelAtPeriodEnd: true,
+        currentPeriodEnd: DateTime(2026, 10, 17, 12),
+      ),
+    );
+    await proStatus.start(_member);
+    await pump(tester);
+    expect(find.text('Ends Oct 17'), findsOneWidget);
+    await teardownApp(tester);
+
+    session.signedIn(_regular);
+    proRepository.subscription = Right(
+      ProSubscription(
+        id: 's1',
+        planId: 'monthly',
+        status: ProSubscriptionStatus.expired,
+        currentPeriodEnd: DateTime(2026, 9, 17, 12),
+      ),
+    );
+    await proStatus.start(_regular);
+    await pump(tester);
+    expect(find.text('Rejoin'), findsOneWidget);
+    expect(find.text('Join'), findsNothing);
     await teardownApp(tester);
   });
 
@@ -471,6 +533,14 @@ void main() {
     tester,
   ) async {
     session.signedIn(_member);
+    proRepository.subscription = const Right(
+      ProSubscription(
+        id: 's1',
+        planId: 'monthly',
+        status: ProSubscriptionStatus.active,
+      ),
+    );
+    await proStatus.start(_member);
     unread.set(120);
     await pump(
       tester,

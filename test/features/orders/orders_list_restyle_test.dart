@@ -38,7 +38,6 @@ import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_us
 import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
 import 'package:jameia_mart/src/features/orders/presentation/pages/orders_page.dart';
@@ -48,6 +47,8 @@ import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_status_chip.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_empty_view.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_list.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/fake_cart_repository.dart';
@@ -66,6 +67,7 @@ void main() {
   });
 
   OrdersCubit newOrdersCubit() => OrdersCubit(
+    watchFirstPage: WatchOrdersUseCase(repository),
     getOrders: GetOrdersUseCase(repository),
     getOrder: GetOrderUseCase(repository),
     cancelOrder: CancelOrderUseCase(repository),

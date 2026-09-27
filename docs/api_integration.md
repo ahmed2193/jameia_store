@@ -53,6 +53,8 @@ datasource ──▶ ApiConsumer (DioConsumer)
                  │                           401 → refresh once → replay
                  ├─ AppHeadersInterceptor    Accept-Language; X-Cart-Token + X-Assistant-Guest while signed out
                  ├─ RateLimitRetryInterceptor 429 → wait Retry-After | 1s,2s,4s → replay (max 3)
+                 ├─ ReachabilitySignalInterceptor any HTTP response → reachable; a transport failure
+                 │                           → NetworkInfo re-checks at once (a 5xx is never "offline", §10.1)
                  └─ NetworkLogInterceptor    debug only; full request + response trace, secrets masked (§2.1)
                ◀── response.data → ApiEnvelope.tryParse → `results`  (or throw AppException)
 ```
@@ -235,7 +237,7 @@ dropped and the new owner’s server cart is pulled).
 | checkout | `GET /v1/delivery/branches`, `GET /v1/delivery/slots`, `POST /v1/delivery/select-branch`, `POST /v1/delivery/select-address`, `POST /v1/orders` | `CheckoutCubit` + `CheckoutPage` (`Routes.checkout`, no extra). The branch list is read once per language (`DeliveryRemoteDataSourceImpl.branchesTtl` = 5 min), so a language switch shows the names in the new language. Mode = delivery to a saved address or pickup from a branch; timing = ASAP / express (surcharge from the cart) / a scheduled slot from `GET /v1/delivery/slots`; payment `cod` or `wallet` only; notes ≤ `CheckoutDraft.maxNotesLength` (256). Each selection is a server call that returns the re-priced cart, so fees stay the server’s; a stale selection reply is dropped by generation. `POST /v1/orders` sends only `paymentMethod`, `notes` and the chosen `deliverySlot` — everything else is the server cart. One in-flight placement (`isPlacing`); on success the cart mirror is cleared, a wallet order refreshes the customer snapshot and the page does `pushReplacement(Routes.orderTracking, extra: order.id)` |
 | checkout — Keeta-style page + vouchers (2026-09-26) | `GET /v1/init` → `store.*`, `GET /v1/offers`, `GET /v1/products?inStock&onSale&sort` (rail), `GET /v1/delivery/slots` (after a delivery selection), `POST` / `DELETE /v1/cart/coupon`, `POST` / `DELETE /v1/cart/loyalty`, `POST /v1/cart/express` | Same `CheckoutCubit`, plus `CheckoutRailCubit` and `CheckoutOffersCubit` (page-scoped; `CheckoutPage` and the new `CheckoutVouchersPage`, `Routes.checkoutVouchers`, extra = the serving `branchId`). **Store rules:** `GetStoreRulesUseCase` reads `GET /v1/init` into `CheckoutStoreRules` (store name, `codEnabled`, `defaultMethod`, the loyalty programme through the core `LoyaltyProgramModel`, the Pro free-delivery perk, maintenance) — store fields only, never `user.*`; cached per language for 5 min; a failure falls back to the defaults (COD on). **Offers:** `GET /v1/offers` (the shared catalogue datasource’s per-language cache) enriches the cart’s `appliedOffers` / `offerProgress` with minimum, cap, `stackable`, `endsAt` and the new `branchIds`; the unlock tag, the free-delivery gap and the vouchers page’s locked list keep only stackable, branch-eligible offers. **Rail** ("Deals you might have missed"): `GET /v1/products` with `inStock`, `onSale`, `sort=discount_desc`, `limit=20` through the core `CatalogRemoteDataSource`; in-cart ids (taken at open), zero-price variant rows, out-of-stock rows and duplicates dropped, capped at 10; settled before the content shows (≤ `CheckoutRailCubit.settleLimit` = 1.2 s, a later reply is dropped). **Slots:** `GET /v1/delivery/slots` answers 400 `VALIDATION_ERROR` until the cart has a delivery selection (live), so they load after each `select-address` (never on start, never for pickup), non-fatal; a booked window the new address lost resets to ASAP with a notice. **Coupon, points, express** go through the cart routes (`CartCubit.applyCoupon` / `applyLoyalty(points)` with `LoyaltyProgram.pointsToRedeem` / `setExpress`); a refused express restores the previous timing and slot. The vouchers page: code entry (`POST /v1/cart/coupon`, inline error), the applied coupon (remove), applied offers and "add more to unlock" progress — no Apply on offers, no coupon list. A 401 on select / place shows the signed-out state (its button does `go(Routes.login)`). After every order `AuthSessionCubit.restore()` re-reads wallet and points |
 | orders | `GET /v1/orders`, `GET /v1/orders/:id`, `POST /v1/orders/:id/cancel`, `POST /v1/reviews` | `OrdersCubit` + `OrdersPage` (`Routes.orders`, tabs are status groups computed in `OrdersFeed`; the next page follows the scroll — never a build pass — and a tab still showing nothing pulls up to `OrdersList._autoFillPages` pages before it waits for a tap, because the API pages one flat list and cannot filter by status), `OrderTrackingCubit` + `OrderTrackingPage` (`Routes.orderTracking`, extra = order id; polls `GET /v1/orders/:id` every `OrderTrackingCubit.pollInterval` = 30 s only while the route is on top (`routeObserver`), the app is resumed and the status is not terminal), cancel with one of the five API reasons + an optional note (`CancelOrderRequest`), reorder through the cart’s batched `POST /v1/cart/items`, and `OrderReviewCubit` → `POST /v1/reviews` per product (1–5 stars, title ≤ 120, body ≤ 2000, delivered orders only). The invoice page renders the order’s own totals |
-| assistant | `GET /v1/assistant/conversations`, `GET /v1/assistant/conversations/:id`, `POST /v1/assistant/messages` (`text/event-stream`), `POST /v1/assistant/actions/:actionId/confirm`, `POST /v1/assistant/conversations/:id/handoff`, `POST /v1/assistant/messages/:id/feedback`, `GET /v1/init` → `store.assistant` + `featureFlags.assistant` | `AssistantChatCubit` + `AssistantChatPage` (`Routes.assistant`, extra = optional `AssistantChatArgs`; home header disc, Mine row), `AssistantHistoryCubit` + `AssistantHistoryPage` (`Routes.assistantHistory`, pops the picked id), app-global `AssistantAvailabilityCubit`. The reply streams through `EventStreamClient.send` (one-shot `POST`, never replayed): frames `message_start` → `user_message` → tool / block / text deltas → `message_end` | `error`; text deltas are coalesced every 50 ms, only whole words are drawn, adjacent product rails merge. A `cart_action` is a PROPOSAL: nothing changes until the customer confirms it (one request per id, 404 → expired; success refetches the cart mirror). Guests chat with `X-Assistant-Guest` (merged into the customer on sign-in); a 401 shows the sign-in prompt, never a pre-check. Never call `handoff` on the live host (it opens a real ticket) — use the mock |
+| assistant | `GET /v1/assistant/conversations`, `GET /v1/assistant/conversations/:id`, `POST /v1/assistant/messages` (`text/event-stream`), `POST /v1/assistant/actions/:actionId/confirm`, `POST /v1/assistant/conversations/:id/handoff`, `POST /v1/assistant/messages/:id/feedback`, `GET /v1/init` → `store.assistant` + `featureFlags.assistant` | `AssistantChatCubit` + `AssistantChatPage` (`Routes.assistant`, extra = optional `AssistantChatArgs`; home header disc, Mine row), `AssistantHistoryCubit` + `AssistantHistoryPage` (`Routes.assistantHistory`, pops the picked id), app-global `AssistantAvailabilityCubit`. The reply streams through `EventStreamClient.send` (one-shot `POST`, never replayed): frames `message_start` → `user_message` → tool / block / text deltas → `message_end` | `error`; text deltas are coalesced every 50 ms, only whole words are drawn, adjacent product rails merge. A `cart_action` is a PROPOSAL: nothing changes until the customer confirms it (one request per id, 404 → expired; success refetches the cart mirror). Guests chat with `X-Assistant-Guest` (merged into the customer on sign-in); a 401 shows the sign-in prompt, never a pre-check. Never call `handoff` on the live host (it opens a real ticket) — use the mock. Voice messages never reach the API as audio (there is no audio route): `AssistantVoiceCubit` turns speech into text on the device (`speech_to_text`) and the words go out as a normal `POST /v1/assistant/messages` |
 
 The customer DTO is shared: `core/data/models/customer_model.dart` + `customer_mapper.dart` →
 `AuthCustomerEntity` (money in fils: `walletFils`, `walletKd`).
@@ -263,7 +265,10 @@ read next to it is `features/notifications/` (`notifications_remote_data_source.
 2. DTO `fromJson` in `data/models/`; mapper extension in `data/mappers/`.
 3. Datasource returns DTOs, throws `AppException` only (no `Either`, no Dio types). Guard the
    payload shape with `ApiPayload.asMap(results, route)` (`core/network/api_payload.dart`).
-4. Repository impl: `with BaseRepositoryMixin`, every method `execute(() => ...)`.
+4. Repository impl: `with BaseRepositoryMixin`, every method `execute(() => ...)`. A read the
+   screen should paint offline adds a namespace in a `*_cache_data_source.dart` (§10.2), returns
+   `RemotePayload(model, raw)` from the remote datasource, mixes in `CachedRepositoryMixin` and
+   returns `cachedRead(...)`; a watch use case feeds a cubit `with SnapshotLoaderMixin` (§10.4).
 5. Use case per operation → cubit → DI (`registerLazySingleton<Interface>`).
 6. Tests: datasource with `FakeHttpClientAdapter` (`test/core/network/network_test_fakes.dart`),
    repository exception → failure mapping, cubit with `bloc_test`.
@@ -277,3 +282,142 @@ transport), `envelope(...)` / `okBody(...)` builders, `InMemorySessionStore`,
 `NetworkLogInterceptor` to assert on the trace; `FakeEventStreamClient`
 (`test/features/notifications/notifications_test_fakes.dart`) scripts SSE frames.
 `SecureSessionStore` tests use `FlutterSecureStorage.setMockInitialValues({})`.
+
+Offline & cache: `FakeNetworkInfo` + `registerFakeNetworkInfo()` (same file; register it BEFORE
+`setupServiceLocator()` so the real monitor never probes from a test), `InMemoryJsonCacheStore` +
+`testNamespace` (`test/core/storage/cache_test_fakes.dart`; `FileJsonCacheStore` is tested on a temp
+dir only), `networkRead(future, saved:)` + `savedSnapshotAt` / `networkSnapshotAt`
+(`test/core/data/snapshot_test_fakes.dart`: a fake watch use case in one line — an `async*` body,
+because `asyncExpand` never completes under a widget test's fake clock),
+`FakeCatalogRemoteDataSource` (`test/core/data/catalog_test_fakes.dart`),
+`FakeConnectivityRepository` + `buildConnectivityCubit`
+(`test/features/connectivity/connectivity_test_fakes.dart`). An offline widget test wraps the page
+in `ConnectivityScope(isOffline: true, reconnectEpoch: 0, onNudge: …, onCheckNow: …)`.
+
+## 10. Offline & caching
+
+The app keeps what each screen last showed and paints it at once — at the next launch and while
+offline — then revalidates. Contract: CLAUDE.md §3 ("Connectivity", "Offline cache") and §3.2
+item 4. Design and acceptance criteria: `docs/prompts/offline_connectivity_prompt.md`.
+
+### 10.1 Connection state
+
+- **One monitor:** `NetworkInfoImpl` (`core/network/network_info.dart`). Probe = `HEAD <API base>/`
+  (any HTTP status proves the backend is reachable; it answers `404`, 0 bytes, ~0.3 s) plus one
+  neutral fallback, `https://one.one.one.one` (HTTPS: a captive portal cannot answer for it; a
+  backend outage never reads as "offline"), `AppConstants.connectivityProbeTimeout` (5 s) each.
+- **Schedule:** every `connectivityPoll` (3 s) while unreachable, every `connectivityPollOnline`
+  (30 s) while reachable; nothing in the background (paused when the app is hidden / paused, one
+  probe on resume) or while nobody listens. Far under the 300 / 60 s rate limit.
+- **Signals from real traffic:** `ReachabilitySignalInterceptor` — any HTTP response marks the
+  backend reachable at once; a transport failure (no route, timeout) asks for a probe now. It never
+  flips the state by itself. A 4xx / 5xx is a server answer: the screen shows its error, never the
+  offline UI.
+- **State:** `ConnectivityCubit` (`features/connectivity`, app-global): status `unknown` / `online` /
+  `offline` (offline only after `offlineDebounce`, 1.5 s, of unreachability AND a confirming live
+  check at its end — one slow probe, like the first one while the app starts, never shows the
+  banner); banner mode
+  `hidden` / `offline` / `reconnecting` (a tap asked for a check) / `backOnline` (held
+  `backOnlineHold`, 2 s). Each return bumps `reconnectEpoch`. The banner
+  (`ConnectivityBannerHost`, over the navigator) never shows for `unknown` or on the splash.
+  Screens and core widgets read `ConnectivityScope`, never the cubit.
+
+### 10.2 What is cached
+
+Only read routes; only page 1 of a paginated list; the envelope's `results` exactly as sent.
+Every key carries the language (names arrive resolved by `Accept-Language`, which the server does
+not list in `Vary`) and the owner.
+
+| Namespace | Route | Scope | Key id | Fresh (no request on open) | Max age (never shown after) | Max entries |
+|---|---|---|---|---|---|---|
+| `home.feed` | `GET /v1/home` | owner | — | 60 s | 7 d | 4 |
+| `home.init` | `GET /v1/init` (home bootstrap) | owner | — | 60 s | 7 d | 4 |
+| `catalog.categories` | `GET /v1/categories` | public | — | 5 min | 7 d | 4 |
+| `catalog.brands` | `GET /v1/brands` page 1 | public | limit | 60 s | 7 d | 4 |
+| `catalog.products` | `GET /v1/products` page 1 | public | normalised query + limit | 60 s | 3 d | 40 |
+| `catalog.offers` | `GET /v1/offers` (catalogue + marketing share it) | public | — | 60 s | 1 d | 4 |
+| `product.detail` | `GET /v1/products/:slug` | public | slug | 60 s | 3 d | 60 |
+| `product.reviews` | `GET /v1/products/:slug/reviews` page 1 | public | slug + limit | 5 min | 7 d | 60 |
+| `recipes.list` | `GET /v1/recipes` page 1 | public | limit | 60 s | 7 d | 4 |
+| `recipes.detail` | `GET /v1/recipes/:slug` | public | slug | 60 s | 7 d | 40 |
+| `marketing.page` | `GET /v1/pages/:slug` | public | slug | 1 h | 30 d | 10 |
+| `pro.program` | `GET /v1/subscription-plans` | public | — | 5 min | 7 d | 4 |
+| `pro.subscription` | `GET /v1/account/subscription` (+ the subscribe / cancel replies) | customer | — | 60 s | 7 d | 4 |
+| `orders.list` | `GET /v1/orders` page 1 | customer | limit | 30 s | 30 d | 4 |
+| `orders.detail` | `GET /v1/orders/:id` (+ the cancel reply) | customer | order id | 0 (always revalidates) | 30 d | 30 |
+| `notifications.page` | `GET /v1/notifications` page 1 | customer | all / unread + limit | 30 s | 14 d | 4 |
+| `account.wallet` / `account.loyalty` | `GET /v1/account/wallet` / `loyalty` page 1 | customer | limit | 60 s | 14 d | 4 |
+| `assistant.history` | `GET /v1/assistant/conversations` page 1 | customer (guest chats move to the customer at sign-in) | limit | 60 s | 14 d | 4 |
+
+**Never cached:** the cart (its own `cart.mirror.v1` mirror; the server sends `no-store`), profile
+and addresses (their own device copies), checkout slots / branches / store rules, any `POST`,
+search suggestions, auth / OTP, SSE frames and the assistant chat stream / transcripts.
+
+**Observed cache headers** (live, 2026-09-27): the public catalogue routes (`/v1/home`, `/v1/init`,
+`/v1/categories`, `/v1/products`, `/v1/brands`, `/v1/offers`, `/v1/recipes`) answer
+`cache-control: public, max-age=60, stale-while-revalidate=300`; `/v1/cart` answers `no-store`;
+no route sends `ETag` / `Last-Modified`, so revalidation is a full re-fetch; only `vary: Origin`
+is sent. Dio keeps no HTTP cache — the policy above is the app's own.
+
+### 10.3 Store, keys, wipe rules
+
+- **Files:** `FileJsonCacheStore` (`core/storage/json_cache_store.dart`) under the app cache folder:
+  `api_cache/<bucket>/<namespace>/<fnv64>.json`, one record `{ v, ns, nsv, key, savedAt, lang,
+  owner, data }`. Bucket = `public`, `guest` or `customer`. The file name is a 64-bit FNV-1a
+  hash of `namespace|version|language|owner|id` (`CacheKey.full`), which the record repeats and
+  the read checks, so a collision or a version bump reads as a miss. Owner = `public`, `guest` or
+  `c:<customerId>` — never a token, an OTP or a header.
+- **Writes** are atomic (temp file + rename), serialized, fire-and-forget. An entry over 1 MB is
+  not saved; past 12 MB in total, or past a namespace's `maxEntries`, the oldest go first. Files
+  over 64 KB are decoded off the UI isolate. Logs (name `cache`) carry the namespace, the key
+  hash and the byte size — never a payload.
+- **Owner:** `CacheOwner`, kept in step by the auth local datasource (the one writer of the
+  customer's device copy): `signedIn(id)` when it saves / reads the customer, `signedOut()` when
+  it clears it. Until then (launch, before the session restore resolves) owner / customer slots
+  are disabled — nothing personal is read or written. A reply that lands after the owner changed
+  is not saved.
+- **Wipe:** sign-out and session expiry clear the customer copy → `CacheOwner.signedOut()` +
+  `JsonCacheStore.removeOwnedEntries()` (the whole `customer/` bucket). Public and guest
+  entries stay. A copy past `maxAge` is never shown; a copy that no longer parses is deleted
+  and treated as a miss; bumping a namespace `version` (DTO shape change) or
+  `FileJsonCacheStore.formatVersion` turns every older entry into a miss. The Settings
+  "clear cache" tile is not wired yet (follow-up: `JsonCacheStore.clear()` + the image cache).
+- **Check on a device:** `adb shell run-as <applicationId> ls -R cache/api_cache` (application id
+  in `android/app/build.gradle.kts`).
+
+### 10.4 Read path and screen contract
+
+`cachedRead(cache:, fetch:, toEntity:, forceRefresh:)` (`CachedRepositoryMixin`) streams
+`DataSnapshot<T>`s (a `Failure` on the error channel): the device copy first (unless past `maxAge`) — a copy younger
+than `freshFor` ends the read there; then the network snapshot (saved); a failure arrives after any
+copy, so the screen keeps the copy and marks it stale. `forceRefresh` (pull to refresh, retry,
+reconnect) skips the copy. A mutation reply that answers a cached read is kept with
+`keepReply(slot, raw)` (a cancelled order, a Pro subscribe / cancel).
+
+The cubit (`SnapshotLoaderMixin`) follows the watch use case with `followSnapshots` — a newer
+load of the same channel cancels the older one — and keeps `DataFreshness freshness` (fetched at,
+from cache, refresh failed) plus a transient `Failure? failure` in its state. The page:
+- data + offline or a failed refresh → the data with the stale note (`StaleDataNotice` /
+  `CubitStaleNotice`, "Updated 12 min ago"); never a full-screen error over data;
+- nothing saved + `NetworkFailure` → `FailureView`: known offline → `JameiaStateView.offline`;
+  otherwise "Checking your connection…" (`JameiaStateView.checking`) and a live check
+  (`ConnectivityScope.recheckerOf`, held ≥ 1.5 s so the verdict lands with the banner) → reachable:
+  the screen loads again by itself (at most one such retry per `AppConstants.readRetryGap`, 15 s,
+  app-wide) / not: `JameiaStateView.offline`; other failures → `ErrorView`;
+- "load more" failing offline → `LoadMoreOfflineNote` (the list asks again on reconnect);
+- a background failure → `showFailureSnackBar`: a transport failure (no connection, timeout)
+  shows no snack of its own — the connection check and the banner speak (offline: a nudge);
+- `ReconnectRefresh` → cubit `onReconnected()` → `refreshOnReconnect(needed: stale || error)`:
+  single-flight, after a 0–600 ms jitter, at most one request per stale screen.
+
+### 10.5 Recovery and mutations
+
+- **Reconnect** (`app.dart`, `ConnectivityCubit.reconnectEpoch`): `CartCubit` flushes pending deltas
+  (or refetches), `AuthSessionCubit` re-verifies an unverified session, `AddressBookCubit` syncs,
+  `UnreadNotificationsCubit` re-probes the badge, `AssistantAvailabilityCubit` retries a failed
+  read, `ProStatusCubit` refreshes an unconfirmed standing, `LocalizationCubit` re-sends an owed
+  language sync, and `JameiaImage.retryAllPendingImages()` retries images that failed.
+- **Mutations:** nothing is queued or replayed except the cart's coalesced quantity deltas. A
+  failed submit keeps its draft and says `connectivity.action_needs_internet` once (and nudges the
+  banner). Place order and cancel order run `ConnectivityScope.confirmOnline` first — a live
+  check while offline — and send nothing while the connection is still gone.

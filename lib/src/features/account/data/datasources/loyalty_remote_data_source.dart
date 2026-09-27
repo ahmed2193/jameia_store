@@ -1,15 +1,18 @@
+import '../../../../core/data/models/loyalty_program_model.dart';
+import '../../../../core/data/models/remote_payload.dart';
 import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/ledger_page_model.dart';
+import '../models/ledger_results.dart';
 import '../models/loyalty_entry_model.dart';
-import '../../../../core/data/models/loyalty_program_model.dart';
 
 /// Receives the envelope's `results` (unwrapped by `DioConsumer`); throws
 /// `AppException` only. Bearer + refresh are automatic (`AuthInterceptor`).
 abstract class LoyaltyRemoteDataSource {
-  /// `GET /v1/account/loyalty?page&limit` (Bearer).
-  Future<LedgerPageModel<LoyaltyEntryModel>> getLedger({
+  /// `GET /v1/account/loyalty?page&limit` (Bearer) — with the raw
+  /// `results`, which the repository keeps on the device for page 1.
+  Future<RemotePayload<LedgerPageModel<LoyaltyEntryModel>>> getLedger({
     required int page,
     required int limit,
   });
@@ -28,27 +31,23 @@ class LoyaltyRemoteDataSourceImpl implements LoyaltyRemoteDataSource {
 
   static const String pageField = 'page';
   static const String limitField = 'limit';
-  static const String balanceField = 'loyaltyPoints';
-  static const String _logName = 'LoyaltyRemoteDataSource';
+  static const String balanceField = LedgerResults.loyaltyBalanceField;
 
   Future<LoyaltyProgramModel>? _program;
 
   @override
-  Future<LedgerPageModel<LoyaltyEntryModel>> getLedger({
+  Future<RemotePayload<LedgerPageModel<LoyaltyEntryModel>>> getLedger({
     required int page,
     required int limit,
   }) async {
-    final results = await _api.get(
+    final results = ApiPayload.asMap(
+      await _api.get(
+        EndPoints.accountLoyalty,
+        queryParameters: <String, dynamic>{pageField: page, limitField: limit},
+      ),
       EndPoints.accountLoyalty,
-      queryParameters: <String, dynamic>{pageField: page, limitField: limit},
     );
-    return LedgerPageModel<LoyaltyEntryModel>.fromJson(
-      ApiPayload.asMap(results, EndPoints.accountLoyalty),
-      balanceField: balanceField,
-      parseRow: LoyaltyEntryModel.fromJson,
-      requestedPage: page,
-      logName: _logName,
-    );
+    return RemotePayload(LedgerResults.loyalty(results, page: page), results);
   }
 
   @override

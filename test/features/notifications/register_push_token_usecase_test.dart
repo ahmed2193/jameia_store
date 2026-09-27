@@ -12,7 +12,9 @@ void main() {
 
   setUp(() {
     remote = FakeNotificationsRemoteDataSource();
-    useCase = RegisterPushTokenUseCase(NotificationsRepositoryImpl(remote));
+    useCase = RegisterPushTokenUseCase(
+      NotificationsRepositoryImpl(remote, cache: notificationsCache()),
+    );
   });
 
   test('a valid token + platform reaches the backend', () async {

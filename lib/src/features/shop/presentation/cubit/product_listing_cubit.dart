@@ -1,20 +1,33 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/domain/entities/catalog_product_query.dart';
-import '../../../../core/usecase/usecase.dart';
+import '../../../../core/domain/entities/catalog_products_page.dart';
+import '../../../../core/domain/entities/screen_load.dart';
+import '../../../../core/usecase/watch_params.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
-import '../../domain/usecases/get_brands_usecase.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
+import '../../../../core/utils/performance/snapshot_loader_mixin.dart';
 import '../../domain/usecases/get_products_usecase.dart';
+import '../../domain/usecases/watch_brands_usecase.dart';
+import '../../domain/usecases/watch_products_usecase.dart';
 import 'product_listing_state.dart';
 
 /// One paginated product list (`GET /v1/products`) — a category, a brand, a
 /// collection, the offers… Sorting and filtering are server-side: every change
-/// restarts the list at page 1.
+/// restarts the list at page 1. The first page paints from the device copy
+/// when there is one (offline too) and the server's replaces it; the next
+/// pages always come from the server.
 class ProductListingCubit extends Cubit<ProductListingState>
-    with SafeCubitMixin<ProductListingState> {
+    with
+        SafeCubitMixin<ProductListingState>,
+        SnapshotLoaderMixin<ProductListingState>,
+        ScreenLoaderMixin<ProductListingState>,
+        PagedScreenMixin<ProductListingState> {
   ProductListingCubit(
+    this._watchFirstPage,
     this._getProducts,
-    this._getBrands, {
+    this._watchBrands, {
     required CatalogProductQuery query,
   }) : super(
          ProductListingState(
@@ -23,81 +36,47 @@ class ProductListingCubit extends Cubit<ProductListingState>
          ),
        );
 
-  static const int _firstPage = 1;
+  static const Object _brandsChannel = #brands;
 
+  final WatchProductsUseCase _watchFirstPage;
   final GetProductsUseCase _getProducts;
-  final GetBrandsUseCase _getBrands;
+  final WatchBrandsUseCase _watchBrands;
 
-  /// Bumped by every first-page load; a reply from an older generation (an
-  /// earlier sort / filter, a page of the previous list) is stale.
-  int _generation = 0;
-
-  /// First load, retry after a full-screen error, language switch.
-  Future<void> load() async {
-    safeEmit(state.copyWith(status: ProductListingStatus.loading));
-    await refresh();
+  /// First load, retry after a full-screen error, language switch. A list
+  /// on screen stays there while it reloads — the skeleton is only for an
+  /// empty screen — and a saved copy paints at once.
+  Future<void> load() {
+    showLoading();
+    return _readFirstPage(forceRefresh: false);
   }
 
-  /// Pull-to-refresh: the list stays on screen; a failure is transient.
-  Future<void> refresh() async {
-    final generation = ++_generation;
-    final result = await _getProducts(
-      GetProductsParams(query: state.query, page: _firstPage),
-    );
-    if (generation != _generation) return;
-    result.fold(
-      (failure) => safeEmit(
-        state.copyWith(
-          status: state.isLoaded
-              ? ProductListingStatus.loaded
-              : ProductListingStatus.error,
-          failure: failure,
+  /// Pull-to-refresh: the server's page 1; the list stays on screen and a
+  /// failure is transient.
+  @override
+  Future<void> refresh() => _readFirstPage(forceRefresh: true);
+
+  Future<void> _readFirstPage({required bool forceRefresh}) =>
+      readScreen<CatalogProductsPage>(
+        _watchFirstPage(
+          WatchProductsParams(query: state.query, forceRefresh: forceRefresh),
         ),
-      ),
-      (page) => safeEmit(
-        state.copyWith(
-          status: ProductListingStatus.loaded,
-          products: page,
-          isLoadingMore: false,
-          loadMoreFailed: false,
-        ),
-      ),
-    );
-  }
+        show: (state, snapshot) => state.copyWith(products: snapshot.data),
+      );
 
   /// Called while scrolling near the end. After a failed page it does nothing
-  /// until the customer taps retry ([retry] = true): scroll events would
-  /// otherwise hammer a failing backend.
-  Future<void> loadMore({bool retry = false}) async {
-    if (!state.canLoadMore || (state.loadMoreFailed && !retry)) return;
-    final generation = _generation;
-    safeEmit(state.copyWith(isLoadingMore: true, loadMoreFailed: false));
-    final result = await _getProducts(
-      GetProductsParams(query: state.query, page: state.products.page + 1),
-    );
-    // The list was restarted meanwhile: this page belongs to the old one. Drop
-    // it, but never leave the loading flag stuck (a pull-to-refresh that
-    // failed does not clear it).
-    if (generation != _generation) {
-      safeEmit(state.copyWith(isLoadingMore: false));
-      return;
-    }
-    result.fold(
-      (failure) => safeEmit(
-        state.copyWith(
-          isLoadingMore: false,
-          loadMoreFailed: true,
-          failure: failure,
+  /// until the customer taps retry — or the connection returns — ([retry] =
+  /// true): scroll events would otherwise hammer a failing backend.
+  @override
+  Future<void> loadMore({bool retry = false}) =>
+      loadNextPage<CatalogProductsPage>(
+        hasMore: state.products.hasMore,
+        retry: retry,
+        fetch: () => _getProducts(
+          GetProductsParams(query: state.query, page: state.products.page + 1),
         ),
-      ),
-      (next) => safeEmit(
-        state.copyWith(
-          isLoadingMore: false,
-          products: state.products.merge(next),
-        ),
-      ),
-    );
-  }
+        merge: (state, next) =>
+            state.copyWith(products: state.products.merge(next)),
+      );
 
   /// Browse the products of another category (the customer picked a tab, a
   /// sub-category or a chip). `null` drops the category scope. Sort and
@@ -112,18 +91,22 @@ class ProductListingCubit extends Cubit<ProductListingState>
     );
   }
 
-  /// The brands the filter sheet offers (`GET /v1/brands`). Read once per
-  /// screen, the first time the customer opens the filter; a failure leaves
-  /// the sheet empty instead of breaking the list.
-  Future<void> loadBrands() async {
-    if (state.brands.isNotEmpty || state.isLoadingBrands) return;
+  /// The brands the filter sheet offers (`GET /v1/brands`): the saved list at
+  /// once, then the server's. Read once per screen, the first time the
+  /// customer opens the filter; a failure leaves the sheet as it is instead
+  /// of breaking the list.
+  Future<void> loadBrands() {
+    if (state.brands.isNotEmpty || state.isLoadingBrands) {
+      return Future<void>.value();
+    }
     safeEmit(state.copyWith(isLoadingBrands: true));
-    final result = await _getBrands(const NoParams());
-    safeEmit(
-      state.copyWith(
-        isLoadingBrands: false,
-        brands: result.getOrElse(() => const []),
+    return followSnapshots<List<BrandEntity>>(
+      _watchBrands(WatchParams.cached),
+      channel: _brandsChannel,
+      onSnapshot: (snapshot) => safeEmit(
+        state.copyWith(isLoadingBrands: false, brands: snapshot.data),
       ),
+      onFailure: (_) => safeEmit(state.copyWith(isLoadingBrands: false)),
     );
   }
 
@@ -157,15 +140,11 @@ class ProductListingCubit extends Cubit<ProductListingState>
   Future<void> toggleOnSaleOnly() =>
       _restart(state.query.copyWith(onSaleOnly: !state.query.onSaleOnly));
 
+  /// Another query: the skeleton, then its saved first page if there is one
+  /// (offline too), then the server's. A page still on its way for the old
+  /// query is dropped.
   Future<void> _restart(CatalogProductQuery query) {
-    safeEmit(
-      state.copyWith(
-        query: query,
-        status: ProductListingStatus.loading,
-        isLoadingMore: false,
-        loadMoreFailed: false,
-      ),
-    );
-    return refresh();
+    safeEmit(state.copyWith(query: query, load: ScreenLoad.restarted));
+    return _readFirstPage(forceRefresh: false);
   }
 }

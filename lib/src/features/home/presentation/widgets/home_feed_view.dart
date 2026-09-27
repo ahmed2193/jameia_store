@@ -6,10 +6,13 @@ import '../../../../config/routes/routes.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/back_to_top_overlay.dart';
+import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/widgets/branded_refresh.dart';
+import '../../../../core/widgets/cubit_stale_notice.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import '../../domain/entities/home_feed.dart';
 import '../cubit/home_cubit.dart';
+import '../cubit/home_state.dart';
 import 'home_announcement_ticker.dart';
 import 'home_confetti.dart';
 import 'home_greeting_strip.dart';
@@ -21,7 +24,8 @@ import 'home_section_view.dart';
 import 'home_slides_carousel.dart';
 
 /// The loaded home feed, in the backend's order: header (store, delivery
-/// place, search, notifications) → a hello for the hour → announcement
+/// place, search, notifications) → "Updated … ago" over a saved copy
+/// (offline / failed refresh) → a hello for the hour → announcement
 /// ticker → hero banners → the ordered content blocks → Pro banner. Blocks are built lazily while
 /// scrolling, and each enters as it is first seen: the ones on screen at
 /// launch one after another under the header, the rest as they are reached.
@@ -38,6 +42,8 @@ class HomeFeedView extends StatelessWidget {
   static const int _slidesOrder = 2;
   static const int _sectionsOrder = 3;
 
+  static DataFreshness _freshnessOf(HomeState state) => state.freshness;
+
   @override
   Widget build(BuildContext context) {
     return ContentClamp(
@@ -52,6 +58,12 @@ class HomeFeedView extends StatelessWidget {
                 // Only this sliver rebuilds when the default address or the
                 // unread badge changes.
                 HomeHeaderSliver(bootstrap: bootstrap),
+                // Selects only the freshness: never rebuilds the feed.
+                const SliverToBoxAdapter(
+                  child: CubitStaleNotice<HomeCubit, HomeState>(
+                    freshnessOf: _freshnessOf,
+                  ),
+                ),
                 const SliverToBoxAdapter(
                   child: HomeReveal(child: HomeGreetingStrip()),
                 ),

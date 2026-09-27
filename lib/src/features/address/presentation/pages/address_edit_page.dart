@@ -7,7 +7,6 @@ import '../../../../config/di/service_locator.dart';
 import '../../../../core/domain/entities/jameia_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/navigation/navigation.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../cubit/address_book_cubit.dart';
 import '../cubit/address_edit_cubit.dart';
 import '../cubit/address_edit_state.dart';
@@ -47,7 +46,8 @@ class AddressEditPage extends StatelessWidget {
     }
     final failure = state.failure;
     if (failure == null) return;
-    showJameiaSnackBar(context, failure.localizedMessage);
+    // A save: offline it says so, and the form keeps every value.
+    showFailureSnackBar(context, failure, action: true);
     if (state.isEditing && _isGone(failure)) {
       // Deleted on another device: refresh the book and leave the form.
       context.read<AddressBookCubit>().refresh();

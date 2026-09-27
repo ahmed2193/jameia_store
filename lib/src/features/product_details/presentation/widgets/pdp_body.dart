@@ -5,20 +5,21 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/navigation/jameia_snack_bar.dart';
-import '../../../../core/utils/failure_message.dart';
+import '../../../../core/widgets/reconnect_refresh.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../cubit/product_detail_cubit.dart';
 import '../cubit/product_detail_state.dart';
-import 'pdp_info_block.dart';
+import 'pdp_load_failure.dart';
 import 'pdp_loaded_view.dart';
-import 'pdp_scaffold_view.dart';
-import 'pdp_section.dart';
+import 'pdp_preview_view.dart';
 
 /// Switches the product page on the cubit state. While the detail loads it
 /// paints the card the customer tapped (photo, name) instead of a bare
-/// spinner; an unknown slug is a "not found" empty state; any other failure is
-/// the error view with retry (offline = the error view with "no internet").
-/// A failed reload keeps the page and shows a snack bar.
+/// spinner — and keeps it when the detail cannot load, with the reason and
+/// "Try again" under it (offline, the page asks again by itself when the
+/// connection returns). An unknown slug is a "not found" empty state; a
+/// failure with no card to show is the full-screen "No connection" / error
+/// view. A failed reload keeps the page and shows a snack bar.
 class PdpBody extends StatelessWidget {
   const PdpBody({super.key, this.galleryKey});
 
@@ -27,64 +28,63 @@ class PdpBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ProductDetailCubit, ProductDetailState>(
-      listenWhen: (previous, current) =>
-          current.failure != null &&
-          current.isLoaded &&
-          previous.failure != current.failure,
-      listener: (context, state) =>
-          showJameiaSnackBar(context, state.failure!.localizedMessage),
-      // The gallery page and the basket have their own builders: never
-      // rebuild the whole page for them.
-      buildWhen: (previous, current) =>
-          previous.status != current.status ||
-          previous.detail != current.detail ||
-          previous.selectedVariantId != current.selectedVariantId,
-      builder: (context, state) {
-        final detail = state.detail;
-        if (detail != null) {
-          return PdpLoadedView(
-            detail: detail,
-            selectedVariantId: state.selectedVariantId,
-            lowStockLeft: state.lowStockLeft,
+    return ReconnectRefresh(
+      onReconnected: () => context.read<ProductDetailCubit>().onReconnected(),
+      child: BlocConsumer<ProductDetailCubit, ProductDetailState>(
+        listenWhen: (previous, current) =>
+            current.failure != null &&
+            current.isLoaded &&
+            previous.failure != current.failure,
+        listener: (context, state) =>
+            showFailureSnackBar(context, state.failure!),
+        // The gallery page and the basket have their own builders: never
+        // rebuild the whole page for them.
+        buildWhen: (previous, current) =>
+            previous.status != current.status ||
+            previous.detail != current.detail ||
+            previous.selectedVariantId != current.selectedVariantId,
+        builder: (context, state) {
+          final cubit = context.read<ProductDetailCubit>();
+          final detail = state.detail;
+          if (detail != null) {
+            return PdpLoadedView(
+              detail: detail,
+              selectedVariantId: state.selectedVariantId,
+              lowStockLeft: state.lowStockLeft,
+              galleryKey: galleryKey,
+            );
+          }
+          if (state.isNotFound) {
+            return SafeArea(
+              child: EmptyStateView(
+                message: 'product.not_found'.tr(),
+                icon: Icons.search_off_rounded,
+                actionLabel: 'common.back'.tr(),
+                onAction: () => context.pop(),
+              ),
+            );
+          }
+          final preview = state.preview;
+          final failed = state.status == ProductDetailStatus.error;
+          if (preview == null) {
+            return SafeArea(
+              child: failed
+                  ? FailureView(failure: state.failure, onRetry: cubit.load)
+                  : const AppLoader(),
+            );
+          }
+          return PdpPreviewView(
+            preview: preview,
             galleryKey: galleryKey,
+            footer: failed
+                ? PdpLoadFailure(failure: state.failure, onRetry: cubit.load)
+                : const Padding(
+                    padding: EdgeInsets.all(AppSpacing.s24),
+                    child: AppLoader(),
+                  ),
           );
-        }
-        if (state.isNotFound) {
-          return SafeArea(
-            child: EmptyStateView(
-              message: 'product.not_found'.tr(),
-              icon: Icons.search_off_rounded,
-              actionLabel: 'common.back'.tr(),
-              onAction: () => context.pop(),
-            ),
-          );
-        }
-        if (state.status == ProductDetailStatus.error) {
-          return SafeArea(
-            child: ErrorView(
-              message: state.failure?.localizedMessage,
-              onRetry: context.read<ProductDetailCubit>().load,
-            ),
-          );
-        }
-        final preview = state.preview;
-        if (preview == null) return const SafeArea(child: AppLoader());
-        return PdpScaffoldView(
-          title: preview.name,
-          images: [if (preview.image.isNotEmpty) preview.image],
-          galleryKey: galleryKey,
-          sections: [
-            PdpSection(
-              child: PdpInfoBlock(product: preview, inStock: preview.inStock),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(AppSpacing.s24),
-              child: AppLoader(),
-            ),
-          ],
-        );
-      },
+        },
+      ),
     );
   }
 }

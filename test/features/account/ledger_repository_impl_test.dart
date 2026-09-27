@@ -1,7 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:jameia_mart/src/features/account/data/datasources/ledger_cache_data_source.dart';
 import 'package:jameia_mart/src/features/account/data/datasources/loyalty_remote_data_source.dart';
 import 'package:jameia_mart/src/features/account/data/datasources/wallet_remote_data_source.dart';
 import 'package:jameia_mart/src/features/account/data/models/ledger_page_model.dart';
@@ -13,57 +17,90 @@ import 'package:jameia_mart/src/features/account/data/repositories/wallet_reposi
 import 'package:jameia_mart/src/features/account/domain/entities/loyalty_entry_entity.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/wallet_entry_entity.dart';
 
+import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
+
+/// `GET /v1/account/wallet` → `results` as the server sends it: what the
+/// device copy keeps.
+const Map<String, Object?> _walletRaw = {
+  'balance': {'wallet': 2750},
+  'data': [
+    {
+      '_id': 'w1',
+      'type': 'cashback',
+      'amount': 250,
+      'createdAt': '2026-09-20T00:00:00.000Z',
+    },
+  ],
+  'pagination': {'total': 2, 'page': 1, 'limit': 20, 'hasMore': true},
+};
+
+/// The histories' device copy over an in-memory store for [owner].
+LedgerCacheDataSource _cache([CacheOwner? owner]) => LedgerCacheDataSourceImpl(
+  CacheSlots(
+    store: InMemoryJsonCacheStore(),
+    owner: owner ?? (CacheOwner()..signedIn('c1')),
+    locale: FakeLocaleProvider('en'),
+  ),
+);
+
 class _FakeWalletRemote implements WalletRemoteDataSource {
   AppException? error;
   final List<(int, int)> calls = [];
 
   @override
-  Future<LedgerPageModel<WalletEntryModel>> getLedger({
+  Future<RemotePayload<LedgerPageModel<WalletEntryModel>>> getLedger({
     required int page,
     required int limit,
   }) async {
     calls.add((page, limit));
     final failure = error;
     if (failure != null) throw failure;
-    return LedgerPageModel<WalletEntryModel>(
-      balance: 2750,
-      items: [
-        WalletEntryModel(
-          id: 'w1',
-          type: 'cashback',
-          amount: 250,
-          createdAt: DateTime.utc(2026, 9, 20),
-        ),
-      ],
-      page: page,
-      hasMore: true,
-    );
+    return RemotePayload(_model(page), _walletRaw);
   }
+
+  LedgerPageModel<WalletEntryModel> _model(int page) =>
+      LedgerPageModel<WalletEntryModel>(
+        balance: 2750,
+        items: [
+          WalletEntryModel(
+            id: 'w1',
+            type: 'cashback',
+            amount: 250,
+            createdAt: DateTime.utc(2026, 9, 20),
+          ),
+        ],
+        page: page,
+        hasMore: true,
+      );
 }
 
 class _FakeLoyaltyRemote implements LoyaltyRemoteDataSource {
   AppException? error;
 
   @override
-  Future<LedgerPageModel<LoyaltyEntryModel>> getLedger({
+  Future<RemotePayload<LedgerPageModel<LoyaltyEntryModel>>> getLedger({
     required int page,
     required int limit,
   }) async {
     final failure = error;
     if (failure != null) throw failure;
-    return LedgerPageModel<LoyaltyEntryModel>(
-      balance: 340,
-      items: [
-        LoyaltyEntryModel(
-          id: 'p1',
-          type: 'welcome_bonus',
-          pointsDelta: 100,
-          createdAt: DateTime.utc(2026, 9, 1),
-        ),
-      ],
-      page: page,
-    );
+    return RemotePayload(_model(page), const <String, Object?>{});
   }
+
+  LedgerPageModel<LoyaltyEntryModel> _model(int page) =>
+      LedgerPageModel<LoyaltyEntryModel>(
+        balance: 340,
+        items: [
+          LoyaltyEntryModel(
+            id: 'p1',
+            type: 'welcome_bonus',
+            pointsDelta: 100,
+            createdAt: DateTime.utc(2026, 9, 1),
+          ),
+        ],
+        page: page,
+      );
 
   @override
   Future<LoyaltyProgramModel> getProgram() async {
@@ -78,8 +115,10 @@ void main() {
     test('maps the page to a ledger of entities', () async {
       final remote = _FakeWalletRemote();
 
-      final result = await WalletRepositoryImpl(remote)
-          .getLedger(page: 2, limit: 20);
+      final result = await WalletRepositoryImpl(
+        remote,
+        cache: _cache(),
+      ).getLedger(page: 2, limit: 20);
 
       expect(remote.calls, [(2, 20)]);
       final ledger = result.getOrElse(() => throw StateError('left'));
@@ -93,8 +132,10 @@ void main() {
       final remote = _FakeWalletRemote()
         ..error = const UnauthorizedException('Sign in');
 
-      final result = await WalletRepositoryImpl(remote)
-          .getLedger(page: 1, limit: 20);
+      final result = await WalletRepositoryImpl(
+        remote,
+        cache: _cache(),
+      ).getLedger(page: 1, limit: 20);
 
       expect(result, isA<Left<Failure, Object>>());
       expect(result.fold((f) => f, (_) => null), isA<UnauthorizedFailure>());
@@ -104,8 +145,10 @@ void main() {
       final remote = _FakeWalletRemote()
         ..error = const NoInternetConnectionException();
 
-      final result = await WalletRepositoryImpl(remote)
-          .getLedger(page: 1, limit: 20);
+      final result = await WalletRepositoryImpl(
+        remote,
+        cache: _cache(),
+      ).getLedger(page: 1, limit: 20);
 
       expect(result.fold((f) => f, (_) => null), isA<NetworkFailure>());
     });
@@ -113,7 +156,10 @@ void main() {
 
   group('LoyaltyRepositoryImpl', () {
     test('maps the ledger and the programme', () async {
-      final repository = LoyaltyRepositoryImpl(_FakeLoyaltyRemote());
+      final repository = LoyaltyRepositoryImpl(
+        _FakeLoyaltyRemote(),
+        cache: _cache(),
+      );
 
       final ledger = (await repository.getLedger(
         page: 1,
@@ -132,7 +178,10 @@ void main() {
     test('a broken payload → ParsingFailure', () async {
       final remote = _FakeLoyaltyRemote()..error = const ParsingException();
 
-      final result = await LoyaltyRepositoryImpl(remote).getProgram();
+      final result = await LoyaltyRepositoryImpl(
+        remote,
+        cache: _cache(),
+      ).getProgram();
 
       expect(result.fold((f) => f, (_) => null), isA<ParsingFailure>());
     });

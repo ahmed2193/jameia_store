@@ -20,7 +20,8 @@ class ListingTabsState extends Equatable {
 
   final ListingTabsStatus status;
 
-  /// Kept while a reload runs (a language switch), empty after a failure.
+  /// Kept while a reload runs (a language switch) and after a failed one
+  /// (offline): the tabs never vanish under the customer.
   final List<CatalogCategoryEntity> categories;
 
   bool get showsTabs => categories.length >= minCategories;

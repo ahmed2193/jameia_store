@@ -6,10 +6,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/brand_model.dart';
 import 'package:jameia_mart/src/core/data/models/category_model.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
 import 'package:jameia_mart/src/core/data/models/product_model.dart';
 import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
@@ -28,6 +25,7 @@ import 'package:jameia_mart/src/features/cart/domain/usecases/get_deal_products_
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_deals_cubit.dart';
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_deals_state.dart';
 
+import '../../core/data/catalog_test_fakes.dart';
 import 'cart_test_fixtures.dart';
 
 const String _dairyId = '6aa5ffb85233feadc5c41513';
@@ -116,7 +114,7 @@ final CartEntity _oneEgg = CartEntity(
   ),
 );
 
-class _ScriptedCatalog implements CatalogRemoteDataSource {
+class _ScriptedCatalog extends FakeCatalogRemoteDataSource {
   final List<CatalogProductQuery> queries = [];
 
   @override
@@ -140,15 +138,6 @@ class _ScriptedCatalog implements CatalogRemoteDataSource {
     );
   }
 
-  @override
-  Future<List<BrandModel>> getBrands({
-    required int page,
-    required int limit,
-    String? search,
-  }) => throw UnimplementedError();
-
-  @override
-  Future<List<OfferModel>> getOffers() => throw UnimplementedError();
 }
 
 /// Replies when the test says so, per call.

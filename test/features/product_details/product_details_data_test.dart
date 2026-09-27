@@ -5,18 +5,18 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/brand_model.dart';
-import 'package:jameia_mart/src/core/data/models/category_model.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
 import 'package:jameia_mart/src/core/data/models/offer_model.dart';
-import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/network/dio_consumer.dart';
 import 'package:jameia_mart/src/core/network/end_points.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:jameia_mart/src/features/product_details/data/datasources/product_details_cache_data_source.dart';
 import 'package:jameia_mart/src/features/product_details/data/datasources/product_details_remote_data_source.dart';
 import 'package:jameia_mart/src/features/product_details/data/mappers/product_detail_mapper.dart';
 import 'package:jameia_mart/src/features/product_details/data/models/product_detail_model.dart';
@@ -25,7 +25,9 @@ import 'package:jameia_mart/src/features/product_details/data/repositories/produ
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
 import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
 
+import '../../core/data/catalog_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
 
 Map<String, dynamic> _fixture(String name) => jsonDecode(
   File('test/features/product_details/fixtures/$name').readAsStringSync(),
@@ -36,28 +38,41 @@ ProductDetail _detail(String name) =>
 
 class _ScriptedRemote implements ProductDetailsRemoteDataSource {
   Object? error;
+  int productReads = 0;
 
   @override
-  Future<ProductDetailModel> getProduct(String slug) async {
+  Future<RemotePayload<ProductDetailModel>> getProduct(String slug) async {
+    productReads++;
     final current = error;
     if (current != null) throw current;
-    return ProductDetailModel.fromJson(_fixture('product_standard.json'));
+    final raw = _fixture('product_standard.json');
+    return RemotePayload(ProductDetailModel.fromJson(raw), raw);
   }
 
   @override
-  Future<ProductReviewsModel> getReviews({
+  Future<RemotePayload<ProductReviewsModel>> getReviews({
     required String slug,
     required int page,
     required int limit,
   }) async {
     final current = error;
     if (current != null) throw current;
-    return ProductReviewsModel.fromJson(
-      _fixture('reviews.json'),
-      requestedPage: page,
+    final raw = _fixture('reviews.json');
+    return RemotePayload(
+      ProductReviewsModel.fromJson(raw, requestedPage: page),
+      raw,
     );
   }
 }
+
+ProductDetailsCacheDataSourceImpl _cache([InMemoryJsonCacheStore? store]) =>
+    ProductDetailsCacheDataSourceImpl(
+      CacheSlots(
+        store: store ?? InMemoryJsonCacheStore(),
+        owner: CacheOwner(),
+        locale: FakeLocaleProvider('en'),
+      ),
+    );
 
 /// The live `GET /v1/offers` rows (2026-09-26), plus an item offer and an
 /// inactive one.
@@ -113,7 +128,7 @@ const List<Map<String, dynamic>> _offerRows = [
 ];
 
 /// The shared catalogue datasource, offers only.
-class _ScriptedCatalog implements CatalogRemoteDataSource {
+class _ScriptedCatalog extends FakeCatalogRemoteDataSource {
   Object? error;
 
   @override
@@ -122,24 +137,6 @@ class _ScriptedCatalog implements CatalogRemoteDataSource {
     if (current != null) throw current;
     return [for (final row in _offerRows) OfferModel.fromJson(row)];
   }
-
-  @override
-  Future<List<CategoryModel>> getCategories({bool refresh = false}) =>
-      throw UnimplementedError();
-
-  @override
-  Future<List<BrandModel>> getBrands({
-    required int page,
-    required int limit,
-    String? search,
-  }) => throw UnimplementedError();
-
-  @override
-  Future<ProductsPageModel> getProducts({
-    required CatalogProductQuery query,
-    required int page,
-    required int limit,
-  }) => throw UnimplementedError();
 }
 
 void main() {
@@ -327,9 +324,11 @@ void main() {
         ),
       );
 
-      final product = await dataSource.getProduct('basmati-rice-5kg');
+      final payload = await dataSource.getProduct('basmati-rice-5kg');
+      final product = payload.model;
 
       expect(adapter.requests.single.method, 'GET');
+      expect(payload.raw, _fixture('product_standard.json'));
       expect(
         adapter.requests.single.path,
         EndPoints.product('basmati-rice-5kg'),
@@ -372,24 +371,59 @@ void main() {
       final repository = ProductDetailsRepositoryImpl(
         remote,
         _ScriptedCatalog(),
+        cache: _cache(),
       );
 
-      final ok = await repository.getProduct('basmati-rice-5kg');
-      expect(ok.isRight(), isTrue);
+      final ok = await repository.watchProduct('basmati-rice-5kg').last;
+      expect(ok.data.product.slug, 'basmati-rice-5kg');
 
       remote.error = const NotFoundException('Product not found');
-      final missing = await repository.getProduct('nope');
       final reviews = await repository.getReviews(
         slug: 'nope',
         page: 1,
         limit: 10,
       );
 
-      expect(
-        missing.swap().getOrElse(() => throw StateError('right')),
-        isA<ServerFailure>().having((f) => f.statusCode, 'statusCode', 404),
+      await expectLater(
+        repository.watchProduct('nope'),
+        emitsError(
+          isA<ServerFailure>().having((f) => f.statusCode, 'statusCode', 404),
+        ),
       );
       expect(reviews.isLeft(), isTrue);
+    });
+
+    test('a product is kept per slug and painted from the copy', () async {
+      final remote = _ScriptedRemote();
+      final store = InMemoryJsonCacheStore();
+      final repository = ProductDetailsRepositoryImpl(
+        remote,
+        _ScriptedCatalog(),
+        cache: _cache(store),
+      );
+
+      await repository.watchProduct('basmati-rice-5kg').drain<void>();
+      await repository
+          .watchReviews(slug: 'basmati-rice-5kg', limit: 10)
+          .drain<void>();
+      await pumpEventQueue();
+      remote.error = const NoInternetConnectionException();
+
+      final reopened = await repository
+          .watchProduct('basmati-rice-5kg')
+          .toList();
+      final reviews = await repository
+          .watchReviews(slug: 'basmati-rice-5kg', limit: 10)
+          .toList();
+
+      expect(reopened.single.isFromCache, isTrue);
+      expect(reopened.single.data.product.slug, 'basmati-rice-5kg');
+      expect(reviews.single.origin, SnapshotOrigin.cache);
+      expect(remote.productReads, 1, reason: 'a fresh copy ends the read');
+      await expectLater(
+        repository.watchProduct('another-product'),
+        emitsError(isA<NetworkFailure>()),
+      );
     });
   });
 
@@ -401,7 +435,11 @@ void main() {
 
     setUp(() {
       catalog = _ScriptedCatalog();
-      repository = ProductDetailsRepositoryImpl(_ScriptedRemote(), catalog);
+      repository = ProductDetailsRepositoryImpl(
+        _ScriptedRemote(),
+        catalog,
+        cache: _cache(),
+      );
       getOffer = GetProductOfferUseCase(repository);
     });
 
@@ -410,7 +448,11 @@ void main() {
         () => throw StateError('left'),
       );
 
-      expect(offers.map((o) => o.id), ['of-dairy', 'of-rice', 'of-free-delivery']);
+      expect(offers.map((o) => o.id), [
+        'of-dairy',
+        'of-rice',
+        'of-free-delivery',
+      ]);
       expect(offers.first.triggerType, OfferTriggerType.categoryQuantity);
       expect(offers.first.categoryId, '6aa5ffb85233feadc5c41513');
       expect(offers[1].productId, '6aa6010d06da786e3f5658f9');

@@ -8,11 +8,14 @@ import '../../../../config/routes/route_args/product_detail_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/stagger_entrance.dart';
+import '../../../../core/widgets/cubit_stale_notice.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../domain/entities/product_detail.dart';
 import '../cubit/product_detail_cubit.dart';
+import '../cubit/product_detail_state.dart';
 import 'pdp_bundle_contents.dart';
 import 'pdp_category_link.dart';
 import 'pdp_info_block.dart';
@@ -54,6 +57,9 @@ class PdpLoadedView extends StatefulWidget {
 }
 
 class _PdpLoadedViewState extends State<PdpLoadedView> {
+  static DataFreshness _freshnessOf(ProductDetailState state) =>
+      state.freshness;
+
   final GlobalKey _reviewsKey = GlobalKey();
 
   /// Brings the reviews up to just under the solid top bar. The bar is an
@@ -163,6 +169,11 @@ class _PdpLoadedViewState extends State<PdpLoadedView> {
       images: detail.gallery,
       galleryKey: widget.galleryKey,
       sections: [
+        // Offline, or after a failed reload: the price and stock below are
+        // the saved ones.
+        const CubitStaleNotice<ProductDetailCubit, ProductDetailState>(
+          freshnessOf: _freshnessOf,
+        ),
         PdpSection(
           child: PdpInfoBlock(
             product: detail.product,

@@ -14,9 +14,10 @@ import 'assistant_buddy_greeting_header.dart';
 import 'assistant_buddy_starters_reveal.dart';
 
 /// The greeting itself: the mascot, "Good evening, Sara", a line that types
-/// itself out, then the ways to start unfold beneath and the hairline counts
-/// down. Tapping the card opens the chat. A polite live region: screen
-/// readers hear it without losing their place.
+/// itself out, then the ways to start unfold beneath — led by the tour on
+/// a first meeting ([onTour]) — and the hairline counts down. Tapping the
+/// card opens the chat (the tour on a first meeting). A polite live region:
+/// screen readers hear it without losing their place.
 class AssistantBuddyGreetingCard extends StatelessWidget {
   const AssistantBuddyGreetingCard({
     super.key,
@@ -30,6 +31,7 @@ class AssistantBuddyGreetingCard extends StatelessWidget {
     required this.onOpen,
     required this.onStarter,
     required this.onClose,
+    this.onTour,
   });
 
   final AssistantNudge nudge;
@@ -42,6 +44,7 @@ class AssistantBuddyGreetingCard extends StatelessWidget {
   final VoidCallback onOpen;
   final ValueChanged<AssistantStarter> onStarter;
   final VoidCallback onClose;
+  final VoidCallback? onTour;
 
   static const BoxDecoration _card = BoxDecoration(
     color: AppColors.white,
@@ -92,6 +95,7 @@ class AssistantBuddyGreetingCard extends StatelessWidget {
                   typed: typed,
                   starters: nudge.starters,
                   onStarter: onStarter,
+                  onTour: onTour,
                 ),
                 if (showCountdown)
                   Padding(

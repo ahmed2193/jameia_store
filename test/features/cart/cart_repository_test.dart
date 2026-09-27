@@ -186,6 +186,29 @@ void main() {
       expect(remote.calls.length, greaterThan(1), reason: 'it must retry');
     });
 
+    test('a flush (back online) starts the back-off over', () async {
+      build(
+        reply: (call, _) {
+          throw const NoInternetConnectionException();
+        },
+      );
+
+      repository.adjustLine(product: testProduct, delta: 1);
+      await settle(40); // several failed attempts: the wait is now long
+      final attempts = remote.calls.length;
+
+      final result = await repository.flush(); // still offline
+      expect(result.isLeft(), isTrue);
+      expect(remote.calls.length, attempts + 1);
+
+      await settle(6); // shorter than the backed-off wait
+      expect(
+        remote.calls.length,
+        greaterThan(attempts + 1),
+        reason: 'after a flush the next retry waits the first, short delay',
+      );
+    });
+
     test(
       'a tap after a failure retries at once instead of the back-off',
       () async {

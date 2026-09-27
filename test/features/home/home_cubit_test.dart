@@ -1,15 +1,21 @@
-// HomeCubit + the popup use cases: load / refresh, the secondary bootstrap,
-// stale replies, and popup frequency (once per session, once per day).
-import 'package:bloc_test/bloc_test.dart';
+// HomeCubit + the popup use cases, over the offline screen contract: a saved
+// copy paints at once (no skeleton) and the server's replaces it; offline
+// with a copy the copy stays (stale, transient failure, no error screen);
+// with nothing saved a network failure is the full-screen state and keeps
+// its reason; the bootstrap is secondary and its saved copy never offers
+// popups; refresh / reconnect force the server; a replaced read's late
+// snapshot is dropped; popup frequency (once per session, once per day).
+import 'dart:async';
+
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/get_home_bootstrap_usecase.dart';
 import 'package:jameia_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/get_home_feed_usecase.dart';
 import 'package:jameia_mart/src/features/home/domain/usecases/mark_home_popups_shown_usecase.dart';
 import 'package:jameia_mart/src/features/home/domain/usecases/select_due_home_popups_usecase.dart';
+import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_bootstrap_usecase.dart';
+import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
 import 'package:jameia_mart/src/features/home/presentation/cubit/home_cubit.dart';
 import 'package:jameia_mart/src/features/home/presentation/cubit/home_state.dart';
 
@@ -20,128 +26,211 @@ final DateTime _today = DateTime(2026, 9, 17, 10);
 void main() {
   late FakeHomeRepository repository;
 
-  HomeCubit buildCubit({
-    GetHomeFeedUseCase? getFeed,
-    GetHomeBootstrapUseCase? getBootstrap,
-    DateTime Function()? now,
-  }) => HomeCubit(
-    getFeed ?? GetHomeFeedUseCase(repository),
+  HomeCubit buildCubit({WatchHomeFeedUseCase? watchFeed}) => HomeCubit(
+    watchFeed ?? WatchHomeFeedUseCase(repository),
     const ComposeHomeFeedUseCase(),
-    getBootstrap ?? GetHomeBootstrapUseCase(repository),
+    WatchHomeBootstrapUseCase(repository),
     SelectDueHomePopupsUseCase(repository),
     MarkHomePopupsShownUseCase(repository),
-    now: now ?? () => _today,
+    now: () => _today,
   );
+
+  /// Runs [act] and returns every state it emitted.
+  Future<List<HomeState>> record(
+    HomeCubit cubit,
+    Future<void> Function() act,
+  ) async {
+    final states = <HomeState>[];
+    final sub = cubit.stream.listen(states.add);
+    await act();
+    await pumpEventQueue();
+    await sub.cancel();
+    return states;
+  }
 
   setUp(() => repository = FakeHomeRepository());
 
   group('load', () {
-    blocTest<HomeCubit, HomeState>(
-      'skeleton, then ONE loaded emit carrying feed + bootstrap + due popups',
-      setUp: () => repository.bootstrap = const Right(
+    test('no copy: the skeleton stays until the server answers', () async {
+      repository.bootstrap = const Right(
         HomeBootstrap(storeName: 'Jm3eia', popups: [sessionPopup]),
-      ),
-      build: buildCubit,
-      act: (cubit) => cubit.load(),
-      expect: () => [
-        isA<HomeState>().having((s) => s.status, 'status', HomeStatus.loading),
-        isA<HomeState>()
-            .having((s) => s.status, 'status', HomeStatus.loaded)
-            .having((s) => s.feed.slides.single.id, 'slide', 's1')
-            .having((s) => s.bootstrap.storeName, 'store', 'Jm3eia')
-            .having((s) => s.duePopups, 'due', [sessionPopup])
-            .having((s) => s.failure, 'failure', isNull),
-      ],
-    );
+      );
+      final cubit = buildCubit();
+      final states = await record(cubit, cubit.load);
 
-    blocTest<HomeCubit, HomeState>(
-      'a failed first load is the full-screen error; retry recovers',
-      setUp: () => repository.feed = const Left(NetworkFailure('offline')),
-      build: buildCubit,
-      act: (cubit) async {
-        await cubit.load();
-        repository.feed = Right(feedOf('s2'));
-        await cubit.load();
-      },
-      expect: () => [
-        isA<HomeState>().having((s) => s.status, 'status', HomeStatus.loading),
-        isA<HomeState>()
-            .having((s) => s.status, 'status', HomeStatus.error)
-            .having((s) => s.failure, 'failure', isA<NetworkFailure>()),
-        isA<HomeState>().having((s) => s.status, 'status', HomeStatus.loading),
-        isA<HomeState>()
-            .having((s) => s.status, 'status', HomeStatus.loaded)
-            .having((s) => s.feed.slides.single.id, 'slide', 's2'),
-      ],
-    );
+      expect(states.first.status, isNot(HomeStatus.loading));
+      expect(cubit.state.status, HomeStatus.loaded);
+      expect(cubit.state.feed.slides.single.id, 's1');
+      expect(cubit.state.bootstrap.storeName, 'Jm3eia');
+      expect(cubit.state.duePopups, [sessionPopup]);
+      expect(cubit.state.freshness.fromCache, isFalse);
+      expect(cubit.state.freshness.fetchedAt, fetchedAtTime);
+      await cubit.close();
+    });
 
-    blocTest<HomeCubit, HomeState>(
-      'a failed bootstrap never blanks home',
-      setUp: () =>
-          repository.bootstrap = const Left(ServerFailure('init down')),
-      build: buildCubit,
-      act: (cubit) => cubit.load(),
-      skip: 1,
-      expect: () => [
-        isA<HomeState>()
-            .having((s) => s.status, 'status', HomeStatus.loaded)
-            .having((s) => s.bootstrap, 'bootstrap', HomeBootstrap.empty)
-            .having((s) => s.failure, 'failure', isNull),
-      ],
-    );
-  });
+    test('a saved copy paints at once, then the server replaces it', () async {
+      repository
+        ..cachedFeed = feedOf('saved')
+        ..feed = Right(feedOf('fresh'));
+      final cubit = buildCubit();
+      final feeds = (await record(cubit, cubit.load))
+          .where((s) => s.isLoaded)
+          .map((s) => (s.feed.slides.single.id, s.freshness.fromCache))
+          .toSet()
+          .toList();
 
-  group('refresh', () {
-    blocTest<HomeCubit, HomeState>(
-      'a failed refresh keeps the feed and surfaces a transient failure',
-      build: buildCubit,
-      act: (cubit) async {
-        await cubit.load();
-        repository.feed = const Left(TimeoutFailure('slow'));
-        await cubit.refresh();
-      },
-      skip: 2,
-      expect: () => [
-        isA<HomeState>()
-            .having((s) => s.status, 'status', HomeStatus.loaded)
-            .having((s) => s.feed.slides.single.id, 'slide', 's1')
-            .having((s) => s.failure, 'failure', isA<TimeoutFailure>()),
-      ],
-    );
+      expect(feeds, [('saved', true), ('fresh', false)]);
+      expect(cubit.state.freshness.isStale, isFalse);
+      await cubit.close();
+    });
 
     test(
-      'a slow reply of an older load never overwrites a newer one',
+      'offline with a copy: the copy stays, stale, no error screen',
       () async {
-        final gate = GatedGetHomeFeed();
-        final cubit = buildCubit(
-          getFeed: gate,
-          getBootstrap: StubGetHomeBootstrap(const Right(HomeBootstrap.empty)),
+        repository
+          ..cachedFeed = feedOf('saved')
+          ..feed = const Left(NetworkFailure());
+        final cubit = buildCubit();
+        final states = await record(cubit, cubit.load);
+
+        expect(states.every((s) => s.status != HomeStatus.error), isTrue);
+        expect(cubit.state.feed.slides.single.id, 'saved');
+        expect(cubit.state.freshness.isStale, isTrue);
+        expect(cubit.state.freshness.refreshFailed, isTrue);
+        expect(
+          states.any((s) => s.isLoaded && s.failure is NetworkFailure),
+          isTrue,
+          reason: 'a transient failure for the page to decide on',
         );
-
-        final first = cubit.load();
-        final second = cubit.refresh();
-        gate.calls[1].complete(Right(feedOf('new')));
-        await second;
-        gate.calls[0].complete(Right(feedOf('old')));
-        await first;
-
-        expect(cubit.state.feed.slides.single.id, 'new');
         await cubit.close();
       },
     );
 
+    test('nothing saved + offline: the full-screen state keeps its reason '
+        'while the bootstrap lands; retry recovers', () async {
+      repository
+        ..feed = const Left(NetworkFailure())
+        ..bootstrap = const Right(HomeBootstrap(storeName: 'Jm3eia'));
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      expect(cubit.state.status, HomeStatus.error);
+      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(cubit.state.bootstrap.storeName, 'Jm3eia');
+
+      repository.feed = Right(feedOf('s2'));
+      final retry = await record(cubit, cubit.load);
+      expect(retry.first.status, HomeStatus.loading);
+      expect(cubit.state.status, HomeStatus.loaded);
+      expect(cubit.state.failure, isNull);
+      await cubit.close();
+    });
+
+    test('a failed bootstrap never blanks home', () async {
+      repository.bootstrap = const Left(ServerFailure('init down'));
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      expect(cubit.state.status, HomeStatus.loaded);
+      expect(cubit.state.bootstrap, HomeBootstrap.empty);
+      await cubit.close();
+    });
+
+    test('a saved bootstrap never offers the time-boxed popups', () async {
+      repository
+        ..cachedBootstrap = const HomeBootstrap(popups: [sessionPopup])
+        ..bootstrap = const Left(NetworkFailure());
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      expect(cubit.state.bootstrap.popups, [sessionPopup]);
+      expect(cubit.state.duePopups, isEmpty);
+      expect(cubit.state.hasPendingPopups, isFalse);
+      await cubit.close();
+    });
+  });
+
+  group('refresh + reconnect', () {
+    test(
+      'a failed refresh keeps the feed and surfaces a transient failure',
+      () async {
+        final cubit = buildCubit();
+        await record(cubit, cubit.load);
+        repository.feed = const Left(TimeoutFailure('slow'));
+        final states = await record(cubit, cubit.refresh);
+
+        expect(states.every((s) => s.isLoaded), isTrue);
+        expect(cubit.state.feed.slides.single.id, 's1');
+        expect(states.any((s) => s.failure is TimeoutFailure), isTrue);
+        expect(cubit.state.freshness.refreshFailed, isTrue);
+        expect(repository.feedReads, [
+          false,
+          true,
+        ], reason: 'refresh is forced');
+        await cubit.close();
+      },
+    );
+
+    test('reconnect refreshes a stale home once, a fresh one never', () async {
+      repository
+        ..cachedFeed = feedOf('saved')
+        ..feed = const Left(NetworkFailure());
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+      expect(cubit.state.freshness.isStale, isTrue);
+
+      repository.feed = Right(feedOf('back'));
+      await Future.wait([cubit.onReconnected(), cubit.onReconnected()]);
+      expect(repository.feedReads, [false, true], reason: 'single-flight');
+      expect(cubit.state.feed.slides.single.id, 'back');
+      expect(cubit.state.freshness.isStale, isFalse);
+
+      await cubit.onReconnected();
+      expect(repository.feedReads, [false, true], reason: 'fresh: nothing');
+      await cubit.close();
+    });
+
+    test('equal data from the server only changes the freshness', () async {
+      repository
+        ..cachedFeed = feedOf('same')
+        ..feed = Right(feedOf('same'));
+      final cubit = buildCubit();
+      final states = await record(cubit, cubit.load);
+      final loaded = states.where((s) => s.isLoaded).toList();
+
+      expect(loaded.map((s) => s.feed).toSet(), hasLength(1));
+      expect(loaded.first.freshness.fromCache, isTrue);
+      expect(loaded.last.freshness.fromCache, isFalse);
+      await cubit.close();
+    });
+
+    test('a replaced read never delivers its late snapshot', () async {
+      final gate = GatedWatchHomeFeed();
+      final cubit = buildCubit(watchFeed: gate);
+
+      unawaited(cubit.load());
+      final refreshed = cubit.refresh();
+      gate.reads[1].add(networkFeed('new'));
+      await gate.reads[1].close();
+      await refreshed;
+      // The first read's slow disk copy lands after the refresh answered.
+      gate.reads[0].add(cachedFeedSnapshot('old'));
+      await pumpEventQueue();
+
+      expect(cubit.state.feed.slides.single.id, 'new');
+      await cubit.close();
+    });
+
     test('no emit after close', () async {
-      final gate = GatedGetHomeFeed();
-      final cubit = buildCubit(
-        getFeed: gate,
-        getBootstrap: StubGetHomeBootstrap(const Right(HomeBootstrap.empty)),
-      );
+      final gate = GatedWatchHomeFeed();
+      final cubit = buildCubit(watchFeed: gate);
 
       final pending = cubit.load();
       await cubit.close();
-      gate.calls.single.complete(Right(feedOf('late')));
+      gate.reads.single.add(networkFeed('late'));
 
       await expectLater(pending, completes);
+      expect(cubit.state.isLoaded, isFalse);
     });
   });
 
@@ -151,7 +240,7 @@ void main() {
         HomeBootstrap(popups: [sessionPopup, dailyPopup]),
       );
       final cubit = buildCubit();
-      await cubit.load();
+      await record(cubit, cubit.load);
       expect(cubit.state.hasPendingPopups, isTrue);
       expect(cubit.state.duePopups, [sessionPopup, dailyPopup]);
 
@@ -162,7 +251,7 @@ void main() {
       expect(cubit.state.popupsShown, isTrue);
       expect(repository.shownDays, {'p-day': '2026-09-17'});
 
-      await cubit.refresh();
+      await record(cubit, cubit.refresh);
       expect(cubit.state.duePopups, isEmpty);
       await cubit.close();
     });

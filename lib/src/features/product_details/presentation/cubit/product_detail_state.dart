@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/domain/entities/catalog_variant_entity.dart';
+import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/domain/entities/offer_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/product_detail.dart';
@@ -17,6 +18,7 @@ class ProductDetailState extends Equatable {
     this.quantity = minQuantity,
     this.imageIndex = 0,
     this.promo,
+    this.freshness = DataFreshness.none,
     this.failure,
   });
 
@@ -42,7 +44,14 @@ class ProductDetailState extends Equatable {
   /// be read (the page never fails over it).
   final OfferEntity? promo;
 
-  /// Transient — cleared on every [copyWith]; the page localizes it.
+  /// How fresh [detail] is (the device copy, a failed refresh …): stale
+  /// prices and stock say so.
+  final DataFreshness freshness;
+
+  /// With [ProductDetailStatus.loaded], a failed reload (snack bar, the page
+  /// stays): transient, cleared on the next [copyWith]. With
+  /// [ProductDetailStatus.error], the reason (not found, offline, error):
+  /// kept while the status stays `error`.
   final Failure? failure;
 
   bool get isLoaded => status == ProductDetailStatus.loaded;
@@ -81,17 +90,24 @@ class ProductDetailState extends Equatable {
     int? quantity,
     int? imageIndex,
     OfferEntity? promo,
+    DataFreshness? freshness,
     Failure? failure,
-  }) => ProductDetailState(
-    status: status ?? this.status,
-    preview: preview,
-    detail: detail ?? this.detail,
-    selectedVariantId: selectedVariantId ?? this.selectedVariantId,
-    quantity: quantity ?? this.quantity,
-    imageIndex: imageIndex ?? this.imageIndex,
-    promo: promo ?? this.promo,
-    failure: failure,
-  );
+  }) {
+    final nextStatus = status ?? this.status;
+    return ProductDetailState(
+      status: nextStatus,
+      preview: preview,
+      detail: detail ?? this.detail,
+      selectedVariantId: selectedVariantId ?? this.selectedVariantId,
+      quantity: quantity ?? this.quantity,
+      imageIndex: imageIndex ?? this.imageIndex,
+      promo: promo ?? this.promo,
+      freshness: freshness ?? this.freshness,
+      failure:
+          failure ??
+          (nextStatus == ProductDetailStatus.error ? this.failure : null),
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -102,6 +118,7 @@ class ProductDetailState extends Equatable {
     quantity,
     imageIndex,
     promo,
+    freshness,
     failure,
   ];
 }

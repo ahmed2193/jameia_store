@@ -17,6 +17,15 @@ class SearchDiscover extends Equatable {
   final List<CatalogCategoryEntity> categories;
   final List<BrandEntity> brands;
 
+  /// Each block loads on its own: one arriving keeps the other.
+  SearchDiscover copyWith({
+    List<CatalogCategoryEntity>? categories,
+    List<BrandEntity>? brands,
+  }) => SearchDiscover(
+    categories: categories ?? this.categories,
+    brands: brands ?? this.brands,
+  );
+
   @override
   List<Object?> get props => [categories, brands];
 }

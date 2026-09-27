@@ -1,7 +1,7 @@
 // The category tabs of a collection page: loaded once, reloaded on a
-// language switch (the tabs on screen stay meanwhile), hidden silently on a
-// failure, a stale reply dropped — plus the tab ⇄ category-slug mapping the
-// page reads.
+// language switch (the tabs on screen stay meanwhile), kept silently on a
+// failure and asked again on reconnect, a stale reply dropped — plus the
+// tab ⇄ category-slug mapping the page reads.
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
@@ -85,7 +85,7 @@ void main() {
     );
 
     blocTest<ListingTabsCubit, ListingTabsState>(
-      'a failure hides the tabs',
+      'a failure keeps the tabs on screen',
       build: () => ListingTabsCubit(
         _StubTabs(const Left(NetworkFailure())),
         query: _bestSellers,
@@ -100,9 +100,33 @@ void main() {
           status: ListingTabsStatus.loading,
           categories: [_snacks, _iceCream],
         ),
-        ListingTabsState(status: ListingTabsStatus.failed),
+        ListingTabsState(
+          status: ListingTabsStatus.failed,
+          categories: [_snacks, _iceCream],
+        ),
       ],
-      verify: (cubit) => expect(cubit.state.showsTabs, isFalse),
+      verify: (cubit) => expect(cubit.state.showsTabs, isTrue),
+    );
+
+    blocTest<ListingTabsCubit, ListingTabsState>(
+      'reconnect asks again after a failure, never after a load',
+      build: () {
+        stub = _StubTabs(const Right([_snacks, _iceCream]));
+        return ListingTabsCubit(stub, query: _bestSellers);
+      },
+      seed: () => const ListingTabsState(status: ListingTabsStatus.failed),
+      act: (cubit) async {
+        await cubit.onReconnected();
+        await cubit.onReconnected();
+      },
+      expect: () => const [
+        ListingTabsState(status: ListingTabsStatus.loading),
+        ListingTabsState(
+          status: ListingTabsStatus.loaded,
+          categories: [_snacks, _iceCream],
+        ),
+      ],
+      verify: (_) => expect(stub.requests, hasLength(1)),
     );
 
     blocTest<ListingTabsCubit, ListingTabsState>(

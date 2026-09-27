@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../core/motion/spring_curve.dart';
-import '../../../../../../core/responsive/app_size.dart';
 import '../assistant_onboarding_cue.dart';
 import '../assistant_onboarding_timeline.dart';
 import 'assistant_onboarding_item.dart';
@@ -14,7 +13,8 @@ import 'assistant_onboarding_typed_bubble.dart';
 /// Asking in your own words: "Just moved in, help me stock up!" types
 /// itself out (the mascot listens), the assistant thinks and answers (it
 /// talks), and a cleaner, bulbs and coffee — three aisles, one answer —
-/// pop up one after another (it smiles).
+/// pop up one after another (it smiles). The talk above the tiles is
+/// clipped rather than pushed past them, whatever the language.
 class AssistantOnboardingAskScene extends StatelessWidget {
   const AssistantOnboardingAskScene({
     super.key,
@@ -41,7 +41,7 @@ class AssistantOnboardingAskScene extends StatelessWidget {
   static const double _tileStep = 0.08;
   static const double _tileLength = 0.22;
   static const double _edge = AppSpacing.s12;
-  static const double _replyTop = AppSize.s60;
+  static const double _gap = AppSpacing.s8;
   static const double _tileGap = AppSpacing.s10;
 
   @override
@@ -52,31 +52,42 @@ class AssistantOnboardingAskScene extends StatelessWidget {
       length: _length,
       beats: _beats,
       onCue: onCue,
-      builder: (context, t) => Stack(
-        children: [
-          PositionedDirectional(
-            top: _edge,
-            end: _edge,
-            child: AssistantOnboardingTypedBubble(
-              text: question,
-              typed: t.span(_typeFrom, _typeTo, Curves.linear),
-              appear: t.span(0, _askIn, AppSprings.snappy),
-            ),
-          ),
-          if (t >= _replyFrom)
-            PositionedDirectional(
-              top: _replyTop,
-              start: _edge,
-              child: AssistantOnboardingReplyBubble(
-                appear: t.span(_replyFrom, _replyIn, AppSprings.snappy),
-                answered: t >= _answerAt,
+      builder: (context, t) => Padding(
+        padding: const EdgeInsets.all(_edge),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: AssistantOnboardingTypedBubble(
+                        text: question,
+                        typed: t.span(_typeFrom, _typeTo, Curves.linear),
+                        appear: t.span(0, _askIn, AppSprings.snappy),
+                      ),
+                    ),
+                    const SizedBox(height: _gap),
+                    if (t >= _replyFrom)
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: AssistantOnboardingReplyBubble(
+                          appear: t.span(
+                            _replyFrom,
+                            _replyIn,
+                            AppSprings.snappy,
+                          ),
+                          answered: t >= _answerAt,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          PositionedDirectional(
-            start: 0,
-            end: 0,
-            bottom: _edge,
-            child: Row(
+            const SizedBox(height: _gap),
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 for (final (index, item)
@@ -93,8 +104,8 @@ class AssistantOnboardingAskScene extends StatelessWidget {
                 ],
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

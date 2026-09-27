@@ -15,13 +15,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
 import 'package:jameia_mart/src/core/widgets/state_views.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_brands_usecase.dart';
 import 'package:jameia_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
 import 'package:jameia_mart/src/features/shop/presentation/cubit/product_listing_cubit.dart';
 import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_grid_skeleton.dart';
@@ -30,6 +27,8 @@ import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listi
 import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_skeleton_card.dart';
 import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/product_listing_body.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'shop_test_fakes.dart';
 
 /// Answers each product request only when the test says so.
 class _GatedGetProducts implements GetProductsUseCase {
@@ -41,12 +40,6 @@ class _GatedGetProducts implements GetProductsUseCase {
     calls.add(completer);
     return completer.future;
   }
-}
-
-class _NoBrands implements GetBrandsUseCase {
-  @override
-  Future<Either<Failure, List<BrandEntity>>> call(NoParams params) async =>
-      const Right(<BrandEntity>[]);
 }
 
 /// Stands in for a card: something with a size to fade.
@@ -203,8 +196,9 @@ void main() {
   ) async {
     final products = _GatedGetProducts();
     final cubit = ProductListingCubit(
+      WatchProductsFromGet(products),
       products,
-      _NoBrands(),
+      NoBrands(),
       query: const CatalogProductQuery(categorySlug: 'fresh-food'),
     );
     addTearDown(cubit.close);

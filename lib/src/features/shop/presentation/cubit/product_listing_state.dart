@@ -3,29 +3,30 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/domain/entities/catalog_product_query.dart';
 import '../../../../core/domain/entities/catalog_products_page.dart';
+import '../../../../core/domain/entities/data_freshness.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 
-enum ProductListingStatus { initial, loading, loaded, error }
-
-class ProductListingState extends Equatable {
+class ProductListingState extends Equatable
+    implements ScreenLoadState<ProductListingState> {
   const ProductListingState({
     required this.query,
-    this.status = ProductListingStatus.initial,
+    this.load = const ScreenLoad(),
     this.products = CatalogProductsPage.empty,
-    this.isLoadingMore = false,
-    this.loadMoreFailed = false,
     this.brands = const <BrandEntity>[],
     this.isLoadingBrands = false,
     this.brandLocked = false,
-    this.failure,
   });
 
   /// Scope + the customer's sort / filters: what the list asks the backend.
   final CatalogProductQuery query;
-  final ProductListingStatus status;
+
+  /// The first page's read, its freshness, the next page and the failure
+  /// that goes with them (with [LoadPhase.error], offline vs error).
+  @override
+  final ScreenLoad load;
   final CatalogProductsPage products;
-  final bool isLoadingMore;
-  final bool loadMoreFailed;
 
   /// Every brand of the store (`GET /v1/brands`), read once the customer
   /// opens the brand filter.
@@ -36,10 +37,12 @@ class ProductListingState extends Equatable {
   /// so the brand filter is not offered.
   final bool brandLocked;
 
-  /// Transient — cleared on every [copyWith]; the page localizes it.
-  final Failure? failure;
-
-  bool get isLoaded => status == ProductListingStatus.loaded;
+  LoadPhase get status => load.phase;
+  DataFreshness get freshness => load.freshness;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
+  bool get isLoadingMore => load.isLoadingMore;
+  bool get loadMoreFailed => load.nextPageFailed;
   bool get isEmpty => isLoaded && products.isEmpty;
   bool get canLoadMore => isLoaded && products.hasMore && !isLoadingMore;
 
@@ -52,37 +55,31 @@ class ProductListingState extends Equatable {
     return slug;
   }
 
+  @override
+  ProductListingState withLoad(ScreenLoad load) => copyWith(load: load);
+
   ProductListingState copyWith({
     CatalogProductQuery? query,
-    ProductListingStatus? status,
+    ScreenLoad? load,
     CatalogProductsPage? products,
-    bool? isLoadingMore,
-    bool? loadMoreFailed,
     List<BrandEntity>? brands,
     bool? isLoadingBrands,
-    Failure? failure,
   }) => ProductListingState(
     query: query ?? this.query,
-    status: status ?? this.status,
+    load: load ?? this.load.settled(),
     products: products ?? this.products,
-    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-    loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
     brands: brands ?? this.brands,
     isLoadingBrands: isLoadingBrands ?? this.isLoadingBrands,
     brandLocked: brandLocked,
-    failure: failure,
   );
 
   @override
   List<Object?> get props => [
     query,
-    status,
+    load,
     products,
-    isLoadingMore,
-    loadMoreFailed,
     brands,
     isLoadingBrands,
     brandLocked,
-    failure,
   ];
 }

@@ -102,6 +102,7 @@ Failure knobs (all `POST` unless noted):
 | `/__admin/ledger/fail/500/1` | the next wallet / loyalty request answers 500 (any status) → error view / load-more retry |
 | `/__admin/subscription/fail/500/1` | the next Pro subscription request answers 500 (any status) → snackbar, buttons back on |
 | `/__admin/subscription/delay/3000` | subscribe / cancel replies wait 3 s → loader on the CTA, double tap sends ONE request |
+| `/__admin/subscription/ends-in/90` | the paid period ends in 90 s; the next subscription request after that finds it `expired`. Open the Pro page once so the app learns the new end, then wait: its period-end re-check (end + 1 min) turns the member into "Rejoin" everywhere, without a restart |
 | `/__admin/subscription/reset` | no subscription again, `customer.pro` inactive |
 | `/__admin/profile/reset` | the customer is back in the sign-up state (name = phone, no date of birth / gender / household, bonus not paid) → "Complete your profile" + the bonus hint |
 | `/__admin/cart/out-of-stock/<productId>` | that product answers `400 OUT_OF_STOCK` on add / update |
@@ -161,7 +162,9 @@ Run the ones that apply and quote the trace lines in your report.
 - [ ] `revoke-refresh` → login page with the expired notice; feature state is gone.
 - [ ] `rate-limit/2` → retried silently (the interceptor allows 3 retries = 4 requests);
       `rate-limit/4` → the retries run out and the UI shows the server's rate-limit message.
-- [ ] Offline (airplane mode) → `core.no_internet` text + retry works when back online.
+- [ ] Offline (airplane mode) → the banner, the screen's device copy with the stale note (or
+      the calm offline state when nothing was saved); back online → the screen refreshes by
+      itself. Full offline list below.
 - [ ] Empty list, last page (`hasMore:false`), pull-to-refresh during load-more.
 - [ ] `PATCH` sends only changed fields; an unchanged form sends nothing.
 - [ ] Double tap on a submit button → ONE request in the trace.
@@ -177,6 +180,41 @@ Run the ones that apply and quote the trace lines in your report.
       `POST /v1/orders`; success replaces the page with tracking.
 - [ ] Tracking: `GET /v1/orders/:id` repeats every 30 s while the page is on top, stops when
       another page covers it / the app is backgrounded / the status is terminal.
+
+### Offline checklist (the offline-first build; record each result)
+
+Tools: `adb shell cmd connectivity airplane-mode enable|disable` (or `adb shell svc wifi disable` +
+`adb shell svc data disable`); emulator console `network delay gprs` / `network speed gsm`; the
+mock API's 5xx / 429 knobs. Log names: `connectivity` (probe results, monitor paused / resumed),
+`cache` (saved / dropped / skipped with namespace, key hash and size — never a payload), `api`.
+
+- [ ] Cold start ONLINE on a real phone (debug build, slow first probe): never a banner flash —
+      a single failed probe is confirmed by a second check before "offline" (`connectivity`
+      log: `probe → unreachable (5000+ms)` then `probe → reachable`, no `ConnectivityCubit`
+      offline).
+- [ ] Cold start offline, first install: splash → home says "Checking your connection…" →
+      "No connection" together with the banner (never "No connection" straight away). Online →
+      "Back online", home loads by itself.
+- [ ] Visit home, categories, a listing, 2 PDPs, recipes, orders online; kill; airplane on;
+      relaunch → each paints from the cache with "Updated … ago"; no generic error anywhere.
+- [ ] Listing offline: a cached and an uncached filter / sort; the load-more footer says it
+      will load when back; reconnect loads it.
+- [ ] PDP never opened, offline: the tapped preview stays, the inline offline note, reconnect
+      fills it in.
+- [ ] Cart offline, 3 taps: no snack spam for minutes; reconnect → the flush at once (trace).
+- [ ] Checkout offline: the calm offline line in the bar; Place order runs a live check and
+      sends NOTHING while offline; online → places normally, once.
+- [ ] Mock API 500 while online: the normal error UI, NO banner.
+- [ ] Wi-Fi without internet (if available) → offline.
+- [ ] Sign out → `adb shell run-as <applicationId> ls -R cache/api_cache`: `customer/` is gone;
+      `public/` (and `guest/`) stay. No token / OTP / header in any file.
+- [ ] Arabic + RTL: banner, stale-note plurals (1, 2, 3–10, 11+ minutes), offline state.
+- [ ] The banner text sits on a `Material` (it is above the navigator): no yellow double
+      underline under "You're offline" / "Back online".
+- [ ] Reduced motion: no animation, instant swaps.
+- [ ] 5 min in the background offline → no `connectivity` probe lines; resume → one probe.
+- [ ] Reopen a screen inside its fresh TTL → no request in the `api` trace; after it → the copy,
+      then ONE revalidation. Pull-to-refresh always fetches.
 
 Driving the UI: with `flutter run --debug` up, the `flutter-mcp-toolkit` tools (`fmt_*`: semantic
 snapshot, tap, enter text, screenshots, hot reload) work from a fresh session; otherwise

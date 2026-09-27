@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
@@ -11,6 +12,9 @@ import 'package:jameia_mart/src/features/account/domain/usecases/get_ledger_usec
 import 'package:jameia_mart/src/features/account/domain/usecases/get_loyalty_program_usecase.dart';
 import 'package:jameia_mart/src/features/account/domain/usecases/get_profile_usecase.dart';
 import 'package:jameia_mart/src/features/account/domain/usecases/update_profile_usecase.dart';
+import 'package:jameia_mart/src/features/account/domain/usecases/watch_ledger_usecase.dart';
+
+import '../../core/data/snapshot_test_fakes.dart';
 
 const AuthCustomerEntity kProfileCustomer = AuthCustomerEntity(
   id: '507f1f77bcf86cd799439011',
@@ -61,6 +65,29 @@ class FakeUpdateProfileUseCase implements UpdateProfileUseCase {
 
 /// Answers every page request through [handler] (hold one on a gate there to
 /// build an in-flight race); records the params.
+/// The first page as the cached read streams it, answered by [get]'s
+/// handler (its calls record it as page 1); [saved] is the device copy,
+/// shown first unless the read is forced.
+class WatchLedgerFromGet<T extends LedgerEntry>
+    implements WatchLedgerUseCase<T> {
+  WatchLedgerFromGet(this.get, {this.saved});
+
+  final FakeGetLedgerUseCase<T> get;
+  Ledger<T>? saved;
+
+  /// The `forceRefresh` of every read, in order.
+  final List<bool> forced = [];
+
+  @override
+  Stream<DataSnapshot<Ledger<T>>> call(WatchLedgerParams params) {
+    forced.add(params.forceRefresh);
+    return networkRead(
+      get(GetLedgerParams(page: 1, limit: params.limit)),
+      saved: params.forceRefresh ? null : saved,
+    );
+  }
+}
+
 class FakeGetLedgerUseCase<T extends LedgerEntry>
     implements GetLedgerUseCase<T> {
   FakeGetLedgerUseCase(this.handler);

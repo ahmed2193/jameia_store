@@ -31,7 +31,7 @@ void main() {
       ),
     );
 
-    final page = await dataSource.getOrders(page: 2, limit: 20);
+    final page = (await dataSource.getOrders(page: 2, limit: 20)).model;
 
     expect(request().method, 'GET');
     expect(request().path, '/v1/orders');
@@ -59,7 +59,7 @@ void main() {
       ),
     );
 
-    final page = await dataSource.getOrders(page: 1, limit: 20);
+    final page = (await dataSource.getOrders(page: 1, limit: 20)).model;
 
     expect(page.items, hasLength(1));
   });
@@ -67,7 +67,7 @@ void main() {
   test('getOrder GETs the order by id', () async {
     dataSource = build(FakeHttpClientAdapter((_, _) => okBody(orderJson())));
 
-    final order = await dataSource.getOrder('o1');
+    final order = (await dataSource.getOrder('o1')).model;
 
     expect(request().method, 'GET');
     expect(request().path, '/v1/orders/o1');
@@ -79,7 +79,7 @@ void main() {
       FakeHttpClientAdapter((_, _) => okBody(orderJson(status: 'cancelled'))),
     );
 
-    final order = await dataSource.cancelOrder('o1', <String, dynamic>{
+    final reply = await dataSource.cancelOrder('o1', <String, dynamic>{
       'reason': 'changed_mind',
       'note': 'sorry',
     });
@@ -87,7 +87,8 @@ void main() {
     expect(request().method, 'POST');
     expect(request().path, '/v1/orders/o1/cancel');
     expect(body()['reason'], 'changed_mind');
-    expect(order.status, 'cancelled');
+    expect(reply.model.status, 'cancelled');
+    expect((reply.raw as Map)['status'], 'cancelled');
   });
 
   test('a cancel the backend refuses surfaces as a typed exception', () async {

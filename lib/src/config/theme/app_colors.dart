@@ -67,6 +67,10 @@ class AppColors {
   static const Color white = Color(0xFFFFFFFF); // neutral.c1
   static const Color black = Color(0xFF000000); // neutral.c16
 
+  /// The offline banner: a calm dark neutral (slate-800) — offline is a
+  /// state, not an error, so never red. White text on it is 14.7:1.
+  static const Color offlineSurface = Color(0xFF1F2937);
+
   // ── Accents ─────────────────────────────────────────────────────────────────
   static const Color accent1 = Color(0xFFFF5324); // red.c7 (primary red)
   static const Color accent1Dark = Color(0xFFF0390E); // red.c9
@@ -542,6 +546,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
     required this.finalPrice,
     required this.freeDelivery,
     required this.overlay,
+    required this.offlineSurface,
   });
 
   final Color brandPrimary;
@@ -562,6 +567,9 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
   final Color freeDelivery;
   final Color overlay;
 
+  /// The offline banner surface (see [AppColors.offlineSurface]).
+  final Color offlineSurface;
+
   static const JameiaColors light = JameiaColors(
     brandPrimary: Color(0xFF22C55E),
     brandForeground: Color(0xFFFFFFFF),
@@ -580,6 +588,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
     finalPrice: Color(0xFFF0390E),
     freeDelivery: Color(0xFF00A175),
     overlay: Color(0x99000000),
+    offlineSurface: Color(0xFF1F2937),
   );
 
   static const JameiaColors dark = JameiaColors(
@@ -600,6 +609,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
     finalPrice: Color(0xFFF0390E),
     freeDelivery: Color(0xFF00A175),
     overlay: Color(0x99FFFFFF),
+    offlineSurface: Color(0xFF374151),
   );
 
   @override
@@ -621,6 +631,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
     Color? finalPrice,
     Color? freeDelivery,
     Color? overlay,
+    Color? offlineSurface,
   }) {
     return JameiaColors(
       brandPrimary: brandPrimary ?? this.brandPrimary,
@@ -640,6 +651,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
       finalPrice: finalPrice ?? this.finalPrice,
       freeDelivery: freeDelivery ?? this.freeDelivery,
       overlay: overlay ?? this.overlay,
+      offlineSurface: offlineSurface ?? this.offlineSurface,
     );
   }
 
@@ -668,6 +680,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
       finalPrice: Color.lerp(finalPrice, other.finalPrice, t)!,
       freeDelivery: Color.lerp(freeDelivery, other.freeDelivery, t)!,
       overlay: Color.lerp(overlay, other.overlay, t)!,
+      offlineSurface: Color.lerp(offlineSurface, other.offlineSurface, t)!,
     );
   }
 }

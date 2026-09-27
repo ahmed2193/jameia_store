@@ -8,12 +8,16 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_loader.dart';
+import '../../../../../core/widgets/connectivity_scope.dart';
+import '../../../../../core/widgets/load_more_offline_note.dart';
 import '../../cubit/orders_cubit.dart';
 import '../../cubit/orders_state.dart';
 
 /// End of the orders list while the server has more: a loader while a page
 /// is on its way, otherwise an underlined "Load more" link. Both sit in one
-/// fixed-height box, so swapping them never moves the end of the list.
+/// fixed-height box, so swapping them never moves the end of the list. A
+/// page that failed offline says "More will load when you're back" instead:
+/// the list asks again by itself when the connection returns.
 ///
 /// [autoLoad] is for a list that shows nothing yet — its rows may sit on a
 /// later page, and with nothing to scroll the customer has no way to ask.
@@ -23,6 +27,10 @@ class OrdersLoadMoreRow extends StatefulWidget {
   const OrdersLoadMoreRow({super.key, this.autoLoad = false});
 
   final bool autoLoad;
+
+  /// The list already keeps the side gutters.
+  static const EdgeInsetsGeometry _offlinePadding =
+      EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s12);
 
   @override
   State<OrdersLoadMoreRow> createState() => _OrdersLoadMoreRowState();
@@ -41,33 +49,45 @@ class _OrdersLoadMoreRowState extends State<OrdersLoadMoreRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
-      child: SizedBox(
-        height: AppSize.s44,
-        child: BlocSelector<OrdersCubit, OrdersState, bool>(
-          selector: (state) => state.isLoadingMore,
-          builder: (context, loading) => FadeThroughSwitcher(
-            stateKey: loading,
-            child: loading
-                ? const AppLoader(size: AppSize.s20)
-                : Center(
-                    child: TextButton(
-                      onPressed: () => context.read<OrdersCubit>().loadMore(),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primaryText,
-                        minimumSize: const Size(0, AppSize.s44),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        textStyle: AppTextStyles.label.copyWith(
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                      child: Text('orders.load_more'.tr()),
-                    ),
-                  ),
+    return BlocSelector<OrdersCubit, OrdersState, (bool, bool)>(
+      selector: (state) => (state.isLoadingMore, state.loadMoreFailed),
+      builder: (context, paging) {
+        final (loading, failed) = paging;
+        if (failed && ConnectivityScope.isOfflineOf(context)) {
+          return const LoadMoreOfflineNote(
+            padding: OrdersLoadMoreRow._offlinePadding,
+          );
+        }
+        return Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+            vertical: AppSpacing.s8,
           ),
-        ),
-      ),
+          child: SizedBox(
+            height: AppSize.s44,
+            child: FadeThroughSwitcher(
+              stateKey: loading,
+              child: loading
+                  ? const AppLoader(size: AppSize.s20)
+                  : Center(
+                      child: TextButton(
+                        // An explicit ask: also after a failed page.
+                        onPressed: () =>
+                            context.read<OrdersCubit>().loadMore(retry: true),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primaryText,
+                          minimumSize: const Size(0, AppSize.s44),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          textStyle: AppTextStyles.label.copyWith(
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        child: Text('orders.load_more'.tr()),
+                      ),
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

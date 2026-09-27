@@ -11,6 +11,12 @@ enum AssistantMascotMood {
   /// Laughing eyes and a wide smile (a tap, a greeting, a cart add).
   happy(AssistantMascotPose(happy: 1, twinkle: 0.4)),
 
+  /// Laughing, its sparkle at full shine — a good deal to tell about.
+  delighted(AssistantMascotPose(happy: 1, twinkle: 1)),
+
+  /// A soft smile with open eyes — easy company (and room for a wink).
+  warm(AssistantMascotPose(happy: 0.2, twinkle: 0.2)),
+
   /// Mouth moving, as while the greeting types itself out.
   talking(AssistantMascotPose()),
 

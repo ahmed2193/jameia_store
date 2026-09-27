@@ -36,12 +36,9 @@ class RecordAssistantNudgeOutcomeUseCase
   Future<Either<Failure, Unit>> call(
     RecordAssistantNudgeOutcomeParams params,
   ) async {
-    final read = await _repository.getLog();
-    return read.fold(
-      Left.new,
-      (log) => _repository.saveLog(
-        log.record(params.outcome, params.at, policy: policy),
-      ),
+    final updated = await _repository.updateLog(
+      (log) => log.record(params.outcome, params.at, policy: policy),
     );
+    return updated.map((_) => unit);
   }
 }

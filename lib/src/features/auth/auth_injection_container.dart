@@ -29,7 +29,13 @@ void initAuthFeature() {
       () => AuthRemoteDataSourceImpl(sl()),
     )
     ..registerLazySingleton<AuthLocalDataSource>(
-      () => AuthLocalDataSourceImpl(sl(), sl(), sl()),
+      () => AuthLocalDataSourceImpl(
+        sl(),
+        sl(),
+        sl(),
+        cacheOwner: sl(),
+        responseCache: sl(),
+      ),
     )
     ..registerLazySingleton<AuthRepository>(
       () => AuthRepositoryImpl(remote: sl(), local: sl()),

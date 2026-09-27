@@ -1,30 +1,48 @@
 import '../../config/di/service_locator.dart';
+import '../../core/data/datasources/cache_slots.dart';
+import 'data/datasources/assistant_history_cache_data_source.dart';
 import 'data/datasources/assistant_nudge_local_data_source.dart';
 import 'data/datasources/assistant_remote_data_source.dart';
+import 'data/datasources/assistant_speech_recognizer.dart';
+import 'data/datasources/assistant_voice_data_source.dart';
+import 'data/datasources/assistant_voice_settings_local_data_source.dart';
 import 'data/repositories/assistant_nudge_repository_impl.dart';
 import 'data/repositories/assistant_repository_impl.dart';
+import 'data/repositories/assistant_voice_repository_impl.dart';
 import 'domain/repositories/assistant_nudge_repository.dart';
 import 'domain/repositories/assistant_repository.dart';
+import 'domain/repositories/assistant_voice_repository.dart';
+import 'domain/usecases/cancel_assistant_voice_usecase.dart';
 import 'domain/usecases/claim_assistant_nudge_usecase.dart';
 import 'domain/usecases/complete_assistant_onboarding_usecase.dart';
 import 'domain/usecases/confirm_assistant_action_usecase.dart';
+import 'domain/usecases/finish_assistant_voice_usecase.dart';
 import 'domain/usecases/get_assistant_availability_usecase.dart';
 import 'domain/usecases/get_assistant_conversation_usecase.dart';
 import 'domain/usecases/get_assistant_conversations_usecase.dart';
 import 'domain/usecases/get_assistant_launcher_hidden_usecase.dart';
 import 'domain/usecases/get_assistant_onboarded_usecase.dart';
+import 'domain/usecases/get_assistant_voice_language_usecase.dart';
 import 'domain/usecases/hide_assistant_launcher_usecase.dart';
+import 'domain/usecases/listen_to_assistant_voice_usecase.dart';
+import 'domain/usecases/open_assistant_voice_settings_usecase.dart';
+import 'domain/usecases/prepare_assistant_voice_usecase.dart';
 import 'domain/usecases/rate_assistant_message_usecase.dart';
 import 'domain/usecases/record_assistant_nudge_outcome_usecase.dart';
 import 'domain/usecases/request_assistant_handoff_usecase.dart';
+import 'domain/usecases/request_assistant_voice_access_usecase.dart';
+import 'domain/usecases/save_assistant_voice_language_usecase.dart';
 import 'domain/usecases/send_assistant_message_usecase.dart';
+import 'domain/usecases/watch_assistant_conversations_usecase.dart';
 import 'presentation/cubit/assistant_availability_cubit.dart';
 import 'presentation/cubit/assistant_buddy_cubit.dart';
 import 'presentation/cubit/assistant_chat_cubit.dart';
 import 'presentation/cubit/assistant_history_cubit.dart';
+import 'presentation/cubit/assistant_voice_cubit.dart';
 
-/// Assistant feature DI — the streaming shopping chat on `/v1/assistant/*`
-/// and its buddy over the main shell (greeting log in `LocalStorage`).
+/// Assistant feature DI — the streaming shopping chat on `/v1/assistant/*`,
+/// its voice messages (the device's speech recognizer) and its buddy over
+/// the main shell (greeting log in `LocalStorage`).
 /// Depends on the core `ApiConsumer` and `EventStreamClient` registered by
 /// `setupServiceLocator` before any feature init.
 void initAssistantFeature() {
@@ -35,8 +53,12 @@ void initAssistantFeature() {
     ..registerLazySingleton<AssistantRemoteDataSource>(
       () => AssistantRemoteDataSourceImpl(sl(), sl()),
     )
+    // The history's first page as the customer last saw it.
+    ..registerLazySingleton<AssistantHistoryCacheDataSource>(
+      () => AssistantHistoryCacheDataSourceImpl(sl<CacheSlots>()),
+    )
     ..registerLazySingleton<AssistantRepository>(
-      () => AssistantRepositoryImpl(sl()),
+      () => AssistantRepositoryImpl(sl(), cache: sl()),
     )
     ..registerLazySingleton<AssistantNudgeLocalDataSource>(
       () => AssistantNudgeLocalDataSourceImpl(sl()),
@@ -47,6 +69,7 @@ void initAssistantFeature() {
     // Domain
     ..registerLazySingleton(() => GetAssistantAvailabilityUseCase(sl()))
     ..registerLazySingleton(() => GetAssistantConversationsUseCase(sl()))
+    ..registerLazySingleton(() => WatchAssistantConversationsUseCase(sl()))
     ..registerLazySingleton(() => GetAssistantConversationUseCase(sl()))
     ..registerLazySingleton(() => SendAssistantMessageUseCase(sl()))
     ..registerLazySingleton(() => ConfirmAssistantActionUseCase(sl()))
@@ -71,7 +94,9 @@ void initAssistantFeature() {
         handOff: sl(),
       ),
     )
-    ..registerFactory(() => AssistantHistoryCubit(getConversations: sl()))
+    ..registerFactory(
+      () => AssistantHistoryCubit(watchFirstPage: sl(), getConversations: sl()),
+    )
     // The buddy (launcher, greeting and tour) lives with the main shell.
     ..registerFactory(
       () => AssistantBuddyCubit(
@@ -81,6 +106,42 @@ void initAssistantFeature() {
         hide: sl(),
         getOnboarded: sl(),
         completeOnboarding: sl(),
+      ),
+    );
+
+  // Voice messages (the composer's mic): the device's speech recognizer
+  // turns what the customer says into the words the chat sends.
+  sl
+    ..registerLazySingleton<AssistantSpeechRecognizer>(
+      () => SpeechToTextRecognizer(),
+    )
+    ..registerLazySingleton<AssistantVoiceDataSource>(
+      () => AssistantVoiceDataSourceImpl(sl()),
+    )
+    ..registerLazySingleton<AssistantVoiceSettingsLocalDataSource>(
+      () => AssistantVoiceSettingsLocalDataSourceImpl(sl()),
+    )
+    ..registerLazySingleton<AssistantVoiceRepository>(
+      () => AssistantVoiceRepositoryImpl(sl(), sl()),
+    )
+    ..registerLazySingleton(() => PrepareAssistantVoiceUseCase(sl()))
+    ..registerLazySingleton(() => RequestAssistantVoiceAccessUseCase(sl()))
+    ..registerLazySingleton(() => ListenToAssistantVoiceUseCase(sl()))
+    ..registerLazySingleton(() => FinishAssistantVoiceUseCase(sl()))
+    ..registerLazySingleton(() => CancelAssistantVoiceUseCase(sl()))
+    ..registerLazySingleton(() => OpenAssistantVoiceSettingsUseCase(sl()))
+    ..registerLazySingleton(() => GetAssistantVoiceLanguageUseCase(sl()))
+    ..registerLazySingleton(() => SaveAssistantVoiceLanguageUseCase(sl()))
+    ..registerFactory(
+      () => AssistantVoiceCubit(
+        prepare: sl(),
+        requestAccess: sl(),
+        listen: sl(),
+        finish: sl(),
+        cancel: sl(),
+        openSettings: sl(),
+        savedLanguage: sl(),
+        saveLanguage: sl(),
       ),
     );
 }

@@ -45,6 +45,7 @@ class OrderCard extends StatelessWidget {
   Future<void> _open(BuildContext context) async {
     final cubit = context.read<OrdersCubit>();
     await context.push(Routes.orderTracking, extra: order.id);
+    // Offline it fails quietly (a read: the banner speaks).
     if (context.mounted) await cubit.refreshOrder(order.id);
   }
 

@@ -14,11 +14,15 @@ class AssistantBuddyStartersReveal extends StatelessWidget {
     required this.typed,
     required this.starters,
     required this.onStarter,
+    this.onTour,
   });
 
   final bool typed;
   final List<AssistantStarter> starters;
   final ValueChanged<AssistantStarter> onStarter;
+
+  /// Leads with the tour (a first meeting).
+  final VoidCallback? onTour;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +35,7 @@ class AssistantBuddyStartersReveal extends StatelessWidget {
             child: AssistantBuddyStarters(
               starters: starters,
               onStarter: onStarter,
+              onTour: onTour,
             ),
           )
         : const SizedBox(width: double.infinity);

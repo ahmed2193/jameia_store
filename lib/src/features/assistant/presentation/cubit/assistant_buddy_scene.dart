@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/assistant_thought_place.dart';
+
 /// What surrounds the assistant's buddy right now, reported by the layer
 /// over the main shell: which screen is under it, what it may do there and
 /// what else is on screen.
@@ -13,6 +15,7 @@ class AssistantBuddyScene extends Equatable {
     this.keyboardOpen = false,
     this.screenReader = false,
     this.hasCartItems = false,
+    this.thoughtPlace = AssistantThoughtPlace.elsewhere,
   });
 
   /// The screen under the buddy (a tab); a new place brings back a launcher
@@ -38,6 +41,9 @@ class AssistantBuddyScene extends Equatable {
 
   final bool hasCartItems;
 
+  /// What the launcher's lines favour on this screen.
+  final AssistantThoughtPlace thoughtPlace;
+
   /// Every condition for greeting except time.
   bool get canGreet => available && greetHere && inFront && !keyboardOpen;
 
@@ -51,5 +57,6 @@ class AssistantBuddyScene extends Equatable {
     keyboardOpen,
     screenReader,
     hasCartItems,
+    thoughtPlace,
   ];
 }

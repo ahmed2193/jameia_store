@@ -21,6 +21,17 @@ Never delete or weaken a test to go green (`CLAUDE.md` §0.5 / §8).
 | `InMemorySessionStore` | `accessToken`, `refreshToken`, `accessTokenExpiry`, `cartToken`, `clearTokensCalls` |
 | `FakeTokenRefresher((refreshToken) => AuthTokens)` | counts `calls` |
 | `FakeLocaleProvider`, `RecordingExpiryNotifier` | headers / expiry assertions |
+| `FakeNetworkInfo` + `registerFakeNetworkInfo()` | reachability without probes: `emit(bool)`, `checkResult`, counts `checkCalls` / `reachableReports` / `transportFailureReports`. Register it BEFORE `setupServiceLocator()` in every test that reaches DI (the real monitor would probe the internet) |
+
+Offline & cache (`docs/api_integration.md` §10):
+
+| Fake | Use |
+|---|---|
+| `InMemoryJsonCacheStore` (`test/core/storage/cache_test_fakes.dart`) | the cache in memory: entries round-trip through JSON like the file store; `readGate` holds reads; counts `reads` / `writes`; `testNamespace` (public, 60 s / 7 d). The real `FileJsonCacheStore` is only ever tested on a `Directory.systemTemp` folder |
+| `networkRead(future, saved:)` + `savedSnapshotAt` / `networkSnapshotAt` (`test/core/data/snapshot_test_fakes.dart`) | a fake watch use case in one line: the saved copy (3 h old) first when given, then the network snapshot or its failure. An `async*` body on purpose — `asyncExpand` never completes under a widget test's fake clock |
+| `FakeCatalogRemoteDataSource` (`test/core/data/catalog_test_fakes.dart`) | the shared catalogue datasource: `get…` throws until overridden, `fetch…` answers its `get…` twin with an empty raw payload |
+| `FakeConnectivityRepository` + `buildConnectivityCubit` (`test/features/connectivity/connectivity_test_fakes.dart`) | drive `ConnectivityCubit` with raw reports and scripted checks (short test timings) |
+| `ConnectivityScope(isOffline: true, reconnectEpoch: 0, onNudge: …, onCheckNow: …, onRecheck: …)` | an offline page / widget test without the feature: count nudges, script the live checks (`onRecheck` answers `FailureView`'s "retry now?"); bump `reconnectEpoch` to fire `ReconnectRefresh`. Without `onRecheck` a `FailureView` shows "No connection" at once (no checking state, no timers) |
 
 Feature-level: `test/features/notifications/notifications_test_fakes.dart`
 (`FakeEventStreamClient`, entity builders `notification(...)`, `feedOf(...)`, use-case fakes),
@@ -115,6 +126,11 @@ await setupServiceLocator();
 // load en.json into easy_localization (see profile_edit_page_test.dart) so `.tr()` resolves
 ```
 
+A cached screen also gets the offline faces: a saved copy painted with no request while fresh,
+the stale note over a copy while offline, the calm offline state (`FailureView`) with nothing
+saved, no generic error snack while offline (`showFailureSnackBar` nudges instead), and one
+refresh per reconnect epoch (pump past `AppConstants.reconnectJitter`).
+
 Swap the cubit factory for one built on fakes:
 `sl..unregister<XCubit>()..registerFactory(() => XCubit(fakeUseCase));`
 Provide the app-global cubits above the page with `BlocProvider.value`: `CartCubit`,
@@ -130,7 +146,9 @@ Every new `Routes.*` constant gets a case there (it builds the real route table)
 
 Touching `core/network` or `core/storage` means extending its test in `test/core/…`
 (`auth_interceptor_test`, `dio_consumer_test`, `event_stream_client_test`,
-`network_log_interceptor_test`, `rate_limit_retry_interceptor_test`, `session_store_test`).
+`network_log_interceptor_test`, `rate_limit_retry_interceptor_test`, `session_store_test`,
+`network_info_test`, `reachability_signal_interceptor_test`, `json_cache_store_test`,
+`cached_repository_mixin_test`, `snapshot_loader_mixin_test`, `offline_widgets_test`).
 Inject time and waiting (`now:`, `wait:`) instead of sleeping; the interceptors already take
 them as constructor parameters.
 

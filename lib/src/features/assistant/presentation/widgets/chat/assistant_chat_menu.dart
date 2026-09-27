@@ -6,22 +6,36 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/navigation/jameia_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../cubit/assistant_chat_cubit.dart';
+import '../onboarding/assistant_onboarding_sheet.dart';
 import 'assistant_handoff_dialog.dart';
 
-enum _MenuItem { newChat, handOff }
+enum _MenuItem { tour, newChat, handOff }
 
-/// The overflow menu: start a new chat (the current one stays in history),
-/// or hand the chat to a person when the conversation allows it.
+/// The overflow menu: what the assistant can do (its tour again — a
+/// question picked there is sent right away), start a new chat (the current
+/// one stays in history), or hand the chat to a person when the
+/// conversation allows it.
 class AssistantChatMenu extends StatelessWidget {
   const AssistantChatMenu({super.key});
 
   void _onSelected(BuildContext context, _MenuItem item) {
     switch (item) {
+      case _MenuItem.tour:
+        _replayTour(context);
       case _MenuItem.newChat:
         context.read<AssistantChatCubit>().startNewChat();
         showJameiaSnackBar(context, 'assistant.new_chat_started'.tr());
       case _MenuItem.handOff:
         AssistantHandoffDialog.confirm(context);
+    }
+  }
+
+  Future<void> _replayTour(BuildContext context) async {
+    final chat = context.read<AssistantChatCubit>();
+    final result = await AssistantOnboardingSheet.show(context);
+    final starter = result?.starter;
+    if (starter != null && chat.state.canSend) {
+      chat.send(starter.promptKey.tr());
     }
   }
 
@@ -44,6 +58,10 @@ class AssistantChatMenu extends StatelessWidget {
       color: AppColors.white,
       onSelected: (item) => _onSelected(context, item),
       itemBuilder: (_) => [
+        PopupMenuItem(
+          value: _MenuItem.tour,
+          child: Text('assistant.menu_tour'.tr()),
+        ),
         PopupMenuItem(
           value: _MenuItem.newChat,
           enabled: canStartNew,

@@ -83,3 +83,18 @@ class ValidationFailure extends Failure {
 class UnexpectedFailure extends Failure {
   const UnexpectedFailure([super.message = 'Something went wrong']);
 }
+
+/// How a failure relates to the connection: one rule for every screen, snack
+/// bar and retry policy.
+extension FailureConnection on Failure {
+  /// No HTTP answer came back: no route to the server, or the request timed
+  /// out. Such a failure also asked for a connection check on its way.
+  bool get isTransport => this is NetworkFailure || this is TimeoutFailure;
+
+  /// The failure is the lost connection itself, not something the server
+  /// said: a [NetworkFailure] always, a timeout only once the app knows it is
+  /// [offline]. While online a timeout keeps its own "request timed out"
+  /// (server trouble is not offline).
+  bool isConnectionLoss({required bool offline}) =>
+      this is NetworkFailure || (offline && isTransport);
+}

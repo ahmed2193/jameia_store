@@ -36,6 +36,7 @@
 //   POST /__admin/ledger/fail/:status/:n      -> next n wallet / loyalty requests (after the Bearer check) answer :status
 //   POST /__admin/subscription/fail/:status/:n -> next n subscription requests (after the Bearer check) answer :status
 //   POST /__admin/subscription/delay/:ms       -> subscription replies wait :ms (subscribe / cancel in flight)
+//   POST /__admin/subscription/ends-in/:sec    -> the paid period ends sec from now; the next subscription request after that finds it expired
 //   POST /__admin/subscription/reset           -> no subscription, customer.pro inactive
 //   POST /__admin/profile/reset               -> sign-up state again: name = phone, no dateOfBirth / gender / householdSize, bonus not yet paid
 //   Cart / orders knobs live in routes_commerce.js (see its header):
@@ -269,6 +270,14 @@ http.createServer((req, res) => {
     const subscriptionFailKnob = pathname.match(/^\/__admin\/subscription\/fail\/(\d{3})\/(\d+)$/);
     if (subscriptionFailKnob) { state.subscriptionFail = { status: Number(subscriptionFailKnob[1]), n: Number(subscriptionFailKnob[2]) }; return ok(res, state.subscriptionFail); }
     if (pathname.startsWith('/__admin/subscription/delay/')) { state.subscriptionDelay = Number(pathname.split('/').pop()); return ok(res, { delay: state.subscriptionDelay }); }
+    const subscriptionEndsKnob = pathname.match(/^\/__admin\/subscription\/ends-in\/(\d+)$/);
+    if (subscriptionEndsKnob) {
+      const sub = state.subscription;
+      if (!sub) return fail(res, 404, 'RESOURCE_NOT_FOUND', 'No subscription to move');
+      sub.currentPeriodEnd = new Date(Date.now() + Number(subscriptionEndsKnob[1]) * 1000).toISOString();
+      if (customer.pro.active) customer.pro = { ...customer.pro, expiresAt: sub.currentPeriodEnd };
+      return ok(res, sub);
+    }
     if (pathname === '/__admin/subscription/reset') {
       state.subscription = null; customer.pro = { active: false, expiresAt: null, subscriptionId: null };
       return ok(res, { reset: true });

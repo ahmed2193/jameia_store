@@ -6,14 +6,18 @@ import '../../config/routes/routes.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../motion/pop_scale.dart';
 import 'app_button.dart';
 import 'jameia_secondary_button.dart';
 import 'state_icon_plate.dart';
+import 'state_loader_plate.dart';
 
 /// A whole-screen state: a muted icon plate, an optional bold title, the grey
 /// message and one pill action. `.error` retries with a secondary button;
 /// `.signedOut` sends the customer to sign in with `go` (never `push`, so
-/// every page cubit is rebuilt for the new session).
+/// every page cubit is rebuilt for the new session); `.offline` is the calm
+/// "no connection" state of a screen with nothing saved to show; `.checking`
+/// holds its place while the app checks whether it really is offline.
 class JameiaStateView extends StatelessWidget {
   const JameiaStateView({
     super.key,
@@ -23,7 +27,9 @@ class JameiaStateView extends StatelessWidget {
     this.actionLabel,
     this.onAction,
     this.secondaryAction = false,
-  }) : _signIn = false;
+  }) : _signIn = false,
+       _offline = false,
+       _checking = false;
 
   /// Error with retry. [message] defaults to `core.something_went_wrong`.
   const JameiaStateView.error({
@@ -36,7 +42,9 @@ class JameiaStateView extends StatelessWidget {
        actionLabel = null,
        onAction = onRetry,
        secondaryAction = true,
-       _signIn = false;
+       _signIn = false,
+       _offline = false,
+       _checking = false;
 
   /// A customer route hit `UnauthorizedFailure`: the screen's own invitation
   /// (e.g. `'orders.sign_in_required'.tr()`) and a sign-in button.
@@ -46,7 +54,38 @@ class JameiaStateView extends StatelessWidget {
       actionLabel = null,
       onAction = null,
       secondaryAction = false,
-      _signIn = true;
+      _signIn = true,
+      _offline = false,
+      _checking = false;
+
+  /// No connection and nothing saved to show: "No connection — this page
+  /// loads as soon as you're back online" (the screen retries by itself on
+  /// reconnect) and "Try again" to try now. Not an error: no red.
+  const JameiaStateView.offline({super.key, required VoidCallback onRetry})
+    : message = '',
+      icon = Icons.wifi_off_rounded,
+      title = null,
+      actionLabel = null,
+      onAction = onRetry,
+      secondaryAction = true,
+      _signIn = false,
+      _offline = true,
+      _checking = false;
+
+  /// A first load failed for want of a connection and the app is checking
+  /// whether it really is offline: the branded dots and "Checking your
+  /// connection…", no action. It becomes the offline state, or the screen
+  /// loads again by itself.
+  const JameiaStateView.checking({super.key})
+    : message = '',
+      icon = Icons.wifi_rounded,
+      title = null,
+      actionLabel = null,
+      onAction = null,
+      secondaryAction = false,
+      _signIn = false,
+      _offline = false,
+      _checking = true;
 
   final String message;
   final IconData icon;
@@ -57,10 +96,17 @@ class JameiaStateView extends StatelessWidget {
   /// The action is a white outlined pill instead of the green one.
   final bool secondaryAction;
   final bool _signIn;
+  final bool _offline;
+  final bool _checking;
 
   @override
   Widget build(BuildContext context) {
-    final text = message.isEmpty ? 'core.something_went_wrong'.tr() : message;
+    final text = _checking
+        ? 'connectivity.checking'.tr()
+        : _offline
+        ? 'connectivity.offline_state_message'.tr()
+        : (message.isEmpty ? 'core.something_went_wrong'.tr() : message);
+    final heading = _offline ? 'connectivity.offline_state_title'.tr() : title;
     final label =
         actionLabel ??
         (_signIn
@@ -75,11 +121,16 @@ class JameiaStateView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            StateIconPlate(icon: icon),
+            if (_checking)
+              const StateLoaderPlate()
+            else if (_offline)
+              PopScale.onMount(child: StateIconPlate(icon: icon))
+            else
+              StateIconPlate(icon: icon),
             const SizedBox(height: AppSpacing.s16),
-            if (title != null) ...[
+            if (heading != null) ...[
               Text(
-                title!,
+                heading,
                 textAlign: TextAlign.center,
                 style: AppTextStyles.groupTitle,
               ),

@@ -1,25 +1,29 @@
-import '../../../../core/data/models/json_read.dart';
+import '../../../../core/data/models/remote_payload.dart';
 import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/pro_program_model.dart';
 import '../models/pro_subscription_model.dart';
+import '../models/pro_subscription_results.dart';
 
 /// Receives the envelope's `results` (unwrapped by `DioConsumer`); throws
 /// `AppException` only. Bearer + refresh are automatic (`AuthInterceptor`).
+/// Every reply carries its raw `results` for the device copy.
 abstract class ProMembershipRemoteDataSource {
   /// `GET /v1/subscription-plans` (public).
-  Future<ProProgramModel> getProgram();
+  Future<RemotePayload<ProProgramModel>> getProgram();
 
   /// `GET /v1/account/subscription` (Bearer) — `results` is the subscription
-  /// or `null`.
-  Future<ProSubscriptionModel?> getSubscription();
+  /// or `null` (see [ProSubscriptionResults]).
+  Future<RemotePayload<ProSubscriptionModel?>> getSubscription();
 
-  /// `POST /v1/account/subscription` (Bearer) `{ planId }`.
-  Future<ProSubscriptionModel> subscribe(String planId);
+  /// `POST /v1/account/subscription` (Bearer) `{ planId }` — the new
+  /// subscription, what the subscription read answers from now on.
+  Future<RemotePayload<ProSubscriptionModel>> subscribe(String planId);
 
-  /// `POST /v1/account/subscription/cancel` (Bearer).
-  Future<ProSubscriptionModel> cancel();
+  /// `POST /v1/account/subscription/cancel` (Bearer) — the subscription as
+  /// it now is.
+  Future<RemotePayload<ProSubscriptionModel>> cancel();
 }
 
 class ProMembershipRemoteDataSourceImpl
@@ -31,36 +35,35 @@ class ProMembershipRemoteDataSourceImpl
   static const String planIdField = 'planId';
 
   @override
-  Future<ProProgramModel> getProgram() async {
+  Future<RemotePayload<ProProgramModel>> getProgram() async {
     final results = await _api.get(EndPoints.subscriptionPlans);
-    return ProProgramModel.fromJson(
-      ApiPayload.asMap(results, EndPoints.subscriptionPlans),
+    final json = ApiPayload.asMap(results, EndPoints.subscriptionPlans);
+    return RemotePayload(ProProgramModel.fromJson(json), json);
+  }
+
+  @override
+  Future<RemotePayload<ProSubscriptionModel?>> getSubscription() async {
+    final results = await _api.get(EndPoints.accountSubscription);
+    return RemotePayload(
+      ProSubscriptionResults.parse(results),
+      ProSubscriptionResults.keep(results),
     );
   }
 
   @override
-  Future<ProSubscriptionModel?> getSubscription() async {
-    final results = await _api.get(EndPoints.accountSubscription);
-    final json = JsonRead.object(results);
-    return json == null ? null : ProSubscriptionModel.fromJson(json);
-  }
-
-  @override
-  Future<ProSubscriptionModel> subscribe(String planId) async {
+  Future<RemotePayload<ProSubscriptionModel>> subscribe(String planId) async {
     final results = await _api.post(
       EndPoints.accountSubscription,
       body: <String, dynamic>{planIdField: planId},
     );
-    return ProSubscriptionModel.fromJson(
-      ApiPayload.asMap(results, EndPoints.accountSubscription),
-    );
+    final json = ApiPayload.asMap(results, EndPoints.accountSubscription);
+    return RemotePayload(ProSubscriptionModel.fromJson(json), json);
   }
 
   @override
-  Future<ProSubscriptionModel> cancel() async {
+  Future<RemotePayload<ProSubscriptionModel>> cancel() async {
     final results = await _api.post(EndPoints.accountSubscriptionCancel);
-    return ProSubscriptionModel.fromJson(
-      ApiPayload.asMap(results, EndPoints.accountSubscriptionCancel),
-    );
+    final json = ApiPayload.asMap(results, EndPoints.accountSubscriptionCancel);
+    return RemotePayload(ProSubscriptionModel.fromJson(json), json);
   }
 }

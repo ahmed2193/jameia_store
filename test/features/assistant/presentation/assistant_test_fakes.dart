@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_action_result.dart';
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_availability.dart';
@@ -20,9 +21,12 @@ import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant
 import 'package:jameia_mart/src/features/assistant/domain/usecases/rate_assistant_message_usecase.dart';
 import 'package:jameia_mart/src/features/assistant/domain/usecases/request_assistant_handoff_usecase.dart';
 import 'package:jameia_mart/src/features/assistant/domain/usecases/send_assistant_message_usecase.dart';
+import 'package:jameia_mart/src/features/assistant/domain/usecases/watch_assistant_conversations_usecase.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_chat_cubit.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_history_cubit.dart';
+
+import '../../../core/data/snapshot_test_fakes.dart';
 
 /// One call the test answers when it wants to (a gated fake).
 class Gate<T> {
@@ -47,6 +51,14 @@ class FakeAssistantRepository implements AssistantRepository {
   final List<Gate<Either<Failure, Unit>>> ratings = [];
   final List<FakeTurnStream> sends = [];
 
+  /// The history's first page as saved on the device (none by default):
+  /// [watchFirstPage] shows it first, then waits on [lists] like
+  /// [getConversations].
+  AssistantConversationsFeed? savedFirstPage;
+
+  /// The `forceRefresh` of every first-page read, in order.
+  final List<bool> firstPageForced = [];
+
   FakeTurnStream get lastSend => sends.last;
 
   @override
@@ -58,6 +70,18 @@ class FakeAssistantRepository implements AssistantRepository {
     required int page,
     required int limit,
   }) => _gate(lists, (page: page, limit: limit));
+
+  @override
+  Stream<DataSnapshot<AssistantConversationsFeed>> watchFirstPage({
+    required int limit,
+    bool forceRefresh = false,
+  }) {
+    firstPageForced.add(forceRefresh);
+    return networkRead(
+      _gate(lists, (page: 1, limit: limit)),
+      saved: forceRefresh ? null : savedFirstPage,
+    );
+  }
 
   @override
   Future<Either<Failure, AssistantThread>> getConversation(String id) =>
@@ -197,6 +221,7 @@ AssistantChatCubit chatCubit(FakeAssistantRepository repository) =>
 
 AssistantHistoryCubit historyCubit(FakeAssistantRepository repository) =>
     AssistantHistoryCubit(
+      watchFirstPage: WatchAssistantConversationsUseCase(repository),
       getConversations: GetAssistantConversationsUseCase(repository),
     );
 

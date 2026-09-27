@@ -17,6 +17,7 @@ import 'package:jameia_mart/src/core/motion/fly_to_cart.dart';
 import 'package:jameia_mart/src/core/motion/motion.dart';
 import 'package:jameia_mart/src/core/motion/rolling_number.dart';
 import 'package:jameia_mart/src/core/motion/rotating_line.dart';
+import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
 import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
 import 'package:jameia_mart/src/core/widgets/jameia_submit_button.dart';
 import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
@@ -527,6 +528,67 @@ void main() {
 
       expect(ui.blocked.value?.$1, CheckoutBlockReason.destination);
       expect(haptics, hasLength(1));
+    });
+
+    testWidgets('offline: a calm line; the tap checks first and, still '
+        'offline, sends nothing', (tester) async {
+      await checkoutCubit.start(defaultAddressId: 'a1');
+      var checks = 0;
+      var nudges = 0;
+      await pumpBar(
+        tester,
+        child: ConnectivityScope(
+          isOffline: true,
+          reconnectEpoch: 0,
+          onNudge: () => nudges++,
+          onCheckNow: () async {
+            checks++;
+            return false;
+          },
+          child: const CheckoutPlaceOrderBar(),
+        ),
+      );
+
+      expect(inBar(find.text("You're offline")), findsOneWidget);
+
+      await tapPlaceOrder(tester);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(checks, 1);
+      expect(nudges, 1);
+      expect(checkoutRepository.calls, isNot(contains('place:cod')));
+      expect(
+        find.descendant(
+          of: find.byType(SnackBar),
+          matching: find.text(
+            "You're offline. Your changes are kept, try again when you're "
+            'back.',
+          ),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('offline, but the live check reaches the server: the order '
+        'goes', (tester) async {
+      await checkoutCubit.start(defaultAddressId: 'a1');
+      await pumpBar(
+        tester,
+        child: ConnectivityScope(
+          isOffline: true,
+          reconnectEpoch: 0,
+          onNudge: () {},
+          onCheckNow: () async => true,
+          child: const CheckoutPlaceOrderBar(),
+        ),
+      );
+
+      await tapPlaceOrder(tester);
+      await tester.pumpAndSettle();
+
+      expect(checkoutRepository.calls.where((c) => c.startsWith('place:')), [
+        'place:cod',
+      ]);
     });
 
     testWidgets('an open order places once, with the cart facts', (

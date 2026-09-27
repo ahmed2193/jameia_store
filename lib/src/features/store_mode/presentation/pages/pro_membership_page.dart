@@ -9,15 +9,18 @@ import '../cubit/pro_brands_cubit.dart';
 import '../cubit/pro_membership_cubit.dart';
 import '../widgets/pro_membership_body.dart';
 import '../widgets/pro_outcome_listener.dart';
+import '../widgets/pro_status_reporter.dart';
 import '../widgets/pro_top_bar.dart';
 
-/// Jm3eia Pro paywall: the programme's plans and perks
+/// Jm3eia Pro: the paywall for a guest, a prospect and a lapsed member, the
+/// member hub for a member — the programme's plans and perks
 /// (`GET /v1/subscription-plans`), the customer's subscription
 /// (`/v1/account/subscription`) and the brands free delivery covers
 /// (`GET /v1/brands`). It replaced the offline "VIP ⇄ Mart" store mode:
 /// member prices come from this subscription (`customer.isPro`). What the
 /// customer just did (subscribed / cancelled / a failed action) is answered
-/// by [ProOutcomeListener].
+/// by [ProOutcomeListener]; what the page learned reaches the app-global Pro
+/// status through [ProStatusReporter].
 class ProMembershipPage extends StatelessWidget {
   const ProMembershipPage({super.key});
 
@@ -44,14 +47,16 @@ class ProMembershipPage extends StatelessWidget {
               },
               child: const Scaffold(
                 backgroundColor: AppColors.white,
-                body: ProOutcomeListener(
-                  child: SafeArea(
-                    bottom: false,
-                    child: Column(
-                      children: [
-                        ProTopBar(),
-                        Expanded(child: ProMembershipBody()),
-                      ],
+                body: ProStatusReporter(
+                  child: ProOutcomeListener(
+                    child: SafeArea(
+                      bottom: false,
+                      child: Column(
+                        children: [
+                          ProTopBar(),
+                          Expanded(child: ProMembershipBody()),
+                        ],
+                      ),
                     ),
                   ),
                 ),

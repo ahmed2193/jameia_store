@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/domain/entities/data_snapshot.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/assistant_action_result.dart';
 import '../entities/assistant_availability.dart';
@@ -22,6 +23,15 @@ abstract class AssistantRepository {
   });
 
   /// One conversation with its messages, as a thread.
+  /// The history's first page as the history screen reads it: the
+  /// signed-in customer's saved copy first (nothing is kept for a guest),
+  /// then the server's (only the server's with [forceRefresh]); failures on
+  /// the error channel. Later pages are [getConversations]' — never kept.
+  Stream<DataSnapshot<AssistantConversationsFeed>> watchFirstPage({
+    required int limit,
+    bool forceRefresh = false,
+  });
+
   Future<Either<Failure, AssistantThread>> getConversation(String id);
 
   /// Sends [message] and streams the reply. Errors travel as stream errors

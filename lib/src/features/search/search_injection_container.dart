@@ -1,17 +1,21 @@
 import '../../config/di/service_locator.dart';
+import '../../core/data/datasources/catalog_cache_data_source.dart';
 import '../../core/data/datasources/catalog_remote_data_source.dart';
 import '../../core/storage/local_storage.dart';
 import 'data/datasources/search_local_data_source.dart';
 import 'data/repositories/search_repository_impl.dart';
 import 'domain/repositories/search_repository.dart';
 import 'domain/usecases/get_recent_searches_usecase.dart';
-import 'domain/usecases/get_search_discover_usecase.dart';
 import 'domain/usecases/save_recent_searches_usecase.dart';
 import 'domain/usecases/suggest_products_usecase.dart';
+import 'domain/usecases/watch_search_brands_usecase.dart';
+import 'domain/usecases/watch_search_categories_usecase.dart';
 import 'presentation/cubit/search_cubit.dart';
 
 /// Search feature DI — product matches, categories and brands from the jm3eia
-/// backend (the shared `CatalogRemoteDataSource`), recent terms on the device.
+/// backend (the shared `CatalogRemoteDataSource`; the discover blocks keep
+/// their copy in the shared `CatalogCacheDataSource`), recent terms on the
+/// device.
 /// Called from `setupServiceLocator`.
 void initSearchFeature() {
   if (sl.isRegistered<SearchRepository>()) return; // idempotent
@@ -23,10 +27,14 @@ void initSearchFeature() {
       () => SearchRepositoryImpl(
         sl<CatalogRemoteDataSource>(),
         sl<SearchLocalDataSource>(),
+        cache: sl<CatalogCacheDataSource>(),
       ),
     )
     ..registerLazySingleton(
-      () => GetSearchDiscoverUseCase(sl<SearchRepository>()),
+      () => WatchSearchCategoriesUseCase(sl<SearchRepository>()),
+    )
+    ..registerLazySingleton(
+      () => WatchSearchBrandsUseCase(sl<SearchRepository>()),
     )
     ..registerLazySingleton(
       () => SuggestProductsUseCase(sl<SearchRepository>()),
@@ -39,7 +47,8 @@ void initSearchFeature() {
     )
     ..registerFactory(
       () => SearchCubit(
-        sl<GetSearchDiscoverUseCase>(),
+        sl<WatchSearchCategoriesUseCase>(),
+        sl<WatchSearchBrandsUseCase>(),
         sl<SuggestProductsUseCase>(),
         sl<GetRecentSearchesUseCase>(),
         sl<SaveRecentSearchesUseCase>(),

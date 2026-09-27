@@ -1,50 +1,75 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../../../core/utils/performance/snapshot_loader_mixin.dart';
+import '../../domain/entities/product_reviews.dart';
 import '../../domain/usecases/get_product_reviews_usecase.dart';
+import '../../domain/usecases/watch_product_reviews_usecase.dart';
 import 'product_reviews_state.dart';
 
 /// The reviews section of a product page
 /// (`GET /v1/products/:slug/reviews`), loaded beside the product so it never
-/// delays — or blanks — the page. "Show more" pages explicitly (a button, not
-/// a scroll trigger: the section sits in the middle of the page).
+/// delays — or blanks — the page. The first page paints from the device copy
+/// (offline too), then the server's. "Show more" pages explicitly (a button,
+/// not a scroll trigger: the section sits in the middle of the page).
 class ProductReviewsCubit extends Cubit<ProductReviewsState>
-    with SafeCubitMixin<ProductReviewsState> {
-  ProductReviewsCubit(this._getReviews, {required this._slug})
-    : super(const ProductReviewsState());
+    with
+        SafeCubitMixin<ProductReviewsState>,
+        SnapshotLoaderMixin<ProductReviewsState> {
+  ProductReviewsCubit(
+    this._watchFirstPage,
+    this._getReviews, {
+    required this._slug,
+  }) : super(const ProductReviewsState());
 
-  static const int _firstPage = 1;
-
+  final WatchProductReviewsUseCase _watchFirstPage;
   final GetProductReviewsUseCase _getReviews;
   final String _slug;
 
-  /// Bumped by every first-page load; an older reply is stale.
+  /// Bumped by every first-page read; a later page asked for an older list
+  /// is stale.
   int _generation = 0;
 
-  Future<void> load() async {
-    final generation = ++_generation;
+  Future<void> load() {
     if (!state.isLoaded) {
       safeEmit(state.copyWith(status: ProductReviewsStatus.loading));
     }
-    final result = await _getReviews(
-      GetProductReviewsParams(slug: _slug, page: _firstPage),
+    return _readFirstPage(forceRefresh: false);
+  }
+
+  /// The connection came back: a saved or failed first page asks the server
+  /// once; otherwise a "show more" that failed is tried again.
+  Future<void> onReconnected() {
+    final reload =
+        state.freshness.isStale || state.status == ProductReviewsStatus.error;
+    return refreshOnReconnect(
+      needed: reload || state.loadMoreFailed,
+      refresh: () => reload ? _readFirstPage(forceRefresh: true) : loadMore(),
     );
-    if (generation != _generation) return;
-    result.fold(
-      (failure) => safeEmit(
+  }
+
+  Future<void> _readFirstPage({required bool forceRefresh}) {
+    _generation++;
+    return followSnapshots<ProductReviews>(
+      _watchFirstPage(
+        WatchProductReviewsParams(slug: _slug, forceRefresh: forceRefresh),
+      ),
+      onSnapshot: (snapshot) => safeEmit(
+        state.copyWith(
+          status: ProductReviewsStatus.loaded,
+          reviews: snapshot.data,
+          freshness: DataFreshness.of(snapshot),
+          loadMoreFailed: false,
+        ),
+      ),
+      onFailure: (failure) => safeEmit(
         state.copyWith(
           status: state.isLoaded
               ? ProductReviewsStatus.loaded
               : ProductReviewsStatus.error,
+          freshness: state.freshness.failed(),
           failure: failure,
-        ),
-      ),
-      (reviews) => safeEmit(
-        state.copyWith(
-          status: ProductReviewsStatus.loaded,
-          reviews: reviews,
-          isLoadingMore: false,
-          loadMoreFailed: false,
         ),
       ),
     );

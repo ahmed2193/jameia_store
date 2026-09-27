@@ -21,7 +21,6 @@ import 'package:go_router/go_router.dart';
 import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/route_args/product_listing_args.dart';
 import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
@@ -32,7 +31,6 @@ import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart'
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/motion/fly_to_cart.dart';
 import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
 import 'package:jameia_mart/src/core/widgets/collection_frame.dart';
 import 'package:jameia_mart/src/core/widgets/collection_hero.dart';
 import 'package:jameia_mart/src/core/widgets/collection_tab_strip.dart';
@@ -45,7 +43,6 @@ import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_state.dart';
 import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
 import 'package:jameia_mart/src/features/language/presentation/cubit/localization_state.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_brands_usecase.dart';
 import 'package:jameia_mart/src/features/shop/domain/usecases/get_listing_category_tabs_usecase.dart';
 import 'package:jameia_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
 import 'package:jameia_mart/src/features/shop/presentation/cubit/listing_tabs_cubit.dart';
@@ -56,6 +53,8 @@ import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/catal
 import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_results_count.dart';
 import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_toolbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'shop_test_fakes.dart';
 
 class _MockCartCubit extends MockCubit<CartState> implements CartCubit {}
 
@@ -97,12 +96,6 @@ class _FakeGetProducts implements GetProductsUseCase {
       ),
     );
   }
-}
-
-class _NoBrands implements GetBrandsUseCase {
-  @override
-  Future<Either<Failure, List<BrandEntity>>> call(NoParams params) async =>
-      const Right(<BrandEntity>[]);
 }
 
 class _FakeTabs implements GetListingCategoryTabsUseCase {
@@ -252,7 +245,12 @@ void main() {
     tabs = _FakeTabs(tabsReply);
     sl
       ..registerFactoryParam<ProductListingCubit, CatalogProductQuery, void>(
-        (query, _) => ProductListingCubit(products, _NoBrands(), query: query),
+        (query, _) => ProductListingCubit(
+          WatchProductsFromGet(products),
+          products,
+          NoBrands(),
+          query: query,
+        ),
       )
       ..registerFactoryParam<ListingTabsCubit, CatalogProductQuery, void>(
         (query, _) => ListingTabsCubit(tabs, query: query),

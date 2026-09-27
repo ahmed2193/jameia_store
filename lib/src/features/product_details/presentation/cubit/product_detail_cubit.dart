@@ -1,71 +1,96 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/domain/entities/data_freshness.dart';
+import '../../../../core/domain/entities/data_snapshot.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../../../core/utils/performance/snapshot_loader_mixin.dart';
 import '../../domain/entities/product_detail.dart';
-import '../../domain/usecases/get_product_detail_usecase.dart';
 import '../../domain/usecases/get_product_offer_usecase.dart';
+import '../../domain/usecases/watch_product_detail_usecase.dart';
 import 'product_detail_state.dart';
 
-/// The product page: loads `GET /v1/products/:slug` and keeps the customer's
+/// The product page: loads `GET /v1/products/:slug` — the copy saved on the
+/// device first (offline too), then the server's — and keeps the customer's
 /// selection (variant, quantity, gallery page). Once the product is in, the
 /// cart offer that counts it is looked up for the buy bar's promo tag. Adding to the cart is the
 /// page's job (`CartCubit` is app-global); this cubit says what may be added.
 class ProductDetailCubit extends Cubit<ProductDetailState>
-    with SafeCubitMixin<ProductDetailState> {
+    with
+        SafeCubitMixin<ProductDetailState>,
+        SnapshotLoaderMixin<ProductDetailState> {
   ProductDetailCubit(
-    this._getProductDetail,
+    this._watchDetail,
     this._getProductOffer, {
     required this._slug,
     CatalogProductEntity? preview,
   }) : super(ProductDetailState(preview: preview));
 
-  final GetProductDetailUseCase _getProductDetail;
+  final WatchProductDetailUseCase _watchDetail;
   final GetProductOfferUseCase _getProductOffer;
   final String _slug;
+
+  /// Bumped by every read; the promo of an older one is stale.
   int _generation = 0;
 
   /// First load, retry, language switch. A reload keeps the page on screen and
   /// the customer's selection when it still exists.
-  Future<void> load() async {
-    final generation = ++_generation;
+  Future<void> load() {
     if (!state.isLoaded) {
       safeEmit(state.copyWith(status: ProductDetailStatus.loading));
     }
-    final result = await _getProductDetail(GetProductDetailParams(_slug));
-    if (generation != _generation) return;
-    result.fold(
-      (failure) => safeEmit(
+    return _read(forceRefresh: false);
+  }
+
+  /// The connection came back: a saved or failed page asks the server once
+  /// (a product that does not exist stays "not found").
+  Future<void> onReconnected() => refreshOnReconnect(
+    needed:
+        state.freshness.isStale ||
+        (state.status == ProductDetailStatus.error && !state.isNotFound),
+    refresh: () => _read(forceRefresh: true),
+  );
+
+  Future<void> _read({required bool forceRefresh}) async {
+    final generation = ++_generation;
+    await followSnapshots<ProductDetail>(
+      _watchDetail(WatchProductDetailParams(_slug, forceRefresh: forceRefresh)),
+      onSnapshot: _show,
+      onFailure: (failure) => safeEmit(
         state.copyWith(
           status: state.isLoaded
               ? ProductDetailStatus.loaded
               : ProductDetailStatus.error,
+          freshness: state.freshness.failed(),
           failure: failure,
         ),
       ),
-      (detail) {
-        final kept = detail.variantById(state.selectedVariantId);
-        final variant = (kept != null && kept.isAvailable)
-            ? kept
-            : detail.defaultVariant;
-        final stock = detail.stockOf(variant);
-        safeEmit(
-          state.copyWith(
-            status: ProductDetailStatus.loaded,
-            detail: detail,
-            selectedVariantId: variant?.id,
-            quantity: _bounded(state.quantity, stock),
-            imageIndex: state.imageIndex < detail.gallery.length
-                ? state.imageIndex
-                : 0,
-          ),
-        );
-      },
     );
     final detail = state.detail;
-    if (detail != null && generation == _generation) {
+    if (detail != null && generation == _generation && !isClosed) {
       await _loadPromo(detail, generation);
     }
+  }
+
+  void _show(DataSnapshot<ProductDetail> snapshot) {
+    final detail = snapshot.data;
+    final kept = detail.variantById(state.selectedVariantId);
+    final variant = (kept != null && kept.isAvailable)
+        ? kept
+        : detail.defaultVariant;
+    final stock = detail.stockOf(variant);
+    safeEmit(
+      state.copyWith(
+        status: ProductDetailStatus.loaded,
+        detail: detail,
+        selectedVariantId: variant?.id,
+        quantity: _bounded(state.quantity, stock),
+        imageIndex: state.imageIndex < detail.gallery.length
+            ? state.imageIndex
+            : 0,
+        freshness: DataFreshness.of(snapshot),
+      ),
+    );
   }
 
   /// The promo tag is extra: a failure leaves the bar without one.

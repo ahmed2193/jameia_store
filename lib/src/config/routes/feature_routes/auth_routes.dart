@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/navigation/jameia_shared_axis_page.dart';
 import '../../../features/auth/presentation/pages/login_page.dart';
 import '../../../features/auth/presentation/pages/otp_verify_page.dart';
+import '../route_args/login_args.dart';
 import '../route_args/otp_verify_args.dart';
 import '../routes.dart';
 
@@ -13,12 +14,19 @@ import '../routes.dart';
 final List<RouteBase> authRoutes = <RouteBase>[
   GoRoute(
     path: Routes.login,
-    pageBuilder: (_, state) => JameiaSharedAxisPage<Object?>(
-      key: state.pageKey,
-      name: state.uri.path,
-      // `extra: true` = opened because the session expired (shows the notice).
-      child: LoginPage(sessionExpired: state.extra == true),
-    ),
+    pageBuilder: (_, state) {
+      // `extra: true` = opened because the session expired (shows the
+      // notice); `LoginArgs` may also name the page to return to.
+      final args = LoginArgs.from(state.extra);
+      return JameiaSharedAxisPage<Object?>(
+        key: state.pageKey,
+        name: state.uri.path,
+        child: LoginPage(
+          sessionExpired: args.sessionExpired,
+          returnTo: args.returnTo,
+        ),
+      );
+    },
   ),
   GoRoute(
     path: Routes.otpVerify,

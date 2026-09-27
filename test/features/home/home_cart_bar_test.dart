@@ -38,10 +38,10 @@ import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dart';
 import 'package:jameia_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/get_home_bootstrap_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/get_home_feed_usecase.dart';
 import 'package:jameia_mart/src/features/home/domain/usecases/mark_home_popups_shown_usecase.dart';
 import 'package:jameia_mart/src/features/home/domain/usecases/select_due_home_popups_usecase.dart';
+import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_bootstrap_usecase.dart';
+import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
 import 'package:jameia_mart/src/features/home/presentation/cubit/home_cubit.dart';
 import 'package:jameia_mart/src/features/home/presentation/widgets/home_cart_bar.dart';
 import 'package:jameia_mart/src/features/home/presentation/widgets/home_min_order_bar.dart';
@@ -129,9 +129,9 @@ void main() {
         reset: ResetCartUseCase(cartRepository),
       )..start();
       homeCubit = HomeCubit(
-        GetHomeFeedUseCase(homeRepository),
+        WatchHomeFeedUseCase(homeRepository),
         const ComposeHomeFeedUseCase(),
-        GetHomeBootstrapUseCase(homeRepository),
+        WatchHomeBootstrapUseCase(homeRepository),
         SelectDueHomePopupsUseCase(homeRepository),
         MarkHomePopupsShownUseCase(homeRepository),
       );

@@ -10,31 +10,39 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
 import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
 import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/network/dio_consumer.dart';
 import 'package:jameia_mart/src/core/network/end_points.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
+import 'package:jameia_mart/src/features/store_mode/data/datasources/pro_membership_cache_data_source.dart';
 import 'package:jameia_mart/src/features/store_mode/data/datasources/pro_membership_remote_data_source.dart';
 import 'package:jameia_mart/src/features/store_mode/data/mappers/pro_membership_mapper.dart';
 import 'package:jameia_mart/src/features/store_mode/data/models/pro_program_model.dart';
 import 'package:jameia_mart/src/features/store_mode/data/models/pro_subscription_model.dart';
+import 'package:jameia_mart/src/features/store_mode/data/models/pro_subscription_results.dart';
 import 'package:jameia_mart/src/features/store_mode/data/repositories/pro_membership_repository_impl.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/repositories/pro_membership_repository.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/usecases/cancel_pro_subscription_usecase.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_brands_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_program_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_subscription_usecase.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/usecases/subscribe_to_pro_usecase.dart';
+import 'package:jameia_mart/src/features/store_mode/domain/usecases/watch_pro_program_usecase.dart';
+import 'package:jameia_mart/src/features/store_mode/domain/usecases/watch_pro_subscription_usecase.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_brands_cubit.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_brands_state.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_membership_cubit.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_membership_state.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
 
 /// `results` of `GET /v1/subscription-plans` on the live host (2026-09-17).
 const Map<String, dynamic> _livePlans = {
@@ -158,6 +166,15 @@ class _FakeRepository implements ProMembershipRepository {
   }
 
   @override
+  Stream<DataSnapshot<ProProgram>> watchProgram({bool forceRefresh = false}) =>
+      networkRead(getProgram());
+
+  @override
+  Stream<DataSnapshot<ProSubscription?>> watchSubscription({
+    bool forceRefresh = false,
+  }) => networkRead(getSubscription());
+
+  @override
   Future<Either<Failure, ProSubscription>> subscribe(String planId) {
     final completer = Completer<Either<Failure, ProSubscription>>();
     subscribeCalls.add(completer);
@@ -195,33 +212,50 @@ CatalogRemoteDataSource _catalogOn(FakeHttpClientAdapter adapter) =>
       FakeLocaleProvider('en'),
     );
 
+/// The Pro device copy over an in-memory store (a signed-in customer).
+ProMembershipCacheDataSource _cache() => ProMembershipCacheDataSourceImpl(
+  CacheSlots(
+    store: InMemoryJsonCacheStore(),
+    owner: CacheOwner()..signedIn('c1'),
+    locale: FakeLocaleProvider('en'),
+  ),
+);
+
 class _ScriptedRemote implements ProMembershipRemoteDataSource {
   Object? error;
 
   @override
-  Future<ProProgramModel> getProgram() async =>
-      ProProgramModel.fromJson(_livePlans);
+  Future<RemotePayload<ProProgramModel>> getProgram() async =>
+      RemotePayload(ProProgramModel.fromJson(_livePlans), _livePlans);
 
   @override
-  Future<ProSubscriptionModel?> getSubscription() async {
+  Future<RemotePayload<ProSubscriptionModel?>> getSubscription() async {
     final current = error;
     if (current != null) throw current;
-    return null;
+    return const RemotePayload<ProSubscriptionModel?>(
+      null,
+      ProSubscriptionResults.none,
+    );
   }
 
   @override
-  Future<ProSubscriptionModel> subscribe(String planId) async =>
-      ProSubscriptionModel.fromJson(_subscriptionJson);
+  Future<RemotePayload<ProSubscriptionModel>> subscribe(String planId) async =>
+      RemotePayload(
+        ProSubscriptionModel.fromJson(_subscriptionJson),
+        _subscriptionJson,
+      );
 
   @override
-  Future<ProSubscriptionModel> cancel() async =>
-      ProSubscriptionModel.fromJson(_subscriptionJson);
+  Future<RemotePayload<ProSubscriptionModel>> cancel() async => RemotePayload(
+    ProSubscriptionModel.fromJson(_subscriptionJson),
+    _subscriptionJson,
+  );
 }
 
 ProMembershipCubit _cubit(ProMembershipRepository repository) =>
     ProMembershipCubit(
-      GetProProgramUseCase(repository),
-      GetProSubscriptionUseCase(repository),
+      WatchProProgramUseCase(repository),
+      WatchProSubscriptionUseCase(repository),
       SubscribeToProUseCase(repository),
       CancelProSubscriptionUseCase(repository),
     );
@@ -469,7 +503,7 @@ void main() {
         FakeHttpClientAdapter((_, _) => okBody(_livePlans)),
       );
 
-      final program = await dataSource.getProgram();
+      final program = (await dataSource.getProgram()).model;
 
       expect(adapter.requests.single.path, EndPoints.subscriptionPlans);
       expect(program.plans, hasLength(2));
@@ -478,7 +512,10 @@ void main() {
     test('getSubscription: results null = no subscription', () async {
       final dataSource = build(FakeHttpClientAdapter((_, _) => okBody(null)));
 
-      expect(await dataSource.getSubscription(), isNull);
+      final reply = await dataSource.getSubscription();
+
+      expect(reply.model, isNull);
+      expect(reply.raw, ProSubscriptionResults.none, reason: 'kept as none');
       expect(adapter.requests.single.path, EndPoints.accountSubscription);
     });
 
@@ -487,7 +524,7 @@ void main() {
         FakeHttpClientAdapter((_, _) => okBody(_subscriptionJson)),
       );
 
-      final subscription = await dataSource.subscribe('plan-1');
+      final subscription = (await dataSource.subscribe('plan-1')).model;
       await dataSource.cancel();
 
       expect(adapter.requests.first.method, 'POST');
@@ -508,6 +545,7 @@ void main() {
         final repository = ProMembershipRepositoryImpl(
           remote,
           _catalogOn(FakeHttpClientAdapter((_, _) => okBody(null))),
+          cache: _cache(),
         );
 
         final subscription = await repository.getSubscription();
@@ -996,6 +1034,7 @@ void main() {
       final repository = ProMembershipRepositoryImpl(
         _ScriptedRemote(),
         _catalogOn(adapter),
+        cache: _cache(),
       );
 
       final result = await repository.getBrands();
@@ -1033,6 +1072,7 @@ void main() {
             ),
           ),
         ),
+        cache: _cache(),
       );
 
       final result = await repository.getBrands();

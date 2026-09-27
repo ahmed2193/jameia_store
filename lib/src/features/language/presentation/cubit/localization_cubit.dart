@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../domain/usecases/change_lang_usecase.dart';
 import '../../domain/usecases/get_saved_lang_usecase.dart';
@@ -52,6 +53,10 @@ class LocalizationCubit extends Cubit<LocalizationState> {
   final GetSavedLangUseCase _getSavedLang;
   final ChangeLangUseCase _changeLang;
   final SyncLanguageUseCase _syncLanguage;
+
+  /// A sync the network swallowed (offline, a timeout) is owed until one
+  /// gets through: [onReconnected] sends it again.
+  bool _syncOwed = false;
 
   /// One-shot launch restore: read the saved language (or the app default),
   /// apply it via easy_localization, sync `Intl`, and mark initialized.
@@ -151,16 +156,20 @@ class LocalizationCubit extends Cubit<LocalizationState> {
 
   /// Mirror the current language onto the customer profile. Signed-out is a
   /// silent no-op; a network failure is logged, never shown — the device
-  /// language already changed and the next sign-in / switch retries.
+  /// language already changed, and the connection's return
+  /// ([onReconnected]), the next sign-in or switch retries.
   Future<void> syncToServer() async {
     final code = state.languageCode;
     final result = await _syncLanguage(SyncLanguageParams(code));
-    result.fold(
-      (failure) => log(
-        'language sync ($code) skipped: ${failure.message}',
-        name: _logName,
-      ),
-      (_) {},
-    );
+    result.fold((failure) {
+      _syncOwed = failure is NetworkFailure || failure is TimeoutFailure;
+      log('language sync ($code) skipped: ${failure.message}', name: _logName);
+    }, (_) => _syncOwed = false);
+  }
+
+  /// The connection came back: a language sync the network swallowed is
+  /// sent again (once; another failure waits for the next return).
+  Future<void> onReconnected() async {
+    if (_syncOwed) await syncToServer();
   }
 }

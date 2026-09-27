@@ -1,5 +1,6 @@
 // Recipes: DTOs / mappers fed with the live payloads, datasource, repository
-// failure mapping and the cubits (paging, stale replies, not found).
+// (failure mapping, the device copy) and the cubits (paging, stale replies,
+// not found, a saved copy at once, the reconnect refresh).
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -7,24 +8,34 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/domain/entities/recipe_summary_entity.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/network/dio_consumer.dart';
 import 'package:jameia_mart/src/core/network/end_points.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:jameia_mart/src/core/usecase/watch_params.dart';
+import 'package:jameia_mart/src/features/recipes/data/datasources/recipes_cache_data_source.dart';
 import 'package:jameia_mart/src/features/recipes/data/datasources/recipes_remote_data_source.dart';
 import 'package:jameia_mart/src/features/recipes/data/mappers/recipes_mapper.dart';
 import 'package:jameia_mart/src/features/recipes/data/models/recipe_models.dart';
 import 'package:jameia_mart/src/features/recipes/data/repositories/recipes_repository_impl.dart';
 import 'package:jameia_mart/src/features/recipes/domain/entities/recipe_detail.dart';
 import 'package:jameia_mart/src/features/recipes/domain/entities/recipes_feed.dart';
-import 'package:jameia_mart/src/features/recipes/domain/usecases/get_recipe_detail_usecase.dart';
 import 'package:jameia_mart/src/features/recipes/domain/usecases/get_recipes_usecase.dart';
+import 'package:jameia_mart/src/features/recipes/domain/usecases/watch_recipe_detail_usecase.dart';
+import 'package:jameia_mart/src/features/recipes/domain/usecases/watch_recipes_usecase.dart';
 import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipe_detail_cubit.dart';
+import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipe_detail_state.dart';
 import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipes_cubit.dart';
 import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipes_state.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
 
 Map<String, dynamic> _fixture(String name) =>
     jsonDecode(File('test/features/recipes/$name').readAsStringSync())
@@ -52,40 +63,80 @@ class _GatedGetRecipes implements GetRecipesUseCase {
   }
 }
 
-class _StubGetRecipeDetail implements GetRecipeDetailUseCase {
-  _StubGetRecipeDetail(this.reply);
+/// The first recipes page, served by the gated page fake like every page.
+class _WatchRecipesFromGet implements WatchRecipesUseCase {
+  const _WatchRecipesFromGet(this._get, {this.saved});
 
-  Either<Failure, RecipeDetail> reply;
+  final GetRecipesUseCase _get;
+  final RecipesFeed? saved;
 
   @override
-  Future<Either<Failure, RecipeDetail>> call(
-    GetRecipeDetailParams params,
-  ) async => reply;
+  Stream<DataSnapshot<RecipesFeed>> call(WatchParams params) => networkRead(
+    _get(const GetRecipesParams(page: 1)),
+    saved: params.forceRefresh ? null : saved,
+  );
+}
+
+/// The recipe read: [saved] (when set and not forced), then [reply].
+class _StubWatchRecipe implements WatchRecipeDetailUseCase {
+  _StubWatchRecipe(this.reply);
+
+  Either<Failure, RecipeDetail> reply;
+  RecipeDetail? saved;
+  final List<bool> reads = [];
+
+  @override
+  Stream<DataSnapshot<RecipeDetail>> call(WatchRecipeDetailParams params) {
+    reads.add(params.forceRefresh);
+    return networkRead(
+      Future.value(reply),
+      saved: params.forceRefresh ? null : saved,
+    );
+  }
 }
 
 class _ScriptedRemote implements RecipesRemoteDataSource {
   Object? error;
+  int detailReads = 0;
 
   @override
-  Future<RecipesPageModel> getRecipes({
+  Future<RemotePayload<RecipesPageModel>> getRecipes({
     required int page,
     required int limit,
   }) async {
     final current = error;
     if (current != null) throw current;
-    return RecipesPageModel.fromJson(
-      _fixture('recipes_list_fixture.json'),
-      requestedPage: page,
+    final raw = _fixture('recipes_list_fixture.json');
+    return RemotePayload(
+      RecipesPageModel.fromJson(raw, requestedPage: page),
+      raw,
     );
   }
 
   @override
-  Future<RecipeDetailModel> getRecipe(String slug) async {
+  Future<RemotePayload<RecipeDetailModel>> getRecipe(String slug) async {
+    detailReads++;
     final current = error;
     if (current != null) throw current;
-    return RecipeDetailModel.fromJson(_fixture('recipe_detail_fixture.json'));
+    final raw = _fixture('recipe_detail_fixture.json');
+    return RemotePayload(RecipeDetailModel.fromJson(raw), raw);
   }
 }
+
+RecipesRepositoryImpl _repository(_ScriptedRemote remote) =>
+    RecipesRepositoryImpl(
+      remote,
+      cache: RecipesCacheDataSourceImpl(
+        CacheSlots(
+          store: InMemoryJsonCacheStore(),
+          owner: CacheOwner(),
+          locale: FakeLocaleProvider('en'),
+        ),
+      ),
+    );
+
+RecipesCubit _recipesCubit(_GatedGetRecipes gate, {RecipesFeed? saved}) =>
+    RecipesCubit(_WatchRecipesFromGet(gate, saved: saved), gate);
 
 void main() {
   group('live payloads', () {
@@ -192,7 +243,8 @@ void main() {
 
       expect(adapter.requests.single.path, EndPoints.recipes);
       expect(adapter.requests.single.queryParameters, {'page': 2, 'limit': 20});
-      expect(page.items, hasLength(2));
+      expect(page.model.items, hasLength(2));
+      expect(page.raw, _fixture('recipes_list_fixture.json'));
     });
 
     test('getRecipe GETs /v1/recipes/:slug', () async {
@@ -202,7 +254,7 @@ void main() {
         ),
       );
 
-      final recipe = await dataSource.getRecipe('machboos');
+      final recipe = (await dataSource.getRecipe('machboos')).model;
 
       expect(adapter.requests.single.path, EndPoints.recipe('machboos'));
       expect(recipe.steps, hasLength(5));
@@ -212,21 +264,42 @@ void main() {
   group('RecipesRepositoryImpl', () {
     test('maps entities; a 404 keeps its status', () async {
       final remote = _ScriptedRemote();
-      final repository = RecipesRepositoryImpl(remote);
+      final repository = _repository(remote);
 
       expect(
-        (await repository.getRecipes(page: 1, limit: 20)).isRight(),
+        (await repository.getRecipes(page: 2, limit: 20)).isRight(),
         isTrue,
       );
-      expect((await repository.getRecipe('machboos')).isRight(), isTrue);
+      expect(
+        (await repository.watchRecipe('machboos').last).data.summary.slug,
+        'machboos',
+      );
 
       remote.error = const NotFoundException('Recipe not found');
-      final missing = await repository.getRecipe('nope');
 
-      expect(
-        missing.swap().getOrElse(() => throw StateError('right')),
-        isA<ServerFailure>().having((f) => f.statusCode, 'statusCode', 404),
+      await expectLater(
+        repository.watchRecipe('nope'),
+        emitsError(
+          isA<ServerFailure>().having((f) => f.statusCode, 'statusCode', 404),
+        ),
       );
+    });
+
+    test('the first page and a recipe paint from the device copy', () async {
+      final remote = _ScriptedRemote();
+      final repository = _repository(remote);
+      await repository.watchRecipes(limit: 20).drain<void>();
+      await repository.watchRecipe('machboos').drain<void>();
+      await pumpEventQueue();
+      remote.error = const NoInternetConnectionException();
+
+      final list = await repository.watchRecipes(limit: 20).toList();
+      final recipe = await repository.watchRecipe('machboos').toList();
+
+      expect(list.single.isFromCache, isTrue);
+      expect(list.single.data.recipes, hasLength(2));
+      expect(recipe.single.isFromCache, isTrue);
+      expect(remote.detailReads, 1, reason: 'a fresh copy ends the read');
     });
   });
 
@@ -235,7 +308,7 @@ void main() {
       'RecipesCubit pages, merges, and stops auto-paging after a failure',
       () async {
         final gate = _GatedGetRecipes();
-        final cubit = RecipesCubit(gate);
+        final cubit = _recipesCubit(gate);
 
         final first = cubit.load();
         gate.calls[0].complete(Right(_feed(1, ['a', 'b'], hasMore: true)));
@@ -262,7 +335,7 @@ void main() {
 
     test('a page of the previous list is dropped after a refresh', () async {
       final gate = _GatedGetRecipes();
-      final cubit = RecipesCubit(gate);
+      final cubit = _recipesCubit(gate);
       final first = cubit.load();
       gate.calls[0].complete(Right(_feed(1, ['a'], hasMore: true)));
       await first;
@@ -282,7 +355,7 @@ void main() {
 
     test('RecipeDetailCubit: an unknown slug is "not found"', () async {
       final cubit = RecipeDetailCubit(
-        _StubGetRecipeDetail(
+        _StubWatchRecipe(
           const Left(ServerFailure('Recipe not found', statusCode: 404)),
         ),
         slug: 'nope',
@@ -291,6 +364,63 @@ void main() {
       await cubit.load();
 
       expect(cubit.state.isNotFound, isTrue);
+      await cubit.onReconnected();
+      expect(cubit.state.isNotFound, isTrue, reason: 'never asked again');
+      await cubit.close();
+    });
+
+    test('RecipesCubit: a saved first page at once; reconnect refreshes '
+        'it once, then retries a failed page', () async {
+      final gate = _GatedGetRecipes();
+      final cubit = _recipesCubit(
+        gate,
+        saved: _feed(1, ['saved'], hasMore: true),
+      );
+
+      final first = cubit.load();
+      await pumpEventQueue();
+      expect(cubit.state.feed.recipes.single.id, 'saved');
+      expect(cubit.state.freshness.fromCache, isTrue);
+      gate.calls[0].complete(const Left(NetworkFailure()));
+      await first;
+      expect(cubit.state.status, RecipesStatus.loaded);
+      expect(cubit.state.freshness.isStale, isTrue);
+
+      final reconnected = cubit.onReconnected();
+      gate.calls[1].complete(Right(_feed(1, ['a'], hasMore: true)));
+      await reconnected;
+      expect(cubit.state.feed.recipes.single.id, 'a');
+      expect(cubit.state.freshness.isStale, isFalse);
+
+      final more = cubit.loadMore();
+      gate.calls[2].complete(const Left(NetworkFailure()));
+      await more;
+      final retried = cubit.onReconnected();
+      gate.calls[3].complete(Right(_feed(2, ['b'], hasMore: false)));
+      await retried;
+
+      expect([for (final r in cubit.state.feed.recipes) r.id], ['a', 'b']);
+      expect(gate.requests.map((r) => r.page), [1, 1, 2, 2]);
+      await cubit.close();
+    });
+
+    test('RecipeDetailCubit: nothing saved + offline keeps the reason; '
+        'reconnect loads it', () async {
+      final watch = _StubWatchRecipe(const Left(NetworkFailure()));
+      final cubit = RecipeDetailCubit(watch, slug: 'machboos');
+
+      await cubit.load();
+      expect(cubit.state.status, RecipeDetailStatus.error);
+      expect(cubit.state.failure, isA<NetworkFailure>());
+
+      watch.reply = Right(
+        RecipeDetailModel.fromJson(_fixture('recipe_detail_fixture.json'))
+            .toEntity(),
+      );
+      await cubit.onReconnected();
+
+      expect(cubit.state.status, RecipeDetailStatus.loaded);
+      expect(watch.reads, [false, true]);
       await cubit.close();
     });
   });

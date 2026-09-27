@@ -10,7 +10,7 @@ enum HomePopupFrequency { session, day }
 
 /// What home needs from the launch snapshot (`GET /v1/init`): where we deliver
 /// to (the header), the Pro programme (the Pro banner) and the marketing
-/// popups. Home still renders without it — see `GetHomeBootstrapUseCase`.
+/// popups. Home still renders without it — see `WatchHomeBootstrapUseCase`.
 class HomeBootstrap extends Equatable {
   const HomeBootstrap({
     this.storeName = '',

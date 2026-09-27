@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/spring_curve.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../domain/entities/profile_field.dart';
 import '../../cubit/profile_cubit.dart';
@@ -80,8 +80,14 @@ class ProfileEditListener extends StatelessWidget {
               previous.failure != current.failure &&
               current.customer != null,
           listener: (context, state) {
-            Haptics.warning();
-            showJameiaSnackBar(context, state.failure!.localizedMessage);
+            // Offline, the banner's nudge is the haptic.
+            if (!ConnectivityScope.readIsOffline(context)) Haptics.warning();
+            // A failed save keeps every field as typed; a reload is a read.
+            showFailureSnackBar(
+              context,
+              state.failure!,
+              action: state.status == ProfileStatus.error,
+            );
           },
         ),
         BlocListener<ProfileCubit, ProfileState>(

@@ -3,13 +3,21 @@
 // shell and only on days the policy allows; the launcher steps aside while
 // scrolling down and comes back on another tab; the outcomes are recorded;
 // a newcomer is invited to the tour, which the launcher makes way for and
-// hands back from with a hop and a short "I'm right here".
+// hands back from with a hop and a short "I'm right here". The launcher's
+// thoughts open every visit with a greeting and one more line in the same
+// bubble, then come one at a time — a new topic each, further apart every
+// few, resting after a visit's worth; they play their whole line, keep the
+// launcher out while scrolling, hold the greeting back until said, wait
+// behind the chat and, back from it, ask if there is anything else.
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_outcome.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_buddy_cubit.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_buddy_scene.dart';
+import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thought.dart';
 
 import 'assistant_nudge_fakes.dart';
 
@@ -266,7 +274,7 @@ void main() {
     });
 
     test(
-      'it hands back with a hop and says where the launcher lives',
+      'it hands back with a hop and thinks where the launcher lives',
       () async {
         cubit.setScene(home);
         await cubit.tourStarted();
@@ -274,27 +282,315 @@ void main() {
         cubit.tourEnded(coach: true);
         expect(cubit.state.touring, isFalse);
         expect(cubit.state.cheers, cheers + 1);
-        expect(cubit.state.coaching, isTrue);
+        expect(cubit.state.thought, AssistantThought.coach);
         expect(cubit.state.launcherShown, isTrue);
-        await wait(120);
-        expect(cubit.state.coaching, isFalse, reason: 'it goes by itself');
+        cubit.thoughtSaid(AssistantThought.coach);
+        expect(cubit.state.thought, AssistantThought.coach, reason: 'alone');
+        cubit.thoughtDone(AssistantThought.coach);
+        expect(cubit.state.thought, isNull);
       },
     );
 
-    test('a touch ends the coach early', () async {
+    test('a touch lets the coach finish its line', () async {
       cubit.setScene(home);
       await cubit.tourStarted();
       cubit.tourEnded(coach: true);
       cubit.touched();
-      expect(cubit.state.coaching, isFalse);
+      expect(cubit.state.thought, AssistantThought.coach);
     });
 
     test('off to the chat: no coach', () async {
       cubit.setScene(home);
       await cubit.tourStarted();
       cubit.tourEnded(coach: false);
-      expect(cubit.state.coaching, isFalse);
+      expect(cubit.state.thought, isNull);
       expect(cubit.state.touring, isFalse);
     });
+  });
+
+  group('the thoughts', () {
+    late AssistantBuddyCubit thinker;
+
+    Future<AssistantBuddyCubit> thinking({
+      AssistantNudgeLog? log,
+      Duration every = const Duration(days: 1),
+      int seed = 1,
+    }) async {
+      if (log != null) repository.log = log;
+      final created = buddyCubit(
+        repository,
+        clock: () => now,
+        thinkAfter: const Duration(milliseconds: 40),
+        thinkEvery: every,
+        random: Random(seed),
+      );
+      await created.start();
+      return created;
+    }
+
+    tearDown(() => thinker.close());
+
+    test('a visit opens with a greeting once the launcher has been on screen '
+        'a moment, with nothing written to the device', () async {
+      thinker = await thinking();
+      thinker.setScene(search);
+      expect(thinker.state.thought, isNull, reason: 'not on arrival');
+      await wait();
+      expect(thinker.state.thought?.opens, isTrue);
+      expect(repository.writes, 0);
+    });
+
+    test('a first meeting opens with the hello', () async {
+      thinker = await thinking(log: AssistantNudgeLog.empty);
+      thinker.setScene(search);
+      await wait();
+      expect(thinker.state.thought, AssistantThought.hello);
+    });
+
+    test('every opening of the app greets — also on a day the greeting '
+        'keeps quiet', () async {
+      final quiet = AssistantNudgeLog.empty
+          .onboarded(DateTime(2026))
+          .record(AssistantNudgeOutcome.dismissed, now);
+      for (var opening = 0; opening < 3; opening++) {
+        thinker = await thinking(log: quiet, seed: opening);
+        thinker.setScene(search);
+        await wait();
+        expect(thinker.state.thought?.opens, isTrue);
+        await thinker.close();
+      }
+      thinker = await thinking();
+    });
+
+    test('the greeting hands over to one more line in the same bubble, then '
+        'it rests', () async {
+      thinker = await thinking();
+      thinker.setScene(search);
+      await wait();
+      final opener = thinker.state.thought!;
+      thinker.thoughtSaid(opener);
+      final second = thinker.state.thought;
+      expect(second, isNotNull, reason: 'handed over at once');
+      expect(second!.opens, isFalse);
+      thinker.thoughtSaid(second);
+      expect(thinker.state.thought, second, reason: 'nothing follows it');
+      thinker.thoughtDone(second);
+      expect(thinker.state.thought, isNull);
+      await wait();
+      expect(thinker.state.thought, isNull, reason: 'the next waits its turn');
+    });
+
+    test('a touch lets the line finish', () async {
+      thinker = await thinking();
+      thinker.setScene(search);
+      await wait();
+      final line = thinker.state.thought;
+      thinker.touched();
+      expect(thinker.state.thought, line);
+    });
+
+    test('later lines come one at a time, a new topic each, further apart '
+        'every few', () async {
+      thinker = await thinking(every: const Duration(milliseconds: 100));
+      thinker.setScene(search);
+      await wait();
+      final said = <AssistantThought>[thinker.state.thought!];
+      thinker.thoughtSaid(said.last);
+      said.add(thinker.state.thought!);
+      for (
+        var session = 2;
+        session <= AssistantBuddyCubit.sessionsPerRound;
+        session++
+      ) {
+        thinker
+          ..thoughtSaid(said.last)
+          ..thoughtDone(said.last);
+        expect(thinker.state.thought, isNull, reason: 'a pause between');
+        await wait(50);
+        expect(thinker.state.thought, isNull, reason: 'not yet');
+        await wait(150);
+        said.add(thinker.state.thought!);
+        expect(said.last.opens, isFalse);
+      }
+      for (var i = 1; i < said.length; i++) {
+        expect(said[i].topic, isNot(said[i - 1].topic));
+      }
+      expect(said.toSet(), hasLength(said.length), reason: 'no repeats');
+      // A stretch said: twice the pause now (200 ms here).
+      thinker
+        ..thoughtSaid(said.last)
+        ..thoughtDone(said.last);
+      await wait(150);
+      expect(thinker.state.thought, isNull, reason: 'a longer pause');
+      await wait(150);
+      expect(thinker.state.thought, isNotNull);
+    });
+
+    test('scrolling down keeps the launcher until its line is said — and '
+        'then no second line', () async {
+      thinker = await thinking();
+      thinker.setScene(search);
+      await wait();
+      final opener = thinker.state.thought!;
+      thinker.scrollStarted(towardsEnd: true);
+      expect(thinker.state.launcherShown, isTrue);
+      thinker
+        ..scrollStopped()
+        ..thoughtSaid(opener);
+      expect(thinker.state.thought, opener, reason: 'no hand-over');
+      thinker.thoughtDone(opener);
+      expect(thinker.state.launcherShown, isFalse, reason: 'now it tucks away');
+    });
+
+    test('the greeting waits for the lines to be said', () async {
+      thinker = await thinking();
+      thinker.setScene(home);
+      await wait();
+      final opener = thinker.state.thought!;
+      thinker.touched();
+      await wait();
+      expect(thinker.state.nudge, isNull, reason: 'the lines come first');
+      thinker.thoughtSaid(opener);
+      final second = thinker.state.thought!;
+      thinker
+        ..thoughtSaid(second)
+        ..thoughtDone(second);
+      await wait();
+      expect(thinker.state.nudge, isNotNull);
+      expect(thinker.state.thought, isNull);
+    });
+
+    test('back after a while is a new visit: it greets again; a quick look '
+        'away is not', () async {
+      thinker = await thinking();
+      thinker.setScene(search);
+      await wait();
+      thinker.thoughtDone(thinker.state.thought!);
+
+      thinker.appPaused();
+      now = now.add(const Duration(seconds: 10));
+      thinker.appResumed();
+      await wait();
+      expect(thinker.state.thought, isNull, reason: 'the same visit');
+
+      thinker.appPaused();
+      now = now.add(AssistantBuddyCubit.defaultVisitGap);
+      thinker.appResumed();
+      expect(thinker.state.thought, isNull, reason: 'not on arrival');
+      await wait();
+      expect(thinker.state.thought?.opens, isTrue);
+    });
+
+    test('nothing starts while the app is away; a line left over from an '
+        'earlier visit goes', () async {
+      thinker = await thinking();
+      thinker
+        ..setScene(search)
+        ..appPaused();
+      await wait();
+      expect(thinker.state.thought, isNull, reason: 'nobody sees it');
+
+      thinker.appResumed();
+      await wait();
+      expect(thinker.state.thought?.opens, isTrue);
+      thinker.appPaused();
+      now = now.add(const Duration(hours: 2));
+      thinker.appResumed();
+      expect(thinker.state.thought, isNull);
+      await wait();
+      expect(thinker.state.thought?.opens, isTrue);
+    });
+
+    test('never with a screen reader, nor while scrolling', () async {
+      thinker = await thinking();
+      thinker.setScene(
+        const AssistantBuddyScene(
+          place: 'search',
+          available: true,
+          launcherHere: true,
+          screenReader: true,
+        ),
+      );
+      await wait();
+      expect(thinker.state.thought, isNull);
+      await thinker.close();
+
+      thinker = await thinking();
+      thinker
+        ..setScene(search)
+        ..scrollStarted(towardsEnd: false);
+      await wait();
+      expect(thinker.state.thought, isNull, reason: 'still scrolling');
+      thinker.scrollStopped();
+      await wait();
+      expect(thinker.state.thought?.opens, isTrue);
+    });
+
+    test('only the thought that ended goes', () async {
+      thinker = await thinking();
+      thinker.setScene(search);
+      await wait();
+      final opener = thinker.state.thought;
+      thinker.thoughtDone(AssistantThought.coach);
+      thinker.thoughtSaid(AssistantThought.coach);
+      expect(thinker.state.thought, opener);
+    });
+
+    test('opening the chat answers it; the next line waits for the way '
+        'back', () async {
+      const underChat = AssistantBuddyScene(
+        place: 'search',
+        available: true,
+        launcherHere: true,
+        inFront: false,
+      );
+      thinker = await thinking(every: const Duration(milliseconds: 60));
+      thinker.setScene(search);
+      await wait();
+      await thinker.launcherOpened();
+      expect(thinker.state.thought, isNull);
+      thinker.setScene(underChat);
+      await wait(150);
+      expect(thinker.state.thought, isNull, reason: 'none behind the chat');
+      thinker.setScene(search);
+      expect(thinker.state.thought, isNull, reason: 'not on the way back');
+      await wait(150);
+      expect(thinker.state.thought, AssistantThought.anythingElse);
+
+      thinker.thoughtDone(AssistantThought.anythingElse);
+      await wait(150);
+      final next = thinker.state.thought;
+      expect(next, isNotNull);
+      expect(next, isNot(AssistantThought.anythingElse), reason: 'once');
+      expect(next!.opens, isFalse, reason: 'already greeted');
+    });
+
+    test(
+      "after a visit's worth of lines it rests until the next visit",
+      () async {
+        thinker = await thinking(every: const Duration(milliseconds: 10));
+        thinker.setScene(search);
+        await wait();
+        thinker.thoughtDone(thinker.state.thought!);
+        for (
+          var sessions = 1;
+          sessions < AssistantBuddyCubit.maxSessionsPerVisit;
+          sessions++
+        ) {
+          await wait(150);
+          final line = thinker.state.thought;
+          expect(line, isNotNull, reason: 'line ${sessions + 1}');
+          thinker.thoughtDone(line!);
+        }
+        await wait(300);
+        expect(thinker.state.thought, isNull, reason: 'resting');
+
+        thinker.appPaused();
+        now = now.add(AssistantBuddyCubit.defaultVisitGap);
+        thinker.appResumed();
+        await wait();
+        expect(thinker.state.thought?.opens, isTrue, reason: 'a new visit');
+      },
+    );
   });
 }

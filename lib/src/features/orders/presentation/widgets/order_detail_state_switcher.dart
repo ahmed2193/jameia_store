@@ -1,20 +1,26 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/error/failures.dart';
 import '../../../../core/motion/fade_through_switcher.dart';
+import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
+import '../../../../core/widgets/failure_view.dart';
 import '../../../../core/widgets/jameia_state_view.dart';
 
 /// The state swap the order detail pages (tracking, invoice, review) share:
-/// the loaded [content] when there is one, else — when [failed] — the
-/// sign-in prompt (signed out) or the error view with a retry, else the
-/// loader. It fades through only when that bucket changes: a poll or an edit
-/// that updates the content keeps the key, so the body updates in place.
+/// the loaded [content] when there is one, else — when the load [failure]d —
+/// the sign-in prompt (signed out) or [FailureView] (a lost connection:
+/// "Checking your connection…" until the app knows, then a reload by itself
+/// or "No connection", which loads the page when the connection returns;
+/// anything else: the error with a retry), else the loader. It fades
+/// through only when that bucket changes: a poll or an edit that updates
+/// the content keeps the key, so the body updates in place.
 class OrderDetailStateSwitcher extends StatelessWidget {
   const OrderDetailStateSwitcher({
     super.key,
     required this.content,
-    required this.failed,
+    required this.failure,
     required this.isSignedOut,
     required this.onRetry,
     this.errorMessage,
@@ -23,29 +29,35 @@ class OrderDetailStateSwitcher extends StatelessWidget {
   /// The page body, or `null` while there is nothing to show yet.
   final Widget? content;
 
-  /// The page's load failed (its status is `error`).
-  final bool failed;
+  /// Why the page could not load; `null` while it loads or shows.
+  final Failure? failure;
   final bool isSignedOut;
 
-  /// Defaults to the kit's generic "something went wrong".
+  /// Replaces the failure's own message (a page that knows better, e.g. an
+  /// order that no longer exists).
   final String? errorMessage;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     final content = this.content;
+    final failure = this.failure;
     final (_Bucket bucket, Widget child) = content != null
         ? (_Bucket.content, content)
-        : failed
+        : failure != null
         ? (
             _Bucket.error,
             isSignedOut
                 ? JameiaStateView.signedOut(
                     message: 'orders.sign_in_required'.tr(),
                   )
-                : JameiaStateView.error(
-                    message: errorMessage,
+                : FailureView(
+                    failure: failure,
                     onRetry: onRetry,
+                    error: JameiaStateView.error(
+                      message: errorMessage ?? failure.localizedMessage,
+                      onRetry: onRetry,
+                    ),
                   ),
           )
         : (_Bucket.loading, const AppLoader());

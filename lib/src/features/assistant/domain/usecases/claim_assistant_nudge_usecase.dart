@@ -38,17 +38,16 @@ class ClaimAssistantNudgeUseCase
   Future<Either<Failure, AssistantNudge?>> call(
     ClaimAssistantNudgeParams params,
   ) async {
-    final read = await _repository.getLog();
-    return read.fold(Left.new, (log) async {
-      if (!policy.allows(log, params.at)) return const Right(null);
-      final saved = await _repository.saveLog(log.shownAt(params.at));
-      return saved.map(
-        (_) => AssistantNudge.compose(
-          at: params.at,
-          hasCartItems: params.hasCartItems,
-          firstMeeting: !log.isOnboarded,
-        ),
+    AssistantNudge? nudge;
+    final updated = await _repository.updateLog((log) {
+      if (!policy.allows(log, params.at)) return log;
+      nudge = AssistantNudge.compose(
+        at: params.at,
+        hasCartItems: params.hasCartItems,
+        firstMeeting: !log.isOnboarded,
       );
+      return log.shownAt(params.at);
     });
+    return updated.map((_) => nudge);
   }
 }

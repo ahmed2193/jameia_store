@@ -5,13 +5,14 @@ import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/orders/domain/entities/cancel_order_request.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
 
 import 'fake_orders_repository.dart';
 
 import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_state.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 
 void main() {
   late FakeOrdersRepository repository;
@@ -19,6 +20,7 @@ void main() {
   OrdersCubit build() {
     repository = FakeOrdersRepository();
     return OrdersCubit(
+      watchFirstPage: WatchOrdersUseCase(repository),
       getOrders: GetOrdersUseCase(repository),
       getOrder: GetOrderUseCase(repository),
       cancelOrder: CancelOrderUseCase(repository),

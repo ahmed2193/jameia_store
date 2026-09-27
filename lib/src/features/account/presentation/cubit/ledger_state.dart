@@ -1,85 +1,67 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/data_freshness.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 import '../../domain/entities/ledger.dart';
 import '../../domain/entities/ledger_change.dart';
 import '../../domain/entities/ledger_entry.dart';
 
-enum LedgerStatus { initial, loading, loaded, error }
-
-/// Which call produced [LedgerState.failure].
-enum LedgerAction { load, refresh, loadMore }
-
 /// A wallet / points history screen: the loaded [ledger] and its paging.
-class LedgerState<T extends LedgerEntry> extends Equatable {
+class LedgerState<T extends LedgerEntry> extends Equatable
+    implements ScreenLoadState<LedgerState<T>> {
   LedgerState({
-    this.status = LedgerStatus.initial,
+    this.load = const ScreenLoad(),
     Ledger<T>? ledger,
-    this.isLoadingMore = false,
-    this.loadMoreFailed = false,
     this.change = LedgerChange.none,
     this.changeSerial = 0,
-    this.failure,
-    this.failedAction,
   }) : ledger = ledger ?? Ledger<T>.empty();
 
-  final LedgerStatus status;
+  /// The first page's read, its freshness, the next page and the failure
+  /// that goes with them.
+  @override
+  final ScreenLoad load;
   final Ledger<T> ledger;
-  final bool isLoadingMore;
 
-  /// The last next-page request failed (the footer offers a retry).
-  final bool loadMoreFailed;
-
-  /// What the last pull-to-refresh that moved something changed (balance
-  /// delta, new lines); [LedgerChange.none] until then. Kept until the next
-  /// such refresh — the screen reacts to [changeSerial], not to its value.
+  /// What the last refresh that moved something changed (balance delta, new
+  /// lines) — a pull-to-refresh, or the server's answer over the saved copy;
+  /// [LedgerChange.none] until then. Kept until the next such refresh — the
+  /// screen reacts to [changeSerial], not to its value.
   final LedgerChange change;
 
   /// Bumped by every refresh that brought a [change]; each bump plays the
   /// balance delta / new-line highlight once.
   final int changeSerial;
 
-  /// Transient — cleared on every [copyWith]; the page localizes it.
-  final Failure? failure;
+  LoadPhase get status => load.phase;
+  DataFreshness get freshness => load.freshness;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
+  bool get isLoadingMore => load.isLoadingMore;
 
-  /// Transient, set together with [failure].
-  final LedgerAction? failedAction;
-
-  bool get isLoaded => status == LedgerStatus.loaded;
+  /// The last next-page request failed (the footer offers a retry; offline
+  /// it waits for the connection).
+  bool get loadMoreFailed => load.nextPageFailed;
 
   /// The customer route answered 401: the sign-in prompt, not an error.
-  bool get isSignedOut =>
-      status == LedgerStatus.error && failure is UnauthorizedFailure;
+  bool get isSignedOut => load.isSignedOut;
+
+  @override
+  LedgerState<T> withLoad(ScreenLoad load) => copyWith(load: load);
 
   LedgerState<T> copyWith({
-    LedgerStatus? status,
+    ScreenLoad? load,
     Ledger<T>? ledger,
-    bool? isLoadingMore,
-    bool? loadMoreFailed,
     LedgerChange? change,
     int? changeSerial,
-    Failure? failure,
-    LedgerAction? failedAction,
   }) => LedgerState<T>(
-    status: status ?? this.status,
+    load: load ?? this.load.settled(),
     ledger: ledger ?? this.ledger,
-    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-    loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
     change: change ?? this.change,
     changeSerial: changeSerial ?? this.changeSerial,
-    failure: failure,
-    failedAction: failedAction,
   );
 
   @override
-  List<Object?> get props => [
-    status,
-    ledger,
-    isLoadingMore,
-    loadMoreFailed,
-    change,
-    changeSerial,
-    failure,
-    failedAction,
-  ];
+  List<Object?> get props => [load, ledger, change, changeSerial];
 }

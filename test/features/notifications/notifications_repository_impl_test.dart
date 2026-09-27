@@ -1,11 +1,16 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:jameia_mart/src/features/notifications/data/datasources/notifications_cache_data_source.dart';
 import 'package:jameia_mart/src/features/notifications/data/repositories/notifications_repository_impl.dart';
 import 'package:jameia_mart/src/features/notifications/domain/entities/notification_entity.dart';
 import 'package:jameia_mart/src/features/notifications/domain/entities/notifications_feed.dart';
 
+import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
 import 'notifications_test_fakes.dart';
 
 void main() {
@@ -14,7 +19,10 @@ void main() {
 
   setUp(() {
     remote = FakeNotificationsRemoteDataSource();
-    repository = NotificationsRepositoryImpl(remote);
+    repository = NotificationsRepositoryImpl(
+      remote,
+      cache: notificationsCache(),
+    );
   });
 
   test('getNotifications forwards the query and maps to a feed', () async {
@@ -159,4 +167,41 @@ void main() {
       );
     },
   );
+
+  group('the first page on the device', () {
+    test('paints from the copy; all and unread are two entries', () async {
+      await repository.watchFirstPage(limit: 20).drain<void>();
+      await pumpEventQueue();
+      remote.error = const NoInternetConnectionException();
+
+      final all = await repository.watchFirstPage(limit: 20).toList();
+
+      expect(all.single.isFromCache, isTrue);
+      expect(all.single.data.items.single.id, 'n1');
+      expect(remote.calls, hasLength(1), reason: 'a fresh copy ends the read');
+      await expectLater(
+        repository.watchFirstPage(limit: 20, unreadOnly: true),
+        emitsError(isA<NetworkFailure>()),
+      );
+    });
+
+    test('nothing is kept for a guest', () async {
+      final store = InMemoryJsonCacheStore();
+      final guest = NotificationsRepositoryImpl(
+        remote,
+        cache: NotificationsCacheDataSourceImpl(
+          CacheSlots(
+            store: store,
+            owner: CacheOwner()..signedOut(),
+            locale: FakeLocaleProvider('en'),
+          ),
+        ),
+      );
+
+      await guest.watchFirstPage(limit: 20).drain<void>();
+      await pumpEventQueue();
+
+      expect(store.writes, 0);
+    });
+  });
 }

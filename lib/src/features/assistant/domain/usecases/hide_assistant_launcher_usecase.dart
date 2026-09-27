@@ -25,12 +25,9 @@ class HideAssistantLauncherUseCase
 
   @override
   Future<Either<Failure, Unit>> call(HideAssistantLauncherParams params) async {
-    final read = await _repository.getLog();
-    return read.fold(
-      Left.new,
-      (log) => _repository.saveLog(
-        log.hideLauncherUntil(AssistantNudgePolicy.endOfDay(params.at)),
-      ),
+    final updated = await _repository.updateLog(
+      (log) => log.hideLauncherUntil(AssistantNudgePolicy.endOfDay(params.at)),
     );
+    return updated.map((_) => unit);
   }
 }

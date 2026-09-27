@@ -25,10 +25,13 @@ import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_us
 import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
 import 'package:jameia_mart/src/features/orders/presentation/pages/orders_page.dart';
+import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/fake_cart_repository.dart';
@@ -68,6 +71,7 @@ void main() {
     // The page resolves its cubit from the locator, like every page does.
     sl.registerFactory<OrdersCubit>(
       () => OrdersCubit(
+        watchFirstPage: WatchOrdersUseCase(repository),
         getOrders: GetOrdersUseCase(repository),
         getOrder: GetOrderUseCase(repository),
         cancelOrder: CancelOrderUseCase(repository),
@@ -81,7 +85,11 @@ void main() {
     await cartRepository.dispose();
   });
 
-  Future<void> pump(WidgetTester tester, {required bool active}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    required bool active,
+    bool offline = false,
+  }) async {
     await tester.runAsync(() async {
       await tester.pumpWidget(
         EasyLocalization(
@@ -95,7 +103,12 @@ void main() {
                 locale: context.locale,
                 supportedLocales: context.supportedLocales,
                 localizationsDelegates: context.localizationDelegates,
-                home: OrdersPage(active: active),
+                home: ConnectivityScope(
+                  isOffline: offline,
+                  reconnectEpoch: 0,
+                  onNudge: () {},
+                  child: OrdersPage(active: active),
+                ),
               ),
             ),
           ),
@@ -134,5 +147,34 @@ void main() {
     await pump(tester, active: true);
 
     expect(listCalls(), afterOpen);
+  });
+
+  testWidgets('offline, coming back to the tab asks nothing', (tester) async {
+    await pump(tester, active: true, offline: true);
+    final afterOpen = listCalls();
+
+    await pump(tester, active: false, offline: true);
+    await pump(tester, active: true, offline: true);
+
+    expect(
+      listCalls(),
+      afterOpen,
+      reason: 'it could only fail: the reconnect refresh catches up',
+    );
+  });
+
+  testWidgets('offline with nothing saved: No connection; retry loads', (
+    tester,
+  ) async {
+    repository.listFailure = const NetworkFailure();
+    await pump(tester, active: true, offline: true);
+
+    expect(find.text('No connection'), findsOneWidget);
+
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No connection'), findsNothing);
+    expect(listCalls(), 2);
   });
 }

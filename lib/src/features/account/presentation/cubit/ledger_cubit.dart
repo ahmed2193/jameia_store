@@ -1,110 +1,77 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
+import '../../../../core/utils/performance/snapshot_loader_mixin.dart';
+import '../../domain/entities/ledger.dart';
 import '../../domain/entities/ledger_change.dart';
 import '../../domain/entities/ledger_entry.dart';
 import '../../domain/usecases/get_ledger_usecase.dart';
+import '../../domain/usecases/watch_ledger_usecase.dart';
 import 'ledger_state.dart';
 
-/// Page-scoped cubit of a wallet / points history screen: first page,
-/// pull-to-refresh and the next pages. The list maths lives in `Ledger`;
-/// this only sequences the calls.
+/// Page-scoped cubit of a wallet / points history screen: the first page
+/// (the device copy first, offline too, then the server's), pull-to-refresh
+/// and the next pages. The list maths lives in `Ledger`, the screen flow in
+/// the loader mixins; this only maps the pages.
 class LedgerCubit<T extends LedgerEntry> extends Cubit<LedgerState<T>>
-    with SafeCubitMixin<LedgerState<T>> {
-  LedgerCubit(this._getLedger) : super(LedgerState<T>());
+    with
+        SafeCubitMixin<LedgerState<T>>,
+        SnapshotLoaderMixin<LedgerState<T>>,
+        ScreenLoaderMixin<LedgerState<T>>,
+        PagedScreenMixin<LedgerState<T>> {
+  LedgerCubit(this._watchFirstPage, this._getLedger) : super(LedgerState<T>());
 
   static const int pageSize = 20;
-  static const int _firstPage = 1;
 
+  final WatchLedgerUseCase<T> _watchFirstPage;
   final GetLedgerUseCase<T> _getLedger;
 
-  /// Bumped by every first-page load: a next page that was in flight when a
-  /// newer first page started would append page N+1 onto a fresh page 1, so
-  /// its reply is dropped.
-  int _generation = 0;
-
-  /// Bumped by every next-page request: once a refresh has reset the paging
-  /// a newer request may own the "loading more" flag, and a stale reply must
-  /// not clear it under that request.
-  int _moreRequest = 0;
-
-  /// First load (or retry after an error): full-screen loader, then page 1.
-  Future<void> load() async {
-    safeEmit(state.copyWith(status: LedgerStatus.loading));
-    await _loadFirstPage(LedgerAction.load);
+  /// First load (or retry after an error): the skeleton only while nothing
+  /// is on screen, then page 1.
+  Future<void> load() {
+    showLoading();
+    return _readFirstPage(forceRefresh: false);
   }
 
-  /// Pull-to-refresh: page 1 again while the current list stays on screen.
-  /// When the balance or the lines moved, [LedgerState.change] says how and
-  /// [LedgerState.changeSerial] ticks (the screen plays the delta once).
-  Future<void> refresh() => _loadFirstPage(LedgerAction.refresh);
+  /// Pull-to-refresh: the server's page 1 while the current list stays on
+  /// screen. When the balance or the lines moved, [LedgerState.change] says
+  /// how and [LedgerState.changeSerial] ticks (the screen plays the delta
+  /// once).
+  @override
+  Future<void> refresh() => _readFirstPage(forceRefresh: true);
 
-  Future<void> _loadFirstPage(LedgerAction action) async {
-    final generation = ++_generation;
-    final result = await _getLedger(
-      const GetLedgerParams(page: _firstPage, limit: pageSize),
-    );
-    if (generation != _generation) return; // superseded by a newer load
-    result.fold(
-      (failure) => safeEmit(
-        state.copyWith(
-          // A failed refresh keeps the list; a failed first load has none.
-          status: state.isLoaded ? LedgerStatus.loaded : LedgerStatus.error,
-          failure: failure,
-          failedAction: action,
+  Future<void> _readFirstPage({required bool forceRefresh}) =>
+      readScreen<Ledger<T>>(
+        _watchFirstPage(
+          WatchLedgerParams(limit: pageSize, forceRefresh: forceRefresh),
         ),
-      ),
-      (ledger) {
-        // Only a refresh of a list already on screen "changes" something the
-        // customer watches; a first load (or a retry) just appears.
-        final change = state.isLoaded
-            ? ledger.changeSince(state.ledger)
-            : LedgerChange.none;
-        final moved = !change.isEmpty;
-        safeEmit(
-          state.copyWith(
-            status: LedgerStatus.loaded,
+        show: (state, snapshot) {
+          final ledger = snapshot.data;
+          // Only a list already on screen "changes" something the customer
+          // watches — a refresh, or the server's answer over the saved copy;
+          // a first load (or a retry) just appears.
+          final change = state.isLoaded
+              ? ledger.changeSince(state.ledger)
+              : LedgerChange.none;
+          final moved = !change.isEmpty;
+          return state.copyWith(
             ledger: ledger,
-            isLoadingMore: false,
-            loadMoreFailed: false,
             change: moved ? change : null,
             changeSerial: moved ? state.changeSerial + 1 : null,
-          ),
-        );
-      },
-    );
-  }
+          );
+        },
+      );
 
-  /// Next page; a no-op while one is in flight, before the first load, or
-  /// when the server has no more.
-  Future<void> loadMore() async {
-    if (!state.isLoaded || !state.ledger.hasMore || state.isLoadingMore) {
-      return;
-    }
-    final generation = _generation;
-    final request = ++_moreRequest;
-    safeEmit(state.copyWith(isLoadingMore: true, loadMoreFailed: false));
-    final result = await _getLedger(
+  /// Next page; a no-op while one is in flight, before the first load, when
+  /// the server has no more, and after a failed page unless [retry].
+  @override
+  Future<void> loadMore({bool retry = false}) => loadNextPage<Ledger<T>>(
+    hasMore: state.ledger.hasMore,
+    retry: retry,
+    fetch: () => _getLedger(
       GetLedgerParams(page: state.ledger.page + 1, limit: pageSize),
-    );
-    if (request != _moreRequest) return; // a newer next page owns the flag
-    if (generation != _generation) {
-      // A refresh replaced the list meanwhile: this page no longer follows it.
-      safeEmit(state.copyWith(isLoadingMore: false));
-      return;
-    }
-    result.fold(
-      (failure) => safeEmit(
-        state.copyWith(
-          isLoadingMore: false,
-          loadMoreFailed: true,
-          failure: failure,
-          failedAction: LedgerAction.loadMore,
-        ),
-      ),
-      (next) => safeEmit(
-        state.copyWith(isLoadingMore: false, ledger: state.ledger.merge(next)),
-      ),
-    );
-  }
+    ),
+    merge: (state, next) => state.copyWith(ledger: state.ledger.merge(next)),
+  );
 }

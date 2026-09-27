@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../config/routes/route_args/login_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/utils/formatters.dart';
@@ -13,9 +14,10 @@ import 'pro_confirm_dialog.dart';
 import 'pro_cta_button.dart';
 
 /// The paywall's CTA for the selected plan: a guest goes to sign-in (`go`, so
-/// the page is rebuilt for the new session); a customer confirms, then
-/// subscribes. Cannot fire twice: disabled while any money action runs. The
-/// label flips to the new price when the customer switches plans.
+/// the page is rebuilt for the new session, and comes back here once signed
+/// in); a customer confirms, then subscribes — a lapsed member "rejoins".
+/// Cannot fire twice: disabled while any money action runs. The label flips
+/// to the new price when the customer switches plans.
 class ProJoinButton extends StatelessWidget {
   const ProJoinButton({super.key});
 
@@ -25,9 +27,17 @@ class ProJoinButton extends StatelessWidget {
     if (plan == null) return 'pro.subscribe'.tr();
     // "/ month" and "/ year" only describe a single-period plan; the price
     // line above the CTA states any other cadence ("Billed every 3 months").
-    final key = plan.intervalCount != 1
-        ? 'pro.join_other'
-        : switch (plan.interval) {
+    final interval = plan.intervalCount != 1
+        ? ProBillingInterval.other
+        : plan.interval;
+    // A lapsed member rejoins; everyone else joins.
+    final key = state.isLapsed
+        ? switch (interval) {
+            ProBillingInterval.month => 'pro.rejoin_month',
+            ProBillingInterval.year => 'pro.rejoin_year',
+            ProBillingInterval.other => 'pro.rejoin_other',
+          }
+        : switch (interval) {
             ProBillingInterval.month => 'pro.join_month',
             ProBillingInterval.year => 'pro.join_year',
             ProBillingInterval.other => 'pro.join_other',
@@ -38,7 +48,11 @@ class ProJoinButton extends StatelessWidget {
   Future<void> _join(BuildContext context, ProPlan plan) async {
     final cubit = context.read<ProMembershipCubit>();
     if (cubit.state.isSignedOut) {
-      context.go(Routes.login);
+      // Back on this page once signed in, rebuilt for the new session.
+      context.go(
+        Routes.login,
+        extra: const LoginArgs(returnTo: Routes.proMembership),
+      );
       return;
     }
     final confirmed = await showJameiaDialog<bool>(
@@ -60,6 +74,7 @@ class ProJoinButton extends StatelessWidget {
     return BlocBuilder<ProMembershipCubit, ProMembershipState>(
       buildWhen: (previous, current) =>
           previous.isSignedOut != current.isSignedOut ||
+          previous.isLapsed != current.isLapsed ||
           previous.selectedPlan != current.selectedPlan ||
           previous.submittingPlanId != current.submittingPlanId ||
           previous.isBusy != current.isBusy,

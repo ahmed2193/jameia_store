@@ -9,7 +9,9 @@ import 'listing_tabs_state.dart';
 
 /// The category tabs of one collection page (`GET /v1/categories` + one
 /// probe per top-level category). Page-scoped. The tabs are a nicety: a
-/// failure hides them and is only logged — the list works without them.
+/// failure is only logged and keeps the tabs on screen (none on a first
+/// load) — the list works without them. A failed load is tried again when
+/// the connection returns.
 class ListingTabsCubit extends Cubit<ListingTabsState>
     with SafeCubitMixin<ListingTabsState> {
   ListingTabsCubit(this._getTabs, {required CatalogProductQuery query})
@@ -34,8 +36,8 @@ class ListingTabsCubit extends Cubit<ListingTabsState>
     if (generation != _generation) return;
     result.fold(
       (failure) {
-        log('category tabs hidden', name: _logName, error: failure);
-        safeEmit(const ListingTabsState(status: ListingTabsStatus.failed));
+        log('category tabs not refreshed', name: _logName, error: failure);
+        safeEmit(state.copyWith(status: ListingTabsStatus.failed));
       },
       (categories) => safeEmit(
         ListingTabsState(
@@ -45,4 +47,9 @@ class ListingTabsCubit extends Cubit<ListingTabsState>
       ),
     );
   }
+
+  /// The connection came back: tabs that failed to load are asked again (a
+  /// reload running already makes this a no-op).
+  Future<void> onReconnected() =>
+      state.status == ListingTabsStatus.failed ? load() : Future<void>.value();
 }

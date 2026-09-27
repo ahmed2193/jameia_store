@@ -23,13 +23,16 @@ import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_us
 import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_card.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_status_chip.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_list.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_load_more_row.dart';
+import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/fake_cart_repository.dart';
@@ -69,6 +72,7 @@ void main() {
       reset: ResetCartUseCase(cartRepository),
     );
     cubit = OrdersCubit(
+      watchFirstPage: WatchOrdersUseCase(repository),
       getOrders: GetOrdersUseCase(repository),
       getOrder: GetOrderUseCase(repository),
       cancelOrder: CancelOrderUseCase(repository),
@@ -81,7 +85,7 @@ void main() {
     await cartRepository.dispose();
   });
 
-  Future<void> pump(WidgetTester tester) async {
+  Future<void> pump(WidgetTester tester, {bool offline = false}) async {
     // EasyLocalization reads its JSON from the bundle: let that real async
     // work finish before the fake clock takes over.
     await tester.runAsync(() async {
@@ -100,7 +104,12 @@ void main() {
                 locale: context.locale,
                 supportedLocales: context.supportedLocales,
                 localizationsDelegates: context.localizationDelegates,
-                home: const Scaffold(body: OrdersList()),
+                home: ConnectivityScope(
+                  isOffline: offline,
+                  reconnectEpoch: 0,
+                  onNudge: () {},
+                  child: const Scaffold(body: OrdersList()),
+                ),
               ),
             ),
           ),
@@ -144,5 +153,35 @@ void main() {
     expect(find.byType(OrderCard), findsNWidgets(3));
     expect(find.byType(OrderStatusChip), findsNWidgets(3));
     expect(find.byType(TabBar), findsNothing);
+  });
+
+  testWidgets(
+    'a next page that failed offline loads when the customer is back',
+    (tester) async {
+      repository.pages = 3;
+      await cubit.load();
+      repository.listFailure = const NetworkFailure();
+      await cubit.loadMore();
+
+      await pump(tester, offline: true);
+
+      expect(find.textContaining('More will load'), findsOneWidget);
+      expect(find.text('Load more'), findsNothing);
+    },
+  );
+
+  testWidgets('online, a failed page offers Load more again', (tester) async {
+    repository.pages = 3;
+    await cubit.load();
+    repository.listFailure = const ServerFailure('down');
+    await cubit.loadMore();
+    await pump(tester);
+
+    expect(find.textContaining('More will load'), findsNothing);
+    await tester.tap(find.text('Load more'));
+    await tester.pumpAndSettle();
+
+    expect(cubit.state.loadMoreFailed, isFalse);
+    expect(cubit.state.feed.orders, hasLength(2));
   });
 }

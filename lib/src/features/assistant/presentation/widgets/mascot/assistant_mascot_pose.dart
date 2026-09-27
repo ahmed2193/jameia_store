@@ -16,6 +16,7 @@ class AssistantMascotPose {
     this.sway = 0,
     this.twinkle = 0,
     this.surprise = 0,
+    this.wink = 0,
   });
 
   /// At rest: eyes open, a small smile, looking ahead.
@@ -47,6 +48,9 @@ class AssistantMascotPose {
   /// `1` = round, wide-open eyes (picked up, dragged).
   final double surprise;
 
+  /// `1` = the eye towards the right edge shut (a wink).
+  final double wink;
+
   static AssistantMascotPose lerp(
     AssistantMascotPose a,
     AssistantMascotPose b,
@@ -60,6 +64,7 @@ class AssistantMascotPose {
     sway: lerpDouble(a.sway, b.sway, t)!,
     twinkle: lerpDouble(a.twinkle, b.twinkle, t)!,
     surprise: lerpDouble(a.surprise, b.surprise, t)!,
+    wink: lerpDouble(a.wink, b.wink, t)!,
   );
 
   @override
@@ -72,9 +77,19 @@ class AssistantMascotPose {
       other.squash == squash &&
       other.sway == sway &&
       other.twinkle == twinkle &&
-      other.surprise == surprise;
+      other.surprise == surprise &&
+      other.wink == wink;
 
   @override
-  int get hashCode =>
-      Object.hash(blink, happy, talk, look, squash, sway, twinkle, surprise);
+  int get hashCode => Object.hash(
+    blink,
+    happy,
+    talk,
+    look,
+    squash,
+    sway,
+    twinkle,
+    surprise,
+    wink,
+  );
 }

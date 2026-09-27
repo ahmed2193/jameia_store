@@ -3,15 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
+import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../../core/widgets/jameia_bottom_bar.dart';
 import '../../cubit/checkout_cubit.dart';
 import '../../cubit/checkout_state.dart';
 import 'checkout_bar_line.dart';
 import 'checkout_bar_total.dart';
+import 'checkout_offline_line.dart';
 import 'checkout_place_button.dart';
 
 /// The pinned place-order bar: the total (and the struck total) over the
-/// rotating fact line at the start, "Place order" at the end. Three
+/// rotating fact line — offline, a calm "You're offline" in its place — at
+/// the start, "Place order" at the end. Three
 /// separate widgets, so a rotation, a roll of the total and a change of the
 /// button never rebuild one another.
 ///
@@ -50,6 +53,7 @@ class _CheckoutPlaceOrderBarState extends State<CheckoutPlaceOrderBar> {
     final placed = context.select<CheckoutCubit, bool>(
       (cubit) => cubit.state.status == CheckoutStatus.placed,
     );
+    final offline = ConnectivityScope.isOfflineOf(context);
     return JameiaBottomBar(
       padding: const EdgeInsetsDirectional.symmetric(
         horizontal: AppSpacing.s12,
@@ -66,7 +70,10 @@ class _CheckoutPlaceOrderBarState extends State<CheckoutPlaceOrderBar> {
                 children: [
                   KeyedSubtree(key: _total, child: const CheckoutBarTotal()),
                   const SizedBox(height: AppSpacing.s2),
-                  const CheckoutBarLine(),
+                  if (offline && !placed)
+                    const CheckoutOfflineLine()
+                  else
+                    const CheckoutBarLine(),
                 ],
               ),
             ),

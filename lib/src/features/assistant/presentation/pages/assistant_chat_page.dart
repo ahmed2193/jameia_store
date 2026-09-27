@@ -16,6 +16,7 @@ import '../../../language/presentation/cubit/localization_state.dart';
 import '../../domain/entities/assistant_thread.dart';
 import '../cubit/assistant_chat_cubit.dart';
 import '../cubit/assistant_chat_state.dart';
+import '../cubit/assistant_voice_cubit.dart';
 import '../widgets/chat/assistant_chat_app_bar.dart';
 import '../widgets/chat/assistant_celebration.dart';
 import '../widgets/chat/assistant_chat_body.dart';
@@ -89,9 +90,19 @@ class AssistantChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AssistantChatCubit>()
-        ..open(conversationId: conversationId, initialPrompt: initialPrompt),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => sl<AssistantChatCubit>()
+            ..open(
+              conversationId: conversationId,
+              initialPrompt: initialPrompt,
+            ),
+        ),
+        // The composer's mic: readied now when already allowed, so the
+        // first press records at once.
+        BlocProvider(create: (_) => sl<AssistantVoiceCubit>()..prepare()),
+      ],
       child: MultiBlocListener(
         listeners: [
           BlocListener<AssistantChatCubit, AssistantChatState>(

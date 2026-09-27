@@ -213,10 +213,11 @@ class AssistantMascotPainter extends CustomPainter {
     final grow = 1 + _surpriseGrow * pose.surprise;
     for (final side in const [-1.0, 1.0]) {
       final center = (Offset(0.5 + side * _eyeX, _eyeY) + face) * u;
+      final blink = side > 0 ? math.max(pose.blink, pose.wink) : pose.blink;
       if (laugh == 0) {
         final height = math.max(
           _eyeMinH,
-          _eyeH * grow * (1 - pose.blink) * (1 - shut),
+          _eyeH * grow * (1 - blink) * (1 - shut),
         );
         canvas.drawOval(
           Rect.fromCenter(
@@ -226,7 +227,7 @@ class AssistantMascotPainter extends CustomPainter {
           ),
           _ink(),
         );
-        if (pose.blink < 0.5 && shut < 0.5) {
+        if (blink < 0.5 && shut < 0.5) {
           canvas.drawCircle(
             center + _glintAt * grow * u,
             _glint * grow * u,

@@ -269,11 +269,15 @@ void main() {
 
   setUp(() {
     detail = ProductDetailCubit(
-      const StubGetDetail(_detail),
+      const StubWatchDetail(_detail),
       const StubGetOffer(),
       slug: _milk.slug,
     );
-    reviews = ProductReviewsCubit(const StubGetReviews(), slug: _milk.slug);
+    reviews = ProductReviewsCubit(
+      const StubWatchReviews(),
+      const StubGetReviews(),
+      slug: _milk.slug,
+    );
     cart = FakeCartCubit();
     session = signedOutSession();
     listings = [];
@@ -294,11 +298,12 @@ void main() {
     await detail.close();
     await reviews.close();
     detail = ProductDetailCubit(
-      StubGetDetail(served),
+      StubWatchDetail(served),
       const StubGetOffer(),
       slug: _milk.slug,
     );
     reviews = ProductReviewsCubit(
+      StubWatchReviews(servedReviews),
       StubGetReviews(servedReviews),
       slug: _milk.slug,
     );

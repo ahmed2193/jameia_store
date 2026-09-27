@@ -20,7 +20,8 @@ import 'api_payload.dart';
 ///     has no body — the backend rejects a JSON content type with none.
 ///
 /// Interceptor order matters and is fixed in `config/di/service_locator.dart`:
-/// auth (Bearer + 401 refresh) → app headers → 429 retry → debug log.
+/// auth (Bearer + 401 refresh) → app headers → 429 retry → reachability
+/// signals → debug log.
 class DioConsumer implements ApiConsumer {
   DioConsumer(this._dio, {List<Interceptor> interceptors = const []}) {
     _dio.options = buildApiBaseOptions();

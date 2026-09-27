@@ -20,7 +20,6 @@ import 'package:jameia_mart/src/core/responsive/app_size.dart';
 import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
 import 'package:jameia_mart/src/core/widgets/jameia_submit_button.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
@@ -35,6 +34,7 @@ import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tr
 import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_painter.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_stepper.dart';
 import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_status_header.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/rebuild_probe.dart';
@@ -98,7 +98,7 @@ OrderEntity _busyOrder({String status = 'picking'}) => _order(
 
 OrderTrackingCubit _trackingCubit(FakeOrdersRepository repository) =>
     OrderTrackingCubit(
-      getOrder: GetOrderUseCase(repository),
+      watchOrder: WatchOrderUseCase(repository),
       cancelOrder: CancelOrderUseCase(repository),
     );
 
@@ -223,7 +223,7 @@ void main() {
   }) async {
     reviewRepository = _NoImageOrdersRepository()..detailStatus = 'delivered';
     reviewCubit = OrderReviewCubit(
-      getOrder: GetOrderUseCase(reviewRepository),
+      watchOrder: WatchOrderUseCase(reviewRepository),
       submitReview: SubmitProductReviewUseCase(reviewRepository),
     );
     addTearDown(reviewCubit.close);

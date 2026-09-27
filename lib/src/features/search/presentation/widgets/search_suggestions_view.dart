@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -6,6 +7,8 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/connectivity_scope.dart';
+import '../../../../core/widgets/offline_inline_note.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../cubit/search_state.dart';
 import 'search_see_all_row.dart';
@@ -16,6 +19,8 @@ import 'search_term_row.dart';
 /// What shows while the customer types: past terms that match, the live
 /// product matches (bone rows until the first reply arrives, a thin bar while
 /// a newer request runs) and, last, "see all results" for the text as typed.
+/// Offline it is the recent terms under "search needs a connection" instead
+/// of products — never bone rows that would not fill, never an empty list.
 class SearchSuggestionsView extends StatelessWidget {
   const SearchSuggestionsView({
     super.key,
@@ -40,8 +45,13 @@ class SearchSuggestionsView extends StatelessWidget {
       (session) => session.state.customer?.isPro ?? false,
     );
     final query = state.query;
+    final offline = state.showsOfflineList(
+      offline: ConnectivityScope.isOfflineOf(context),
+    );
+    final terms = offline ? state.offlineTerms : state.recentMatches;
     // The bar is the only looping motion here: off under reduced motion.
-    final showProgress = state.isSuggesting && !MotionGuard.reduced(context);
+    final showProgress =
+        state.isSuggesting && !offline && !MotionGuard.reduced(context);
     return Column(
       children: [
         SizedBox(
@@ -61,7 +71,9 @@ class SearchSuggestionsView extends StatelessWidget {
               bottom: AppSpacing.section,
             ),
             children: [
-              for (final term in state.recentMatches)
+              if (offline)
+                OfflineInlineNote(message: 'connectivity.search_offline'.tr()),
+              for (final term in terms)
                 SearchTermRow(
                   key: ValueKey<String>('term:$term'),
                   term: term,
@@ -69,7 +81,8 @@ class SearchSuggestionsView extends StatelessWidget {
                   onTap: () => onSearch(term),
                   onRefine: () => onRefine(term),
                 ),
-              if (state.isAwaitingSuggestions)
+              // Offline there are no matches: only the bone rows need holding.
+              if (state.isAwaitingSuggestions && !offline)
                 const SearchSuggestionSkeleton()
               else
                 for (final product in state.suggestions)

@@ -14,13 +14,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/shop/domain/repositories/catalog_browse_repository.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_category_tree_usecase.dart';
+import 'package:jameia_mart/src/features/shop/domain/usecases/watch_category_tree_usecase.dart';
 import 'package:jameia_mart/src/features/shop/presentation/cubit/category_browse_cubit.dart';
 import 'package:jameia_mart/src/features/shop/presentation/widgets/browse/category_rail.dart';
 import 'package:jameia_mart/src/features/shop/presentation/widgets/browse/category_rail_chip.dart';
@@ -28,6 +26,8 @@ import 'package:jameia_mart/src/features/shop/presentation/widgets/browse/catego
 import 'package:jameia_mart/src/features/shop/presentation/widgets/browse/category_rail_header_delegate.dart';
 import 'package:jameia_mart/src/features/shop/presentation/widgets/browse/category_rail_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'shop_test_fakes.dart';
 
 const CatalogCategoryEntity _dairy = CatalogCategoryEntity(
   id: 'c9',
@@ -54,15 +54,11 @@ final CatalogCategoryTree _tree = CatalogCategoryTree(const [
   _dairy,
 ]);
 
-class _TreeRepository implements CatalogBrowseRepository {
+class _TreeRepository extends FakeCatalogBrowseRepository {
   @override
   Future<Either<Failure, CatalogCategoryTree>> getCategoryTree({
     bool refresh = false,
   }) async => Right(_tree);
-
-  @override
-  Future<Either<Failure, List<BrandEntity>>> getBrands() async =>
-      const Right(<BrandEntity>[]);
 
   @override
   Future<Either<Failure, CatalogProductsPage>> getProducts({
@@ -90,7 +86,7 @@ void main() {
   });
 
   setUp(() {
-    cubit = CategoryBrowseCubit(GetCategoryTreeUseCase(_TreeRepository()));
+    cubit = CategoryBrowseCubit(WatchCategoryTreeUseCase(_TreeRepository()));
   });
 
   tearDown(() => cubit.close());

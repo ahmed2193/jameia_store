@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
 import 'package:jameia_mart/src/core/network/locale_provider.dart';
+import 'package:jameia_mart/src/core/network/network_info.dart';
 import 'package:jameia_mart/src/core/network/session_expiry_notifier.dart';
 import 'package:jameia_mart/src/core/network/token_refresher.dart';
 import 'package:jameia_mart/src/core/storage/auth_tokens.dart';
@@ -151,4 +153,63 @@ class RecordingExpiryNotifier implements SessionExpiryNotifier {
 
   @override
   void notifyExpired() => expiredCalls++;
+}
+
+/// A controllable reachability monitor: nothing probes the internet. [emit]
+/// pushes a change; [checkNow] answers [checkResult] (and reports it).
+class FakeNetworkInfo implements NetworkInfo {
+  FakeNetworkInfo({this.isReachable = true, this.checkResult = true});
+
+  final StreamController<bool> _changes = StreamController<bool>.broadcast();
+
+  @override
+  bool? isReachable;
+
+  bool checkResult;
+  int checkCalls = 0;
+  int reachableReports = 0;
+  int transportFailureReports = 0;
+  bool paused = false;
+
+  /// Whether anyone listens (the monitor would be running).
+  bool get hasListener => _changes.hasListener;
+
+  void emit(bool reachable) {
+    isReachable = reachable;
+    _changes.add(reachable);
+  }
+
+  @override
+  Stream<bool> get onReachabilityChanged => _changes.stream;
+
+  @override
+  Future<bool> checkNow() async {
+    checkCalls++;
+    if (isReachable != checkResult) emit(checkResult);
+    return checkResult;
+  }
+
+  @override
+  void reportReachable() => reachableReports++;
+
+  @override
+  void reportTransportFailure() => transportFailureReports++;
+
+  @override
+  void pause() => paused = true;
+
+  @override
+  void resume() => paused = false;
+}
+
+/// Registers a [FakeNetworkInfo] in [locator] BEFORE `setupServiceLocator()`
+/// (which then keeps it), so the real monitor never probes from a test.
+FakeNetworkInfo registerFakeNetworkInfo([GetIt? locator]) {
+  final getIt = locator ?? GetIt.instance;
+  if (getIt.isRegistered<NetworkInfo>()) {
+    return getIt<NetworkInfo>() as FakeNetworkInfo;
+  }
+  final fake = FakeNetworkInfo();
+  getIt.registerSingleton<NetworkInfo>(fake);
+  return fake;
 }

@@ -1,33 +1,34 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../../core/domain/entities/order_entity.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 
-enum OrderInvoiceStatus { initial, loading, loaded, error }
+class OrderInvoiceState extends Equatable
+    implements ScreenLoadState<OrderInvoiceState> {
+  const OrderInvoiceState({this.load = const ScreenLoad(), this.order});
 
-class OrderInvoiceState extends Equatable {
-  const OrderInvoiceState({
-    this.status = OrderInvoiceStatus.initial,
-    this.order,
-    this.failure,
-  });
-
-  final OrderInvoiceStatus status;
+  /// The order's read, its freshness and the failure that goes with them.
+  @override
+  final ScreenLoad load;
   final OrderEntity? order;
-  final Failure? failure;
 
-  bool get isSignedOut => failure is UnauthorizedFailure;
+  bool get isLoaded => load.isLoaded;
+  bool get isSignedOut => load.isSignedOut;
 
-  OrderInvoiceState copyWith({
-    OrderInvoiceStatus? status,
-    OrderEntity? order,
-    Failure? failure,
-  }) => OrderInvoiceState(
-    status: status ?? this.status,
-    order: order ?? this.order,
-    failure: failure,
-  );
+  /// The reason for the full-screen state; `null` while the invoice shows.
+  Failure? get loadFailure => load.hasFailed ? load.failure : null;
 
   @override
-  List<Object?> get props => [status, order, failure];
+  OrderInvoiceState withLoad(ScreenLoad load) => copyWith(load: load);
+
+  OrderInvoiceState copyWith({ScreenLoad? load, OrderEntity? order}) =>
+      OrderInvoiceState(
+        load: load ?? this.load.settled(),
+        order: order ?? this.order,
+      );
+
+  @override
+  List<Object?> get props => [load, order];
 }

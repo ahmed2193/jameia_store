@@ -20,6 +20,8 @@ import 'auth_session_state.dart';
 ///   * [restore] at launch — shows the customer saved on the device at once,
 ///     then validates the stored session against the backend;
 ///   * [signedIn] after OTP verification;
+///   * [onReconnected] when the connection comes back — a session the
+///     backend could not confirm at launch (offline) is checked then;
 ///   * [updateCustomer] when a reply carries a fresher customer record;
 ///   * [signOut] from settings — revokes server-side, wipes locally;
 ///   * listens for the network layer's "refresh failed" signal (tokens are
@@ -92,6 +94,13 @@ class AuthSessionCubit extends Cubit<AuthSessionState>
       },
       (customer) => customer == null ? _end() : _confirm(customer),
     );
+  }
+
+  /// The connection came back: a session the backend could not confirm (a
+  /// launch offline) is checked now; the customer on screen stays meanwhile.
+  Future<void> onReconnected() async {
+    if (!state.isSignedIn || state.isVerified) return;
+    await restore();
   }
 
   void signedIn(AuthCustomerEntity customer) {

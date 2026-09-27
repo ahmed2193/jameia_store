@@ -18,9 +18,11 @@ import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/routes.dart';
 import 'package:jameia_mart/src/config/theme/app_theme.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:jameia_mart/src/features/notifications/presentation/widgets/notifications_body.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/widgets/notification_tile.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/widgets/notification_time_text.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/widgets/notifications_empty_view.dart';
@@ -36,6 +38,10 @@ void main() {
   late FakeMarkAllNotificationsReadUseCase markAllRead;
   late FakeWatchLiveNotificationsUseCase watchLive;
   late UnreadNotificationsCubit unread;
+  late WatchNotificationsFromGet watchFirstPage;
+
+  /// Banner shakes asked for by the page.
+  late int nudges;
 
   final n1 = notification(id: 'n1', orderId: 'order-1');
   final n2 = notification(id: 'n2', isRead: true, ticketNumber: 'T-1');
@@ -53,6 +59,8 @@ void main() {
 
   setUp(() {
     getNotifications = FakeGetNotificationsUseCase(Right(page1));
+    watchFirstPage = WatchNotificationsFromGet(getNotifications);
+    nudges = 0;
     markRead = FakeMarkNotificationReadUseCase(
       Right(n1.copyWith(isRead: true)),
     );
@@ -71,6 +79,7 @@ void main() {
     }
     sl.registerFactory(
       () => NotificationsCubit(
+        watchFirstPage: watchFirstPage,
         getNotifications: getNotifications,
         markRead: markRead,
         markAllRead: markAllRead,
@@ -90,7 +99,7 @@ void main() {
     }
   }
 
-  Future<GoRouter> pumpPage(WidgetTester tester) async {
+  Future<GoRouter> pumpPage(WidgetTester tester, {bool offline = false}) async {
     final router = GoRouter(
       initialLocation: Routes.notifications,
       routes: [
@@ -121,11 +130,16 @@ void main() {
         fallbackLocale: const Locale('en'),
         startLocale: const Locale('en'),
         saveLocale: false,
-        child: BlocProvider<UnreadNotificationsCubit>.value(
-          value: unread,
-          child: MaterialApp.router(
-            theme: AppTheme.light,
-            routerConfig: router,
+        child: ConnectivityScope(
+          isOffline: offline,
+          reconnectEpoch: 0,
+          onNudge: () => nudges++,
+          child: BlocProvider<UnreadNotificationsCubit>.value(
+            value: unread,
+            child: MaterialApp.router(
+              theme: AppTheme.light,
+              routerConfig: router,
+            ),
           ),
         ),
       ),
@@ -228,18 +242,60 @@ void main() {
     await teardownApp(tester);
   });
 
-  testWidgets('a transport failure shows the localized error with retry', (
+  testWidgets('offline with nothing saved: No connection, with retry', (
     tester,
   ) async {
     getNotifications.result = const Left(NetworkFailure());
     await pumpPage(tester);
 
-    expect(find.textContaining('No internet connection'), findsOneWidget);
+    expect(find.text('No connection'), findsOneWidget);
+    expect(find.textContaining('No internet connection'), findsNothing);
     getNotifications.result = Right(page1);
     await tester.tap(find.text('Retry'));
     await settle(tester);
 
     expect(find.byType(NotificationTile), findsNWidgets(2));
+    await teardownApp(tester);
+  });
+
+  testWidgets('a server error shows its reason with retry', (tester) async {
+    getNotifications.result = const Left(ServerFailure('Inbox is resting'));
+    await pumpPage(tester);
+
+    expect(find.text('Inbox is resting'), findsOneWidget);
+    expect(find.text('No connection'), findsNothing);
+    await teardownApp(tester);
+  });
+
+  testWidgets('offline with a saved inbox: the list under the note, no snack', (
+    tester,
+  ) async {
+    watchFirstPage.saved = page1;
+    getNotifications.result = const Left(NetworkFailure());
+    await pumpPage(tester, offline: true);
+
+    expect(find.byType(NotificationTile), findsNWidgets(2));
+    expect(find.textContaining('Updated'), findsOneWidget);
+    expect(find.byType(SnackBar), findsNothing);
+    expect(nudges, 1, reason: 'the banner speaks for the failed read');
+    await teardownApp(tester);
+  });
+
+  testWidgets('offline, a failed read mark flips back and only nudges', (
+    tester,
+  ) async {
+    markRead.result = const Left(NetworkFailure());
+    await pumpPage(tester, offline: true);
+    final cubit = BlocProvider.of<NotificationsCubit>(
+      tester.element(find.byType(NotificationsBody)),
+    );
+
+    await cubit.markRead('n1');
+    await settle(tester);
+
+    expect(cubit.state.feed.byId('n1')!.isRead, isFalse);
+    expect(find.byType(SnackBar), findsNothing);
+    expect(nudges, 1);
     await teardownApp(tester);
   });
 

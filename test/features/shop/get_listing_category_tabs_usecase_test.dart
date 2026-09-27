@@ -1,18 +1,19 @@
 // The category tabs of a collection page: every top-level category is probed
 // with the list's own query (one row, only the total is read), roots with
 // products are kept in tree order, a failed probe drops only its root, at
-// most four probes run at once and a failed tree read fails the call.
+// most four probes run at once; a failed tree read fails the call, and so do
+// probes that all failed (offline: "no tab has products" would be a guess).
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/shop/domain/repositories/catalog_browse_repository.dart';
 import 'package:jameia_mart/src/features/shop/domain/usecases/get_listing_category_tabs_usecase.dart';
+
+import 'shop_test_fakes.dart';
 
 CatalogCategoryEntity _root(String slug, {int sortOrder = 0}) =>
     CatalogCategoryEntity(
@@ -46,7 +47,7 @@ CatalogProductsPage _total(int total) => CatalogProductsPage(
 
 /// Scripted catalogue: the tree, a total (or a failure) per category slug,
 /// and — when [gated] — probes that wait until the test releases them.
-class _ProbeRepository implements CatalogBrowseRepository {
+class _ProbeRepository extends FakeCatalogBrowseRepository {
   _ProbeRepository({
     required this.tree,
     this.totals = const {},
@@ -66,10 +67,6 @@ class _ProbeRepository implements CatalogBrowseRepository {
   Future<Either<Failure, CatalogCategoryTree>> getCategoryTree({
     bool refresh = false,
   }) async => tree;
-
-  @override
-  Future<Either<Failure, List<BrandEntity>>> getBrands() async =>
-      const Right(<BrandEntity>[]);
 
   @override
   Future<Either<Failure, CatalogProductsPage>> getProducts({
@@ -236,6 +233,25 @@ void main() {
       const Left<Failure, List<CatalogCategoryEntity>>(NetworkFailure()),
     );
     expect(repository.probes, isEmpty);
+  });
+
+  test('probes that all failed fail the call (offline)', () async {
+    final repository = _ProbeRepository(
+      tree: Right(_tree),
+      totals: {
+        for (final slug in ['snacks', 'ice-cream', 'dairy', 'bakery'])
+          slug: const Left(NetworkFailure()),
+      },
+    );
+
+    final result = await GetListingCategoryTabsUseCase(repository)(
+      const GetListingCategoryTabsParams(query: bestSellers),
+    );
+
+    expect(
+      result,
+      const Left<Failure, List<CatalogCategoryEntity>>(NetworkFailure()),
+    );
   });
 
   test('an empty tree gives no tabs', () async {

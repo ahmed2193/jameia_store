@@ -40,6 +40,7 @@ import 'package:jameia_mart/src/features/product_details/presentation/widgets/pd
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'pdp_test_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
 
 const CatalogProductEntity _card = CatalogProductEntity(
   id: 'milk',
@@ -56,6 +57,7 @@ void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
+    registerFakeNetworkInfo();
     await setupServiceLocator();
     await EasyLocalization.ensureInitialized();
     final enRaw = await rootBundle.loadString('assets/i18n/en.json');
@@ -71,7 +73,7 @@ void main() {
     tester,
   ) async {
     final detail = ProductDetailCubit(
-      const StubGetDetail(_detail),
+      const StubWatchDetail(_detail),
       const StubGetOffer(),
       slug: 'milk',
     )..load();
@@ -135,7 +137,7 @@ void main() {
     tester,
   ) async {
     final detail = ProductDetailCubit(
-      const StubGetDetail(_detail),
+      const StubWatchDetail(_detail),
       const StubGetOffer(),
       slug: 'milk',
     )..load();

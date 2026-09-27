@@ -68,6 +68,24 @@ datasource then calls `SessionStore.clearGuestSession()`.
 - **Trailing slashes:** the spec lists collection routes as `/v1/orders/`; the app calls
   `/v1/orders` (both answer).
 
+## Caching and reachability (observed live 2026-09-27)
+
+- Public catalogue routes (`/v1/home`, `/v1/init`, `/v1/categories`, `/v1/products`, `/v1/brands`,
+  `/v1/offers`, `/v1/recipes`) answer `cache-control: public, max-age=60,
+  stale-while-revalidate=300`; `/v1/cart` answers `cache-control: no-store`.
+- No route sends `ETag` or `Last-Modified` → no conditional GET; revalidating is a full re-fetch.
+- Only `vary: Origin` is sent, yet names are resolved by `Accept-Language` → every app cache key
+  carries the language.
+- `/v1/home` and `/v1/init` are "Bearer optional → personalised" (`/v1/init` carries `user|null`,
+  wishlist ids, delivery for the customer or the guest cart) → cached per owner, never public.
+- `HEAD <host>/` answers `404` with 0 bytes in ~0.3 s: any HTTP status proves the backend is
+  reachable — the app's reachability probe (plus the neutral `https://one.one.one.one`).
+- Rate limit 300 requests / 60 s (`x-ratelimit-limit: 300`, `x-ratelimit-reset: 60`): probes
+  run every 30 s online / 3 s offline, only in the foreground; a reconnect costs at most one
+  request per stale screen plus the app-root hooks.
+- The app's own cache policy (namespaces, TTLs, wipe on sign-out / expiry):
+  `docs/api_integration.md` §10.
+
 ## Integration status
 
 Update this table (and `docs/api_integration.md` §6.1) when you ship a feature.
@@ -96,8 +114,9 @@ Update this table (and `docs/api_integration.md` §6.1) when you ship a feature.
 | checkout — store rules, offers, rail, vouchers | Bootstrap (`GET init` → `store.*`), Catalog (`GET offers`, `GET products?inStock&onSale&sort=discount_desc`), Delivery (`slots` after a selection), Cart (`coupon`, `loyalty`, `express`) | **on API** (2026-09-26 Keeta-style page: `GET /v1/init` → `CheckoutStoreRules` — COD on/off, default method, loyalty programme, Pro free delivery, maintenance; store fields only, 5-min per-language cache, defaults on failure. `GET /v1/offers` enriches the cart's applied offers / progress (min, cap, `stackable`, `endsAt`, `branchIds`). The rail is on-sale, in-stock products, settled before first paint (≤ 1.2 s). `GET /v1/delivery/slots` answers 400 `VALIDATION_ERROR` "Select a delivery area or pickup branch first" before a selection — slots load after `select-address` only, non-fatal. Coupon / points / express go through the cart routes. New `CheckoutVouchersPage` (`Routes.checkoutVouchers`): code entry, applied coupon, applied / locked offers; no Apply on offers). Not built: tips, guarantees, "if out of stock", Tabby / cards (the API pays `cod` | `wallet` only), VAT line |
 | orders | Orders (`GET orders`, `:id`, `:id/cancel`), Reviews (`POST reviews`) | **on API** (paginated list with status-group tabs, detail polled every 30 s while visible and non-terminal, the five cancel reasons + note, reorder through the cart batch `POST`, one review per product of a delivered order). No API for the courier map or refunds → those routes render `PlaceholderPage` |
 | support | Support (`categories`, `tickets`, `messages`) | offline |
-| assistant | Assistant (`conversations`, `conversations/:id`, `messages` SSE (`POST`), `actions/:id/confirm`, `conversations/:id/handoff`, `messages/:id/feedback`), Bootstrap (`init` → `store.assistant`) | **on API** (streamed chat over `EventStreamClient.send`, every block kind, cart proposals confirmed by the customer, history, handoff, thumbs; guests on `X-Assistant-Guest`). Live quirks L1–L20 / N1–N26 in `docs/prompts/assistant_chat_prompt.md`; still open server-side: L7 (a failed turn's proposal was never stored → confirm 404s), L13 (empty `delivery_info`), N2 (a bad Bearer is ignored), N4 (in-band errors in English). Never call `handoff` live |
+| assistant | Assistant (`conversations`, `conversations/:id`, `messages` SSE (`POST`), `actions/:id/confirm`, `conversations/:id/handoff`, `messages/:id/feedback`), Bootstrap (`init` → `store.assistant`) | **on API** (streamed chat over `EventStreamClient.send`, every block kind, cart proposals confirmed by the customer, history, handoff, thumbs; guests on `X-Assistant-Guest`). Live quirks L1–L20 / N1–N26 in `docs/prompts/assistant_chat_prompt.md`; still open server-side: L7 (a failed turn's proposal was never stored → confirm 404s), L13 (empty `delivery_info`), N2 (a bad Bearer is ignored), N4 (in-band errors in English). Never call `handoff` live. No audio route: voice input is on-device speech-to-text sent as a normal text message |
 | splash, shell | — | no backend dependency today |
+| offline-first (cross-cutting) | `HEAD /` probe; the read routes above, cached | **built** (connectivity banner, device copies of the cached screens with the stale note, reconnect refresh, no queue except the cart deltas; `docs/api_integration.md` §10) |
 
 Known gaps in core (raise them, do not patch around them in a feature):
 - ~~No `NotFoundFailure`~~ — closed: `NotFoundException` maps to `NotFoundFailure`, so a

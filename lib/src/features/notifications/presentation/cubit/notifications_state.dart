@@ -1,77 +1,61 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/data_freshness.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 import '../../domain/entities/notifications_feed.dart';
 
-enum NotificationsStatus { initial, loading, loaded, error }
-
-/// Which cubit call produced [NotificationsState.failure] — the page shows a
-/// full-screen error for [load], a snack bar for the rest.
-enum NotificationsAction { load, refresh, loadMore, markRead, markAllRead }
-
 /// Inbox screen state: the loaded pages ([feed]) plus the request flags.
-class NotificationsState extends Equatable {
+class NotificationsState extends Equatable
+    implements ScreenLoadState<NotificationsState> {
   const NotificationsState({
-    this.status = NotificationsStatus.initial,
+    this.load = const ScreenLoad(),
     this.feed = NotificationsFeed.empty,
-    this.isLoadingMore = false,
-    this.loadMoreFailed = false,
-    this.failure,
-    this.failedAction,
     this.allMarkedRead = false,
   });
 
-  final NotificationsStatus status;
+  /// The first page's read, its freshness, the next page and the failure
+  /// that goes with them.
+  @override
+  final ScreenLoad load;
   final NotificationsFeed feed;
-
-  /// Next page request in flight (guards re-entry; the list shows a footer).
-  final bool isLoadingMore;
-
-  /// The last next-page request failed: the footer offers a retry instead of
-  /// spinning. Reset when a page request starts or succeeds.
-  final bool loadMoreFailed;
-
-  /// Transient — cleared on every [copyWith]; the page localizes it.
-  final Failure? failure;
-
-  /// Transient, set together with [failure].
-  final NotificationsAction? failedAction;
 
   /// Transient one-shot: "mark all read" just succeeded (toast).
   final bool allMarkedRead;
 
-  bool get isLoaded => status == NotificationsStatus.loaded;
+  LoadPhase get status => load.phase;
+  DataFreshness get freshness => load.freshness;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
+
+  /// Next page request in flight (guards re-entry; the list shows a footer).
+  bool get isLoadingMore => load.isLoadingMore;
+
+  /// The last next-page request failed: the footer offers a retry instead of
+  /// spinning (offline: it waits for the connection).
+  bool get loadMoreFailed => load.nextPageFailed;
 
   /// The load failed because nobody is signed in — show the sign-in prompt.
-  bool get isSignedOut =>
-      status == NotificationsStatus.error && failure is UnauthorizedFailure;
+  bool get isSignedOut => load.isSignedOut;
+
+  /// The inbox holds the server's page, not the device copy: only then does
+  /// its unread count speak for the server (the app-global badge takes it).
+  bool get knowsServerCount => isLoaded && !freshness.fromCache;
+
+  @override
+  NotificationsState withLoad(ScreenLoad load) => copyWith(load: load);
 
   NotificationsState copyWith({
-    NotificationsStatus? status,
+    ScreenLoad? load,
     NotificationsFeed? feed,
-    bool? isLoadingMore,
-    bool? loadMoreFailed,
-    Failure? failure,
-    NotificationsAction? failedAction,
     bool allMarkedRead = false,
   }) => NotificationsState(
-    status: status ?? this.status,
+    load: load ?? this.load.settled(),
     feed: feed ?? this.feed,
-    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-    loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
-    failure: failure,
-    failedAction: failedAction,
     allMarkedRead: allMarkedRead,
   );
 
   @override
-  List<Object?> get props => [
-    status,
-    feed,
-    isLoadingMore,
-    loadMoreFailed,
-    failure,
-    failedAction,
-    allMarkedRead,
-  ];
+  List<Object?> get props => [load, feed, allMarkedRead];
 }

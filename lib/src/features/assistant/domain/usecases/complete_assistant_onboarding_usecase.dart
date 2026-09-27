@@ -27,10 +27,9 @@ class CompleteAssistantOnboardingUseCase
   Future<Either<Failure, Unit>> call(
     CompleteAssistantOnboardingParams params,
   ) async {
-    final read = await _repository.getLog();
-    return read.fold(
-      Left.new,
-      (log) => _repository.saveLog(log.onboarded(params.at)),
+    final updated = await _repository.updateLog(
+      (log) => log.onboarded(params.at),
     );
+    return updated.map((_) => unit);
   }
 }

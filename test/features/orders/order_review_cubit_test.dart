@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:jameia_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
 import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
 
 import 'fake_orders_repository.dart';
 
 import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_state.dart';
+import 'package:jameia_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 
 void main() {
   late FakeOrdersRepository repository;
@@ -14,7 +14,7 @@ void main() {
   OrderReviewCubit build() {
     repository = FakeOrdersRepository();
     return OrderReviewCubit(
-      getOrder: GetOrderUseCase(repository),
+      watchOrder: WatchOrderUseCase(repository),
       submitReview: SubmitProductReviewUseCase(repository),
     );
   }

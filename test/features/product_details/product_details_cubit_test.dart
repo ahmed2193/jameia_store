@@ -1,5 +1,6 @@
 // ProductDetailCubit (load / 404 / selection bounds / reload keeps the
-// selection) and ProductReviewsCubit (paging + stale replies).
+// selection / a saved copy at once / reconnect) and ProductReviewsCubit
+// (paging + stale replies + reconnect).
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
@@ -7,17 +8,21 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_variant_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_reviews.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_detail_usecase.dart';
 import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
 import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_reviews_usecase.dart';
+import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_detail_usecase.dart';
+import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_reviews_usecase.dart';
 import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_detail_cubit.dart';
 import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_detail_state.dart';
 import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_reviews_cubit.dart';
 import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_reviews_state.dart';
+
+import '../../core/data/snapshot_test_fakes.dart';
 
 const _milkCard = CatalogProductEntity(
   id: 'milk',
@@ -36,15 +41,22 @@ const _milk = ProductDetail(
   ],
 );
 
-class _StubGetDetail implements GetProductDetailUseCase {
-  _StubGetDetail(this.reply);
+/// The product read: [saved] (when set and not forced), then [reply].
+class _StubGetDetail implements WatchProductDetailUseCase {
+  _StubGetDetail(this.reply, {this.saved});
 
   Either<Failure, ProductDetail> reply;
+  ProductDetail? saved;
+  final List<bool> reads = [];
 
   @override
-  Future<Either<Failure, ProductDetail>> call(
-    GetProductDetailParams params,
-  ) async => reply;
+  Stream<DataSnapshot<ProductDetail>> call(WatchProductDetailParams params) {
+    reads.add(params.forceRefresh);
+    return networkRead(
+      Future.value(reply),
+      saved: params.forceRefresh ? null : saved,
+    );
+  }
 }
 
 class _StubGetOffer implements GetProductOfferUseCase {
@@ -53,11 +65,31 @@ class _StubGetOffer implements GetProductOfferUseCase {
   final Either<Failure, OfferEntity?> reply;
 
   @override
-  Future<Either<Failure, OfferEntity?>> call(GetProductOfferParams params) async =>
-      reply;
+  Future<Either<Failure, OfferEntity?>> call(
+    GetProductOfferParams params,
+  ) async => reply;
 }
 
 const _noOffer = _StubGetOffer();
+
+/// The first reviews page, served by [_GatedGetReviews] like every page.
+class _WatchReviewsFromGet implements WatchProductReviewsUseCase {
+  const _WatchReviewsFromGet(this._get);
+
+  final GetProductReviewsUseCase _get;
+
+  @override
+  Stream<DataSnapshot<ProductReviews>> call(WatchProductReviewsParams params) =>
+      networkRead(
+        _get(
+          GetProductReviewsParams(
+            slug: params.slug,
+            page: 1,
+            limit: params.limit,
+          ),
+        ),
+      );
+}
 
 class _GatedGetReviews implements GetProductReviewsUseCase {
   final List<GetProductReviewsParams> requests = [];
@@ -249,7 +281,11 @@ void main() {
   group('ProductReviewsCubit', () {
     test('pages, merges and stops at the end', () async {
       final gate = _GatedGetReviews();
-      final cubit = ProductReviewsCubit(gate, slug: 'rice');
+      final cubit = ProductReviewsCubit(
+        _WatchReviewsFromGet(gate),
+        gate,
+        slug: 'rice',
+      );
 
       final first = cubit.load();
       gate.calls[0].complete(Right(_reviewsPage(1, ['a', 'b'], hasMore: true)));
@@ -273,7 +309,11 @@ void main() {
 
     test('a page of the previous list is dropped after a reload', () async {
       final gate = _GatedGetReviews();
-      final cubit = ProductReviewsCubit(gate, slug: 'rice');
+      final cubit = ProductReviewsCubit(
+        _WatchReviewsFromGet(gate),
+        gate,
+        slug: 'rice',
+      );
       final first = cubit.load();
       gate.calls[0].complete(Right(_reviewsPage(1, ['a'], hasMore: true)));
       await first;
@@ -292,7 +332,11 @@ void main() {
 
     test('a failed first load is the section error; retry recovers', () async {
       final gate = _GatedGetReviews();
-      final cubit = ProductReviewsCubit(gate, slug: 'rice');
+      final cubit = ProductReviewsCubit(
+        _WatchReviewsFromGet(gate),
+        gate,
+        slug: 'rice',
+      );
 
       final first = cubit.load();
       gate.calls[0].complete(const Left(ServerFailure('boom')));
@@ -306,6 +350,98 @@ void main() {
 
       expect(cubit.state.status, ProductReviewsStatus.loaded);
       expect(cubit.state.failure, isNull);
+      await cubit.close();
+    });
+
+    test('reconnect: a stale first page asks again once; a failed "show '
+        'more" is tried again', () async {
+      final gate = _GatedGetReviews();
+      final cubit = ProductReviewsCubit(
+        _WatchReviewsFromGet(gate),
+        gate,
+        slug: 'rice',
+      );
+      final first = cubit.load();
+      gate.calls[0].complete(Right(_reviewsPage(1, ['a'], hasMore: true)));
+      await first;
+
+      final more = cubit.loadMore();
+      gate.calls[1].complete(const Left(NetworkFailure()));
+      await more;
+      expect(cubit.state.loadMoreFailed, isTrue);
+
+      final retried = cubit.onReconnected();
+      gate.calls[2].complete(Right(_reviewsPage(2, ['b'], hasMore: false)));
+      await retried;
+
+      expect(gate.requests.map((r) => r.page), [1, 2, 2]);
+      expect([for (final r in cubit.state.reviews.reviews) r.id], ['a', 'b']);
+      await cubit.onReconnected();
+      expect(gate.calls, hasLength(3), reason: 'nothing stale or failed');
+      await cubit.close();
+    });
+  });
+
+  group('ProductDetailCubit offline', () {
+    test('a saved product paints at once, then the server\'s', () async {
+      final getDetail = _StubGetDetail(const Right(_milk), saved: _milk);
+      final cubit = ProductDetailCubit(getDetail, _noOffer, slug: 'milk');
+      final states = <ProductDetailState>[];
+      final subscription = cubit.stream.listen(states.add);
+
+      await cubit.load();
+      await subscription.cancel();
+
+      final loaded = states.where((s) => s.isLoaded).toList();
+      expect(loaded.first.freshness.fromCache, isTrue);
+      expect(cubit.state.freshness.isStale, isFalse);
+      await cubit.close();
+    });
+
+    test('offline with a saved copy: the page stays, stale; reconnect '
+        'asks once', () async {
+      final getDetail = _StubGetDetail(
+        const Left(NetworkFailure()),
+        saved: _milk,
+      );
+      final cubit = ProductDetailCubit(getDetail, _noOffer, slug: 'milk');
+      await cubit.load();
+
+      expect(cubit.state.status, ProductDetailStatus.loaded);
+      expect(cubit.state.detail, _milk);
+      expect(cubit.state.freshness.isStale, isTrue);
+      expect(cubit.state.freshness.refreshFailed, isTrue);
+
+      getDetail.reply = const Right(_milk);
+      await Future.wait([cubit.onReconnected(), cubit.onReconnected()]);
+      expect(getDetail.reads, [false, true]);
+      expect(cubit.state.freshness.isStale, isFalse);
+      await cubit.close();
+    });
+
+    test('nothing saved + offline: the error keeps its reason and the '
+        'preview; "not found" is never asked again', () async {
+      final getDetail = _StubGetDetail(const Left(NetworkFailure()));
+      final cubit = ProductDetailCubit(
+        getDetail,
+        _noOffer,
+        slug: 'milk',
+        preview: _milkCard,
+      );
+      await cubit.load();
+      cubit.setImageIndex(1);
+
+      expect(cubit.state.status, ProductDetailStatus.error);
+      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(cubit.state.preview, _milkCard);
+
+      getDetail.reply = const Left(
+        ServerFailure('Product not found', statusCode: 404),
+      );
+      await cubit.onReconnected();
+      expect(cubit.state.isNotFound, isTrue);
+      await cubit.onReconnected();
+      expect(getDetail.reads, [false, true], reason: 'a 404 stays');
       await cubit.close();
     });
   });

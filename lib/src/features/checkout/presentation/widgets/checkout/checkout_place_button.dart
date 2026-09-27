@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +8,7 @@ import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/navigation/jameia_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../../core/widgets/jameia_submit_button.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
@@ -28,6 +31,10 @@ import 'checkout_ui_controller.dart';
 /// each with a warning haptic. While the cart is only settling (no reason)
 /// the tap does nothing: the total already says "Updating…".
 ///
+/// An order is never queued: while the app reads as offline the tap runs a
+/// live check first, and when the connection is still gone it nudges the
+/// banner and says so instead of sending (or keeping) the order.
+///
 /// It is also the anchor the savings hint rides on
 /// ([CheckoutUiController.barLink]).
 class CheckoutPlaceButton extends StatelessWidget {
@@ -36,7 +43,15 @@ class CheckoutPlaceButton extends StatelessWidget {
   static const double width = AppSize.s140;
   static const double height = AppSize.s48;
 
-  void _place(BuildContext context) {
+  Future<void> _place(BuildContext context) async {
+    if (ConnectivityScope.readIsOffline(context) &&
+        !await ConnectivityScope.confirmOnline(context)) {
+      if (!context.mounted) return;
+      ConnectivityScope.nudge(context);
+      showJameiaSnackBar(context, 'connectivity.action_needs_internet'.tr());
+      return;
+    }
+    if (!context.mounted) return;
     final walletFils = context
         .read<AuthSessionCubit>()
         .state
@@ -148,7 +163,7 @@ class CheckoutPlaceButton extends StatelessWidget {
           success: placed,
           successLabel: 'checkout.order_placed'.tr(),
           enabled: canPlace && settled && reason == null,
-          onPressed: () => _place(context),
+          onPressed: () => unawaited(_place(context)),
           onBlocked: () => _onBlocked(context, reason),
         ),
       ),

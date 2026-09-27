@@ -1,68 +1,65 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/domain/entities/order_entity.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 
-enum OrderTrackingStatus { initial, loading, loaded, error }
-
-enum OrderTrackingAction { none, load, refresh, poll, cancel }
-
-class OrderTrackingState extends Equatable {
+class OrderTrackingState extends Equatable
+    implements ScreenLoadState<OrderTrackingState> {
   const OrderTrackingState({
-    this.status = OrderTrackingStatus.initial,
+    this.load = const ScreenLoad(),
     this.order,
     this.isRefreshing = false,
     this.isCancelling = false,
     this.cancelled = false,
-    this.failure,
-    this.failedAction = OrderTrackingAction.none,
   });
 
-  final OrderTrackingStatus status;
+  /// The order's read, how fresh it is (the device copy, a failed poll … —
+  /// behind the "Last known status" note) and the failure that goes with
+  /// them (a failed cancel is told as the customer's action).
+  @override
+  final ScreenLoad load;
   final OrderEntity? order;
   final bool isRefreshing;
   final bool isCancelling;
 
   /// Set on the state right after a successful cancel (one-shot toast).
   final bool cancelled;
-  final Failure? failure;
-  final OrderTrackingAction failedAction;
 
-  Failure? get loadFailure =>
-      status == OrderTrackingStatus.error &&
-          failedAction == OrderTrackingAction.load
-      ? failure
-      : null;
-  bool get isSignedOut => failure is UnauthorizedFailure;
-  bool get isNotFound => failure is NotFoundFailure;
+  LoadPhase get status => load.phase;
+  DataFreshness get freshness => load.freshness;
+
+  /// The reason there is nothing to show; `null` once there is an order.
+  Failure? get loadFailure => load.hasFailed ? load.failure : null;
+  bool get isSignedOut => load.isSignedOut;
+  bool get isNotFound => loadFailure is NotFoundFailure;
   bool get canCancel => order?.canCancel == true && !isCancelling;
 
+  @override
+  OrderTrackingState withLoad(ScreenLoad load) => copyWith(load: load);
+
   OrderTrackingState copyWith({
-    OrderTrackingStatus? status,
+    ScreenLoad? load,
     OrderEntity? order,
     bool? isRefreshing,
     bool? isCancelling,
     bool cancelled = false,
-    Failure? failure,
-    OrderTrackingAction? failedAction,
   }) => OrderTrackingState(
-    status: status ?? this.status,
+    load: load ?? this.load.settled(),
     order: order ?? this.order,
     isRefreshing: isRefreshing ?? this.isRefreshing,
     isCancelling: isCancelling ?? this.isCancelling,
     cancelled: cancelled,
-    failure: failure,
-    failedAction: failedAction ?? OrderTrackingAction.none,
   );
 
   @override
   List<Object?> get props => [
-    status,
+    load,
     order,
     isRefreshing,
     isCancelling,
     cancelled,
-    failure,
-    failedAction,
   ];
 }

@@ -1,29 +1,38 @@
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/data/datasources/catalog_cache_data_source.dart';
 import '../../../../core/data/datasources/catalog_remote_data_source.dart';
 import '../../../../core/data/mappers/catalog_product_mapper.dart';
 import '../../../../core/data/mappers/catalog_taxonomy_mapper.dart';
 import '../../../../core/data/repositories/base_repository_mixin.dart';
+import '../../../../core/data/repositories/cached_repository_mixin.dart';
 import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/domain/entities/catalog_category_entity.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/domain/entities/catalog_product_query.dart';
+import '../../../../core/domain/entities/data_snapshot.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/recent_searches.dart';
 import '../../domain/repositories/search_repository.dart';
 import '../datasources/search_local_data_source.dart';
 
 class SearchRepositoryImpl
-    with BaseRepositoryMixin
+    with BaseRepositoryMixin, CachedRepositoryMixin
     implements SearchRepository {
-  const SearchRepositoryImpl(this._catalog, this._local);
+  const SearchRepositoryImpl(
+    this._catalog,
+    this._local, {
+    required this._cache,
+  });
 
   final CatalogRemoteDataSource _catalog;
   final SearchLocalDataSource _local;
+  final CatalogCacheDataSource _cache;
 
   static const int _firstPage = 1;
   static const int _maxBrands = 100;
 
+  /// Suggestions are typed live: never cached.
   @override
   Future<Either<Failure, List<CatalogProductEntity>>> suggestProducts({
     required String text,
@@ -37,15 +46,23 @@ class SearchRepositoryImpl
   );
 
   @override
-  Future<Either<Failure, CatalogCategoryTree>> getCategoryTree() =>
-      execute(() async => (await _catalog.getCategories()).toTree());
+  Stream<DataSnapshot<CatalogCategoryTree>> watchCategoryTree({
+    bool forceRefresh = false,
+  }) => cachedRead(
+    cache: _cache.categories(),
+    fetch: _catalog.fetchCategories,
+    toEntity: (models) => models.toTree(),
+    forceRefresh: forceRefresh,
+  );
 
   @override
-  Future<Either<Failure, List<BrandEntity>>> getBrands() => execute(
-    () async => (await _catalog.getBrands(
-      page: _firstPage,
-      limit: _maxBrands,
-    )).toEntities(),
+  Stream<DataSnapshot<List<BrandEntity>>> watchBrands({
+    bool forceRefresh = false,
+  }) => cachedRead(
+    cache: _cache.brands(limit: _maxBrands),
+    fetch: () => _catalog.fetchBrands(page: _firstPage, limit: _maxBrands),
+    toEntity: (models) => models.toEntities(),
+    forceRefresh: forceRefresh,
   );
 
   @override

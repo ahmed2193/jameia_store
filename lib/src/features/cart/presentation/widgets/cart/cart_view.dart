@@ -6,8 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/navigation/jameia_snack_bar.dart';
-import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/error/failures.dart';
 import '../../../../../core/widgets/app_loader.dart';
+import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../../core/widgets/jameia_state_view.dart';
 import '../../cubit/cart_cubit.dart';
 import '../../cubit/cart_state.dart';
@@ -18,8 +19,10 @@ enum _CartBucket { loading, empty, content }
 
 /// The cart's content, shared by the Cart tab and the pushed cart page:
 /// loader until the device copy is read, empty state, or the cart — swapped
-/// with a fade-through. Failures surface as a snack bar; a customer route
-/// that answers "signed out" sends the customer to login.
+/// with a fade-through. Failures surface as a snack bar — except the cart's
+/// own sync failing offline, which the banner and the "not synced" line
+/// already tell — and a customer route that answers "signed out" sends the
+/// customer to login.
 ///
 /// The Cart tab stays mounted (off screen) in the shell, and every "+" on
 /// Home reaches it: while hidden, its animations are muted so nothing ticks.
@@ -36,7 +39,22 @@ class CartView extends StatelessWidget {
       context.go(Routes.login);
       return;
     }
-    showJameiaSnackBar(context, failure.localizedMessage);
+    final background =
+        state.failedAction == CartAction.sync ||
+        state.failedAction == CartAction.none;
+    final transport = failure is NetworkFailure || failure is TimeoutFailure;
+    // The cart's own sync (taps going out, a re-read) could not reach the
+    // server: offline it retries by itself and says nothing more.
+    if (background && transport && ConnectivityScope.readIsOffline(context)) {
+      return;
+    }
+    // Coupon, points, express, clear, reorder are the customer's actions; a
+    // sync or a refresh is a read.
+    showFailureSnackBar(
+      context,
+      failure,
+      action: !background && state.failedAction != CartAction.fetch,
+    );
   }
 
   @override

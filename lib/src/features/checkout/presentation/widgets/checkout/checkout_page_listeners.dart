@@ -11,7 +11,7 @@ import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/motion/confetti_overlay.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/jameia_snack_bar.dart';
-import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
@@ -28,8 +28,9 @@ import 'checkout_ui_controller.dart';
 ///   re-read, a success haptic and a confetti burst (the flow's one
 ///   celebration), then the tracking page.
 /// - A failed call is a snack, except a load failure (its own view) and a
-///   401 (the sign-in prompt); a refused order re-reads the cart (and the
-///   wallet it tried to pay with) and puts the savings hint away.
+///   401 (the sign-in prompt); offline, a choice or the order says it needs
+///   the internet (the draft stays). A refused order re-reads the cart (and
+///   the wallet it tried to pay with) and puts the savings hint away.
 /// - A delivery window the new address lost is announced.
 class CheckoutPageListeners extends StatelessWidget {
   const CheckoutPageListeners({super.key, required this.child});
@@ -73,13 +74,23 @@ class CheckoutPageListeners extends StatelessWidget {
     final failure = state.failure;
     if (failure == null || state.loadFailure != null) return;
     if (state.requiresSignIn) return;
-    showJameiaSnackBar(context, failure.localizedMessage);
+    // A destination / window choice and the order are the customer's.
+    showFailureSnackBar(
+      context,
+      failure,
+      action:
+          state.failedAction == CheckoutAction.select ||
+          state.failedAction == CheckoutAction.place,
+    );
     if (state.failedAction != CheckoutAction.place) return;
+    context.read<CheckoutUiController>().hintDismissed.value = true;
+    // Offline the order never left, or its answer was lost: the cart is
+    // read again when the connection returns — the order never is resent.
+    if (ConnectivityScope.readIsOffline(context)) return;
     context.read<CartCubit>().refresh();
     if (state.draft.paymentMethod == OrderPaymentMethod.wallet) {
       unawaited(context.read<AuthSessionCubit>().restore());
     }
-    context.read<CheckoutUiController>().hintDismissed.value = true;
   }
 
   @override

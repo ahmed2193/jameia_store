@@ -1,9 +1,14 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
 import 'package:jameia_mart/src/core/network/event_stream_client.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
+import 'package:jameia_mart/src/features/notifications/data/datasources/notifications_cache_data_source.dart';
 import 'package:jameia_mart/src/features/notifications/data/datasources/notifications_remote_data_source.dart';
 import 'package:jameia_mart/src/features/notifications/data/models/notification_model.dart';
 import 'package:jameia_mart/src/features/notifications/data/models/notifications_page_model.dart';
@@ -13,6 +18,11 @@ import 'package:jameia_mart/src/features/notifications/domain/usecases/get_notif
 import 'package:jameia_mart/src/features/notifications/domain/usecases/mark_all_notifications_read_usecase.dart';
 import 'package:jameia_mart/src/features/notifications/domain/usecases/mark_notification_read_usecase.dart';
 import 'package:jameia_mart/src/features/notifications/domain/usecases/watch_live_notifications_usecase.dart';
+import 'package:jameia_mart/src/features/notifications/domain/usecases/watch_notifications_usecase.dart';
+
+import '../../core/data/snapshot_test_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
 
 // ── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -131,6 +141,46 @@ class FakeGetNotificationsUseCase implements GetNotificationsUseCase {
   }
 }
 
+/// The inbox's first page as the cached read streams it, answered by
+/// [get]'s script (its calls list records it as page 1); [saved] is the
+/// device copy, shown first unless the read is forced.
+class WatchNotificationsFromGet implements WatchNotificationsUseCase {
+  WatchNotificationsFromGet(this.get, {this.saved});
+
+  final FakeGetNotificationsUseCase get;
+  NotificationsFeed? saved;
+
+  /// The `forceRefresh` of every read, in order.
+  final List<bool> forced = [];
+
+  @override
+  Stream<DataSnapshot<NotificationsFeed>> call(
+    WatchNotificationsParams params,
+  ) {
+    forced.add(params.forceRefresh);
+    return networkRead(
+      get(
+        GetNotificationsParams(
+          page: 1,
+          limit: params.limit,
+          unreadOnly: params.unreadOnly,
+        ),
+      ),
+      saved: params.forceRefresh ? null : saved,
+    );
+  }
+}
+
+/// The inbox's device copy over an in-memory store, for customer `c1`.
+NotificationsCacheDataSource notificationsCache() =>
+    NotificationsCacheDataSourceImpl(
+      CacheSlots(
+        store: InMemoryJsonCacheStore(),
+        owner: CacheOwner()..signedIn('c1'),
+        locale: FakeLocaleProvider('en'),
+      ),
+    );
+
 class FakeMarkNotificationReadUseCase implements MarkNotificationReadUseCase {
   FakeMarkNotificationReadUseCase(this.result);
 
@@ -221,20 +271,26 @@ class FakeNotificationsRemoteDataSource
     hasMore: false,
     unreadCount: 1,
   );
+
+  /// The `results` [page] was parsed from (what the device copy keeps).
+  Map<String, dynamic> raw = pageJson(
+    items: [notificationJson()],
+    unreadCount: 1,
+  );
   NotificationModel readReply = notificationModel(isRead: true);
   int updatedCount = 3;
   Stream<NotificationModel> live = const Stream.empty();
   final List<String> calls = [];
 
   @override
-  Future<NotificationsPageModel> getNotifications({
+  Future<RemotePayload<NotificationsPageModel>> getNotifications({
     required int page,
     required int limit,
     bool unreadOnly = false,
   }) async {
     calls.add('get:$page:$limit:$unreadOnly');
     if (error != null) throw error!;
-    return this.page;
+    return RemotePayload(this.page, raw);
   }
 
   @override

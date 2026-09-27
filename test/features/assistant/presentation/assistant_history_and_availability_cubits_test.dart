@@ -79,6 +79,35 @@ void main() {
     );
   });
 
+  group('AssistantAvailabilityCubit.onReconnected', () {
+    test('flags left unknown by a failed read are read at once', () async {
+      final cubit = availabilityCubit(
+        repository,
+        retryDelays: const [Duration(hours: 1)],
+      );
+      addTearDown(cubit.close);
+
+      await cubit.onReconnected(); // nothing asked yet: nothing to catch up
+      expect(repository.availability, isEmpty);
+
+      final first = cubit.ensureLoaded();
+      repository.availability.single.open(const Left(NetworkFailure()));
+      await first;
+      expect(cubit.state.status, AssistantAvailabilityStatus.unknown);
+
+      final again = cubit.onReconnected();
+      expect(repository.availability, hasLength(2), reason: 'no back-off');
+      repository.availability.last.open(
+        const Right(AssistantAvailability(enabled: true)),
+      );
+      await again;
+      expect(cubit.state.status, AssistantAvailabilityStatus.available);
+
+      await cubit.onReconnected();
+      expect(repository.availability, hasLength(2), reason: 'known now');
+    });
+  });
+
   group('AssistantAvailabilityCubit', () {
     test(
       'reads /v1/init once; concurrent entry points share the read',

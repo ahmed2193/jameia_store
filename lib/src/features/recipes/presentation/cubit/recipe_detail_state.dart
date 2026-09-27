@@ -1,45 +1,36 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 import '../../domain/entities/recipe_detail.dart';
 
-enum RecipeDetailStatus { initial, loading, loaded, error }
+class RecipeDetailState extends Equatable
+    implements ScreenLoadState<RecipeDetailState> {
+  const RecipeDetailState({this.load = const ScreenLoad(), this.detail});
 
-class RecipeDetailState extends Equatable {
-  const RecipeDetailState({
-    this.status = RecipeDetailStatus.initial,
-    this.detail,
-    this.failure,
-  });
-
-  static const int _notFound = 404;
-
-  final RecipeDetailStatus status;
+  /// The recipe's read, its freshness (the device copy, a failed refresh …)
+  /// and the failure that goes with them (not found, offline, error).
+  @override
+  final ScreenLoad load;
   final RecipeDetail? detail;
 
-  /// Transient — cleared on every [copyWith]; the page localizes it.
-  final Failure? failure;
-
-  bool get isLoaded => status == RecipeDetailStatus.loaded;
+  LoadPhase get status => load.phase;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
 
   /// The slug does not exist (any more): an empty state, not an error + retry.
-  bool get isNotFound {
-    final current = failure;
-    return status == RecipeDetailStatus.error &&
-        current is ServerFailure &&
-        current.statusCode == _notFound;
-  }
-
-  RecipeDetailState copyWith({
-    RecipeDetailStatus? status,
-    RecipeDetail? detail,
-    Failure? failure,
-  }) => RecipeDetailState(
-    status: status ?? this.status,
-    detail: detail ?? this.detail,
-    failure: failure,
-  );
+  bool get isNotFound => load.isNotFound;
 
   @override
-  List<Object?> get props => [status, detail, failure];
+  RecipeDetailState withLoad(ScreenLoad load) => copyWith(load: load);
+
+  RecipeDetailState copyWith({ScreenLoad? load, RecipeDetail? detail}) =>
+      RecipeDetailState(
+        load: load ?? this.load.settled(),
+        detail: detail ?? this.detail,
+      );
+
+  @override
+  List<Object?> get props => [load, detail];
 }

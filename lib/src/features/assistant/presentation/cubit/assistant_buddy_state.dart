@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/assistant_nudge.dart';
+import '../../domain/entities/assistant_thought.dart';
 import 'assistant_buddy_scene.dart';
 
 class AssistantBuddyState extends Equatable {
@@ -12,7 +13,7 @@ class AssistantBuddyState extends Equatable {
     this.cheers = 0,
     this.onboarded = true,
     this.touring = false,
-    this.coaching = false,
+    this.thought,
   });
 
   final AssistantBuddyScene scene;
@@ -21,7 +22,8 @@ class AssistantBuddyState extends Equatable {
   /// device log is read, so it never flashes in and out at launch.
   final bool launcherHidden;
 
-  /// The customer is scrolling down the content: the launcher steps aside.
+  /// The customer is scrolling down the content: the launcher steps aside —
+  /// once it has finished the line it is thinking out loud.
   final bool scrolledAway;
 
   /// The greeting on screen, `null` when none.
@@ -38,8 +40,8 @@ class AssistantBuddyState extends Equatable {
   /// The tour is on screen: the mascot is up there, not in its corner.
   final bool touring;
 
-  /// Just after the tour: the launcher says where it lives.
-  final bool coaching;
+  /// The line the launcher is thinking out loud, `null` when none.
+  final AssistantThought? thought;
 
   bool get launcherShown =>
       scene.available &&
@@ -48,7 +50,7 @@ class AssistantBuddyState extends Equatable {
       !launcherHidden &&
       !touring &&
       nudge == null &&
-      (!scrolledAway || scene.screenReader);
+      (!scrolledAway || scene.screenReader || thought != null);
 
   AssistantBuddyState copyWith({
     AssistantBuddyScene? scene,
@@ -58,7 +60,7 @@ class AssistantBuddyState extends Equatable {
     int? cheers,
     bool? onboarded,
     bool? touring,
-    bool? coaching,
+    AssistantThought? Function()? thought,
   }) => AssistantBuddyState(
     scene: scene ?? this.scene,
     launcherHidden: launcherHidden ?? this.launcherHidden,
@@ -67,7 +69,7 @@ class AssistantBuddyState extends Equatable {
     cheers: cheers ?? this.cheers,
     onboarded: onboarded ?? this.onboarded,
     touring: touring ?? this.touring,
-    coaching: coaching ?? this.coaching,
+    thought: thought != null ? thought() : this.thought,
   );
 
   @override
@@ -79,6 +81,6 @@ class AssistantBuddyState extends Equatable {
     cheers,
     onboarded,
     touring,
-    coaching,
+    thought,
   ];
 }

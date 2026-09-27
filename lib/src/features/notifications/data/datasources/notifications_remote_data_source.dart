@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import '../../../../core/data/models/remote_payload.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
@@ -15,8 +16,9 @@ import '../models/notifications_page_model.dart';
 ///
 /// Reference: https://docs.jm3eia.store/developers/ (Notifications, Push).
 abstract class NotificationsRemoteDataSource {
-  /// `GET /v1/notifications?page&limit[&status=unread]`.
-  Future<NotificationsPageModel> getNotifications({
+  /// `GET /v1/notifications?page&limit[&status=unread]` — with the raw
+  /// `results`, which the repository keeps on the device for page 1.
+  Future<RemotePayload<NotificationsPageModel>> getNotifications({
     required int page,
     required int limit,
     bool unreadOnly = false,
@@ -68,22 +70,25 @@ class NotificationsRemoteDataSourceImpl
   static const String notificationEvent = 'notification';
 
   @override
-  Future<NotificationsPageModel> getNotifications({
+  Future<RemotePayload<NotificationsPageModel>> getNotifications({
     required int page,
     required int limit,
     bool unreadOnly = false,
   }) async {
-    final results = await _api.get(
-      EndPoints.notifications,
-      queryParameters: <String, dynamic>{
-        pageField: page,
-        limitField: limit,
-        if (unreadOnly) statusField: NotificationModel.statusUnread,
-      },
+    final results = ApiPayload.asMap(
+      await _api.get(
+        EndPoints.notifications,
+        queryParameters: <String, dynamic>{
+          pageField: page,
+          limitField: limit,
+          if (unreadOnly) statusField: NotificationModel.statusUnread,
+        },
+      ),
+      'notifications',
     );
-    return NotificationsPageModel.fromJson(
-      ApiPayload.asMap(results, 'notifications'),
-      requestedPage: page,
+    return RemotePayload(
+      NotificationsPageModel.fromJson(results, requestedPage: page),
+      results,
     );
   }
 

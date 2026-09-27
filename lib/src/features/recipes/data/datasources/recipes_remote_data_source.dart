@@ -1,16 +1,22 @@
+import '../../../../core/data/models/remote_payload.dart';
 import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/recipe_models.dart';
 
 /// Public routes (Bearer optional). Receives the envelope's `results`
-/// (unwrapped by `DioConsumer`); throws `AppException` only.
+/// (unwrapped by `DioConsumer`); throws `AppException` only. Replies come
+/// back with their raw `results`, which the repository keeps on the device
+/// as sent (the first page, a recipe).
 abstract class RecipesRemoteDataSource {
   /// `GET /v1/recipes?page&limit`.
-  Future<RecipesPageModel> getRecipes({required int page, required int limit});
+  Future<RemotePayload<RecipesPageModel>> getRecipes({
+    required int page,
+    required int limit,
+  });
 
   /// `GET /v1/recipes/:slug` — `404 RESOURCE_NOT_FOUND` for an unknown slug.
-  Future<RecipeDetailModel> getRecipe(String slug);
+  Future<RemotePayload<RecipeDetailModel>> getRecipe(String slug);
 }
 
 class RecipesRemoteDataSourceImpl implements RecipesRemoteDataSource {
@@ -22,24 +28,27 @@ class RecipesRemoteDataSourceImpl implements RecipesRemoteDataSource {
   static const String limitField = 'limit';
 
   @override
-  Future<RecipesPageModel> getRecipes({
+  Future<RemotePayload<RecipesPageModel>> getRecipes({
     required int page,
     required int limit,
   }) async {
-    final results = await _api.get(
+    final results = ApiPayload.asMap(
+      await _api.get(
+        EndPoints.recipes,
+        queryParameters: <String, dynamic>{pageField: page, limitField: limit},
+      ),
       EndPoints.recipes,
-      queryParameters: <String, dynamic>{pageField: page, limitField: limit},
     );
-    return RecipesPageModel.fromJson(
-      ApiPayload.asMap(results, EndPoints.recipes),
-      requestedPage: page,
+    return RemotePayload(
+      RecipesPageModel.fromJson(results, requestedPage: page),
+      results,
     );
   }
 
   @override
-  Future<RecipeDetailModel> getRecipe(String slug) async {
+  Future<RemotePayload<RecipeDetailModel>> getRecipe(String slug) async {
     final path = EndPoints.recipe(slug);
-    final results = await _api.get(path);
-    return RecipeDetailModel.fromJson(ApiPayload.asMap(results, path));
+    final results = ApiPayload.asMap(await _api.get(path), path);
+    return RemotePayload(RecipeDetailModel.fromJson(results), results);
   }
 }

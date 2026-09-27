@@ -101,11 +101,31 @@ void main() {
 
     test('the repository maps a refused write to CacheFailure', () async {
       storage.refuseWrites = true;
-      final result = await AssistantNudgeRepositoryImpl(source).saveLog(log);
+      final result = await AssistantNudgeRepositoryImpl(source)
+          .updateLog((_) => log);
       expect(
         result.fold((failure) => failure, (_) => null),
         isA<CacheFailure>(),
       );
+    });
+
+    test('changes made at once both land', () async {
+      final repository = AssistantNudgeRepositoryImpl(source);
+      final at = DateTime(2026, 9, 27, 9);
+      await Future.wait([
+        repository.updateLog((log) => log.onboarded(at)),
+        repository.updateLog((log) => log.shownAt(at)),
+      ]);
+      final stored = source.read().toEntity();
+      expect(stored.onboardedAt, at);
+      expect(stored.lastShownAt, at);
+    });
+
+    test('an unchanged log is not written', () async {
+      storage.refuseWrites = true;
+      final result = await AssistantNudgeRepositoryImpl(source)
+          .updateLog((log) => log);
+      expect(result.isRight(), isTrue);
     });
   });
 }

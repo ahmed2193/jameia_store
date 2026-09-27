@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_freshness.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/notifications/domain/usecases/get_notifications_usecase.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/notifications_cubit.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/notifications_state.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
 import 'notifications_test_fakes.dart';
 
 void main() {
@@ -30,9 +32,11 @@ void main() {
   final loaded = NotificationsState(
     status: NotificationsStatus.loaded,
     feed: page1,
+    freshness: DataFreshness(fetchedAt: networkSnapshotAt),
   );
 
   NotificationsCubit build() => NotificationsCubit(
+    watchFirstPage: WatchNotificationsFromGet(getNotifications),
     getNotifications: getNotifications,
     markRead: markRead,
     markAllRead: markAllRead,
@@ -107,6 +111,7 @@ void main() {
     blocTest<NotificationsCubit, NotificationsState>(
       'without a live source (the default build) it loads and never listens',
       build: () => NotificationsCubit(
+        watchFirstPage: WatchNotificationsFromGet(getNotifications),
         getNotifications: getNotifications,
         markRead: markRead,
         markAllRead: markAllRead,
@@ -142,6 +147,7 @@ void main() {
       act: (cubit) => cubit.refresh(),
       expect: () => [
         loaded.copyWith(
+          freshness: loaded.freshness.failed(),
           failure: const NetworkFailure(),
           failedAction: NotificationsAction.refresh,
         ),
@@ -362,6 +368,51 @@ void main() {
       await cubit.close();
 
       expect(watchLive.controller.hasListener, isFalse);
+    });
+  });
+
+  group('offline', () {
+    test('a saved inbox shows stale; live waits for the server', () async {
+      final watch = WatchNotificationsFromGet(getNotifications, saved: page1);
+      getNotifications.result = const Left(NetworkFailure());
+      final cubit = NotificationsCubit(
+        watchFirstPage: watch,
+        getNotifications: getNotifications,
+        markRead: markRead,
+        markAllRead: markAllRead,
+        watchLive: watchLive,
+      );
+
+      await cubit.load();
+      expect(cubit.state.status, NotificationsStatus.loaded);
+      expect(cubit.state.feed, page1);
+      expect(cubit.state.freshness.isStale, isTrue);
+      expect(watchLive.listens, 0, reason: 'not live on a saved copy');
+
+      getNotifications.result = Right(page1);
+      await cubit.onReconnected();
+
+      expect(watch.forced, [false, true]);
+      expect(cubit.state.freshness.isStale, isFalse);
+      expect(watchLive.listens, 1);
+      await cubit.close();
+    });
+
+    test('a next page that failed is asked again on reconnect', () async {
+      getNotifications.handler = (params) =>
+          params.page == 2 ? const Left(NetworkFailure()) : Right(page1);
+      final cubit = build();
+      await cubit.load();
+      await cubit.loadMore();
+      expect(cubit.state.loadMoreFailed, isTrue);
+
+      getNotifications.handler = (params) =>
+          params.page == 2 ? Right(page2) : Right(page1);
+      await cubit.onReconnected();
+
+      expect(cubit.state.feed.items, [n1, n2, n3]);
+      expect(cubit.state.loadMoreFailed, isFalse);
+      await cubit.close();
     });
   });
 }

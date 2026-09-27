@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/widgets/reconnect_refresh.dart';
+import '../../cubit/category_browse_cubit.dart';
 import '../listing/product_listing_body.dart';
 import 'category_chips.dart';
 import 'category_rail_header.dart';
@@ -8,7 +11,8 @@ import 'category_rail_header.dart';
 /// while scrolling), its chips and the products
 /// of whatever is picked. The product list is scoped by the slug the page was
 /// opened with, so it never waits for the category tree — a tree that fails
-/// only costs the rows, not the products.
+/// only costs the rows, not the products (asked again when the connection
+/// returns).
 class CategoryBody extends StatelessWidget {
   const CategoryBody({super.key, required this.onRefresh});
 
@@ -20,12 +24,15 @@ class CategoryBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProductListingBody(
-      onRefresh: onRefresh,
-      headerSlivers: const [
-        CategoryRailHeader(level: _railLevel),
-        SliverToBoxAdapter(child: CategoryChips(level: _chipsLevel)),
-      ],
+    return ReconnectRefresh(
+      onReconnected: () => context.read<CategoryBrowseCubit>().onReconnected(),
+      child: ProductListingBody(
+        onRefresh: onRefresh,
+        headerSlivers: const [
+          CategoryRailHeader(level: _railLevel),
+          SliverToBoxAdapter(child: CategoryChips(level: _chipsLevel)),
+        ],
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,15 +8,20 @@ import 'config/di/app_global_cubits.dart';
 import 'config/routes/app_router.dart';
 import 'config/routes/routes.dart';
 import 'config/theme/app_theme.dart';
+import 'core/widgets/jameia_image.dart';
 import 'features/account/presentation/cubit/setting_cubit.dart';
 import 'features/address/presentation/cubit/address_book_cubit.dart';
 import 'features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'features/auth/presentation/cubit/auth_session_state.dart';
 import 'features/cart/presentation/cubit/cart_cubit.dart';
+import 'features/connectivity/presentation/cubit/connectivity_cubit.dart';
+import 'features/connectivity/presentation/cubit/connectivity_state.dart';
+import 'features/connectivity/presentation/widgets/connectivity_banner_host.dart';
 import 'features/language/presentation/cubit/localization_cubit.dart';
 import 'features/language/presentation/cubit/localization_state.dart';
 import 'features/notifications/presentation/cubit/unread_notifications_cubit.dart';
+import 'features/store_mode/presentation/cubit/pro_status_cubit.dart';
 
 /// App root: the app-global cubits above a [MaterialApp.router] driven by the
 /// single [appRouter] (GoRouter).
@@ -33,6 +40,12 @@ class _JameiaAppState extends State<JameiaApp> {
   /// tree rebuilds on the first locale application.
   bool _localeInitStarted = false;
 
+  /// The splash (or no route parsed yet): the connection banner stays away.
+  static bool _isOnSplash() {
+    final path = appRouter.routerDelegate.currentConfiguration.uri.path;
+    return path.isEmpty || path == Routes.splash;
+  }
+
   void _syncAccountLanguage(BuildContext context) {
     final session = context.read<AuthSessionCubit>().state;
     final customer = session.customer;
@@ -40,6 +53,22 @@ class _JameiaAppState extends State<JameiaApp> {
     // predate the last language switch.
     if (!session.isVerified || customer == null) return;
     context.read<LocalizationCubit>().syncIfAccountDiffers(customer.language);
+  }
+
+  /// The connection came back: every app-global piece that waits on the
+  /// network catches up at once — a handful of requests at most, most of
+  /// them only when something failed offline. Screens refresh their own
+  /// stale data (`ReconnectRefresh`). Nothing the customer did is replayed:
+  /// the cart only sends the taps it already owed.
+  void _onReconnected(BuildContext context) {
+    unawaited(context.read<CartCubit>().onReconnected());
+    unawaited(context.read<AuthSessionCubit>().onReconnected());
+    unawaited(context.read<AddressBookCubit>().onReconnected());
+    unawaited(context.read<UnreadNotificationsCubit>().onReconnected());
+    unawaited(context.read<AssistantAvailabilityCubit>().onReconnected());
+    unawaited(context.read<ProStatusCubit>().onReconnected());
+    unawaited(context.read<LocalizationCubit>().onReconnected());
+    JameiaImage.retryAllPendingImages();
   }
 
   @override
@@ -65,6 +94,12 @@ class _JameiaAppState extends State<JameiaApp> {
         ),
         BlocProvider<AssistantAvailabilityCubit>(
           create: (_) => AppGlobalCubits.assistantAvailability(),
+        ),
+        BlocProvider<ConnectivityCubit>(
+          create: (_) => AppGlobalCubits.connectivity(),
+        ),
+        BlocProvider<ProStatusCubit>(
+          create: (_) => AppGlobalCubits.proStatus(),
         ),
       ],
       child: MultiBlocListener(
@@ -128,6 +163,28 @@ class _JameiaAppState extends State<JameiaApp> {
               state.isSignedIn ? unread.start() : unread.stop();
             },
           ),
+          // Where the customer stands with Pro follows the session: what the
+          // customer record says at once, then the subscription (renewing,
+          // ending, lapsed) — again whenever the record's membership flips
+          // (a subscribe re-reads the session); a guest on sign-out / expiry
+          // and at a launch without a session.
+          BlocListener<AuthSessionCubit, AuthSessionState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status ||
+                previous.customer?.id != current.customer?.id ||
+                previous.customer?.isPro != current.customer?.isPro,
+            listener: (context, state) {
+              final pro = context.read<ProStatusCubit>();
+              switch (state.status) {
+                case AuthSessionStatus.signedIn:
+                  pro.start(state.customer);
+                case AuthSessionStatus.signedOut:
+                  pro.stop();
+                case AuthSessionStatus.unknown:
+                  break;
+              }
+            },
+          ),
           // The network layer gave up refreshing the session: replace the
           // whole stack with login and let it explain why (`extra: true`).
           BlocListener<AuthSessionCubit, AuthSessionState>(
@@ -154,6 +211,12 @@ class _JameiaAppState extends State<JameiaApp> {
                 !previous.isInitialized && current.isInitialized,
             listener: (context, _) => _syncAccountLanguage(context),
           ),
+          // Once per offline → online recovery (never on raw status flips).
+          BlocListener<ConnectivityCubit, ConnectivityState>(
+            listenWhen: (previous, current) =>
+                previous.reconnectEpoch != current.reconnectEpoch,
+            listener: (context, _) => _onReconnected(context),
+          ),
         ],
         child: BlocBuilder<LocalizationCubit, LocalizationState>(
           buildWhen: (p, c) =>
@@ -179,9 +242,15 @@ class _JameiaAppState extends State<JameiaApp> {
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
               locale: context.locale,
+              // The connection banner sits above every route (pages, sheets,
+              // dialogs) and pushes them down; never over the splash.
               builder: (context, child) => MediaQuery.withClampedTextScaling(
                 maxScaleFactor: _maxTextScaleFactor,
-                child: child!,
+                child: ConnectivityBannerHost(
+                  routeChanges: appRouter.routerDelegate,
+                  isOnSplash: _isOnSplash,
+                  child: child!,
+                ),
               ),
             );
           },

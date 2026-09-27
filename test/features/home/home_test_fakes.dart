@@ -4,15 +4,15 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
+import 'package:jameia_mart/src/core/usecase/watch_params.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_feed.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_section_entity.dart';
 import 'package:jameia_mart/src/features/home/domain/entities/home_slide_entity.dart';
 import 'package:jameia_mart/src/features/home/domain/repositories/home_repository.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/get_home_bootstrap_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/get_home_feed_usecase.dart';
+import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
 
 /// `results` of `GET /v1/home` captured from the live host (2026-09-17).
 Map<String, dynamic> liveHomeJson() => _fixture('home_en.json');
@@ -41,20 +41,62 @@ const HomeMarketingPopup dailyPopup = HomeMarketingPopup(
   frequency: HomePopupFrequency.day,
 );
 
-/// In-memory [HomeRepository]: scripted replies + the popup stamps it was
-/// asked to save.
+final DateTime savedAtTime = DateTime.utc(2026, 9, 17, 9);
+final DateTime fetchedAtTime = DateTime.utc(2026, 9, 17, 10);
+
+/// A cached read as the repository streams it: the saved copy (when given
+/// and not forced), then the server's reply or its failure.
+Stream<DataSnapshot<T>> scriptedRead<T>({
+  required T? cached,
+  required Either<Failure, T> network,
+}) async* {
+  if (cached != null) {
+    yield DataSnapshot<T>(
+      data: cached,
+      fetchedAt: savedAtTime,
+      origin: SnapshotOrigin.cache,
+    );
+  }
+  yield* network.fold(
+    Stream<DataSnapshot<T>>.error,
+    (data) => Stream.value(
+      DataSnapshot<T>(
+        data: data,
+        fetchedAt: fetchedAtTime,
+        origin: SnapshotOrigin.network,
+      ),
+    ),
+  );
+}
+
+/// In-memory [HomeRepository]: scripted copies + replies, the reads it was
+/// asked for (`true` = forced) and the popup stamps it was asked to save.
 class FakeHomeRepository implements HomeRepository {
   Either<Failure, HomeFeed> feed = Right(feedOf('s1'));
   Either<Failure, HomeBootstrap> bootstrap = const Right(HomeBootstrap.empty);
+  HomeFeed? cachedFeed;
+  HomeBootstrap? cachedBootstrap;
+  final List<bool> feedReads = <bool>[];
   final Map<String, String> shownDays = <String, String>{};
   Failure? stampReadFailure;
   Failure? stampWriteFailure;
 
   @override
-  Future<Either<Failure, HomeFeed>> getHomeFeed() async => feed;
+  Stream<DataSnapshot<HomeFeed>> watchHomeFeed({bool forceRefresh = false}) {
+    feedReads.add(forceRefresh);
+    return scriptedRead(
+      cached: forceRefresh ? null : cachedFeed,
+      network: feed,
+    );
+  }
 
   @override
-  Future<Either<Failure, HomeBootstrap>> getBootstrap() async => bootstrap;
+  Stream<DataSnapshot<HomeBootstrap>> watchBootstrap({
+    bool forceRefresh = false,
+  }) => scriptedRead(
+    cached: forceRefresh ? null : cachedBootstrap,
+    network: bootstrap,
+  );
 
   @override
   Either<Failure, String?> popupShownDay(String popupId) {
@@ -74,27 +116,27 @@ class FakeHomeRepository implements HomeRepository {
   }
 }
 
-/// A feed use case whose replies are released by the test, to stage races.
-class GatedGetHomeFeed implements GetHomeFeedUseCase {
-  final List<Completer<Either<Failure, HomeFeed>>> calls = [];
+/// A feed use case whose reads are driven by the test, to stage races: each
+/// call opens a stream the test feeds through [reads].
+class GatedWatchHomeFeed implements WatchHomeFeedUseCase {
+  final List<StreamController<DataSnapshot<HomeFeed>>> reads = [];
 
   @override
-  Future<Either<Failure, HomeFeed>> call(NoParams params) {
-    final completer = Completer<Either<Failure, HomeFeed>>();
-    calls.add(completer);
-    return completer.future;
+  Stream<DataSnapshot<HomeFeed>> call(WatchParams params) {
+    final controller = StreamController<DataSnapshot<HomeFeed>>();
+    reads.add(controller);
+    return controller.stream;
   }
 }
 
-class StubGetHomeBootstrap implements GetHomeBootstrapUseCase {
-  StubGetHomeBootstrap(this.reply);
+DataSnapshot<HomeFeed> networkFeed(String slideId) => DataSnapshot(
+  data: feedOf(slideId),
+  fetchedAt: fetchedAtTime,
+  origin: SnapshotOrigin.network,
+);
 
-  Either<Failure, HomeBootstrap> reply;
-  int calls = 0;
-
-  @override
-  Future<Either<Failure, HomeBootstrap>> call(NoParams params) async {
-    calls++;
-    return reply;
-  }
-}
+DataSnapshot<HomeFeed> cachedFeedSnapshot(String slideId) => DataSnapshot(
+  data: feedOf(slideId),
+  fetchedAt: savedAtTime,
+  origin: SnapshotOrigin.cache,
+);

@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../cubit/address_book_cubit.dart';
 import '../cubit/address_book_state.dart';
 import '../widgets/address_list/address_add_bar.dart';
@@ -50,7 +49,12 @@ class _AddressListPageState extends State<AddressListPage> {
     final failure = state.failure;
     // A failed first load / the sign-in prompt is rendered by the body.
     if (failure == null || !state.isLoaded) return;
-    showJameiaSnackBar(context, failure.localizedMessage);
+    // A delete is the customer's action; a sync is a read.
+    showFailureSnackBar(
+      context,
+      failure,
+      action: state.failedAction == AddressBookAction.delete,
+    );
   }
 
   @override

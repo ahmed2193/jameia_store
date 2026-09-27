@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../config/routes/route_args/login_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
@@ -15,8 +16,9 @@ import 'pro_underlined_link.dart';
 
 /// Pro-gradient strip above the CTA, its rounded top floating over the
 /// content: a guest is invited to sign in (`go`, so the page is rebuilt for
-/// the new session); a customer sees their points (counting up the first
-/// time) and a link to the rewards they can redeem them for.
+/// the new session, then reopened once signed in); a customer sees their
+/// points (counting up the first time) and a link to the rewards they can
+/// redeem them for.
 class ProAccountStrip extends StatelessWidget {
   const ProAccountStrip({super.key});
 
@@ -74,7 +76,10 @@ class ProAccountStrip extends StatelessWidget {
             style: AppTextStyles.subheadingLarge,
             onTap: signedIn
                 ? () => context.push(Routes.loyaltyRewards)
-                : () => context.go(Routes.login),
+                : () => context.go(
+                    Routes.login,
+                    extra: const LoginArgs(returnTo: Routes.proMembership),
+                  ),
           ),
         ],
       ),

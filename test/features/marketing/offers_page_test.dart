@@ -2,7 +2,9 @@
 // cream hero, the offers as flat cards (reward disc, lime reward chip, a
 // clock for an offer ending today, the small print), skeleton / empty /
 // error states under the hero, and the "View cart" pill only while the
-// basket has items. Arabic reads right to left; reduced motion is still.
+// basket has items. Offline: the saved offers under the "Updated … ago"
+// note, "No connection" when nothing is saved, and a returning connection
+// refreshes them. Arabic reads right to left; reduced motion is still.
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
@@ -15,12 +17,15 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/routes.dart';
+import 'package:jameia_mart/src/core/constants/app_constants.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/motion/stagger_entrance.dart';
 import 'package:jameia_mart/src/core/widgets/collection_frame.dart';
+import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
 import 'package:jameia_mart/src/core/widgets/countdown_chip.dart';
 import 'package:jameia_mart/src/core/widgets/empty_state_view.dart';
 import 'package:jameia_mart/src/core/widgets/error_view.dart';
@@ -31,7 +36,7 @@ import 'package:jameia_mart/src/features/language/presentation/cubit/localizatio
 import 'package:jameia_mart/src/features/language/presentation/cubit/localization_state.dart';
 import 'package:jameia_mart/src/features/marketing/domain/entities/content_page_entity.dart';
 import 'package:jameia_mart/src/features/marketing/domain/repositories/promotions_repository.dart';
-import 'package:jameia_mart/src/features/marketing/domain/usecases/get_offers_usecase.dart';
+import 'package:jameia_mart/src/features/marketing/domain/usecases/watch_offers_usecase.dart';
 import 'package:jameia_mart/src/features/marketing/presentation/cubit/offers_cubit.dart';
 import 'package:jameia_mart/src/features/marketing/presentation/pages/offers_page.dart';
 import 'package:jameia_mart/src/features/marketing/presentation/widgets/offer_reward_chip.dart';
@@ -42,20 +47,30 @@ import 'package:jameia_mart/src/features/marketing/presentation/widgets/offers_c
 import 'package:jameia_mart/src/features/marketing/presentation/widgets/offers_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
+
 class _MockCartCubit extends MockCubit<CartState> implements CartCubit {}
 
 class _MockLocalizationCubit extends MockCubit<LocalizationState>
     implements LocalizationCubit {}
 
-/// Scripted offers; [gate] holds the next load open.
+/// Scripted offers streamed like the cached repository: the [saved] copy
+/// first (when set), then [offers]; [gate] holds the next reply open.
 class _FakeRepository implements PromotionsRepository {
   Either<Failure, List<OfferEntity>> offers = const Right(<OfferEntity>[]);
+  List<OfferEntity>? saved;
   Completer<void>? gate;
   int calls = 0;
 
   @override
-  Future<Either<Failure, List<OfferEntity>>> getOffers() async {
+  Stream<DataSnapshot<List<OfferEntity>>> watchOffers({
+    bool forceRefresh = false,
+  }) {
     calls++;
+    return networkRead(_reply(), saved: saved);
+  }
+
+  Future<Either<Failure, List<OfferEntity>>> _reply() async {
     final pending = gate;
     if (pending != null) {
       gate = null;
@@ -65,9 +80,10 @@ class _FakeRepository implements PromotionsRepository {
   }
 
   @override
-  Future<Either<Failure, ContentPageEntity>> getContentPage(
-    ContentPageKind kind,
-  ) async => const Left(NotFoundFailure('missing'));
+  Stream<DataSnapshot<ContentPageEntity>> watchContentPage(
+    ContentPageKind kind, {
+    bool forceRefresh = false,
+  }) => Stream.error(const NotFoundFailure('missing'));
 }
 
 /// The app's translation files plus the keys this page introduced, until
@@ -187,6 +203,11 @@ void main() {
   late _MockLocalizationCubit localization;
   late StreamController<LocalizationState> localeStates;
 
+  /// What the app's connectivity scope says; [nudges] counts the banner
+  /// shakes.
+  late ValueNotifier<({bool offline, int epoch})> connection;
+  late int nudges;
+
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     await EasyLocalization.ensureInitialized();
@@ -197,8 +218,10 @@ void main() {
     repository = _FakeRepository();
     if (sl.isRegistered<OffersCubit>()) sl.unregister<OffersCubit>();
     sl.registerFactory<OffersCubit>(
-      () => OffersCubit(GetOffersUseCase(repository)),
+      () => OffersCubit(WatchOffersUseCase(repository)),
     );
+    connection = ValueNotifier((offline: false, epoch: 0));
+    nudges = 0;
     cartStates = StreamController<CartState>.broadcast();
     cart = _MockCartCubit();
     whenListen(cart, cartStates.stream, initialState: _emptyCart);
@@ -215,6 +238,7 @@ void main() {
     sl.unregister<OffersCubit>();
     await cartStates.close();
     await localeStates.close();
+    connection.dispose();
   });
 
   GoRouter buildRouter() => GoRouter(
@@ -273,7 +297,15 @@ void main() {
                 builder: (context, child) => MediaQuery(
                   data: MediaQuery.of(context)
                       .copyWith(disableAnimations: reducedMotion),
-                  child: child!,
+                  child: ValueListenableBuilder(
+                    valueListenable: connection,
+                    builder: (context, now, _) => ConnectivityScope(
+                      isOffline: now.offline,
+                      reconnectEpoch: now.epoch,
+                      onNudge: () => nudges++,
+                      child: child!,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -428,26 +460,84 @@ void main() {
       await closeApp(tester);
     });
 
-    testWidgets('offline: the error view; retry loads the offers', (
+    testWidgets('offline, nothing saved: "No connection"; retry loads them', (
       tester,
     ) async {
       repository.offers = const Left(NetworkFailure());
 
       await pumpOffers(tester);
 
-      expect(find.byType(ErrorView), findsOneWidget);
-      expect(
-        find.text('No internet connection. Check your network and try again.'),
-        findsOneWidget,
-      );
+      expect(find.text('No connection'), findsOneWidget);
+      expect(find.byType(ErrorView), findsNothing);
+      expect(find.byType(CollectionFrame), findsOneWidget);
 
       repository.offers = const Right([_freeDelivery]);
       await tester.tap(find.text('Retry'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(ErrorView), findsNothing);
+      expect(find.text('No connection'), findsNothing);
       expect(find.text('Free delivery over 5 KWD'), findsOneWidget);
       expect(repository.calls, 2);
+
+      await closeApp(tester);
+    });
+
+    testWidgets('a server error: the error view with the reason', (
+      tester,
+    ) async {
+      repository.offers = const Left(ServerFailure('Offers are resting'));
+
+      await pumpOffers(tester);
+
+      expect(find.byType(ErrorView), findsOneWidget);
+      expect(find.text('Offers are resting'), findsOneWidget);
+      expect(find.text('No connection'), findsNothing);
+
+      await closeApp(tester);
+    });
+
+    testWidgets(
+      'offline with a saved copy: the offers under the "Updated" note, no snack bar',
+      (tester) async {
+        connection.value = (offline: true, epoch: 0);
+        repository
+          ..saved = const [_freeDelivery]
+          ..offers = const Left(NetworkFailure());
+
+        await pumpOffers(tester);
+
+        expect(find.text('Free delivery over 5 KWD'), findsOneWidget);
+        expect(find.textContaining('Updated'), findsOneWidget);
+        expect(find.byType(ErrorView), findsNothing);
+        expect(find.text('No connection'), findsNothing);
+        expect(find.byType(SnackBar), findsNothing);
+        expect(nudges, 1, reason: 'the banner speaks for a failed read');
+
+        await closeApp(tester);
+      },
+    );
+
+    testWidgets('the connection coming back refreshes the saved offers', (
+      tester,
+    ) async {
+      connection.value = (offline: true, epoch: 0);
+      repository
+        ..saved = const [_freeDelivery]
+        ..offers = const Left(NetworkFailure());
+      await pumpOffers(tester);
+      expect(repository.calls, 1);
+
+      repository
+        ..saved = null
+        ..offers = const Right([_freeDelivery, _moneyOff]);
+      connection.value = (offline: false, epoch: 1);
+      await tester.pump();
+      await tester.pump(AppConstants.reconnectJitter);
+      await tester.pumpAndSettle();
+
+      expect(repository.calls, 2);
+      expect(find.byType(OfferTile), findsNWidgets(2));
+      expect(find.textContaining('Updated'), findsNothing);
 
       await closeApp(tester);
     });
@@ -518,7 +608,8 @@ void main() {
     );
 
     testWidgets(
-      'a failed refresh keeps the offers and says so in a snack bar',
+      'a failed refresh keeps the offers; the stale note says so — no '
+      '"No internet" snack before the app knows it is offline',
       (tester) async {
         repository.offers = const Right([_freeDelivery]);
         await pumpOffers(tester);
@@ -530,16 +621,8 @@ void main() {
         expect(repository.calls, 2);
         expect(find.text('Free delivery over 5 KWD'), findsOneWidget);
         expect(find.byType(ErrorView), findsNothing);
-        expect(find.byType(SnackBar), findsOneWidget);
-        expect(
-          find.descendant(
-            of: find.byType(SnackBar),
-            matching: find.text(
-              'No internet connection. Check your network and try again.',
-            ),
-          ),
-          findsOneWidget,
-        );
+        expect(find.textContaining('Updated'), findsOneWidget);
+        expect(find.byType(SnackBar), findsNothing);
 
         await closeApp(tester);
       },

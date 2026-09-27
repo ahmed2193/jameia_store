@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_freshness.dart';
+import 'package:jameia_mart/src/core/domain/entities/screen_load.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
 import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
@@ -12,6 +14,7 @@ import 'package:jameia_mart/src/features/account/presentation/cubit/ledger_cubit
 import 'package:jameia_mart/src/features/account/presentation/cubit/ledger_state.dart';
 import 'package:jameia_mart/src/features/account/presentation/cubit/loyalty_program_cubit.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
 import 'account_test_fakes.dart';
 
 typedef _Wallet = WalletEntryEntity;
@@ -41,7 +44,8 @@ Future<Either<Failure, Ledger<_Wallet>>> _ok(Ledger<_Wallet> ledger) async =>
 void main() {
   late FakeGetLedgerUseCase<_Wallet> getLedger;
 
-  LedgerCubit<_Wallet> build() => LedgerCubit<_Wallet>(getLedger);
+  LedgerCubit<_Wallet> build() =>
+      LedgerCubit<_Wallet>(WatchLedgerFromGet<_Wallet>(getLedger), getLedger);
 
   setUp(() {
     getLedger = FakeGetLedgerUseCase<_Wallet>(
@@ -55,9 +59,12 @@ void main() {
       build: build,
       act: (cubit) => cubit.load(),
       expect: () => [
-        LedgerState<_Wallet>(status: LedgerStatus.loading),
+        LedgerState<_Wallet>(load: const ScreenLoad(phase: LoadPhase.loading)),
         LedgerState<_Wallet>(
-          status: LedgerStatus.loaded,
+          load: ScreenLoad(
+            phase: LoadPhase.loaded,
+            freshness: DataFreshness(fetchedAt: networkSnapshotAt),
+          ),
           ledger: _page(1, ['p1']),
         ),
       ],
@@ -74,9 +81,9 @@ void main() {
       },
       act: (cubit) => cubit.load(),
       verify: (cubit) {
-        expect(cubit.state.status, LedgerStatus.error);
+        expect(cubit.state.status, LoadPhase.error);
         expect(cubit.state.isSignedOut, isTrue);
-        expect(cubit.state.failedAction, LedgerAction.load);
+        expect(cubit.state.load.failedOn, FailedCall.read);
       },
     );
 
@@ -88,7 +95,7 @@ void main() {
       },
       act: (cubit) => cubit.load(),
       verify: (cubit) {
-        expect(cubit.state.status, LedgerStatus.error);
+        expect(cubit.state.status, LoadPhase.error);
         expect(cubit.state.isSignedOut, isFalse);
         expect(cubit.state.failure, isA<NetworkFailure>());
       },
@@ -119,10 +126,10 @@ void main() {
         await cubit.refresh();
       },
       verify: (cubit) {
-        expect(cubit.state.status, LedgerStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         expect(cubit.state.ledger.entries.map((e) => e.id), ['p1']);
         expect(cubit.state.failure, isA<TimeoutFailure>());
-        expect(cubit.state.failedAction, LedgerAction.refresh);
+        expect(cubit.state.load.failedOn, FailedCall.read);
       },
     );
   });
@@ -189,7 +196,7 @@ void main() {
         expect(cubit.state.ledger.entries.map((e) => e.id), ['p1']);
         expect(cubit.state.loadMoreFailed, isTrue);
         expect(cubit.state.isLoadingMore, isFalse);
-        expect(cubit.state.failedAction, LedgerAction.loadMore);
+        expect(cubit.state.load.failedOn, FailedCall.nextPage);
       },
     );
 

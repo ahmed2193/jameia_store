@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dartz/dartz.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
@@ -10,7 +12,8 @@ import 'package:jameia_mart/src/features/assistant/domain/usecases/hide_assistan
 import 'package:jameia_mart/src/features/assistant/domain/usecases/record_assistant_nudge_outcome_usecase.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_buddy_cubit.dart';
 
-/// The greeting log in memory; [readFailure] makes every read fail.
+/// The greeting log in memory; [readFailure] makes every read fail and
+/// [writes] counts the changes stored.
 ///
 /// [met] starts from a log of a customer who already took the tour, the
 /// usual state for the launcher and greeting tests.
@@ -30,22 +33,36 @@ class InMemoryAssistantNudgeRepository implements AssistantNudgeRepository {
     return failure == null ? Right(log) : Left(failure);
   }
 
+  // Like the real store: the change applies to the log as it is when the
+  // call is made, before any await.
   @override
-  Future<Either<Failure, Unit>> saveLog(AssistantNudgeLog log) async {
-    writes++;
-    this.log = log;
-    return const Right(unit);
+  Future<Either<Failure, AssistantNudgeLog>> updateLog(
+    AssistantNudgeLog Function(AssistantNudgeLog log) change,
+  ) async {
+    final failure = readFailure;
+    if (failure != null) return Left(failure);
+    final next = change(log);
+    if (next != log) {
+      writes++;
+      log = next;
+    }
+    return Right(next);
   }
 }
 
 /// A buddy cubit over the real use cases and [repository], with a settable
-/// clock and short waits.
+/// clock, short waits and seeded lines. The launcher's first thought waits
+/// [thinkAfter] and the next one [thinkEvery] — a day unless a test is
+/// about them.
 AssistantBuddyCubit buddyCubit(
   InMemoryAssistantNudgeRepository repository, {
   required DateTime Function() clock,
   Duration dwell = const Duration(milliseconds: 40),
   Duration quiet = const Duration(milliseconds: 20),
-  Duration coachFor = const Duration(milliseconds: 60),
+  Duration thinkAfter = const Duration(days: 1),
+  Duration thinkQuiet = const Duration(milliseconds: 20),
+  Duration thinkEvery = const Duration(days: 1),
+  Random? random,
 }) => AssistantBuddyCubit(
   claim: ClaimAssistantNudgeUseCase(repository),
   record: RecordAssistantNudgeOutcomeUseCase(repository),
@@ -55,6 +72,9 @@ AssistantBuddyCubit buddyCubit(
   completeOnboarding: CompleteAssistantOnboardingUseCase(repository),
   dwell: dwell,
   quiet: quiet,
-  coachFor: coachFor,
+  thinkAfter: thinkAfter,
+  thinkQuiet: thinkQuiet,
+  thinkEvery: thinkEvery,
+  random: random ?? Random(1),
   clock: clock,
 );

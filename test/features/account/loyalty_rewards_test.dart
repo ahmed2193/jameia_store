@@ -14,6 +14,7 @@ import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_loyalty_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/core/motion/confetti_burst.dart';
 import 'package:jameia_mart/src/core/usecase/usecase.dart';
@@ -78,6 +79,12 @@ class _FakeLoyaltyRepository implements LoyaltyRepository {
 
   @override
   Future<Either<Failure, LoyaltyProgram>> getProgram() async => program;
+
+  @override
+  Stream<DataSnapshot<Ledger<LoyaltyEntryEntity>>> watchFirstPage({
+    required int limit,
+    bool forceRefresh = false,
+  }) => throw UnimplementedError('the rewards read the balance only');
 
   @override
   Future<Either<Failure, Ledger<LoyaltyEntryEntity>>> getLedger({

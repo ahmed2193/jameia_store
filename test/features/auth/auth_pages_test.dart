@@ -17,6 +17,7 @@ import 'package:go_router/go_router.dart';
 import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
 import 'package:jameia_mart/src/config/di/service_locator.dart';
 import 'package:jameia_mart/src/config/routes/app_router.dart';
+import 'package:jameia_mart/src/config/routes/route_args/login_args.dart';
 import 'package:jameia_mart/src/config/routes/routes.dart';
 import 'package:jameia_mart/src/config/theme/app_theme.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
@@ -30,9 +31,11 @@ import 'package:jameia_mart/src/features/auth/presentation/pages/otp_verify_page
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
 import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'auth_test_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -46,6 +49,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
     await EasyLocalization.ensureInitialized();
+    registerFakeNetworkInfo();
     await setupServiceLocator();
     final enRaw = await rootBundle.loadString('assets/i18n/en.json');
     Localization.load(
@@ -124,6 +128,9 @@ void main() {
             BlocProvider<AssistantAvailabilityCubit>(
               create: (_) => sl<AssistantAvailabilityCubit>(),
             ),
+            // Home's header and the Pro page read it. Never started: the
+            // Pro standing is unknown and nothing reaches the network.
+            BlocProvider<ProStatusCubit>(create: (_) => sl<ProStatusCubit>()),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light,
@@ -164,6 +171,20 @@ void main() {
   testWidgets('send-otp failure shows the localized transport message', (
     tester,
   ) async {
+    sendOtp.result = const Left(TimeoutFailure());
+    final router = await pumpApp(tester);
+    await tester.enterText(find.byType(TextField), '12345678');
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
+    await settle(tester);
+    expect(router.state.uri.path, Routes.login);
+    expect(find.textContaining('The request timed out'), findsOneWidget);
+    await teardownApp(tester);
+  });
+
+  testWidgets('send-otp with no connection says so; the number stays typed', (
+    tester,
+  ) async {
     sendOtp.result = const Left(NetworkFailure());
     final router = await pumpApp(tester);
     await tester.enterText(find.byType(TextField), '12345678');
@@ -171,7 +192,13 @@ void main() {
     await tester.tap(find.text('Continue'));
     await settle(tester);
     expect(router.state.uri.path, Routes.login);
-    expect(find.textContaining('No internet connection'), findsOneWidget);
+    expect(
+      find.text(
+        "You're offline. Your changes are kept, try again when you're back.",
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('12345678'), findsOneWidget);
     await teardownApp(tester);
   });
 
@@ -186,6 +213,37 @@ void main() {
     expect(verifyOtp.calls.single.code, '1234');
     expect(session.state.isSignedIn, isTrue);
     expect(session.state.customer, kCustomer);
+    expect(router.state.uri.path, Routes.shell);
+    await teardownApp(tester);
+  });
+
+  testWidgets('signed in from a page that asked for it: back on that page', (
+    tester,
+  ) async {
+    final router = await pumpApp(tester);
+    // The Pro page's "Sign in to join".
+    router.go(
+      Routes.login,
+      extra: const LoginArgs(returnTo: Routes.proMembership),
+    );
+    await settle(tester);
+    await tester.enterText(find.byType(TextField), '12345678');
+    await tester.pump();
+    await tester.tap(find.text('Continue'));
+    await settle(tester);
+    expect(router.state.uri.path, Routes.otpVerify);
+
+    await tester.enterText(find.byType(TextField), '1234');
+    await tester.pump();
+    await tester.tap(find.text('Verify'));
+    await settle(tester);
+
+    expect(session.state.isSignedIn, isTrue);
+    expect(router.state.uri.path, Routes.proMembership);
+    // The shell is under it (rebuilt for the new session): back lands home.
+    expect(router.canPop(), isTrue);
+    router.pop();
+    await settle(tester);
     expect(router.state.uri.path, Routes.shell);
     await teardownApp(tester);
   });

@@ -12,9 +12,16 @@ import 'assistant_composer_hint.dart';
 /// left — and falls back to the app's direction while empty, where it shows
 /// rotating example questions.
 class AssistantComposerField extends StatelessWidget {
-  const AssistantComposerField({super.key, required this.controller});
+  const AssistantComposerField({
+    super.key,
+    required this.controller,
+    this.focusNode,
+  });
 
   final TextEditingController controller;
+
+  /// The composer's, so heard words can come back to a focused field.
+  final FocusNode? focusNode;
 
   static const int _maxLines = 5;
 
@@ -27,6 +34,7 @@ class AssistantComposerField extends StatelessWidget {
     );
     return TextField(
       controller: controller,
+      focusNode: focusNode,
       minLines: 1,
       maxLines: _maxLines,
       keyboardType: TextInputType.multiline,

@@ -17,7 +17,8 @@ import 'unread_notifications_state.dart';
 ///     page, then listens to the live stream (+1 per unread notification)
 ///     when the build has one;
 ///   * [stop] on sign-out — drops the stream and resets to zero;
-///   * [set] from the inbox page, which knows the fresher count.
+///   * [set] from the inbox page, which knows the fresher count;
+///   * [onReconnected] probes again when the connection comes back.
 ///
 /// A guest is a normal case, not an error: the probe answers
 /// `UnauthorizedFailure`, the badge stays at 0 and no stream is opened, so
@@ -42,6 +43,10 @@ class UnreadNotificationsCubit extends Cubit<UnreadNotificationsState>
   StreamSubscription<NotificationEntity>? _live;
   bool _starting = false;
 
+  /// Started for a signed-in session and not stopped: a reconnect probes
+  /// again.
+  bool _signedIn = false;
+
   /// Invalidated by [stop] so a probe still in flight cannot resume a
   /// session that ended meanwhile.
   int _generation = 0;
@@ -49,13 +54,31 @@ class UnreadNotificationsCubit extends Cubit<UnreadNotificationsState>
   Future<void> start() async {
     if (_starting || _live != null) return;
     _starting = true;
+    _signedIn = true;
+    final listen = await _probe();
+    if (listen == null) return; // stopped or closed meanwhile
+    _starting = false;
+    if (listen) _listenLive();
+  }
+
+  /// The connection came back: the counter is probed again — notifications
+  /// may have arrived while the app was offline (a live stream, when the
+  /// build has one, reconnects by itself). Nothing for a guest.
+  Future<void> onReconnected() async {
+    if (!_signedIn || _starting) return;
+    await _probe();
+  }
+
+  /// Reads the counter with a one-item page. `null` when the answer no
+  /// longer belongs to this session (stopped or closed meanwhile);
+  /// otherwise whether a live stream may follow — never for a guest (401).
+  Future<bool?> _probe() async {
     final generation = _generation;
     final result = await _getNotifications(
       const GetNotificationsParams(page: _firstPage, limit: probeLimit),
     );
-    if (isClosed || generation != _generation) return;
-    _starting = false;
-    final listen = result.fold(
+    if (isClosed || generation != _generation) return null;
+    return result.fold(
       (failure) {
         log('unread probe failed', name: _logName, error: failure);
         return failure is! UnauthorizedFailure;
@@ -65,12 +88,12 @@ class UnreadNotificationsCubit extends Cubit<UnreadNotificationsState>
         return true;
       },
     );
-    if (listen) _listenLive();
   }
 
   void stop() {
     _generation++;
     _starting = false;
+    _signedIn = false;
     _cancelLive();
     // Bloc always delivers a cubit's FIRST emit, even when equal — skip the
     // no-op so a guest sign-out never rebuilds the badge for nothing.

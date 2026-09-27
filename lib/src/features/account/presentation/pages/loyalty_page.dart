@@ -4,12 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/navigation/screen_failure_listener.dart';
 import '../../domain/entities/loyalty_entry_entity.dart';
 import '../cubit/ledger_cubit.dart';
+import '../cubit/ledger_state.dart';
 import '../cubit/loyalty_program_cubit.dart';
 import '../widgets/ledger/ledger_app_bar.dart';
 import '../widgets/ledger/ledger_body.dart';
-import '../widgets/ledger/ledger_failure_listener.dart';
 import '../widgets/loyalty/loyalty_entry_tile.dart';
 import '../widgets/loyalty/loyalty_header.dart';
 
@@ -31,19 +32,22 @@ class LoyaltyPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: LedgerAppBar(title: 'loyalty.title'.tr()),
-        body: LedgerFailureListener<LoyaltyEntryEntity>(
-          loadMoreFailedMessage: 'loyalty.load_more_failed'.tr(),
-          child: LedgerBody<LoyaltyEntryEntity>(
-            header: const LoyaltyHeader(),
-            entryBuilder: (entry) => LoyaltyEntryTile(entry: entry),
-            entryDate: (entry) => entry.createdAt,
-            emptyIcon: Icons.stars_outlined,
-            emptyMessage: 'loyalty.empty'.tr(),
-            signInMessage: 'loyalty.sign_in_prompt'.tr(),
-            todayLabel: 'loyalty.today'.tr(),
-            yesterdayLabel: 'loyalty.yesterday'.tr(),
-          ),
-        ),
+        body:
+            ScreenFailureListener<
+              LedgerCubit<LoyaltyEntryEntity>,
+              LedgerState<LoyaltyEntryEntity>
+            >(
+              child: LedgerBody<LoyaltyEntryEntity>(
+                header: const LoyaltyHeader(),
+                entryBuilder: (entry) => LoyaltyEntryTile(entry: entry),
+                entryDate: (entry) => entry.createdAt,
+                emptyIcon: Icons.stars_outlined,
+                emptyMessage: 'loyalty.empty'.tr(),
+                signInMessage: 'loyalty.sign_in_prompt'.tr(),
+                todayLabel: 'loyalty.today'.tr(),
+                yesterdayLabel: 'loyalty.yesterday'.tr(),
+              ),
+            ),
       ),
     );
   }

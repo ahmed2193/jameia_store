@@ -67,6 +67,8 @@ import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart
 import 'package:jameia_mart/src/features/cart/presentation/pages/cart_preview_page.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/pages/checkout_page.dart';
 import 'package:jameia_mart/src/features/checkout/presentation/pages/checkout_vouchers_page.dart';
+import 'package:jameia_mart/src/features/connectivity/presentation/cubit/connectivity_cubit.dart';
+import 'package:jameia_mart/src/features/connectivity/presentation/widgets/connectivity_banner_host.dart';
 import 'package:jameia_mart/src/features/coupons/presentation/pages/history_coupons_page.dart';
 import 'package:jameia_mart/src/features/coupons/presentation/pages/my_coupons_page.dart';
 import 'package:jameia_mart/src/features/coupons/presentation/pages/order_coupons_page.dart';
@@ -96,12 +98,14 @@ import 'package:jameia_mart/src/features/shop/presentation/pages/categories_page
 import 'package:jameia_mart/src/features/shop/presentation/pages/category_page.dart';
 import 'package:jameia_mart/src/features/shop/presentation/pages/product_listing_page.dart';
 import 'package:jameia_mart/src/features/splash/presentation/pages/splash_page.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/pages/pro_membership_page.dart';
 import 'package:jameia_mart/src/features/support/presentation/pages/customer_service_page.dart';
 import 'package:jameia_mart/src/features/support/presentation/pages/customer_service_question_page.dart';
 import 'package:jameia_mart/src/features/support/presentation/pages/im_chat_page.dart';
 
 import 'features/address/address_test_fakes.dart';
+import 'core/network/network_test_fakes.dart';
 
 /// One row of the route table: push [path] with the [extra] built from the
 /// loaded catalogue and expect [pageType] on top. [verify] optionally checks
@@ -454,6 +458,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     FlutterSecureStorage.setMockInitialValues({});
     await EasyLocalization.ensureInitialized();
+    registerFakeNetworkInfo();
     await setupServiceLocator();
     repo = sl<JameiaRepository>();
 
@@ -507,6 +512,13 @@ void main() {
             ),
             // Idle (never started) over fakes: the address pages read it at
             // build time and the list's first sync never touches the network.
+            // Over the registered FakeNetworkInfo (online): nothing probes.
+            BlocProvider<ConnectivityCubit>(
+              create: (_) => sl<ConnectivityCubit>()..start(),
+            ),
+            // Never started: the Pro standing is unknown, so no member tag,
+            // Pro banner or Pro chip shows and nothing reaches the network.
+            BlocProvider<ProStatusCubit>(create: (_) => sl<ProStatusCubit>()),
             BlocProvider<AddressBookCubit>(
               create: (_) => AddressBookCubit(
                 getCached: FakeGetCachedAddressesUseCase(),
@@ -525,6 +537,12 @@ void main() {
           child: MaterialApp.router(
             theme: AppTheme.light,
             routerConfig: router,
+            // As in JameiaApp: the connection banner above every route.
+            builder: (context, child) => ConnectivityBannerHost(
+              routeChanges: router.routerDelegate,
+              isOnSplash: () => false,
+              child: child!,
+            ),
           ),
         ),
       ),

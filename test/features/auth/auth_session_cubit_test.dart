@@ -58,6 +58,37 @@ void main() {
 
   tearDown(() => watchExpiry.controller.close());
 
+  group('onReconnected', () {
+    test('a session the backend could not confirm is checked now', () async {
+      getCached.result = const Right(kCustomer);
+      restoreSession.result = const Left(NetworkFailure());
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.restore();
+      expect(cubit.state.isSignedIn, isTrue);
+      expect(cubit.state.isVerified, isFalse);
+
+      restoreSession.result = const Right(edited);
+      await cubit.onReconnected();
+
+      expect(cubit.state.isVerified, isTrue);
+      expect(cubit.state.customer, edited);
+    });
+
+    test('a confirmed session asks nothing', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.restore();
+      expect(cubit.state.isVerified, isTrue);
+
+      // Asking again would end the session: it must not be asked.
+      restoreSession.result = const Left(UnauthorizedFailure());
+      await cubit.onReconnected();
+
+      expect(cubit.state.isSignedIn, isTrue);
+    });
+  });
+
   group('restore', () {
     blocTest<AuthSessionCubit, AuthSessionState>(
       'nothing on the device: signedIn with the validated customer, saved',

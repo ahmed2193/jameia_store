@@ -11,11 +11,15 @@ import 'assistant_onboarding_skill.dart';
 /// One thing the assistant does, as a small white pill: its glyph on a
 /// tinted disc and a short name that shrinks rather than wraps.
 class AssistantOnboardingSkillChip extends StatelessWidget {
-  const AssistantOnboardingSkillChip({super.key, required this.skill});
+  const AssistantOnboardingSkillChip({
+    super.key,
+    required this.skill,
+    required this.maxWidth,
+  });
 
   final AssistantOnboardingSkill skill;
+  final double maxWidth;
 
-  static const double _maxWidth = AppSize.s120;
   static const double _disc = AppSize.s24;
   static const BoxDecoration _pill = BoxDecoration(
     color: AppColors.white,
@@ -26,7 +30,7 @@ class AssistantOnboardingSkillChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: _maxWidth),
+      constraints: BoxConstraints(maxWidth: maxWidth),
       child: DecoratedBox(
         decoration: _pill,
         child: Padding(
@@ -46,7 +50,11 @@ class AssistantOnboardingSkillChip extends StatelessWidget {
                     color: skill.tint,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(skill.icon, size: AppSize.s14, color: skill.color),
+                  child: Icon(
+                    skill.icon,
+                    size: AppSize.s14,
+                    color: skill.color,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.s6),

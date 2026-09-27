@@ -2,7 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/domain/entities/screen_load.dart';
+import '../../../../../core/widgets/reconnect_refresh.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../cubit/category_browse_cubit.dart';
 import '../../cubit/category_browse_state.dart';
@@ -14,7 +15,9 @@ import 'category_rail_header.dart';
 /// sub-category rail of the open tab, its chips and the products. The tree is
 /// what the whole page is built from, so its loader / error / empty state
 /// replace the body — unlike a category page, where the products load on their
-/// own and only the rows wait for the tree.
+/// own and only the rows wait for the tree. With nothing saved and no
+/// connection it is the "No connection" state, which loads the store by
+/// itself when the connection returns.
 class CategoriesBody extends StatelessWidget {
   const CategoriesBody({super.key, required this.onRefresh});
 
@@ -27,32 +30,34 @@ class CategoriesBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CategoryBrowseCubit, CategoryBrowseState>(
-      buildWhen: (previous, current) =>
-          previous.status != current.status ||
-          previous.isEmpty != current.isEmpty,
-      builder: (context, state) {
-        final cubit = context.read<CategoryBrowseCubit>();
-        return switch (state.status) {
-          CategoryBrowseStatus.initial ||
-          CategoryBrowseStatus.loading => const AppLoader(),
-          CategoryBrowseStatus.error => ErrorView(
-            message: state.failure?.localizedMessage,
-            onRetry: cubit.load,
-          ),
-          CategoryBrowseStatus.loaded when state.isEmpty => EmptyStateView(
-            message: 'shop.no_categories'.tr(),
-            icon: Icons.category_outlined,
-          ),
-          CategoryBrowseStatus.loaded => ProductListingBody(
-            onRefresh: onRefresh,
-            headerSlivers: const [
-              CategoryRailHeader(level: _railLevel),
-              SliverToBoxAdapter(child: CategoryChips(level: _chipsLevel)),
-            ],
-          ),
-        };
-      },
+    return ReconnectRefresh(
+      onReconnected: () => context.read<CategoryBrowseCubit>().onReconnected(),
+      child: BlocBuilder<CategoryBrowseCubit, CategoryBrowseState>(
+        buildWhen: (previous, current) =>
+            current.load.screenChangedFrom(previous.load) ||
+            previous.isEmpty != current.isEmpty,
+        builder: (context, state) {
+          final cubit = context.read<CategoryBrowseCubit>();
+          return switch (state.status) {
+            LoadPhase.initial || LoadPhase.loading => const AppLoader(),
+            LoadPhase.error => FailureView(
+              failure: state.failure,
+              onRetry: cubit.load,
+            ),
+            LoadPhase.loaded when state.isEmpty => EmptyStateView(
+              message: 'shop.no_categories'.tr(),
+              icon: Icons.category_outlined,
+            ),
+            LoadPhase.loaded => ProductListingBody(
+              onRefresh: onRefresh,
+              headerSlivers: const [
+                CategoryRailHeader(level: _railLevel),
+                SliverToBoxAdapter(child: CategoryChips(level: _chipsLevel)),
+              ],
+            ),
+          };
+        },
+      ),
     );
   }
 }

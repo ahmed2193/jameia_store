@@ -1,69 +1,51 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/data_freshness.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 import '../../domain/entities/assistant_conversations_feed.dart';
 
-enum AssistantHistoryStatus { initial, loading, loaded, error }
-
-/// Which call produced [AssistantHistoryState.failure]: a full-screen error
-/// for [load], a snack bar for the rest.
-enum AssistantHistoryAction { load, refresh, loadMore }
-
 /// Past conversations, newest first (mirrors `NotificationsState`).
-class AssistantHistoryState extends Equatable {
+class AssistantHistoryState extends Equatable
+    implements ScreenLoadState<AssistantHistoryState> {
   const AssistantHistoryState({
-    this.status = AssistantHistoryStatus.initial,
+    this.load = const ScreenLoad(),
     this.feed = AssistantConversationsFeed.empty,
-    this.isLoadingMore = false,
-    this.loadMoreFailed = false,
-    this.failure,
-    this.failedAction,
   });
 
-  final AssistantHistoryStatus status;
+  /// The first page's read, its freshness, the next page and the failure
+  /// that goes with them (the sign-in prompt, "No connection" …).
+  @override
+  final ScreenLoad load;
   final AssistantConversationsFeed feed;
 
+  LoadPhase get status => load.phase;
+  DataFreshness get freshness => load.freshness;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
+
   /// Next page in flight (guards re-entry; the list shows a footer).
-  final bool isLoadingMore;
+  bool get isLoadingMore => load.isLoadingMore;
 
-  /// The last next-page request failed: the footer offers a retry.
-  final bool loadMoreFailed;
-
-  /// Transient — cleared on every [copyWith]; the page localizes it.
-  final Failure? failure;
-
-  /// Transient, set together with [failure].
-  final AssistantHistoryAction? failedAction;
-
-  bool get isLoaded => status == AssistantHistoryStatus.loaded;
+  /// The last next-page request failed: the footer offers a retry
+  /// (offline: it waits for the connection).
+  bool get loadMoreFailed => load.nextPageFailed;
 
   /// The load failed because this customer must sign in first.
-  bool get isSignedOut =>
-      status == AssistantHistoryStatus.error && failure is UnauthorizedFailure;
+  bool get isSignedOut => load.isSignedOut;
+
+  @override
+  AssistantHistoryState withLoad(ScreenLoad load) => copyWith(load: load);
 
   AssistantHistoryState copyWith({
-    AssistantHistoryStatus? status,
+    ScreenLoad? load,
     AssistantConversationsFeed? feed,
-    bool? isLoadingMore,
-    bool? loadMoreFailed,
-    Failure? failure,
-    AssistantHistoryAction? failedAction,
   }) => AssistantHistoryState(
-    status: status ?? this.status,
+    load: load ?? this.load.settled(),
     feed: feed ?? this.feed,
-    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-    loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
-    failure: failure,
-    failedAction: failedAction,
   );
 
   @override
-  List<Object?> get props => [
-    status,
-    feed,
-    isLoadingMore,
-    loadMoreFailed,
-    failure,
-    failedAction,
-  ];
+  List<Object?> get props => [load, feed];
 }

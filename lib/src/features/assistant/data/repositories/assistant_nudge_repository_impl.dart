@@ -18,10 +18,16 @@ class AssistantNudgeRepositoryImpl
   Future<Either<Failure, AssistantNudgeLog>> getLog() =>
       execute(() => _local.read().toEntity());
 
+  // The read and the change run before the first await, and the store
+  // keeps what it was handed at once: a second change made meanwhile reads
+  // this one's result instead of the log both started from.
   @override
-  Future<Either<Failure, Unit>> saveLog(AssistantNudgeLog log) =>
-      execute(() async {
-        await _local.write(log.toModel());
-        return unit;
-      });
+  Future<Either<Failure, AssistantNudgeLog>> updateLog(
+    AssistantNudgeLog Function(AssistantNudgeLog log) change,
+  ) => execute(() async {
+    final current = _local.read().toEntity();
+    final next = change(current);
+    if (next != current) await _local.write(next.toModel());
+    return next;
+  });
 }

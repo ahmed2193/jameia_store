@@ -8,14 +8,16 @@ import 'tracking_cancel_button.dart';
 import 'tracking_cancellation_notice.dart';
 import 'tracking_delivery_notice.dart';
 import 'tracking_destination_card.dart';
+import 'tracking_last_known_note.dart';
 import 'tracking_picking_notice.dart';
 import 'tracking_status_header.dart';
 
-/// The loaded order on the white page: status + journey, what changed while
-/// picking, who is handling it, where it goes, what it contains (a lazy
-/// sliver of rows) and the cancel action. Each optional notice keeps its
-/// place and opens / folds itself (height + fade) when a poll or a cancel
-/// changes it, so nothing jumps.
+/// The loaded order on the white page: status + journey (marked "last
+/// known" while it is not live), what changed while picking, who is
+/// handling it, where it goes, what it contains (a lazy sliver of rows) and
+/// the cancel action. Each optional notice keeps its place and opens / folds
+/// itself (height + fade) when a poll or a cancel changes it, so nothing
+/// jumps.
 class TrackingBody extends StatelessWidget {
   const TrackingBody({super.key, required this.order});
 
@@ -32,6 +34,7 @@ class TrackingBody extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TrackingStatusHeader(order: order),
+              TrackingLastKnownNote(order: order),
               TrackingCancellationNotice(cancellation: order.cancellation),
               TrackingPickingNotice(picking: picking),
               TrackingDeliveryNotice(

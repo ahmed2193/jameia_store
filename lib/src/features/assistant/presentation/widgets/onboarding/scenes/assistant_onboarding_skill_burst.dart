@@ -35,6 +35,11 @@ class AssistantOnboardingSkillBurst extends StatelessWidget {
   static const double _bobs = 1.5;
   static const double _bobReach = AppSize.s4;
 
+  /// A chip beside the hand keeps clear of it; the one centred under it
+  /// has the whole row.
+  static const double _besideHand = AppSize.s120;
+  static const double _underHand = AppSize.s180;
+
   @override
   Widget build(BuildContext context) {
     final start = _firstAt + _step * order;
@@ -56,7 +61,10 @@ class AssistantOnboardingSkillBurst extends StatelessWidget {
         offset: Offset(0, bob),
         child: Transform.scale(
           scale: pop,
-          child: AssistantOnboardingSkillChip(skill: skill),
+          child: AssistantOnboardingSkillChip(
+            skill: skill,
+            maxWidth: skill.spot.start == 0 ? _underHand : _besideHand,
+          ),
         ),
       ),
     );

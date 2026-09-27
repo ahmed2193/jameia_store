@@ -7,6 +7,7 @@ import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/cart_line_ref.dart';
 import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
 import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
@@ -14,10 +15,12 @@ import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_state.dart';
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
 import 'package:jameia_mart/src/features/product_details/domain/entities/product_reviews.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_detail_usecase.dart';
 import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
 import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_reviews_usecase.dart';
+import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_detail_usecase.dart';
+import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_reviews_usecase.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
 import '../auth/auth_test_fakes.dart';
 
 /// Keys the product page added. Until the lead lands them in
@@ -52,15 +55,15 @@ Map<String, dynamic> withNewProductKeys(
   return <String, dynamic>{...translations, 'product': product};
 }
 
-class StubGetDetail implements GetProductDetailUseCase {
-  const StubGetDetail(this.served);
+/// The product read: [served], from the server.
+class StubWatchDetail implements WatchProductDetailUseCase {
+  const StubWatchDetail(this.served);
 
   final ProductDetail served;
 
   @override
-  Future<Either<Failure, ProductDetail>> call(
-    GetProductDetailParams params,
-  ) async => Right(served);
+  Stream<DataSnapshot<ProductDetail>> call(WatchProductDetailParams params) =>
+      networkRead(Future.value(Right<Failure, ProductDetail>(served)));
 }
 
 /// The buy bar's promo offer: [served] (none by default).
@@ -84,6 +87,17 @@ class StubGetReviews implements GetProductReviewsUseCase {
   Future<Either<Failure, ProductReviews>> call(
     GetProductReviewsParams params,
   ) async => Right(served);
+}
+
+/// The first reviews page: [served], from the server.
+class StubWatchReviews implements WatchProductReviewsUseCase {
+  const StubWatchReviews([this.served = ProductReviews.empty]);
+
+  final ProductReviews served;
+
+  @override
+  Stream<DataSnapshot<ProductReviews>> call(WatchProductReviewsParams params) =>
+      networkRead(Future.value(Right<Failure, ProductReviews>(served)));
 }
 
 AuthSessionCubit signedOutSession() => AuthSessionCubit(

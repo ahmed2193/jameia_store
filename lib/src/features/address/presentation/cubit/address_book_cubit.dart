@@ -159,6 +159,13 @@ class AddressBookCubit extends Cubit<AddressBookState>
     await _sync();
   }
 
+  /// The connection came back: a signed-in book the server has not
+  /// answered for in this session syncs now (what the list shows stays).
+  Future<void> onReconnected() async {
+    if (!_active || state.isSynced) return;
+    await _sync();
+  }
+
   /// The edit page saved [address]; the server already has it.
   void applySaved(JameiaAddressEntity address) {
     _revision++;

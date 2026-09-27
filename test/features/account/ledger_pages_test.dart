@@ -35,6 +35,7 @@ import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'account_test_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
 
 final Ledger<WalletEntryEntity> _wallet = Ledger<WalletEntryEntity>(
   balance: 2750,
@@ -98,6 +99,7 @@ void main() {
     await EasyLocalization.ensureInitialized();
     // What the Material localizations load in the app: the date symbols.
     await initializeDateFormatting('en');
+    registerFakeNetworkInfo();
     await setupServiceLocator();
     final enRaw = await rootBundle.loadString('assets/i18n/en.json');
     Localization.load(
@@ -116,11 +118,17 @@ void main() {
     sl
       ..unregister<LedgerCubit<WalletEntryEntity>>()
       ..registerFactory<LedgerCubit<WalletEntryEntity>>(
-        () => LedgerCubit<WalletEntryEntity>(walletLedger),
+        () => LedgerCubit<WalletEntryEntity>(
+          WatchLedgerFromGet<WalletEntryEntity>(walletLedger),
+          walletLedger,
+        ),
       )
       ..unregister<LedgerCubit<LoyaltyEntryEntity>>()
       ..registerFactory<LedgerCubit<LoyaltyEntryEntity>>(
-        () => LedgerCubit<LoyaltyEntryEntity>(pointsLedger),
+        () => LedgerCubit<LoyaltyEntryEntity>(
+          WatchLedgerFromGet<LoyaltyEntryEntity>(pointsLedger),
+          pointsLedger,
+        ),
       )
       ..unregister<LoyaltyProgramCubit>()
       ..registerFactory<LoyaltyProgramCubit>(
@@ -230,11 +238,12 @@ void main() {
       await teardownApp(tester);
     });
 
-    testWidgets('offline → the error view with a retry that reloads', (
+    testWidgets('offline → No connection, with a retry that reloads', (
       tester,
     ) async {
       walletLedger.handler = (_) async => const Left(NetworkFailure());
       await pumpAt(tester, Routes.wallet);
+      expect(find.text('No connection'), findsOneWidget);
       expect(find.text('Retry'), findsOneWidget);
 
       walletLedger.handler = (_) async => Right(_wallet);

@@ -1,87 +1,78 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/domain/entities/order_entity.dart';
+import '../../../../core/domain/entities/screen_load.dart';
+import '../../../../core/usecase/watch_params.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
+import '../../../../core/utils/performance/snapshot_loader_mixin.dart';
 import '../../domain/entities/cancel_order_request.dart';
+import '../../domain/entities/orders_page.dart';
 import '../../domain/usecases/cancel_order_usecase.dart';
 import '../../domain/usecases/get_order_usecase.dart';
 import '../../domain/usecases/get_orders_usecase.dart';
+import '../../domain/usecases/watch_orders_usecase.dart';
 import 'orders_state.dart';
 
-/// The orders list: first page, pull-to-refresh, "load more" guarded against
-/// re-entry and stale pages (a refresh started after a load-more drops the
-/// older reply), one cancel at a time, and single-order refreshes when the
-/// customer comes back from tracking.
-class OrdersCubit extends Cubit<OrdersState> with SafeCubitMixin<OrdersState> {
+/// The orders list: the first page paints from the device copy (offline
+/// too), then the server's; pull-to-refresh; "load more" (the shared paged
+/// flow: one page at a time, stale pages dropped, a failed page waits for a
+/// tap — or the connection); one cancel at a time; and single-order
+/// refreshes when the customer comes back from tracking.
+class OrdersCubit extends Cubit<OrdersState>
+    with
+        SafeCubitMixin<OrdersState>,
+        SnapshotLoaderMixin<OrdersState>,
+        ScreenLoaderMixin<OrdersState>,
+        PagedScreenMixin<OrdersState> {
   OrdersCubit({
+    required this._watchFirstPage,
     required this._getOrders,
     required this._getOrder,
     required this._cancelOrder,
   }) : super(OrdersState());
 
+  final WatchOrdersUseCase _watchFirstPage;
   final GetOrdersUseCase _getOrders;
   final GetOrderUseCase _getOrder;
   final CancelOrderUseCase _cancelOrder;
 
-  int _generation = 0;
-
-  Future<void> load() async {
-    safeEmit(state.copyWith(status: OrdersStatus.loading));
-    await _loadFirstPage(OrdersAction.load);
+  /// First load, or the retry of a failed one: the skeleton only while
+  /// nothing is on screen.
+  Future<void> load() {
+    showLoading();
+    return _readFirstPage(WatchParams.cached);
   }
 
+  /// Pull-to-refresh, or the tab coming back: the server's first page; the
+  /// list stays on screen meanwhile. One at a time.
+  @override
   Future<void> refresh() async {
     if (state.isRefreshing) return;
     safeEmit(state.copyWith(isRefreshing: true));
-    await _loadFirstPage(OrdersAction.refresh);
+    await _readFirstPage(WatchParams.fresh);
+    // A failed refresh keeps the list; the spinner stops either way.
+    if (state.isRefreshing) safeEmit(state.copyWith(isRefreshing: false));
   }
 
-  Future<void> _loadFirstPage(OrdersAction action) async {
-    final generation = ++_generation;
-    final result = await _getOrders(const GetOrdersParams());
-    if (generation != _generation) return;
-    result.fold(
-      (failure) => safeEmit(
-        state.copyWith(
-          status: state.feed.isEmpty ? OrdersStatus.error : OrdersStatus.loaded,
-          isRefreshing: false,
-          isLoadingMore: false,
-          failure: failure,
-          failedAction: action,
-        ),
-      ),
-      (page) => safeEmit(
-        state.copyWith(
-          status: OrdersStatus.loaded,
-          feed: state.feed.replace(page),
-          isRefreshing: false,
-          isLoadingMore: false,
-        ),
-      ),
-    );
-  }
+  Future<void> _readFirstPage(WatchParams params) => readScreen<OrdersPage>(
+    _watchFirstPage(params),
+    show: (state, snapshot) => state.copyWith(
+      feed: state.feed.replace(snapshot.data),
+      isRefreshing: false,
+    ),
+  );
 
-  Future<void> loadMore() async {
-    if (state.isLoadingMore || state.isRefreshing || !state.feed.hasMore) {
-      return;
-    }
-    final generation = _generation;
-    safeEmit(state.copyWith(isLoadingMore: true));
-    final result = await _getOrders(GetOrdersParams(page: state.feed.page + 1));
-    if (generation != _generation) return; // a refresh replaced the feed
-    result.fold(
-      (failure) => safeEmit(
-        state.copyWith(
-          isLoadingMore: false,
-          failure: failure,
-          failedAction: OrdersAction.loadMore,
-        ),
-      ),
-      (page) => safeEmit(
-        state.copyWith(isLoadingMore: false, feed: state.feed.merge(page)),
-      ),
-    );
-  }
+  /// The end of the list came into reach. After a failed page it waits for
+  /// the "Load more" tap — or the connection to return — ([retry] = true)
+  /// instead of asking again on every scroll.
+  @override
+  Future<void> loadMore({bool retry = false}) => loadNextPage<OrdersPage>(
+    hasMore: state.feed.hasMore,
+    retry: retry,
+    fetch: () => _getOrders(GetOrdersParams(page: state.feed.page + 1)),
+    merge: (state, page) => state.copyWith(feed: state.feed.merge(page)),
+  );
 
   /// Cancels one order; a second request while one is in flight is ignored.
   Future<bool> cancel(CancelOrderRequest request) async {
@@ -90,11 +81,7 @@ class OrdersCubit extends Cubit<OrdersState> with SafeCubitMixin<OrdersState> {
     final result = await _cancelOrder(CancelOrderParams(request));
     result.fold(
       (failure) => safeEmit(
-        state.copyWith(
-          clearCancelling: true,
-          failure: failure,
-          failedAction: OrdersAction.cancel,
-        ),
+        state.copyWith(clearCancelling: true, load: state.load.noted(failure)),
       ),
       (order) => safeEmit(
         state.copyWith(
@@ -110,12 +97,7 @@ class OrdersCubit extends Cubit<OrdersState> with SafeCubitMixin<OrdersState> {
   Future<void> refreshOrder(String orderId) async {
     final result = await _getOrder(GetOrderParams(orderId));
     result.fold(
-      (failure) => safeEmit(
-        state.copyWith(
-          failure: failure,
-          failedAction: OrdersAction.refreshOrder,
-        ),
-      ),
+      (failure) => noteFailure(failure, on: FailedCall.read),
       applyOrder,
     );
   }

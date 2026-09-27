@@ -35,6 +35,7 @@ import 'package:jameia_mart/src/features/language/presentation/cubit/localizatio
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_test_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
 
 const AuthCustomerEntity _customer = AuthCustomerEntity(
   id: '507f1f77bcf86cd799439011',
@@ -254,6 +255,7 @@ void main() {
       FlutterSecureStorage.setMockInitialValues({});
       await EasyLocalization.ensureInitialized();
       await initializeDateFormatting('en');
+      registerFakeNetworkInfo();
       await setupServiceLocator();
       sl
         ..unregister<DeliveryCodeCubit>()

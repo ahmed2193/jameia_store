@@ -54,9 +54,12 @@ void main() {
     );
   });
 
-  Future<ProductDetailCubit> pump(WidgetTester tester, OfferEntity? offer) async {
+  Future<ProductDetailCubit> pump(
+    WidgetTester tester,
+    OfferEntity? offer,
+  ) async {
     final detail = ProductDetailCubit(
-      const StubGetDetail(_eggs),
+      const StubWatchDetail(_eggs),
       StubGetOffer(offer),
       slug: _eggs.product.slug,
     );

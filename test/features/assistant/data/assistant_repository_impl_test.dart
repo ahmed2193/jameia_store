@@ -1,7 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_history_cache_data_source.dart';
 import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_remote_data_source.dart';
 import 'package:jameia_mart/src/features/assistant/data/models/assistant_conversation_model.dart';
 import 'package:jameia_mart/src/features/assistant/data/models/assistant_reply_models.dart';
@@ -10,7 +14,18 @@ import 'package:jameia_mart/src/features/assistant/data/repositories/assistant_r
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
 import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
 
+import '../../../core/network/network_test_fakes.dart';
+import '../../../core/storage/cache_test_fakes.dart';
 import '../assistant_fixtures.dart';
+
+/// The history's device copy over an in-memory store (a signed-in customer).
+AssistantHistoryCacheDataSource _cache() => AssistantHistoryCacheDataSourceImpl(
+  CacheSlots(
+    store: InMemoryJsonCacheStore(),
+    owner: CacheOwner()..signedIn('c1'),
+    locale: FakeLocaleProvider('en'),
+  ),
+);
 
 class _FakeRemote implements AssistantRemoteDataSource {
   Object? error;
@@ -27,14 +42,15 @@ class _FakeRemote implements AssistantRemoteDataSource {
       _answer(const AssistantAvailabilityModel(enabled: true));
 
   @override
-  Future<AssistantConversationsPageModel> getConversations({
+  Future<RemotePayload<AssistantConversationsPageModel>> getConversations({
     required int page,
     required int limit,
-  }) => _answer(
-    AssistantConversationsPageModel.fromJson(
-      AssistantFixtures.liveResults('conversations_list_en.json'),
-    ),
-  );
+  }) {
+    final raw = AssistantFixtures.liveResults('conversations_list_en.json');
+    return _answer(
+      RemotePayload(AssistantConversationsPageModel.fromJson(raw), raw),
+    );
+  }
 
   @override
   Future<AssistantConversationDetailModel> getConversation(String id) =>
@@ -71,7 +87,7 @@ void main() {
 
   setUp(() {
     remote = _FakeRemote();
-    repository = AssistantRepositoryImpl(remote);
+    repository = AssistantRepositoryImpl(remote, cache: _cache());
   });
 
   test('DTO → entity on success', () async {

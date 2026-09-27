@@ -4,43 +4,30 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/next_page_sentinel.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../cubit/assistant_history_cubit.dart';
 import '../../cubit/assistant_history_state.dart';
 
-/// The end-of-list sentinel while the server has more: building it asks for
-/// the next page; a loader while it loads, a retry after a failure.
-class AssistantHistoryLoadMoreRow extends StatefulWidget {
+/// The end-of-list sentinel while the server has more: in view it asks for
+/// the next page ([NextPageSentinel]); a loader while it loads, a retry
+/// after a failure — offline, "More will load when you're back" instead
+/// (the history asks again by itself on reconnect).
+class AssistantHistoryLoadMoreRow extends StatelessWidget {
   const AssistantHistoryLoadMoreRow({super.key});
 
   @override
-  State<AssistantHistoryLoadMoreRow> createState() =>
-      _AssistantHistoryLoadMoreRowState();
-}
-
-class _AssistantHistoryLoadMoreRowState
-    extends State<AssistantHistoryLoadMoreRow> {
-  @override
-  void initState() {
-    super.initState();
-    // After the frame: emitting during build would rebuild the list mid-build.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) context.read<AssistantHistoryCubit>().loadMore();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.s16),
-      child: BlocSelector<AssistantHistoryCubit, AssistantHistoryState, bool>(
-        selector: (state) => state.loadMoreFailed,
-        builder: (context, failed) => !failed
+    final cubit = context.read<AssistantHistoryCubit>();
+    return NextPageSentinel<AssistantHistoryCubit, AssistantHistoryState>(
+      onNextPage: cubit.loadMore,
+      builder: (context, failed) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.s16),
+        child: !failed
             ? const AppLoader(size: AppSize.s20)
             : Center(
                 child: TextButton(
-                  onPressed: () =>
-                      context.read<AssistantHistoryCubit>().loadMore(),
+                  onPressed: () => cubit.loadMore(retry: true),
                   child: Text('assistant.retry'.tr()),
                 ),
               ),

@@ -294,6 +294,12 @@ class CartRepositoryImpl with BaseRepositoryMixin implements CartRepository {
   Future<Either<Failure, Unit>> flush() {
     _flushTimer?.cancel();
     _flushTimer = null;
+    // Sending now (checkout, the connection's return): a retry waiting out
+    // its back-off joins this attempt, and a failure starts the back-off
+    // over from the first, short wait.
+    _retryTimer?.cancel();
+    _retryTimer = null;
+    _resetRetryBackoff();
     return _laneOp(() => _enqueue(_flushTask));
   }
 

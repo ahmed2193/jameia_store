@@ -1,51 +1,36 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 import '../../domain/entities/recipes_feed.dart';
 
-enum RecipesStatus { initial, loading, loaded, error }
-
-class RecipesState extends Equatable {
+class RecipesState extends Equatable implements ScreenLoadState<RecipesState> {
   const RecipesState({
-    this.status = RecipesStatus.initial,
+    this.load = const ScreenLoad(),
     this.feed = RecipesFeed.empty,
-    this.isLoadingMore = false,
-    this.loadMoreFailed = false,
-    this.failure,
   });
 
-  final RecipesStatus status;
+  /// The first page's read, its freshness, the next page and the failure
+  /// that goes with them.
+  @override
+  final ScreenLoad load;
   final RecipesFeed feed;
-  final bool isLoadingMore;
-  final bool loadMoreFailed;
 
-  /// Transient — cleared on every [copyWith]; the page localizes it.
-  final Failure? failure;
-
-  bool get isLoaded => status == RecipesStatus.loaded;
+  LoadPhase get status => load.phase;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
+  bool get isLoadingMore => load.isLoadingMore;
+  bool get loadMoreFailed => load.nextPageFailed;
   bool get isEmpty => isLoaded && feed.isEmpty;
   bool get canLoadMore => isLoaded && feed.hasMore && !isLoadingMore;
 
-  RecipesState copyWith({
-    RecipesStatus? status,
-    RecipesFeed? feed,
-    bool? isLoadingMore,
-    bool? loadMoreFailed,
-    Failure? failure,
-  }) => RecipesState(
-    status: status ?? this.status,
-    feed: feed ?? this.feed,
-    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-    loadMoreFailed: loadMoreFailed ?? this.loadMoreFailed,
-    failure: failure,
-  );
+  @override
+  RecipesState withLoad(ScreenLoad load) => copyWith(load: load);
+
+  RecipesState copyWith({ScreenLoad? load, RecipesFeed? feed}) =>
+      RecipesState(load: load ?? this.load.settled(), feed: feed ?? this.feed);
 
   @override
-  List<Object?> get props => [
-    status,
-    feed,
-    isLoadingMore,
-    loadMoreFailed,
-    failure,
-  ];
+  List<Object?> get props => [load, feed];
 }

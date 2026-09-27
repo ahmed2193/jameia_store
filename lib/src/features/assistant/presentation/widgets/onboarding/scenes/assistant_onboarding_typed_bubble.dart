@@ -25,7 +25,8 @@ class AssistantOnboardingTypedBubble extends StatelessWidget {
   /// The bubble's scale as it pops in from its tail.
   final double appear;
 
-  static const double _maxWidth = AppSize.s220;
+  static const double _maxWidth = AppSize.s260;
+  static const int _maxLines = 2;
   static const BorderRadiusDirectional _shape = BorderRadiusDirectional.only(
     topStart: Radius.circular(SuiRadius.bubble),
     topEnd: Radius.circular(SuiRadius.bubble),
@@ -59,9 +60,16 @@ class AssistantOnboardingTypedBubble extends StatelessWidget {
               children: [
                 Text(
                   text,
+                  maxLines: _maxLines,
+                  overflow: TextOverflow.ellipsis,
                   style: style.copyWith(color: AppColors.scrimTransparent),
                 ),
-                Text(shown, style: style),
+                Text(
+                  shown,
+                  maxLines: _maxLines,
+                  overflow: TextOverflow.ellipsis,
+                  style: style,
+                ),
               ],
             ),
           ),

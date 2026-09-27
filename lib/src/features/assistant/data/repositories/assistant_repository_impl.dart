@@ -1,6 +1,8 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/data/repositories/base_repository_mixin.dart';
+import '../../../../core/data/repositories/cached_repository_mixin.dart';
+import '../../../../core/domain/entities/data_snapshot.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/assistant_action_result.dart';
 import '../../domain/entities/assistant_availability.dart';
@@ -10,15 +12,22 @@ import '../../domain/entities/assistant_message_entity.dart';
 import '../../domain/entities/assistant_stream_event.dart';
 import '../../domain/entities/assistant_thread.dart';
 import '../../domain/repositories/assistant_repository.dart';
+import '../datasources/assistant_history_cache_data_source.dart';
 import '../datasources/assistant_remote_data_source.dart';
 import '../mappers/assistant_message_mapper.dart';
+import '../models/assistant_conversation_model.dart';
 
 class AssistantRepositoryImpl
-    with BaseRepositoryMixin
+    with BaseRepositoryMixin, CachedRepositoryMixin
     implements AssistantRepository {
-  const AssistantRepositoryImpl(this._remote);
+  const AssistantRepositoryImpl(this._remote, {required this._cache});
 
   final AssistantRemoteDataSource _remote;
+
+  /// The history's first page as last shown (signed-in customer only).
+  final AssistantHistoryCacheDataSource _cache;
+
+  static const int _firstPage = 1;
 
   @override
   Future<Either<Failure, AssistantAvailability>> getAvailability() =>
@@ -29,8 +38,21 @@ class AssistantRepositoryImpl
     required int page,
     required int limit,
   }) => execute(
-    () async =>
-        (await _remote.getConversations(page: page, limit: limit)).toEntity(),
+    () async => (await _remote.getConversations(
+      page: page,
+      limit: limit,
+    )).model.toEntity(),
+  );
+
+  @override
+  Stream<DataSnapshot<AssistantConversationsFeed>> watchFirstPage({
+    required int limit,
+    bool forceRefresh = false,
+  }) => cachedRead<AssistantConversationsPageModel, AssistantConversationsFeed>(
+    cache: _cache.firstPage(limit: limit),
+    fetch: () => _remote.getConversations(page: _firstPage, limit: limit),
+    toEntity: (model) => model.toEntity(),
+    forceRefresh: forceRefresh,
   );
 
   @override

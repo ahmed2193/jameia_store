@@ -46,7 +46,10 @@ void main() {
         ),
       );
 
-      final page = await dataSource.getNotifications(page: 1, limit: 20);
+      final page = (await dataSource.getNotifications(
+        page: 1,
+        limit: 20,
+      )).model;
 
       expect(request().path, EndPoints.notifications);
       expect(request().method, 'GET');

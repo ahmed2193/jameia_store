@@ -42,7 +42,7 @@ class HomeHeroDelegate extends SliverPersistentHeaderDelegate {
 
   final String storeName;
 
-  /// The store runs the Pro programme: the "pro" tag shows.
+  /// The customer is a Jm3eia Pro member: the "pro" tag shows.
   final bool isPro;
 
   /// The zone's delivery time; `0` while unknown (no pill).

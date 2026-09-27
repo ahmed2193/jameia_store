@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import '../../domain/entities/home_feed.dart';
@@ -13,6 +14,7 @@ class HomeState extends Equatable {
     this.bootstrap = HomeBootstrap.empty,
     this.duePopups = const <HomeMarketingPopup>[],
     this.popupsShown = false,
+    this.freshness = DataFreshness.none,
     this.failure,
   });
 
@@ -31,9 +33,13 @@ class HomeState extends Equatable {
   /// The popup queue was shown in this session — never shown twice.
   final bool popupsShown;
 
-  /// Transient — cleared on every [copyWith]; the page localizes it. With
-  /// [HomeStatus.error] it is the full-screen error, with [HomeStatus.loaded]
-  /// a failed refresh (snack bar, content stays).
+  /// How fresh [feed] is (the device copy, a failed refresh …).
+  final DataFreshness freshness;
+
+  /// With [HomeStatus.loaded], a failed refresh (snack bar, content stays):
+  /// transient, cleared on the next [copyWith]. With [HomeStatus.error], the
+  /// reason for the full-screen state (offline vs error): kept while the
+  /// status stays `error` — the launch snapshot may land meanwhile.
   final Failure? failure;
 
   bool get isLoaded => status == HomeStatus.loaded;
@@ -46,15 +52,21 @@ class HomeState extends Equatable {
     HomeBootstrap? bootstrap,
     List<HomeMarketingPopup>? duePopups,
     bool? popupsShown,
+    DataFreshness? freshness,
     Failure? failure,
-  }) => HomeState(
-    status: status ?? this.status,
-    feed: feed ?? this.feed,
-    bootstrap: bootstrap ?? this.bootstrap,
-    duePopups: duePopups ?? this.duePopups,
-    popupsShown: popupsShown ?? this.popupsShown,
-    failure: failure,
-  );
+  }) {
+    final nextStatus = status ?? this.status;
+    return HomeState(
+      status: nextStatus,
+      feed: feed ?? this.feed,
+      bootstrap: bootstrap ?? this.bootstrap,
+      duePopups: duePopups ?? this.duePopups,
+      popupsShown: popupsShown ?? this.popupsShown,
+      freshness: freshness ?? this.freshness,
+      failure:
+          failure ?? (nextStatus == HomeStatus.error ? this.failure : null),
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -63,6 +75,7 @@ class HomeState extends Equatable {
     bootstrap,
     duePopups,
     popupsShown,
+    freshness,
     failure,
   ];
 }

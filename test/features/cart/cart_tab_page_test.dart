@@ -28,9 +28,11 @@ import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase
 import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:jameia_mart/src/features/cart/presentation/pages/cart_tab_page.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_test_fakes.dart';
+import '../store_mode/pro_status_fakes.dart';
 import 'cart_test_fixtures.dart';
 import 'fake_cart_repository.dart';
 
@@ -95,6 +97,8 @@ void main() {
             providers: [
               BlocProvider<CartCubit>.value(value: cartCubit),
               BlocProvider<AuthSessionCubit>.value(value: session),
+              // Idle: the Pro standing unknown, so no Pro nudge or tag.
+              BlocProvider<ProStatusCubit>(create: (_) => buildProStatus()),
             ],
             child: Builder(
               builder: (context) => MaterialApp(

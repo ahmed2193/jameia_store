@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import '../../../../core/data/models/remote_payload.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
@@ -17,8 +18,9 @@ abstract class AssistantRemoteDataSource {
   /// Memoized for the app run; a failed read is not.
   Future<AssistantAvailabilityModel> getAvailability();
 
-  /// `GET /v1/assistant/conversations?page&limit` (newest activity first).
-  Future<AssistantConversationsPageModel> getConversations({
+  /// `GET /v1/assistant/conversations?page&limit` (newest activity first),
+  /// with its raw `results` for the device copy (the first page).
+  Future<RemotePayload<AssistantConversationsPageModel>> getConversations({
     required int page,
     required int limit,
   });
@@ -85,7 +87,7 @@ class AssistantRemoteDataSourceImpl implements AssistantRemoteDataSource {
   }
 
   @override
-  Future<AssistantConversationsPageModel> getConversations({
+  Future<RemotePayload<AssistantConversationsPageModel>> getConversations({
     required int page,
     required int limit,
   }) async {
@@ -93,9 +95,10 @@ class AssistantRemoteDataSourceImpl implements AssistantRemoteDataSource {
       EndPoints.assistantConversations,
       queryParameters: <String, dynamic>{pageField: page, limitField: limit},
     );
-    return AssistantConversationsPageModel.fromJson(
-      ApiPayload.asMap(results, EndPoints.assistantConversations),
-      requestedPage: page,
+    final json = ApiPayload.asMap(results, EndPoints.assistantConversations);
+    return RemotePayload(
+      AssistantConversationsPageModel.fromJson(json, requestedPage: page),
+      json,
     );
   }
 

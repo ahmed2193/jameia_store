@@ -7,6 +7,7 @@ import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/motion/fade_through_switcher.dart';
 import '../../../../core/responsive/content_clamp.dart';
+import '../../../../core/widgets/reconnect_refresh.dart';
 import '../cubit/search_cubit.dart';
 import '../cubit/search_state.dart';
 import 'search_discover_view.dart';
@@ -18,7 +19,8 @@ import 'search_suggestions_view.dart';
 /// remembers it and opens the results — the product listing scoped by that
 /// text. Back from the results the field is empty again, unless their search
 /// pill sent the customer back to edit the text: the results route then pops
-/// with the text to put back in the field.
+/// with the text to put back in the field. A returning connection refreshes
+/// what could not load.
 class SearchBody extends StatefulWidget {
   const SearchBody({super.key});
 
@@ -72,43 +74,46 @@ class _SearchBodyState extends State<SearchBody> {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<SearchCubit>();
-    return ColoredBox(
-      color: AppColors.white,
-      child: Column(
-        children: [
-          SearchEntryBar(
-            controller: _controller,
-            focusNode: _focus,
-            onChanged: cubit.onQueryChanged,
-            onSubmit: _submit,
-            onClear: () => _fill(''),
-          ),
-          Expanded(
-            child: ContentClamp(
-              child: BlocBuilder<SearchCubit, SearchState>(
-                builder: (context, state) => FadeThroughSwitcher(
-                  stateKey: state.isTyping,
-                  alignment: AlignmentDirectional.topCenter,
-                  child: state.isTyping
-                      ? SearchSuggestionsView(
-                          state: state,
-                          onSearch: _submit,
-                          onRefine: _fill,
-                          onOpenProduct: (product) => context.push(
-                            Routes.productDetail,
-                            extra: ProductDetailArgs.of(product),
+    return ReconnectRefresh(
+      onReconnected: cubit.onReconnected,
+      child: ColoredBox(
+        color: AppColors.white,
+        child: Column(
+          children: [
+            SearchEntryBar(
+              controller: _controller,
+              focusNode: _focus,
+              onChanged: cubit.onQueryChanged,
+              onSubmit: _submit,
+              onClear: () => _fill(''),
+            ),
+            Expanded(
+              child: ContentClamp(
+                child: BlocBuilder<SearchCubit, SearchState>(
+                  builder: (context, state) => FadeThroughSwitcher(
+                    stateKey: state.isTyping,
+                    alignment: AlignmentDirectional.topCenter,
+                    child: state.isTyping
+                        ? SearchSuggestionsView(
+                            state: state,
+                            onSearch: _submit,
+                            onRefine: _fill,
+                            onOpenProduct: (product) => context.push(
+                              Routes.productDetail,
+                              extra: ProductDetailArgs.of(product),
+                            ),
+                          )
+                        : SearchDiscoverView(
+                            state: state,
+                            onTerm: _submit,
+                            onClearRecents: cubit.clearRecents,
                           ),
-                        )
-                      : SearchDiscoverView(
-                          state: state,
-                          onTerm: _submit,
-                          onClearRecents: cubit.clearRecents,
-                        ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -35,6 +35,7 @@ import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_con
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_chat_cubit.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_history_cubit.dart';
+import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_voice_cubit.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/widgets/blocks/assistant_card_list.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/widgets/chat/assistant_chat_app_bar.dart';
 import 'package:jameia_mart/src/features/assistant/presentation/widgets/chat/assistant_chat_body.dart';
@@ -48,6 +49,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../assistant_fixtures.dart';
 import 'assistant_test_fakes.dart';
+import 'assistant_voice_fakes.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -78,18 +80,21 @@ void main() {
   late AssistantChatCubit chat;
   late AssistantAvailabilityCubit availability;
   late AssistantHistoryCubit history;
+  late AssistantVoiceCubit voice;
 
   setUp(() {
     repo = FakeAssistantRepository();
     chat = chatCubit(repo);
     availability = availabilityCubit(repo);
     history = historyCubit(repo);
+    voice = voiceCubit(FakeVoiceRepository());
   });
 
   tearDown(() async {
     await chat.close();
     await availability.close();
     await history.close();
+    await voice.close();
   });
 
   Future<void> settle(WidgetTester tester) async {
@@ -149,6 +154,7 @@ void main() {
             ),
             BlocProvider<AssistantChatCubit>.value(value: chat),
             BlocProvider<AssistantAvailabilityCubit>.value(value: availability),
+            BlocProvider<AssistantVoiceCubit>.value(value: voice),
           ],
           child: MaterialApp.router(
             theme: AppTheme.light,

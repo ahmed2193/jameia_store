@@ -13,11 +13,15 @@ import '../../../../../core/widgets/jameia_summary_line.dart';
 import '../../../../../core/widgets/thin_divider.dart';
 import '../../cubit/cart_cubit.dart';
 import 'cart_discount_line.dart';
+import 'cart_free_delivery_value.dart';
+import 'cart_pro_nudge.dart';
 
 /// Subtotal, discounts, delivery fee and total as the server computed them.
 /// While taps are still on their way, the discounts and total may lag: the
 /// summary says so instead of guessing (a fade-through, no rolling — the bar
-/// below rolls the same total).
+/// below rolls the same total). Jm3eia Pro shows on the delivery row: a
+/// member's free delivery carries the "pro" tag, and a customer without Pro
+/// who pays a fee is told Pro would waive it.
 class CartTotalsSummary extends StatelessWidget {
   const CartTotalsSummary({super.key});
 
@@ -59,12 +63,12 @@ class CartTotalsSummary extends StatelessWidget {
           // server folds it into deliveryFee, so showing both would add
           // up past the total.
           value: totals.freeDelivery
-              ? Text(
-                  'cart.summary_free'.tr(),
-                  style: const TextStyle(color: AppColors.brandDeep),
-                )
+              ? const CartFreeDeliveryValue()
               : JameiaMoneyText(kd: totals.deliveryFeeWithoutExpressKd),
         ),
+        // Jm3eia Pro would waive that fee: a customer without Pro is told
+        // how much (never a member).
+        const CartProNudge(),
         if (totals.expressSurchargeFils > 0)
           JameiaSummaryLine(
             label: 'cart.summary_express'.tr(),

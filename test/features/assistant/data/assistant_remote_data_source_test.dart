@@ -73,7 +73,7 @@ void main() {
             okBody(AssistantFixtures.liveResults('conversations_list_en.json')),
       ),
     );
-    final page = await dataSource.getConversations(page: 2, limit: 20);
+    final page = (await dataSource.getConversations(page: 2, limit: 20)).model;
     final request = adapter.requests.single;
     expect(request.method, 'GET');
     expect(request.path, EndPoints.assistantConversations);

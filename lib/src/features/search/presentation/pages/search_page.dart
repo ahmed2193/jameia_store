@@ -6,10 +6,11 @@ import '../../../../config/theme/app_colors.dart';
 import '../cubit/search_cubit.dart';
 import '../widgets/search_body.dart';
 
-/// Search tab of the shell: recent terms, the store's categories and brands,
-/// and live product suggestions (`GET /v1/products?search=`). The shell
-/// rebuilds its tabs on a language switch, so this page never needs its own
-/// reload-on-locale listener.
+/// Search tab of the shell: recent terms, the store's categories and brands
+/// (the device copy first), and live product suggestions
+/// (`GET /v1/products?search=`). The shell rebuilds its tabs on a language
+/// switch, so this page never needs its own reload-on-locale listener; a
+/// returning connection refreshes what could not load.
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
 

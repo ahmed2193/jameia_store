@@ -23,9 +23,9 @@ class AssistantOnboardingProductTile extends StatelessWidget {
   final double appear;
 
   static const double _width = AppSize.s88;
-  static const double _height = AppSize.s92;
+  static const double _height = AppSize.s84;
   static const double _rise = AppSize.s16;
-  static const double _glyph = AppSize.s40;
+  static const double _glyph = AppSize.s36;
   static const double _plus = AppSize.s20;
   static const BoxDecoration _card = BoxDecoration(
     color: AppColors.white,

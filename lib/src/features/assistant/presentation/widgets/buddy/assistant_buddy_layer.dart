@@ -1,37 +1,52 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../config/routes/route_args/assistant_chat_args.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_state.dart';
+import '../../../domain/entities/assistant_starter.dart';
+import '../../../domain/entities/assistant_thought.dart';
+import '../../../domain/entities/assistant_thought_place.dart';
 import '../../cubit/assistant_availability_cubit.dart';
 import '../../cubit/assistant_buddy_cubit.dart';
 import '../../cubit/assistant_buddy_scene.dart';
 import '../../cubit/assistant_buddy_state.dart';
 import 'assistant_buddy_greeting.dart';
 import 'assistant_buddy_hide_sheet.dart';
+import '../onboarding/assistant_onboarding_result.dart';
+import '../onboarding/assistant_onboarding_sheet.dart';
 import 'assistant_buddy_launcher.dart';
 
 /// Stacks the buddy over [child] and tells its cubit what goes on around
 /// it: the tab, the store's switch, dialogs and pages on top, the keyboard,
 /// a screen reader, scrolling and touches. The shell's content is never
 /// rebuilt by the buddy — it is passed through untouched.
+///
+/// It also presents the assistant's tour: on the launcher's first tap and
+/// from the first greeting's invitation.
 class AssistantBuddyLayer extends StatefulWidget {
   const AssistantBuddyLayer({
     super.key,
     required this.place,
     required this.greetHere,
     required this.launcherHere,
+    this.thoughtPlace = AssistantThoughtPlace.elsewhere,
     required this.child,
   });
 
   final String place;
   final bool greetHere;
   final bool launcherHere;
+
+  /// What the launcher's lines favour on this screen.
+  final AssistantThoughtPlace thoughtPlace;
   final Widget child;
 
   @override
@@ -61,11 +76,21 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
     if (open != _keyboardOpen) setState(() => _keyboardOpen = open);
   }
 
-  // A backgrounded app keeps no mascot timers running.
+  // A backgrounded app keeps no mascot timers running, and coming back
+  // after a while is a new visit (the launcher says hello again).
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final resumed = state == AppLifecycleState.resumed;
     if (resumed != _resumed) setState(() => _resumed = resumed);
+    final buddy = context.read<AssistantBuddyCubit>();
+    switch (state) {
+      case AppLifecycleState.resumed:
+        buddy.appResumed();
+      case AppLifecycleState.hidden || AppLifecycleState.paused:
+        buddy.appPaused();
+      case AppLifecycleState.inactive || AppLifecycleState.detached:
+        break;
+    }
   }
 
   /// Hands the scene to the cubit after the frame (never mid-build).
@@ -96,9 +121,45 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
     context.read<AssistantBuddyCubit>().touched();
   }
 
-  void _open() {
-    context.read<AssistantBuddyCubit>().launcherOpened();
-    context.push(Routes.assistant);
+  /// A tap on the mascot, or on the line it is thinking ([asked]: the
+  /// question that line puts to the chat, if any).
+  void _open({AssistantStarter? asked}) {
+    final buddy = context.read<AssistantBuddyCubit>();
+    if (!buddy.state.onboarded) {
+      unawaited(_tour(fromLauncher: true, asked: asked));
+      return;
+    }
+    unawaited(buddy.launcherOpened());
+    context.push(Routes.assistant, extra: _chatArgs(asked));
+  }
+
+  static AssistantChatArgs? _chatArgs(AssistantStarter? starter) =>
+      starter == null
+      ? null
+      : AssistantChatArgs(initialPrompt: starter.promptKey.tr());
+
+  /// The tour, from the launcher's first tap or the greeting's invitation.
+  /// Off to the chat when the customer asks for it — or skips the tour
+  /// they got by tapping the launcher to chat (with the question they
+  /// tapped, [asked], unless the tour's end offered another). Otherwise the
+  /// launcher says where it lives.
+  Future<void> _tour({
+    required bool fromLauncher,
+    AssistantStarter? asked,
+  }) async {
+    final buddy = context.read<AssistantBuddyCubit>();
+    unawaited(buddy.tourStarted());
+    final result = await AssistantOnboardingSheet.show(context);
+    if (!mounted) return;
+    final chat = switch (result?.exit) {
+      AssistantOnboardingExit.chat => true,
+      AssistantOnboardingExit.skipped => fromLauncher,
+      AssistantOnboardingExit.later || null => false,
+    };
+    buddy.tourEnded(coach: !chat);
+    if (!chat) return;
+    if (fromLauncher) unawaited(buddy.launcherOpened());
+    context.push(Routes.assistant, extra: _chatArgs(result?.starter ?? asked));
   }
 
   Future<void> _offerHide() async {
@@ -135,6 +196,7 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
         hasCartItems: context.select<CartCubit, bool>(
           (cart) => cart.state.totalQty > 0,
         ),
+        thoughtPlace: widget.thoughtPlace,
       ),
     );
     return BlocListener<CartCubit, CartState>(
@@ -156,24 +218,35 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
                 BlocSelector<
                   AssistantBuddyCubit,
                   AssistantBuddyState,
-                  (bool, int)
+                  (bool, int, AssistantThought?)
                 >(
-                  selector: (state) => (state.launcherShown, state.cheers),
+                  selector: (state) =>
+                      (state.launcherShown, state.cheers, state.thought),
                   builder: (context, launcher) => AssistantBuddyLauncher(
                     shown: launcher.$1,
                     cheers: launcher.$2,
+                    thought: launcher.$3,
+                    onThoughtSaid: context
+                        .read<AssistantBuddyCubit>()
+                        .thoughtSaid,
+                    onThoughtDone: context
+                        .read<AssistantBuddyCubit>()
+                        .thoughtDone,
                     alive: _resumed,
                     touches: _touches,
                     onOpen: _open,
+                    onThoughtTap: (thought) => _open(asked: thought.starter),
                     onHide: _offerHide,
                   ),
                 ),
           ),
-          const PositionedDirectional(
+          PositionedDirectional(
             top: 0,
             start: 0,
             end: 0,
-            child: AssistantBuddyGreeting(),
+            child: AssistantBuddyGreeting(
+              onTour: () => unawaited(_tour(fromLauncher: false)),
+            ),
           ),
         ],
       ),

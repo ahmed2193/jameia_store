@@ -63,6 +63,18 @@ class AssistantAvailabilityCubit extends Cubit<AssistantAvailabilityState>
     );
   }
 
+  /// The connection came back: flags still unknown after a failed read are
+  /// read now, and the automatic retries start over from the first wait.
+  /// Before any read has failed (none asked yet, or one on its way) there
+  /// is nothing to do.
+  Future<void> onReconnected() {
+    if (_failures == 0 || state.status != AssistantAvailabilityStatus.unknown) {
+      return Future<void>.value();
+    }
+    _failures = 0;
+    return ensureLoaded();
+  }
+
   void _scheduleRetry() {
     if (_failures >= retryDelays.length) return;
     _retry = Timer(retryDelays[_failures++], () => unawaited(ensureLoaded()));

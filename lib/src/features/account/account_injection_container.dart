@@ -1,9 +1,11 @@
 import '../../config/di/service_locator.dart';
+import '../../core/data/datasources/cache_slots.dart';
 import '../../core/data/jameia_repository.dart';
 import '../../core/domain/entities/auth_customer_entity.dart';
 import '../../core/network/api_consumer.dart';
 import 'data/datasources/account_local_data_source.dart';
 import 'data/datasources/account_remote_data_source.dart';
+import 'data/datasources/ledger_cache_data_source.dart';
 import 'data/datasources/loyalty_remote_data_source.dart';
 import 'data/datasources/wallet_remote_data_source.dart';
 import 'data/repositories/account_repository_impl.dart';
@@ -22,6 +24,8 @@ import 'domain/usecases/get_loyalty_rewards_usecase.dart';
 import 'domain/usecases/get_profile_usecase.dart';
 import 'domain/usecases/get_wallet_ledger_usecase.dart';
 import 'domain/usecases/update_profile_usecase.dart';
+import 'domain/usecases/watch_loyalty_ledger_usecase.dart';
+import 'domain/usecases/watch_wallet_ledger_usecase.dart';
 import 'presentation/cubit/account_cubit.dart';
 import 'presentation/cubit/delivery_code_cubit.dart';
 import 'presentation/cubit/ledger_cubit.dart';
@@ -58,16 +62,25 @@ void initAccountFeature() {
     ..registerLazySingleton<AccountRepository>(
       () => AccountRepositoryImpl(remote: sl(), local: sl()),
     )
-    ..registerLazySingleton<WalletRepository>(() => WalletRepositoryImpl(sl()))
+    // The wallet / points histories' first pages, kept on the device for
+    // the signed-in customer.
+    ..registerLazySingleton<LedgerCacheDataSource>(
+      () => LedgerCacheDataSourceImpl(sl<CacheSlots>()),
+    )
+    ..registerLazySingleton<WalletRepository>(
+      () => WalletRepositoryImpl(sl(), cache: sl()),
+    )
     ..registerLazySingleton<LoyaltyRepository>(
-      () => LoyaltyRepositoryImpl(sl()),
+      () => LoyaltyRepositoryImpl(sl(), cache: sl()),
     )
     // Domain
     ..registerLazySingleton(() => GetAccountOverviewUseCase(sl()))
     ..registerLazySingleton(() => GetDeliveryCodeUseCase(sl()))
     ..registerLazySingleton(() => GetProfileUseCase(sl()))
     ..registerLazySingleton(() => UpdateProfileUseCase(sl()))
+    ..registerLazySingleton(() => WatchWalletLedgerUseCase(sl()))
     ..registerLazySingleton(() => GetWalletLedgerUseCase(sl()))
+    ..registerLazySingleton(() => WatchLoyaltyLedgerUseCase(sl()))
     ..registerLazySingleton(() => GetLoyaltyLedgerUseCase(sl()))
     ..registerLazySingleton(() => GetLoyaltyProgramUseCase(sl()))
     ..registerLazySingleton(() => GetLoyaltyRewardsUseCase(sl()))
@@ -80,10 +93,16 @@ void initAccountFeature() {
           ProfileCubit(getProfile: sl(), updateProfile: sl(), initial: initial),
     )
     ..registerFactory<LedgerCubit<WalletEntryEntity>>(
-      () => LedgerCubit<WalletEntryEntity>(sl<GetWalletLedgerUseCase>()),
+      () => LedgerCubit<WalletEntryEntity>(
+        sl<WatchWalletLedgerUseCase>(),
+        sl<GetWalletLedgerUseCase>(),
+      ),
     )
     ..registerFactory<LedgerCubit<LoyaltyEntryEntity>>(
-      () => LedgerCubit<LoyaltyEntryEntity>(sl<GetLoyaltyLedgerUseCase>()),
+      () => LedgerCubit<LoyaltyEntryEntity>(
+        sl<WatchLoyaltyLedgerUseCase>(),
+        sl<GetLoyaltyLedgerUseCase>(),
+      ),
     )
     ..registerFactory(() => LoyaltyProgramCubit(sl()))
     ..registerFactory(() => LoyaltyRewardsCubit(sl()));

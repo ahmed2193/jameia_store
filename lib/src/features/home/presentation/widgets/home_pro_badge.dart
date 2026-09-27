@@ -7,14 +7,15 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 
-/// The small violet "pro" tag in front of the store name: the store runs the
-/// Pro membership programme.
+/// The small violet "pro" tag in front of the store name: the customer is a
+/// Jm3eia Pro member (talabat's "pro" lockup).
 class HomeProBadge extends StatelessWidget {
   const HomeProBadge({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Pops in when the store's settings land.
+    // Pops in when the membership is known — or starts, right after a
+    // subscribe.
     return PopScale.onMount(
       child: Container(
         padding: const EdgeInsetsDirectional.symmetric(

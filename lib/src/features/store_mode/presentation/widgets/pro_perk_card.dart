@@ -1,16 +1,19 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import 'pro_underlined_link.dart';
 
 /// One Pro perk as a softly tinted card (its [color] fading lighter towards
 /// the bottom-end corner, a low shadow): title, body, an optional link, and
 /// a big icon disc with a soft violet halo hanging off the card's bottom-end
-/// corner.
+/// corner. [active]: a member's perk — a green "On" pill at the top-end
+/// corner says it already applies.
 class ProPerkCard extends StatelessWidget {
   const ProPerkCard({
     super.key,
@@ -20,6 +23,7 @@ class ProPerkCard extends StatelessWidget {
     required this.body,
     this.ctaLabel,
     this.onCta,
+    this.active = false,
   });
 
   static const double _disc = AppSize.s120;
@@ -51,6 +55,9 @@ class ProPerkCard extends StatelessWidget {
   final String body;
   final String? ctaLabel;
   final VoidCallback? onCta;
+  final bool active;
+
+  static const double _check = AppSize.s14;
 
   @override
   Widget build(BuildContext context) {
@@ -144,6 +151,42 @@ class ProPerkCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (active)
+              PositionedDirectional(
+                top: AppSpacing.s12,
+                end: AppSpacing.s12,
+                child: PopScale.onMount(
+                  child: Container(
+                    padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpacing.s8,
+                      vertical: AppSpacing.s2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.successBg,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                      border: Border.all(color: AppColors.success),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.check_rounded,
+                          size: _check,
+                          color: AppColors.brandDeep,
+                        ),
+                        const SizedBox(width: AppSpacing.s2),
+                        Text(
+                          'pro.perk_on'.tr(),
+                          style: AppTextStyles.captionMedium.copyWith(
+                            fontWeight: AppTextStyles.bold,
+                            color: AppColors.brandDeep,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

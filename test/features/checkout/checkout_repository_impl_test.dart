@@ -4,9 +4,6 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/brand_model.dart';
-import 'package:jameia_mart/src/core/data/models/category_model.dart';
 import 'package:jameia_mart/src/core/data/models/loyalty_program_model.dart';
 import 'package:jameia_mart/src/core/data/models/offer_model.dart';
 import 'package:jameia_mart/src/core/data/models/order_model.dart';
@@ -27,6 +24,7 @@ import 'package:jameia_mart/src/features/checkout/data/models/store_rules_model.
 import 'package:jameia_mart/src/features/checkout/data/repositories/checkout_catalog_repository_impl.dart';
 import 'package:jameia_mart/src/features/checkout/data/repositories/checkout_repository_impl.dart';
 
+import '../../core/data/catalog_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
 
 /// What a datasource throws for the failure table.
@@ -98,7 +96,7 @@ class _Delivery implements DeliveryRemoteDataSource {
   }
 }
 
-class _Catalog implements CatalogRemoteDataSource {
+class _Catalog extends FakeCatalogRemoteDataSource {
   AppException? error;
   int productReads = 0;
   Completer<void>? gate;
@@ -146,16 +144,6 @@ class _Catalog implements CatalogRemoteDataSource {
     ];
   }
 
-  @override
-  Future<List<CategoryModel>> getCategories({bool refresh = false}) =>
-      throw UnimplementedError();
-
-  @override
-  Future<List<BrandModel>> getBrands({
-    required int page,
-    required int limit,
-    String? search,
-  }) => throw UnimplementedError();
 }
 
 void main() {

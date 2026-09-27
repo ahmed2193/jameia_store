@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/domain/entities/screen_load.dart';
+import '../../../../../core/navigation/screen_failure_listener.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/utils/failure_message.dart';
 import '../../../../../core/widgets/back_to_top_overlay.dart';
 import '../../../../../core/widgets/branded_refresh.dart';
+import '../../../../../core/widgets/reconnect_refresh.dart';
+import '../../../../../core/widgets/screen_stale_notice.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../cubit/product_listing_cubit.dart';
 import '../../cubit/product_listing_state.dart';
@@ -24,9 +26,11 @@ import 'product_grid_sliver.dart';
 /// [headerSlivers] (a category's chips, a collection page's bar, hero and
 /// tabs, nothing for a plain listing) → sort + filters → result count → the
 /// lazily built grid → load-more footer. Loading, empty, error + retry and
-/// offline (= the error view) live below the toolbar, so the customer can
-/// always change a filter that emptied the list. A collection page has no
-/// toolbar and no count ([showsToolbar] = false).
+/// offline ("No connection" when nothing is saved) live below the toolbar,
+/// so the customer can always change a filter that emptied the list. A saved
+/// first page shows with the "Updated … ago" note while offline; a returning
+/// connection refreshes it (or the page that failed to load more). A
+/// collection page has no toolbar and no count ([showsToolbar] = false).
 ///
 /// Motion: while loading, shimmering card bones stand where the cards will
 /// be; as a list arrives the count and the first cards come in one after
@@ -66,108 +70,115 @@ class ProductListingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ProductListingCubit, ProductListingState>(
-      listenWhen: (previous, current) =>
-          current.failure != null &&
-          current.isLoaded &&
-          previous.failure != current.failure,
-      listener: (context, state) =>
-          showJameiaSnackBar(context, state.failure!.localizedMessage),
-      builder: (context, state) {
-        final cubit = context.read<ProductListingCubit>();
-        return ListingReveal(
-          settled:
-              state.status == ProductListingStatus.loaded ||
-              state.status == ProductListingStatus.error,
-          child: BackToTopOverlay(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                if (notification.metrics.axis == Axis.vertical &&
-                    notification.metrics.extentAfter < _loadMoreThreshold) {
-                  cubit.loadMore();
-                }
-                return false;
-              },
-              child: BrandedRefresh(
-                onRefresh: onRefresh ?? cubit.refresh,
-                edgeOffset: refreshEdgeOffset,
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  slivers: [
-                    ...headerSlivers,
-                    if (showsToolbar)
-                      const SliverToBoxAdapter(child: ListingToolbar()),
-                    ...switch (state.status) {
-                      ProductListingStatus.initial ||
-                      ProductListingStatus.loading => [
-                        if (reservesViewportWhileLoading)
-                          const ListingViewportSkeleton()
-                        else
-                          const SliverToBoxAdapter(
-                            child: ListingGridSkeleton(),
-                          ),
-                      ],
-                      ProductListingStatus.error => [
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: ListingRevealItem(
-                            index: 0,
-                            child: ErrorView(
-                              message: state.failure?.localizedMessage,
-                              onRetry: cubit.load,
-                            ),
-                          ),
-                        ),
-                      ],
-                      ProductListingStatus.loaded when state.isEmpty => [
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: ListingRevealItem(
-                            index: 0,
-                            child: EmptyStateView(
-                              message: 'shop.no_products_here'.tr(),
-                              icon: Icons.search_off_rounded,
-                            ),
-                          ),
-                        ),
-                      ],
-                      ProductListingStatus.loaded => [
+    return ReconnectRefresh(
+      onReconnected: () => context.read<ProductListingCubit>().onReconnected(),
+      child: ScreenFailureListener<ProductListingCubit, ProductListingState>(
+        child: BlocBuilder<ProductListingCubit, ProductListingState>(
+          // A new freshness (the same page, now the server's), a transient
+          // failure or the next page's progress (the footer selects that
+          // itself) change nothing in the grid: never rebuild it for them.
+          buildWhen: (previous, current) =>
+              current.load.screenChangedFrom(previous.load) ||
+              previous.products != current.products,
+          builder: (context, state) {
+            final cubit = context.read<ProductListingCubit>();
+            return ListingReveal(
+              settled:
+                  state.status == LoadPhase.loaded ||
+                  state.status == LoadPhase.error,
+              child: BackToTopOverlay(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification.metrics.axis == Axis.vertical &&
+                        notification.metrics.extentAfter < _loadMoreThreshold) {
+                      cubit.loadMore();
+                    }
+                    return false;
+                  },
+                  child: BrandedRefresh(
+                    onRefresh: onRefresh ?? cubit.refresh,
+                    edgeOffset: refreshEdgeOffset,
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      slivers: [
+                        ...headerSlivers,
                         if (showsToolbar)
-                          SliverToBoxAdapter(
-                            child: ListingRevealItem(
-                              index: 0,
-                              child: ListingResultsCount(
-                                total: state.products.total,
+                          const SliverToBoxAdapter(child: ListingToolbar()),
+                        ...switch (state.status) {
+                          LoadPhase.initial || LoadPhase.loading => [
+                            if (reservesViewportWhileLoading)
+                              const ListingViewportSkeleton()
+                            else
+                              const SliverToBoxAdapter(
+                                child: ListingGridSkeleton(),
+                              ),
+                          ],
+                          LoadPhase.error => [
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: ListingRevealItem(
+                                index: 0,
+                                child: FailureView(
+                                  failure: state.failure,
+                                  onRetry: cubit.load,
+                                ),
                               ),
                             ),
-                          )
-                        else
-                          const SliverToBoxAdapter(
-                            child: SizedBox(height: AppSpacing.s8),
-                          ),
-                        ProductGridSliver(
-                          products: state.products.products,
-                          firstRevealIndex: showsToolbar ? 1 : 0,
-                        ),
-                        SliverToBoxAdapter(
-                          child: ListingLoadMoreFooter(
-                            isLoading: state.isLoadingMore,
-                            hasFailed: state.loadMoreFailed,
-                            onRetry: () => cubit.loadMore(retry: true),
-                          ),
+                          ],
+                          LoadPhase.loaded when state.isEmpty => [
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: ListingRevealItem(
+                                index: 0,
+                                child: EmptyStateView(
+                                  message: 'shop.no_products_here'.tr(),
+                                  icon: Icons.search_off_rounded,
+                                ),
+                              ),
+                            ),
+                          ],
+                          LoadPhase.loaded => [
+                            const SliverToBoxAdapter(
+                              child:
+                                  ScreenStaleNotice<
+                                    ProductListingCubit,
+                                    ProductListingState
+                                  >(),
+                            ),
+                            if (showsToolbar)
+                              SliverToBoxAdapter(
+                                child: ListingRevealItem(
+                                  index: 0,
+                                  child: ListingResultsCount(
+                                    total: state.products.total,
+                                  ),
+                                ),
+                              )
+                            else
+                              const SliverToBoxAdapter(
+                                child: SizedBox(height: AppSpacing.s8),
+                              ),
+                            ProductGridSliver(
+                              products: state.products.products,
+                              firstRevealIndex: showsToolbar ? 1 : 0,
+                            ),
+                            const SliverToBoxAdapter(
+                              child: ListingLoadMoreFooter(),
+                            ),
+                          ],
+                        },
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: AppSpacing.s24),
                         ),
                       ],
-                    },
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: AppSpacing.s24),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }

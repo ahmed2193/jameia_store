@@ -22,6 +22,9 @@ Future<void> main() async {
       path: 'assets/i18n',
       fallbackLocale: const Locale('en'),
       startLocale: const Locale('en'),
+      // CLDR plural rules: Arabic needs its few (3–10) and many (11–99)
+      // forms, which every Arabic plural in the i18n files spells out.
+      ignorePluralRules: false,
       child: const JameiaApp(),
     ),
   );

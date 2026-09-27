@@ -13,25 +13,34 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:jameia_mart/src/config/routes/route_args/login_args.dart';
+import 'package:jameia_mart/src/config/routes/routes.dart';
 import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
+import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:jameia_mart/src/core/domain/entities/pro_membership_entity.dart';
 import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:jameia_mart/src/core/widgets/stale_age_pill.dart';
 import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/repositories/pro_membership_repository.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/usecases/cancel_pro_subscription_usecase.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_brands_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_program_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_subscription_usecase.dart';
 import 'package:jameia_mart/src/features/store_mode/domain/usecases/subscribe_to_pro_usecase.dart';
+import 'package:jameia_mart/src/features/store_mode/domain/usecases/watch_pro_program_usecase.dart';
+import 'package:jameia_mart/src/features/store_mode/domain/usecases/watch_pro_subscription_usecase.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_brands_cubit.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_membership_cubit.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_join_button.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_membership_body.dart';
 import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_outcome_listener.dart';
+import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_status_reporter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/data/snapshot_test_fakes.dart';
 import '../auth/auth_test_fakes.dart';
+import 'pro_status_fakes.dart';
 
 /// The live programme (2026-09): Monthly 2.999 KD, Annual 24.999 KD.
 const ProProgram _program = ProProgram(
@@ -76,6 +85,10 @@ class _FakeRepository implements ProMembershipRepository {
   );
   int programCalls = 0;
 
+  /// The device copies the page paints first (none by default).
+  ProProgram? savedProgram;
+  ProSubscription? savedSubscription;
+
   @override
   Future<Either<Failure, ProProgram>> getProgram() async {
     programCalls++;
@@ -85,6 +98,18 @@ class _FakeRepository implements ProMembershipRepository {
   @override
   Future<Either<Failure, ProSubscription?>> getSubscription() async =>
       subscription;
+
+  @override
+  Stream<DataSnapshot<ProProgram>> watchProgram({bool forceRefresh = false}) =>
+      networkRead(getProgram(), saved: forceRefresh ? null : savedProgram);
+
+  @override
+  Stream<DataSnapshot<ProSubscription?>> watchSubscription({
+    bool forceRefresh = false,
+  }) => networkRead(
+    getSubscription(),
+    saved: forceRefresh ? null : savedSubscription,
+  );
 
   @override
   Future<Either<Failure, ProSubscription>> subscribe(String planId) async =>
@@ -104,6 +129,9 @@ void main() {
   late ProBrandsCubit brands;
   late AuthSessionCubit session;
 
+  /// What the login stub was opened with (`null` until it is).
+  Object? loginExtra;
+
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     await EasyLocalization.ensureInitialized();
@@ -120,10 +148,11 @@ void main() {
   });
 
   setUp(() {
+    loginExtra = null;
     repository = _FakeRepository();
     membership = ProMembershipCubit(
-      GetProProgramUseCase(repository),
-      GetProSubscriptionUseCase(repository),
+      WatchProProgramUseCase(repository),
+      WatchProSubscriptionUseCase(repository),
       SubscribeToProUseCase(repository),
       CancelProSubscriptionUseCase(repository),
     );
@@ -169,7 +198,8 @@ void main() {
     addTearDown(tester.view.reset);
     await membership.load();
     await brands.load();
-    // The confirm dialog and the welcome sheet close through go_router.
+    // The confirm dialog and the welcome sheet close through go_router; the
+    // login stub records what it was opened with.
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -177,6 +207,13 @@ void main() {
           builder: (_, _) => const Scaffold(
             body: ProOutcomeListener(child: ProMembershipBody()),
           ),
+        ),
+        GoRoute(
+          path: Routes.login,
+          builder: (_, state) {
+            loginExtra = state.extra;
+            return const Scaffold(body: Text('route:login'));
+          },
         ),
       ],
     );
@@ -322,6 +359,8 @@ void main() {
     repository.program = const Left(NetworkFailure());
     await pump(tester);
 
+    // Nothing saved and no connection: the calm offline state.
+    expect(find.text('No connection'), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
     expect(find.text('Monthly'), findsNothing);
 
@@ -332,6 +371,31 @@ void main() {
     expect(repository.programCalls, 2);
     expect(find.text('Monthly'), findsOneWidget);
     expect(find.text('Sign in to join'), findsOneWidget);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a saved page whose refresh failed: the paywall + the note', (
+    tester,
+  ) async {
+    session.signedIn(_customer);
+    repository
+      ..savedProgram = _program
+      ..savedSubscription = ProSubscription(
+        id: 'sub1',
+        planId: 'monthly',
+        planName: 'Monthly',
+        priceFils: 2999,
+        status: ProSubscriptionStatus.active,
+        currentPeriodEnd: DateTime(2026, 10, 17, 12),
+      )
+      ..program = const Left(NetworkFailure())
+      ..subscription = const Left(NetworkFailure());
+    await pump(tester);
+
+    expect(find.text("You're a Pro member"), findsOneWidget);
+    expect(find.byType(StaleAgePill), findsOneWidget);
+    expect(find.text('No connection'), findsNothing);
 
     await teardownApp(tester);
   });
@@ -455,5 +519,182 @@ void main() {
     expect(find.text('Jm3eia Pro is not available right now'), findsOneWidget);
 
     await teardownApp(tester);
+  });
+
+  testWidgets('guest: sign in to join comes back to this page', (tester) async {
+    await pump(tester);
+
+    await tester.tap(find.text('Sign in to join'));
+    await settle(tester);
+
+    expect(find.text('route:login'), findsOneWidget);
+    expect(loginExtra, isA<LoginArgs>());
+    final args = loginExtra! as LoginArgs;
+    expect(args.returnTo, Routes.proMembership);
+    expect(args.sessionExpired, isFalse);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('member: the member hero and their perks, on; no plan tabs', (
+    tester,
+  ) async {
+    session.signedIn(_customer);
+    repository.subscription = Right(
+      ProSubscription(
+        id: 'sub1',
+        planId: 'monthly',
+        planName: 'Monthly',
+        priceFils: 2999,
+        status: ProSubscriptionStatus.active,
+        currentPeriodEnd: DateTime(2026, 10, 17, 12),
+      ),
+    );
+    await pump(tester);
+
+    expect(find.text("You're Pro"), findsOneWidget);
+    expect(find.text('Perks are on'), findsOneWidget);
+    expect(find.text('Annual'), findsNothing);
+    expect(find.text('Save 31%'), findsNothing);
+    expect(find.text('Your perks'), findsOneWidget);
+    // Points boost, discount, member prices: all three already on.
+    expect(find.text('On'), findsNWidgets(3));
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('cancelled member: still Pro until the date, no renewal', (
+    tester,
+  ) async {
+    session.signedIn(_customer);
+    repository.subscription = Right(
+      ProSubscription(
+        id: 'sub1',
+        planId: 'monthly',
+        planName: 'Monthly',
+        status: ProSubscriptionStatus.cancelled,
+        cancelAtPeriodEnd: true,
+        currentPeriodEnd: DateTime(2026, 10, 17, 12),
+      ),
+    );
+    await pump(tester);
+
+    expect(find.text('Still Pro'), findsOneWidget);
+    expect(find.text('until Oct 17'), findsOneWidget);
+    expect(find.text('Benefits until Sat, Oct 17, 2026'), findsOneWidget);
+    expect(
+      find.text(
+        "Your membership won't renew. Your perks stay on until "
+        'Sat, Oct 17, 2026.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Cancel renewal'), findsNothing);
+    expect(find.byType(ProJoinButton), findsNothing);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('lapsed member: welcomed back, told when it ended, rejoin', (
+    tester,
+  ) async {
+    session.signedIn(_customer);
+    repository.subscription = Right(
+      ProSubscription(
+        id: 'sub1',
+        planId: 'monthly',
+        planName: 'Monthly',
+        status: ProSubscriptionStatus.expired,
+        currentPeriodEnd: DateTime(2026, 9, 17, 12),
+      ),
+    );
+    await pump(tester);
+
+    expect(find.text('Welcome back, Ahmed'), findsOneWidget);
+    expect(
+      find.text('Your membership ended on Thu, Sep 17, 2026.'),
+      findsOneWidget,
+    );
+    // The plans are on sale again, best value first.
+    expect(find.text('Annual'), findsOneWidget);
+    expect(find.text('Rejoin for KD 24.999 / year'), findsOneWidget);
+    expect(find.text('On'), findsNothing);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('the page reports what it learned to the app-global status', (
+    tester,
+  ) async {
+    session.signedIn(_customer);
+    final status = buildProStatus();
+    await status.start(_customer);
+    expect(status.state.membership.standing, ProStanding.prospect);
+    repository.subscription = Right(
+      ProSubscription(
+        id: 'sub1',
+        planId: 'monthly',
+        status: ProSubscriptionStatus.active,
+        cancelAtPeriodEnd: true,
+        currentPeriodEnd: DateTime(2026, 10, 17, 12),
+      ),
+    );
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<ProMembershipCubit>.value(value: membership),
+          BlocProvider<ProStatusCubit>.value(value: status),
+        ],
+        child: const ProStatusReporter(child: SizedBox()),
+      ),
+    );
+
+    await membership.load();
+    await tester.pump();
+
+    expect(status.state.membership.standing, ProStanding.ending);
+    expect(status.state.isConfirmed, isTrue);
+    // Also drops the watch on the period's end (a pending timer).
+    await status.close();
+  });
+
+  testWidgets('a saved membership is never reported; the server answer is', (
+    tester,
+  ) async {
+    session.signedIn(_customer);
+    final status = buildProStatus();
+    await status.start(_customer);
+    final renewing = ProSubscription(
+      id: 'sub1',
+      planId: 'monthly',
+      status: ProSubscriptionStatus.active,
+      currentPeriodEnd: DateTime(2026, 10, 17, 12),
+    );
+    repository
+      ..savedSubscription = renewing
+      ..subscription = const Left(NetworkFailure());
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<ProMembershipCubit>.value(value: membership),
+          BlocProvider<ProStatusCubit>.value(value: status),
+        ],
+        child: const ProStatusReporter(child: SizedBox()),
+      ),
+    );
+
+    await membership.load();
+    await tester.pump();
+
+    expect(membership.state.isMember, isTrue, reason: 'the saved copy shows');
+    expect(status.state.membership.standing, ProStanding.prospect);
+
+    repository.subscription = Right(renewing);
+    await membership.refresh();
+    await tester.pump();
+
+    expect(status.state.membership.standing, ProStanding.active);
+    expect(status.state.isConfirmed, isTrue);
+    await status.close();
   });
 }

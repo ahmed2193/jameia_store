@@ -47,7 +47,8 @@ class AssistantOnboardingHelloScene extends StatelessWidget {
         final waving = t.span(_waveFrom, _waveTo, Curves.linear);
         return Stack(
           children: [
-            for (final (order, skill) in AssistantOnboardingSkill.values.indexed)
+            for (final (order, skill)
+                in AssistantOnboardingSkill.values.indexed)
               AssistantOnboardingSkillBurst(
                 skill: skill,
                 order: order,

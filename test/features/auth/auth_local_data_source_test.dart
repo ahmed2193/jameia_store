@@ -4,15 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:jameia_mart/src/core/data/models/customer_model.dart';
 import 'package:jameia_mart/src/core/error/exceptions.dart';
 import 'package:jameia_mart/src/core/storage/auth_tokens.dart';
+import 'package:jameia_mart/src/core/storage/cache_key.dart';
+import 'package:jameia_mart/src/core/storage/cache_namespace.dart';
+import 'package:jameia_mart/src/core/storage/cache_owner.dart';
 import 'package:jameia_mart/src/features/auth/data/datasources/auth_local_data_source.dart';
 
 import '../../core/network/network_test_fakes.dart';
+import '../../core/storage/cache_test_fakes.dart';
 import '../address/address_test_fakes.dart' show InMemoryLocalStorage;
 
 void main() {
   late InMemorySessionStore session;
   late RecordingExpiryNotifier expiry;
   late InMemoryLocalStorage storage;
+  late CacheOwner cacheOwner;
+  late InMemoryJsonCacheStore responseCache;
   late AuthLocalDataSourceImpl dataSource;
 
   const customer = CustomerModel(
@@ -38,7 +44,15 @@ void main() {
       ..assistantGuestKey = 'g' * 32;
     expiry = RecordingExpiryNotifier();
     storage = InMemoryLocalStorage();
-    dataSource = AuthLocalDataSourceImpl(session, expiry, storage);
+    cacheOwner = CacheOwner();
+    responseCache = InMemoryJsonCacheStore();
+    dataSource = AuthLocalDataSourceImpl(
+      session,
+      expiry,
+      storage,
+      cacheOwner: cacheOwner,
+      responseCache: responseCache,
+    );
   });
 
   test('saveSession stores the pair AND drops the guest identities', () async {
@@ -109,6 +123,52 @@ void main() {
     test('a refused write is a CacheException', () async {
       storage.failWrites = true;
       expect(dataSource.saveCustomer(customer), throwsA(isA<CacheException>()));
+    });
+  });
+
+  group('the cache owner follows the device copy', () {
+    const personal = CacheNamespace(
+      'test.personal',
+      scope: CacheScope.customer,
+      freshFor: Duration(seconds: 60),
+      maxAge: Duration(days: 7),
+    );
+
+    test('unknown until the copy is read, saved or cleared', () async {
+      expect(cacheOwner.current, isNull);
+      expect(await dataSource.readCustomer(), isNull);
+      expect(cacheOwner.current, isNull, reason: 'no copy says nothing');
+    });
+
+    test('a read or a save makes the customer the owner', () async {
+      await dataSource.saveCustomer(customer);
+      expect(cacheOwner.customer, 'c:${customer.id}');
+      cacheOwner.signedOut();
+      await dataSource.readCustomer();
+      expect(cacheOwner.customer, 'c:${customer.id}');
+    });
+
+    test('clearing the copy wipes the customer cache, keeps public', () async {
+      await dataSource.saveCustomer(customer);
+      final mine = CacheKey(
+        namespace: personal,
+        language: 'en',
+        owner: cacheOwner.current!,
+      );
+      const public = CacheKey(
+        namespace: testNamespace,
+        language: 'en',
+        owner: CacheKey.publicOwner,
+      );
+      responseCache
+        ..seed(mine, {'orders': <Object>[]}, DateTime.utc(2026))
+        ..seed(public, {'items': <Object>[]}, DateTime.utc(2026));
+
+      await dataSource.clearCustomer();
+
+      expect(cacheOwner.current, CacheOwner.guest);
+      expect(responseCache.entryOf(mine), isNull);
+      expect(responseCache.entryOf(public), isNotNull);
     });
   });
 }

@@ -5,29 +5,42 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/domain/entities/data_snapshot.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
+import '../../../../core/usecase/watch_params.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
+import '../../../../core/utils/performance/snapshot_loader_mixin.dart';
 import '../../domain/entities/recent_searches.dart';
 import '../../domain/usecases/get_recent_searches_usecase.dart';
-import '../../domain/usecases/get_search_discover_usecase.dart';
 import '../../domain/usecases/save_recent_searches_usecase.dart';
 import '../../domain/usecases/suggest_products_usecase.dart';
+import '../../domain/usecases/watch_search_brands_usecase.dart';
+import '../../domain/usecases/watch_search_categories_usecase.dart';
 import 'search_state.dart';
 
-/// The search tab: recent terms (device), discover blocks and live product
-/// suggestions (backend). Typing is debounced here and a reply for text the
-/// customer has already changed is dropped; nothing on this screen is
-/// critical, so a failed request just leaves its block empty.
-class SearchCubit extends Cubit<SearchState> with SafeCubitMixin<SearchState> {
+/// The search tab: recent terms (device), discover blocks (the device copy
+/// first, then the backend) and live product suggestions (backend). Typing
+/// is debounced here and a reply for text the customer has already changed
+/// is dropped. A discover block that cannot load simply does not show; a
+/// suggestions request that fails keeps its reason for the list.
+class SearchCubit extends Cubit<SearchState>
+    with SafeCubitMixin<SearchState>, SnapshotLoaderMixin<SearchState> {
   SearchCubit(
-    this._getDiscover,
+    this._watchCategories,
+    this._watchBrands,
     this._suggestProducts,
     this._getRecents,
     this._saveRecents, {
     this._debounce = AppConstants.searchDebounce,
   }) : super(const SearchState());
 
-  final GetSearchDiscoverUseCase _getDiscover;
+  static const Object _categoriesChannel = #categories;
+  static const Object _brandsChannel = #brands;
+  static const String _logName = 'search';
+
+  final WatchSearchCategoriesUseCase _watchCategories;
+  final WatchSearchBrandsUseCase _watchBrands;
   final SuggestProductsUseCase _suggestProducts;
   final GetRecentSearchesUseCase _getRecents;
   final SaveRecentSearchesUseCase _saveRecents;
@@ -38,19 +51,71 @@ class SearchCubit extends Cubit<SearchState> with SafeCubitMixin<SearchState> {
   /// Bumped by every keystroke; a suggestions reply of an older one is stale.
   int _generation = 0;
 
-  /// Recents first (synchronous, from the device), then the backend blocks.
-  Future<void> loadDiscover() async {
+  /// The discover blocks showing a saved copy, or none after a failure: the
+  /// ones a reconnect refreshes.
+  final Set<Object> _staleBlocks = <Object>{};
+
+  /// Recents first (synchronous, from the device), then the discover blocks.
+  Future<void> loadDiscover() {
     safeEmit(
       state.copyWith(
         recents: _getRecents(const NoParams())
             .getOrElse(() => RecentSearches.empty),
       ),
     );
-    final result = await _getDiscover(const NoParams());
-    result.fold(
-      (failure) => log('search discover failed: $failure', name: 'search'),
-      (discover) => safeEmit(state.copyWith(discover: discover)),
+    return _readDiscover(WatchParams.cached);
+  }
+
+  /// The connection came back: the discover blocks refresh when they show a
+  /// saved copy or failed, and suggestions that failed offline load for the
+  /// text as it is now.
+  Future<void> onReconnected() {
+    if (state.isTyping && state.suggestFailure != null) {
+      onQueryChanged(state.query);
+    }
+    return refreshOnReconnect(
+      needed: _staleBlocks.isNotEmpty,
+      refresh: () => _readDiscover(WatchParams.fresh),
     );
+  }
+
+  Future<void> _readDiscover(WatchParams params) => Future.wait([
+    followSnapshots(
+      _watchCategories(params),
+      channel: _categoriesChannel,
+      onSnapshot: (snapshot) {
+        _markBlock(_categoriesChannel, snapshot);
+        safeEmit(
+          state.copyWith(
+            discover: state.discover.copyWith(categories: snapshot.data),
+          ),
+        );
+      },
+      onFailure: (failure) => _blockFailed(_categoriesChannel, failure),
+    ),
+    followSnapshots(
+      _watchBrands(params),
+      channel: _brandsChannel,
+      onSnapshot: (snapshot) {
+        _markBlock(_brandsChannel, snapshot);
+        safeEmit(
+          state.copyWith(
+            discover: state.discover.copyWith(brands: snapshot.data),
+          ),
+        );
+      },
+      onFailure: (failure) => _blockFailed(_brandsChannel, failure),
+    ),
+  ]);
+
+  void _markBlock(Object block, DataSnapshot<Object?> snapshot) =>
+      snapshot.isFromCache
+      ? _staleBlocks.add(block)
+      : _staleBlocks.remove(block);
+
+  void _blockFailed(Object block, Failure failure) {
+    _staleBlocks.add(block);
+    log('search discover $block failed: $failure', name: _logName);
   }
 
   void onQueryChanged(String text) {
@@ -62,6 +127,7 @@ class SearchCubit extends Cubit<SearchState> with SafeCubitMixin<SearchState> {
         query: text,
         isSuggesting: !tooShort,
         suggestions: tooShort ? const <CatalogProductEntity>[] : null,
+        clearSuggestFailure: true,
       ),
     );
     if (tooShort) return;
@@ -71,10 +137,20 @@ class SearchCubit extends Cubit<SearchState> with SafeCubitMixin<SearchState> {
   Future<void> _suggest(String text, int generation) async {
     final result = await _suggestProducts(SuggestProductsParams(text));
     if (generation != _generation) return;
-    safeEmit(
-      state.copyWith(
-        isSuggesting: false,
-        suggestions: result.getOrElse(() => const <CatalogProductEntity>[]),
+    result.fold(
+      (failure) => safeEmit(
+        state.copyWith(
+          isSuggesting: false,
+          suggestions: const <CatalogProductEntity>[],
+          suggestFailure: failure,
+        ),
+      ),
+      (suggestions) => safeEmit(
+        state.copyWith(
+          isSuggesting: false,
+          suggestions: suggestions,
+          clearSuggestFailure: true,
+        ),
       ),
     );
   }
@@ -99,6 +175,7 @@ class SearchCubit extends Cubit<SearchState> with SafeCubitMixin<SearchState> {
         query: '',
         suggestions: const <CatalogProductEntity>[],
         isSuggesting: false,
+        clearSuggestFailure: true,
       ),
     );
   }

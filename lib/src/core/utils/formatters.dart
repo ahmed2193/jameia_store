@@ -97,6 +97,21 @@ class Formatters {
 
   static final Map<String, DateFormat> _dateFormats = <String, DateFormat>{};
 
+  /// "22 Sept" in [languageCode]'s own pattern (Arabic keeps its month
+  /// names), Western digits — a date near enough to need no year (a renewal,
+  /// the last day of a membership); empty without a date.
+  static String dayMonth(String languageCode, DateTime? at) {
+    if (at == null) return '';
+    final format = _dayMonthFormats.putIfAbsent(
+      languageCode,
+      () => DateFormat.MMMd(languageCode)..useNativeDigits = false,
+    );
+    return format.format(at.toLocal());
+  }
+
+  static final Map<String, DateFormat> _dayMonthFormats =
+      <String, DateFormat>{};
+
   static String distance(double km) => km < 1
       ? 'home.distance_m'.tr(namedArgs: {'count': '${(km * 1000).round()}'})
       : 'home.distance_km'.tr(namedArgs: {'count': km.toStringAsFixed(1)});

@@ -35,6 +35,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_test_fakes.dart';
 import 'account_test_fakes.dart';
+import '../../core/network/network_test_fakes.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +61,7 @@ void main() {
     await EasyLocalization.ensureInitialized();
     // What the Material localizations load in the app: the date symbols.
     await initializeDateFormatting('en');
+    registerFakeNetworkInfo();
     await setupServiceLocator();
     final enRaw = await rootBundle.loadString('assets/i18n/en.json');
     Localization.load(

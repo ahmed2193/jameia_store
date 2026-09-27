@@ -264,6 +264,86 @@ void main() {
     });
   });
 
+  group('fetch… (the reads kept on the device)', () {
+    test('fetchProducts hands back the page with its raw results', () async {
+      final dataSource = build(
+        FakeHttpClientAdapter(
+          (_, _) => okBody({
+            'data': [_rice],
+            'pagination': {
+              'total': 1,
+              'page': 1,
+              'limit': 20,
+              'hasMore': false,
+            },
+          }),
+        ),
+      );
+
+      final fetched = await dataSource.fetchProducts(
+        query: const CatalogProductQuery(),
+        page: 1,
+        limit: 20,
+      );
+
+      expect(fetched.model.items.single.slug, 'basmati-rice-5kg');
+      expect((fetched.raw as Map)['data'], hasLength(1));
+    });
+
+    test('fetchCategories always asks and replaces the kept tree', () async {
+      var name = 'Fresh Food';
+      final dataSource = build(
+        FakeHttpClientAdapter(
+          (_, _) => okBody({
+            'data': [
+              {'_id': 'c1', 'slug': 'fresh-food', 'name': name},
+            ],
+          }),
+        ),
+      );
+      await dataSource.getCategories();
+
+      name = 'Fresh';
+      final fetched = await dataSource.fetchCategories();
+      final kept = await dataSource.getCategories();
+
+      expect(adapter.requests, hasLength(2));
+      expect(fetched.model.single.name, 'Fresh');
+      expect((fetched.raw as Map)['data'], hasLength(1));
+      expect(kept.single.name, 'Fresh');
+    });
+
+    test('fetchOffers always asks and refreshes the kept list', () async {
+      final dataSource = build(
+        FakeHttpClientAdapter(
+          (_, _) => okBody({
+            'data': [
+              {'_id': 'of-free', 'name': 'Free delivery'},
+            ],
+            'pagination': {
+              'total': 1,
+              'page': 1,
+              'limit': 100,
+              'hasMore': false,
+            },
+          }),
+        ),
+      );
+      await dataSource.getOffers();
+
+      final fetched = await dataSource.fetchOffers();
+      await dataSource.getOffers();
+
+      expect(
+        adapter.requests,
+        hasLength(2),
+        reason: 'the fetch asked again; the next read reuses its answer',
+      );
+      expect(fetched.model.single.id, 'of-free');
+      expect((fetched.raw as Map)['data'], hasLength(1));
+    });
+  });
+
   group('getBrands', () {
     test('GETs page + limit, adds a non-blank search', () async {
       final dataSource = build(

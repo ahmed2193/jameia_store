@@ -148,3 +148,79 @@ generation counter from §1. `ApiConsumer` takes no cancel token today (`SafeCub
 exists but is not wired to it), so a superseded request is simply ignored when it lands. If
 real cancellation becomes necessary, add it to `ApiConsumer` in core — never reach for Dio
 from a feature.
+
+## 13. Cache-then-network read (a screen that paints offline)
+
+Shipped in home, search discover, shop (categories, listing page 1, brands, tabs), product
+details (+ reviews page 1), recipes, marketing (offers, CMS pages), orders (list + detail),
+notifications, wallet / loyalty ledgers, Pro (programme + subscription) and assistant history.
+Policy table and wipe rules: `docs/api_integration.md` §10. Mirror `features/orders`
+(`orders_cache_data_source.dart`, `OrdersRepositoryImpl`, `WatchOrdersUseCase`, `OrdersCubit`).
+
+1. **Cache datasource** `data/datasources/<f>_cache_data_source.dart`: one `static const
+   CacheNamespace` per read (name, scope public / owner / customer, `freshFor`, `maxAge`,
+   `maxEntries`, `version`) and a method returning `CacheSlot<Model>?` from
+   `CacheSlots.of(namespace, id:, parse: Model.fromJson-ish)` — `null` = do not cache now
+   (unknown owner, no customer for a customer scope). The `id` tells entries apart (slug,
+   normalised query, page size); the language and the owner are added by `CacheSlots`.
+2. **Remote datasource** returns `RemotePayload(model, raw)` — `raw` is the `results` the
+   server sent (`ApiPayload.asMap` output), kept byte for byte.
+3. **Repository** `with BaseRepositoryMixin, CachedRepositoryMixin`:
+   ```dart
+   @override
+   Stream<DataSnapshot<OrdersPage>> watchFirstPage({
+     required int limit,
+     bool forceRefresh = false,
+   }) => cachedRead(
+     cache: _cache.firstPage(limit: limit), // take the slot when the load STARTS
+     fetch: () => _remote.getOrders(page: _firstPage, limit: limit),
+     toEntity: (model) => model.toEntity(),
+     forceRefresh: forceRefresh,
+   );
+   ```
+   The stream emits the device copy (when there is one) and then the network snapshot; a
+   `Failure` arrives on the stream's error channel, after any copy. A mutation whose reply
+   answers a cached read keeps it: `keepReply(slot, payload.raw)`.
+4. **Watch use case** (`StreamUseCase`, `WatchParams.cached` / `.fresh`) — the only way the cubit
+   reaches it. Page 2+ stays a plain `UseCase` (never cached).
+5. **Cubit** `with SafeCubitMixin, SnapshotLoaderMixin`: `followSnapshots(stream, onSnapshot:,
+   onFailure:, channel:)` (a new load of the channel cancels the old one); `onSnapshot` stores
+   the data + `DataFreshness(fetchedAt:, fromCache:)`; `onFailure` with data on screen →
+   `freshness.failed()` + a transient `failure` (status stays loaded), without data → status
+   error. `Future<void> onReconnected() => refreshOnReconnect(needed: state.freshness.isStale ||
+   state.status == error, refresh: () => load(force: true))`. `close()` needs nothing extra.
+6. **Page — the screen contract:**
+   - data → the data; `CubitStaleNotice<XCubit, XState>(freshnessOf: (s) => s.freshness)` above
+     it (shows "Updated 12 min ago" only while offline or after a failed refresh);
+   - no data + failure → `FailureView(failure:, onRetry:)` (`NetworkFailure` → "Checking your
+     connection…" + a live check while the app does not know it is offline, then the screen
+     reloads by itself or shows the calm offline state; anything else → `ErrorView`); never a
+     full-screen error over data;
+   - load-more failing offline → `LoadMoreOfflineNote`, no retry button (reconnect re-asks);
+   - the failure listener → `showFailureSnackBar(context, failure)` (a read that failed in
+     transport shows no snack — the check and the banner speak; offline it nudges the banner);
+   - wrap the body in `ReconnectRefresh(onReconnected: cubit.onReconnected, child: …)`.
+7. **Tests:** cache hit (painted without a request inside `freshFor`), stale copy + network
+   replace, stale copy + failure (data kept, stale note), miss + `NetworkFailure` (offline
+   state), reconnect refresh (one request, none when fresh), a copy that no longer parses (a
+   miss, deleted), customer scope wiped on sign-out. Fakes: `jameia-api-testing`.
+
+Never cached: the cart (own mirror, `no-store`), profile / addresses (own device copies),
+checkout data, any `POST`, search suggestions, auth / OTP, SSE frames, assistant transcripts.
+
+## 14. Mutations while offline
+
+- **Nothing is queued or replayed** except the cart's coalesced quantity deltas (its mirror
+  flushes on reconnect). No outbox, no "send later".
+- A failed submit keeps its draft (the form / sheet stays open, the fields stay filled) and the
+  listener calls `showFailureSnackBar(context, failure, action: true)` → "You're offline. Your
+  changes are kept …" once + a banner nudge. Online failures still show the server's text.
+- A submit that must not be retried blindly (money, orders) asks first:
+  `if (ConnectivityScope.readIsOffline(context) && !await ConnectivityScope.confirmOnline(context))`
+  → nudge + the "needs internet" snack, send nothing. `confirmOnline` runs a live check, so a
+  banner that is a probe behind never blocks a real connection (shipped: place order, cancel
+  order).
+- Reconnect catch-up of an app-global cubit is its `onReconnected()`, called from `app.dart`'s
+  `ConnectivityCubit` listener (cart flush, session re-verify, address sync, unread badge,
+  assistant availability, Pro status, language sync); a page cubit's comes from
+  `ReconnectRefresh`. Neither fires while still offline.

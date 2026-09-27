@@ -22,9 +22,13 @@ import 'assistant_buddy_greeting_card.dart';
 /// Drops the greeting in from the top on a soft spring, and takes it away:
 /// swiped up or closed ("not now"), tapped (the chat opens), or left alone
 /// for [_showFor] after it finished typing — paused while a finger rests on
-/// it, and never on its own while a screen reader is on.
+/// it, and never on its own while a screen reader is on. The first greeting
+/// invites to the tour: its card and its first chip ask for [onTour].
 class AssistantBuddyGreeting extends StatefulWidget {
-  const AssistantBuddyGreeting({super.key});
+  const AssistantBuddyGreeting({super.key, required this.onTour});
+
+  /// Opens the assistant's tour.
+  final VoidCallback onTour;
 
   @override
   State<AssistantBuddyGreeting> createState() => _AssistantBuddyGreetingState();
@@ -154,12 +158,23 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
   }
 
   void _open([AssistantStarter? starter]) {
+    if (starter == null && (_nudge?.invitesTour ?? false)) {
+      _tour();
+      return;
+    }
     context.push(
       Routes.assistant,
       extra: starter == null
           ? null
           : AssistantChatArgs(initialPrompt: starter.promptKey.tr()),
     );
+    _close(AssistantNudgeOutcome.opened);
+  }
+
+  /// The invitation taken: the tour opens and the greeting goes.
+  void _tour() {
+    if (_closing) return;
+    widget.onTour();
     _close(AssistantNudgeOutcome.opened);
   }
 
@@ -250,6 +265,7 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
                               onTyped: _onTyped,
                               onOpen: _open,
                               onStarter: _open,
+                              onTour: nudge.invitesTour ? _tour : null,
                               onClose: () =>
                                   _close(AssistantNudgeOutcome.dismissed),
                             ),
