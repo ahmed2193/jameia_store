@@ -8,36 +8,37 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/datasources/catalog_cache_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/catalog_results.dart';
-import 'package:jameia_mart/src/core/data/models/category_model.dart';
-import 'package:jameia_mart/src/core/data/models/product_model.dart';
-import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/core/usecase/watch_params.dart';
-import 'package:jameia_mart/src/features/shop/data/repositories/catalog_browse_repository_impl.dart';
-import 'package:jameia_mart/src/features/shop/domain/entities/category_browse.dart';
-import 'package:jameia_mart/src/features/shop/domain/repositories/catalog_browse_repository.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/watch_brands_usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/watch_category_tree_usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/watch_products_usecase.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/brands_cubit.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/brands_state.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/category_browse_cubit.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/category_browse_state.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/product_listing_cubit.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/product_listing_state.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/datasources/catalog_cache_data_source.dart';
+import 'package:hero_mart/src/core/data/models/catalog_results.dart';
+import 'package:hero_mart/src/core/data/models/category_model.dart';
+import 'package:hero_mart/src/core/data/models/product_model.dart';
+import 'package:hero_mart/src/core/data/models/products_page_model.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_products_page.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/core/usecase/watch_params.dart';
+import 'package:hero_mart/src/features/shop/data/repositories/catalog_browse_repository_impl.dart';
+import 'package:hero_mart/src/features/shop/domain/entities/category_browse.dart';
+import 'package:hero_mart/src/features/shop/domain/repositories/catalog_browse_repository.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/watch_brands_usecase.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/watch_category_tree_usecase.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/watch_products_usecase.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/brands_cubit.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/brands_state.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/category_browse_cubit.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/category_browse_state.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/product_listing_cubit.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/product_listing_state.dart';
 
 import '../../core/data/catalog_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
@@ -336,7 +337,7 @@ void main() {
 
       await cubit.load();
 
-      expect(cubit.state.status, CategoryBrowseStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.browse.activeSlug, 'fresh-food');
       expect(repository.treeReads, [false]);
       await cubit.close();
@@ -366,14 +367,14 @@ void main() {
         final cubit = _browseCubit(repository);
 
         await cubit.load();
-        expect(cubit.state.status, CategoryBrowseStatus.error);
+        expect(cubit.state.status, LoadPhase.error);
 
         repository.tree = Right(_tree);
         await cubit.load();
         repository.tree = const Left(ServerFailure('down'));
         await cubit.refresh();
 
-        expect(cubit.state.status, CategoryBrowseStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         expect(cubit.state.browse.activeSlug, 'fresh-food');
         expect(cubit.state.failure, isA<ServerFailure>());
         await cubit.close();
@@ -536,7 +537,7 @@ void main() {
       );
 
       final first = cubit.load();
-      expect(cubit.state.status, ProductListingStatus.loading);
+      expect(cubit.state.status, LoadPhase.loading);
       gate.calls[0].complete(Right(_page(1, ['a', 'b'], hasMore: true)));
       await first;
       final more = cubit.loadMore();
@@ -571,7 +572,7 @@ void main() {
         await sorted;
 
         final scoped = cubit.setCategorySlug('apples');
-        expect(cubit.state.status, ProductListingStatus.loading);
+        expect(cubit.state.status, LoadPhase.loading);
         gate.calls[2].complete(Right(_page(1, ['apple'], hasMore: false)));
         await scoped;
         await cubit.setCategorySlug('apples'); // the same scope: no reload
@@ -606,7 +607,7 @@ void main() {
 
       final stalePage = cubit.loadMore();
       final resort = cubit.setSort(CatalogProductSort.priceLowToHigh);
-      expect(cubit.state.status, ProductListingStatus.loading);
+      expect(cubit.state.status, LoadPhase.loading);
       expect(cubit.state.query.sort, CatalogProductSort.priceLowToHigh);
       gate.calls[2].complete(Right(_page(1, ['cheap'], hasMore: true)));
       await resort;
@@ -748,7 +749,7 @@ void main() {
         final first = cubit.load();
         gate.calls[0].complete(const Left(NetworkFailure('offline')));
         await first;
-        expect(cubit.state.status, ProductListingStatus.error);
+        expect(cubit.state.status, LoadPhase.error);
 
         final retry = cubit.load();
         gate.calls[1].complete(Right(_page(1, ['a'], hasMore: false)));
@@ -757,7 +758,7 @@ void main() {
         gate.calls[2].complete(const Left(NetworkFailure('offline')));
         await refresh;
 
-        expect(cubit.state.status, ProductListingStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         expect(cubit.state.failure, isA<NetworkFailure>());
         await cubit.close();
       },
@@ -790,7 +791,7 @@ void main() {
       expect(loaded.first.products.products.single.id, 'saved');
       expect(loaded.first.freshness.fromCache, isTrue);
       expect(cubit.state.products.products.single.id, 'server');
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
       await cubit.close();
     });
 
@@ -806,7 +807,7 @@ void main() {
 
       expect(states.every((s) => s.isLoaded), isTrue);
       expect(cubit.state.products.products.single.id, 'server');
-      expect(cubit.state.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
       await cubit.close();
     });
 
@@ -820,12 +821,12 @@ void main() {
         watch.network = (_) => const Left(NetworkFailure());
 
         await cubit.setSort(CatalogProductSort.priceLowToHigh);
-        expect(cubit.state.status, ProductListingStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         expect(cubit.state.products.products.single.id, 'cheap');
-        expect(cubit.state.freshness.isStale, isTrue);
+        expect(cubit.state.load.freshness.isStale, isTrue);
 
         await cubit.toggleOnSaleOnly();
-        expect(cubit.state.status, ProductListingStatus.error);
+        expect(cubit.state.status, LoadPhase.error);
         expect(cubit.state.failure, isA<NetworkFailure>());
         await cubit.close();
       },
@@ -882,14 +883,14 @@ void main() {
       final cubit = _browseCubit(repository);
 
       await cubit.load();
-      expect(cubit.state.status, CategoryBrowseStatus.loaded);
-      expect(cubit.state.freshness.isStale, isTrue);
+      expect(cubit.state.status, LoadPhase.loaded);
+      expect(cubit.state.load.freshness.isStale, isTrue);
       expect(cubit.state.browse.activeSlug, 'fresh-food');
 
       repository.network = Right(_tree);
       await Future.wait([cubit.onReconnected(), cubit.onReconnected()]);
       expect(repository.reads, [false, true]);
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
 
       await cubit.onReconnected();
       expect(repository.reads, [false, true]);
@@ -904,7 +905,7 @@ void main() {
       await cubit.load();
       cubit.select(0, null);
 
-      expect(cubit.state.status, CategoryBrowseStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<NetworkFailure>());
       await cubit.close();
     });
@@ -918,14 +919,14 @@ void main() {
         final cubit = BrandsCubit(brands);
 
         await cubit.load();
-        expect(cubit.state.status, BrandsStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         expect(cubit.state.brands, hasLength(2));
 
         brands.result = const Left(NetworkFailure());
         await cubit.refresh();
-        expect(cubit.state.status, BrandsStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         expect(cubit.state.brands, hasLength(2));
-        expect(cubit.state.freshness.refreshFailed, isTrue);
+        expect(cubit.state.load.freshness.refreshFailed, isTrue);
 
         brands.result = const Right([
           BrandEntity(id: 'b3', slug: 'nadec', name: 'Nadec'),
@@ -947,7 +948,7 @@ void main() {
 
       await cubit.load();
 
-      expect(cubit.state.status, BrandsStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<NetworkFailure>());
       await cubit.close();
     });

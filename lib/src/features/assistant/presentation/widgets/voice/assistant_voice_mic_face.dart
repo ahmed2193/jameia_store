@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/branded_loader.dart';
 import '../../cubit/assistant_voice_state.dart';
 
 /// The mic button's round face: the mic, the send arrow once locked, a
-/// spinner while the last words come in.
+/// the loader dots while the last words come in.
 class AssistantVoiceMicFace extends StatelessWidget {
   const AssistantVoiceMicFace({super.key, required this.phase});
 
@@ -30,13 +31,9 @@ class AssistantVoiceMicFace extends StatelessWidget {
             ),
             child: switch (phase) {
               AssistantVoicePhase.sending ||
-              AssistantVoicePhase.stopping => const SizedBox.square(
+              AssistantVoicePhase.stopping => const BrandedLoader.inline(
                 key: ValueKey('finishing'),
-                dimension: AppSize.s20,
-                child: CircularProgressIndicator(
-                  strokeWidth: AppSize.s2,
-                  color: AppColors.brandForeground,
-                ),
+                size: AppSize.s28,
               ),
               AssistantVoicePhase.locked => const Icon(
                 Icons.arrow_upward_rounded,

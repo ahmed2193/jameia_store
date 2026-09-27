@@ -33,8 +33,4 @@ abstract final class AppEnv {
   static const bool liveNotifications = bool.fromEnvironment(
     'LIVE_NOTIFICATIONS',
   );
-
-  /// `true` when the base URL came from `--dart-define`. A release built
-  /// without one would silently point at localhost — assert on this in CI.
-  static const bool hasExplicitApiBaseUrl = bool.hasEnvironment('API_BASE_URL');
 }

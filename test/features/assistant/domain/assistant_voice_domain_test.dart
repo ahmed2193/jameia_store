@@ -5,21 +5,21 @@
 // the repository.
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_prompt.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_policy.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_waveform.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/cancel_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/finish_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_voice_language_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/listen_to_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/open_assistant_voice_settings_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/prepare_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/request_assistant_voice_access_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/save_assistant_voice_language_usecase.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_prompt.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_policy.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_waveform.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/cancel_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/finish_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_voice_language_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/listen_to_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/open_assistant_voice_settings_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/prepare_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/request_assistant_voice_access_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/save_assistant_voice_language_usecase.dart';
 
 import '../presentation/assistant_voice_fakes.dart';
 

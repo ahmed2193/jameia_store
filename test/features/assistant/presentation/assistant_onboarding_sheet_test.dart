@@ -17,14 +17,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/theme/app_theme.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/widgets/chat/assistant_suggestion_chip.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_perch.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_result.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_sheet.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/chat/assistant_suggestion_chip.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_perch.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_result.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_sheet.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

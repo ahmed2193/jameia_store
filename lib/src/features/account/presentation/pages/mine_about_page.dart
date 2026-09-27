@@ -6,7 +6,7 @@ import '../widgets/about/about_body.dart';
 import '../widgets/settings/settings_app_bar.dart';
 
 /// Mine → About: the app icon and version, the terms / privacy / licenses /
-/// rate-us rows, Jameia's social profiles and the copyright line. Static
+/// rate-us rows, Hero's social profiles and the copyright line. Static
 /// content: no cubit.
 class MineAboutPage extends StatelessWidget {
   const MineAboutPage({super.key});

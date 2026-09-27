@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:jameia_mart/src/core/storage/cache_key.dart';
-import 'package:jameia_mart/src/core/storage/cache_namespace.dart';
-import 'package:jameia_mart/src/core/storage/json_cache_store.dart';
+import 'package:hero_mart/src/core/storage/cache_key.dart';
+import 'package:hero_mart/src/core/storage/cache_namespace.dart';
+import 'package:hero_mart/src/core/storage/json_cache_store.dart';
 
 /// A [JsonCacheStore] in memory: entries round-trip through JSON (like the
 /// file store), [readGate] holds reads, and the calls are counted.

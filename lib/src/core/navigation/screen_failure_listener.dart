@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../error/failures.dart';
 import '../utils/performance/screen_loader_mixin.dart';
-import 'jameia_snack_bar.dart';
+import 'hero_snack_bar.dart';
 
 /// Tells a screen's transient failures, the one way for every cached screen:
 /// a failed read over the data on screen, or something the customer did,

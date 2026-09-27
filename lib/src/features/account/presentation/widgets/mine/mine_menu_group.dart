@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/pro_membership_entity.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import 'mine_menu_entry.dart';
@@ -14,8 +14,8 @@ import 'mine_tone.dart';
 /// The Mine menu in three titled cards — shopping, wallet & rewards, help &
 /// settings — each cascading in once after the cards above it
 /// ([firstEntranceIndex]). Every destination of the tab is here: orders,
-/// addresses, coupons, wallet, loyalty points, Jm3eia Pro, invite friends,
-/// notifications, the Jm3eia Assistant (while the store runs it), customer
+/// addresses, coupons, wallet, loyalty points, Hero Pro, invite friends,
+/// notifications, the Hero Assistant (while the store runs it), customer
 /// service, settings and about.
 class MineMenuGroup extends StatelessWidget {
   const MineMenuGroup({
@@ -34,7 +34,7 @@ class MineMenuGroup extends StatelessWidget {
   /// Unread inbox notifications (app-global `UnreadNotificationsCubit`).
   final int notificationsUnread;
 
-  /// The store runs the Jm3eia Assistant → its cell shows.
+  /// The store runs the Hero Assistant → its cell shows.
   final bool showAssistant;
 
   /// Where the customer stands with Pro → the Pro row's chip (renews, ends,
@@ -51,18 +51,18 @@ class MineMenuGroup extends StatelessWidget {
   Widget build(BuildContext context) {
     final shopping = <MineMenuEntry>[
       MineMenuEntry(
-        icon: JameiaIcons.orders,
+        icon: HeroIcons.orders,
         label: 'account.menu_orders'.tr(),
         route: Routes.orders,
         tone: MineTone.brand,
       ),
       MineMenuEntry(
-        icon: JameiaIcons.locationOutline,
+        icon: HeroIcons.locationOutline,
         label: 'account.menu_addresses'.tr(),
         route: Routes.addressList,
         tone: MineTone.sky,
       ),
-      // No Jameia coupon glyph in wm_c_iconfont — keep Material.
+      // No Hero coupon glyph in wm_c_iconfont — keep Material.
       MineMenuEntry(
         icon: Icons.confirmation_num_outlined,
         label: 'account.coupons'.tr(),
@@ -116,7 +116,7 @@ class MineMenuGroup extends StatelessWidget {
           tone: MineTone.pro,
         ),
       MineMenuEntry(
-        icon: JameiaIcons.customerService,
+        icon: HeroIcons.customerService,
         label: 'account.customer_service'.tr(),
         route: Routes.customerService,
         badgeCount: customerUnreadCount,
@@ -129,7 +129,7 @@ class MineMenuGroup extends StatelessWidget {
         route: Routes.mineSettings,
       ),
       MineMenuEntry(
-        icon: JameiaIcons.info,
+        icon: HeroIcons.info,
         label: 'account.about'.tr(),
         route: Routes.mineAbout,
       ),

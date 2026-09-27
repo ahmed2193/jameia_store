@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../motion/motion.dart';
 
-/// Expand/collapse ACCORDION — the height+fade transition Jameia uses for FAQ
+/// Expand/collapse ACCORDION — the height+fade transition Hero uses for FAQ
 /// rows, checkout sections and marketing rule blocks. Cross-fades between an
 /// empty box and [child] while animating size, over [AppMotion.medium] with the
 /// signature curve. Reduced-motion → instant show/hide.

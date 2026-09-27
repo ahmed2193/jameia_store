@@ -10,19 +10,19 @@ import 'dart:async';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/local_storage.dart';
-import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_speech_recognizer.dart';
-import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_voice_data_source.dart';
-import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_voice_settings_local_data_source.dart';
-import 'package:jameia_mart/src/features/assistant/data/mappers/assistant_voice_mapper.dart';
-import 'package:jameia_mart/src/features/assistant/data/models/assistant_speech_signal_model.dart';
-import 'package:jameia_mart/src/features/assistant/data/models/assistant_voice_update_model.dart';
-import 'package:jameia_mart/src/features/assistant/data/repositories/assistant_voice_repository_impl.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_problem.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/local_storage.dart';
+import 'package:hero_mart/src/features/assistant/data/datasources/assistant_speech_recognizer.dart';
+import 'package:hero_mart/src/features/assistant/data/datasources/assistant_voice_data_source.dart';
+import 'package:hero_mart/src/features/assistant/data/datasources/assistant_voice_settings_local_data_source.dart';
+import 'package:hero_mart/src/features/assistant/data/mappers/assistant_voice_mapper.dart';
+import 'package:hero_mart/src/features/assistant/data/models/assistant_speech_signal_model.dart';
+import 'package:hero_mart/src/features/assistant/data/models/assistant_voice_update_model.dart';
+import 'package:hero_mart/src/features/assistant/data/repositories/assistant_voice_repository_impl.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_problem.dart';
 
 /// A speech recognizer the test speaks through: [listen] reports the
 /// microphone open (both platforms do), everything else the test emits.

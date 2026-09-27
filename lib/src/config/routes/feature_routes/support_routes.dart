@@ -10,7 +10,7 @@ import '../routes.dart';
 final List<RouteBase> supportRoutes = <RouteBase>[
   GoRoute(
     path: Routes.customerService,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const CustomerServicePage(),
@@ -21,7 +21,7 @@ final List<RouteBase> supportRoutes = <RouteBase>[
     path: Routes.customerServiceQuestion,
     pageBuilder: (_, state) {
       final arg = state.extra;
-      return JameiaTransitionPage<Object?>(
+      return HeroTransitionPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: CustomerServiceQuestionPage(arg: arg is String ? arg : null),
@@ -31,7 +31,7 @@ final List<RouteBase> supportRoutes = <RouteBase>[
   // extra (an order id from the orders list) is accepted but unused.
   GoRoute(
     path: Routes.imChat,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const ImChatPage(),

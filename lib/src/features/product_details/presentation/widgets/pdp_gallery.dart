@@ -6,27 +6,27 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/routes/route_args/pdp_image_viewer_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
-import '../../../../core/widgets/jameia_image.dart';
 import '../cubit/product_detail_cubit.dart';
 import 'pdp_dots_pill.dart';
+import 'pdp_photo.dart';
 
 /// The product photos, full bleed on light grey: a swipeable pager of whole
-/// (contained) photos held in [photoPadding], and the dots pill [dotsInset]
-/// above the bottom edge when there are several. A tap opens the
-/// full-screen viewer and comes back to the page it was left on.
+/// (contained) photos edge to edge, from its very top, and the dots pill
+/// [dotsInset] above the bottom edge when there are several. A tap flies
+/// the photo into the full-screen viewer ([PdpPhoto]) and back to the page
+/// it was left on.
 class PdpGallery extends StatefulWidget {
   const PdpGallery({
     super.key,
     required this.images,
-    required this.photoPadding,
+    required this.productSlug,
     required this.dotsInset,
   });
 
   final List<String> images;
 
-  /// Room around each photo: clear of the status bar, the round buttons and
-  /// the sheet that rides over the bottom edge.
-  final EdgeInsetsGeometry photoPadding;
+  /// The product the photos belong to (scopes their flight to the viewer).
+  final String productSlug;
   final double dotsInset;
 
   @override
@@ -56,7 +56,11 @@ class _PdpGalleryState extends State<PdpGallery> {
     final cubit = context.read<ProductDetailCubit>();
     final returned = await context.push<int>(
       Routes.pdpImageViewer,
-      extra: PdpImageViewerArgs(images: widget.images, initialIndex: index),
+      extra: PdpImageViewerArgs(
+        images: widget.images,
+        initialIndex: index,
+        productSlug: widget.productSlug,
+      ),
     );
     if (returned == null || !mounted) return;
     cubit.setImageIndex(returned);
@@ -93,12 +97,10 @@ class _PdpGalleryState extends State<PdpGallery> {
                     child: GestureDetector(
                       onTap: () => _openViewer(index),
                       behavior: HitTestBehavior.opaque,
-                      child: Padding(
-                        padding: widget.photoPadding,
-                        child: JameiaImage(
-                          url: images[index],
-                          fit: BoxFit.contain,
-                        ),
+                      child: PdpPhoto(
+                        url: images[index],
+                        index: index,
+                        productSlug: widget.productSlug,
                       ),
                     ),
                   ),

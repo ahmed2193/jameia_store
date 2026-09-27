@@ -11,7 +11,7 @@ import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/app_button.dart';
 
-/// "Welcome to Jm3eia Pro!" — the sheet that greets a new member right after
+/// "Welcome to Hero Pro!" — the sheet that greets a new member right after
 /// the subscription goes through: a crown in a Pro-gradient disc that pops
 /// in, the welcome copy, and a button that closes the sheet.
 class ProSuccessSheet extends StatelessWidget {

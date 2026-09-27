@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:jameia_mart/src/core/network/event_stream_client.dart';
+import 'package:hero_mart/src/core/network/event_stream_client.dart';
 
 /// Readers for the saved assistant payloads:
 /// - `fixtures/live_2026_09_24/` — real captures from api.jm3eia.store

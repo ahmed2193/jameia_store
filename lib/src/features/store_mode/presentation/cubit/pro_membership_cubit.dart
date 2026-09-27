@@ -65,7 +65,7 @@ class ProMembershipCubit extends Cubit<ProMembershipState>
   /// The connection came back: one silent refresh when the page shows a
   /// saved copy or failed.
   Future<void> onReconnected() => refreshOnReconnect(
-    needed:
+    needed: () =>
         state.freshness.isStale || state.status == ProMembershipStatus.error,
     refresh: refresh,
   );

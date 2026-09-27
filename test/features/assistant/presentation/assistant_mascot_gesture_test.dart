@@ -1,8 +1,8 @@
 // The mascot's gestures come back to rest: the sprout's wave settles and a
 // wink opens its eye again; a wink shuts only one eye.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/widgets/mascot/assistant_mascot_gesture.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/widgets/mascot/assistant_mascot_pose.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/mascot/assistant_mascot_gesture.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/mascot/assistant_mascot_pose.dart';
 
 void main() {
   test('a wave swings both ways and settles at rest', () {

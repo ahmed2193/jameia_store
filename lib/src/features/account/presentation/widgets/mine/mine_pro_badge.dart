@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/light_sweep.dart';
 
-/// "PRO" pill next to a Jm3eia Pro member's name: the Pro gradient, a small
+/// "PRO" pill next to a Hero Pro member's name: the Pro gradient, a small
 /// crown and a slow light sweep — the Mine tab's one ambient loop, running
 /// only while the tab is on screen and the header is fully open. [opacity]
 /// fades its colours as the header collapses.

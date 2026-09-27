@@ -17,7 +17,7 @@ class RewardCardBackdrop extends StatelessWidget {
   static const List<Color> _gradient = [
     AppColors.proAmber,
     AppColors.accent3,
-    kJameiaPillPin,
+    kHeroPillPin,
   ];
   static const double _giftOverhang = -AppSpacing.s12;
   static const double _giftOpacity = 0.24;

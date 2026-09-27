@@ -9,7 +9,7 @@ import 'shell_nav_badge.dart';
 
 /// One bottom-nav destination: icon (scaled up a touch when selected), label,
 /// and an optional count badge. The [icon] takes its size and colour from
-/// the item, so pass a plain `const Icon(...)` (or a `JameiaMarkIcon`).
+/// the item, so pass a plain `const Icon(...)` (or a `HeroMarkIcon`).
 class ShellNavItem extends StatelessWidget {
   const ShellNavItem({
     super.key,

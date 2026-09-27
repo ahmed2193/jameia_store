@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import 'user_profile_entity.dart';
 
-/// Snapshot for the Jameia "Mine" tab (`mach_pro_sailor_c_mine`) — the signed-in
+/// Snapshot for the Hero "Mine" tab (`mach_pro_sailor_c_mine`) — the signed-in
 /// profile plus the header quick-stat counts and the customer-service unread
 /// badge count. Holds the framework-free [UserProfileEntity].
 class AccountOverview extends Equatable {

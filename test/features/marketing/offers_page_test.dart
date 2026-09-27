@@ -1,4 +1,4 @@
-// The offers page as a talabat collection page: the store's name over a
+// The offers page as a Hero collection page: the store's name over a
 // cream hero, the offers as flat cards (reward disc, lime reward chip, a
 // clock for an offer ending today, the small print), skeleton / empty /
 // error states under the hero, and the "View cart" pill only while the
@@ -15,36 +15,36 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/constants/app_constants.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/motion/stagger_entrance.dart';
-import 'package:jameia_mart/src/core/widgets/collection_frame.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/core/widgets/countdown_chip.dart';
-import 'package:jameia_mart/src/core/widgets/empty_state_view.dart';
-import 'package:jameia_mart/src/core/widgets/error_view.dart';
-import 'package:jameia_mart/src/core/widgets/view_cart_pill.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_state.dart';
-import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
-import 'package:jameia_mart/src/features/language/presentation/cubit/localization_state.dart';
-import 'package:jameia_mart/src/features/marketing/domain/entities/content_page_entity.dart';
-import 'package:jameia_mart/src/features/marketing/domain/repositories/promotions_repository.dart';
-import 'package:jameia_mart/src/features/marketing/domain/usecases/watch_offers_usecase.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/cubit/offers_cubit.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/pages/offers_page.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/widgets/offer_reward_chip.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/widgets/offer_reward_disc.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/widgets/offer_tile.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/widgets/offer_title.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/widgets/offers_cart_bar.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/widgets/offers_skeleton.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/constants/app_constants.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/stagger_entrance.dart';
+import 'package:hero_mart/src/core/widgets/collection_frame.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/core/widgets/countdown_chip.dart';
+import 'package:hero_mart/src/core/widgets/empty_state_view.dart';
+import 'package:hero_mart/src/core/widgets/error_view.dart';
+import 'package:hero_mart/src/core/widgets/view_cart_pill.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_state.dart';
+import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
+import 'package:hero_mart/src/features/language/presentation/cubit/localization_state.dart';
+import 'package:hero_mart/src/features/marketing/domain/entities/content_page_entity.dart';
+import 'package:hero_mart/src/features/marketing/domain/repositories/promotions_repository.dart';
+import 'package:hero_mart/src/features/marketing/domain/usecases/watch_offers_usecase.dart';
+import 'package:hero_mart/src/features/marketing/presentation/cubit/offers_cubit.dart';
+import 'package:hero_mart/src/features/marketing/presentation/pages/offers_page.dart';
+import 'package:hero_mart/src/features/marketing/presentation/widgets/offer_reward_chip.dart';
+import 'package:hero_mart/src/features/marketing/presentation/widgets/offer_reward_disc.dart';
+import 'package:hero_mart/src/features/marketing/presentation/widgets/offer_tile.dart';
+import 'package:hero_mart/src/features/marketing/presentation/widgets/offer_title.dart';
+import 'package:hero_mart/src/features/marketing/presentation/widgets/offers_cart_bar.dart';
+import 'package:hero_mart/src/features/marketing/presentation/widgets/offers_skeleton.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
@@ -338,7 +338,7 @@ void main() {
       await pumpOffers(tester);
 
       expect(find.byType(CollectionFrame), findsOneWidget);
-      expect(find.text('Jm3eia'), findsOneWidget);
+      expect(find.text('Hero'), findsOneWidget);
       expect(
         find.textContaining('Offers for you', findRichText: true),
         findsOneWidget,

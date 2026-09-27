@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/domain/entities/address_label.dart';
 import '../../../../core/domain/entities/geo_point_entity.dart';
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../domain/entities/address_draft.dart';
@@ -21,7 +21,7 @@ class AddressEditCubit extends Cubit<AddressEditState>
   AddressEditCubit({
     required this._addAddress,
     required this._updateAddress,
-    JameiaAddressEntity? original,
+    HeroAddressEntity? original,
     bool isFirstAddress = false,
   }) : super(
          AddressEditState(
@@ -95,7 +95,7 @@ class AddressEditCubit extends Cubit<AddressEditState>
 
   void _edit(AddressDraft draft) => safeEmit(state.copyWith(draft: draft));
 
-  void _finish(Either<Failure, JameiaAddressEntity> result) => result.fold(
+  void _finish(Either<Failure, HeroAddressEntity> result) => result.fold(
     (failure) => safeEmit(
       state.copyWith(status: AddressEditStatus.editing, failure: failure),
     ),

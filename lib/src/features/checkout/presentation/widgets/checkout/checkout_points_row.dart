@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/cart_loyalty_entity.dart';
 import '../../../../../core/domain/entities/loyalty_program.dart';
 import '../../../../../core/motion/change_bump.dart';
@@ -12,7 +12,7 @@ import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
@@ -38,7 +38,7 @@ class CheckoutPointsRow extends StatelessWidget {
 
   /// The hairline starts at the text column, like the rows' own.
   static const double _textStart =
-      JameiaListRow.denseInset + _iconSize + JameiaListRow.denseGap;
+      HeroListRow.denseInset + _iconSize + HeroListRow.denseGap;
 
   @override
   Widget build(BuildContext context) {
@@ -113,12 +113,12 @@ class CheckoutPointsRow extends StatelessWidget {
                   indent: _textStart,
                   color: AppColors.voucherTanFaint,
                 ),
-                JameiaListRow(
+                HeroListRow(
                   dense: true,
                   leading: ChangeBump(
                     value: applied,
                     child: SvgPicture.asset(
-                      JameiaAssets.checkoutPoints,
+                      HeroAssets.checkoutPoints,
                       width: _iconSize,
                       height: _iconSize,
                       excludeFromSemantics: true,

@@ -19,6 +19,7 @@ import '../cubit/product_detail_state.dart';
 import 'pdp_bundle_contents.dart';
 import 'pdp_category_link.dart';
 import 'pdp_info_block.dart';
+import 'pdp_offer_note.dart';
 import 'pdp_product_rail.dart';
 import 'pdp_recipes_rail.dart';
 import 'pdp_reviews_section.dart';
@@ -27,10 +28,11 @@ import 'pdp_section.dart';
 import 'pdp_section_divider.dart';
 import 'pdp_variant_selector.dart';
 
-/// The loaded product page, flat blocks on the white sheet in talabat-mart's
-/// order: gallery → tag, brand, name, meta, description, notes → options
-/// (variant product) → contents (bundle) → similar products → "shop more
-/// for less" (the related deals) → recipes using it → reviews → category.
+/// The loaded product page, flat blocks on the white sheet in Hero's
+/// order: gallery → tags, brand, name, meta, description, stock, the cart
+/// offer → options (variant product) → contents (bundle) → similar products
+/// → "shop more for less" (the related deals) → recipes using it → reviews →
+/// category.
 ///
 /// The blocks under the name cascade in once as the page loads (the photo
 /// and the name were already painted by the preview, so they stay put).
@@ -94,13 +96,12 @@ class _PdpLoadedViewState extends State<PdpLoadedView> {
       (session) => session.state.customer?.isPro ?? false,
     );
     final variant = detail.variantById(widget.selectedVariantId);
-    final now = DateTime.now();
     final category = detail.category;
     final similar = detail.relatedRegular;
     final deals = detail.relatedOnDeal;
     // The id keeps each block's entrance with the block when another block
     // comes or goes on a reload. `divided` puts a hairline above it; like
-    // talabat, the options run straight on from the description, the
+    // Hero, the options run straight on from the description, the
     // hairline comes before the first rail, and the rails follow one another
     // without one.
     final blocks = <({String id, bool divided, Widget block})>[
@@ -165,6 +166,7 @@ class _PdpLoadedViewState extends State<PdpLoadedView> {
         ),
     ];
     return PdpScaffoldView(
+      productSlug: detail.product.slug,
       title: detail.product.name,
       images: detail.gallery,
       galleryKey: widget.galleryKey,
@@ -175,20 +177,19 @@ class _PdpLoadedViewState extends State<PdpLoadedView> {
           freshnessOf: _freshnessOf,
         ),
         PdpSection(
-          child: PdpInfoBlock(
-            product: detail.product,
-            brand: detail.brand,
-            description: detail.description,
-            inStock: detail.stockOf(variant) > 0,
-            lowStockLeft: widget.lowStockLeft,
-            discountPercent: detail.discountPercent(variant: variant, now: now),
-            proPriceApplied:
-                detail.regularPriceFilsWhenPro(variant: variant, pro: isPro) !=
-                null,
-            proPriceHintFils: isPro
-                ? null
-                : detail.proPriceFilsHint(variant: variant),
-            onOpenReviews: _scrollToReviews,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              PdpInfoBlock(
+                product: detail.product,
+                brand: detail.brand,
+                description: detail.description,
+                inStock: detail.stockOf(variant) > 0,
+                lowStockLeft: widget.lowStockLeft,
+                onOpenReviews: _scrollToReviews,
+              ),
+              const PdpOfferNote(),
+            ],
           ),
         ),
         for (final (index, (:id, :divided, :block)) in blocks.indexed)

@@ -10,9 +10,9 @@ import '../../../../../core/responsive/app_size.dart';
 import '../../../../store_mode/presentation/cubit/pro_status_cubit.dart';
 
 /// The delivery row's value when the server made delivery free: "Free", and
-/// for a Jm3eia Pro member whose plan includes free delivery the violet
+/// for a Hero Pro member whose plan includes free delivery the violet
 /// "pro" tag before it (it pops in when the membership starts). Read as one
-/// phrase — "Free delivery with Jm3eia Pro" — by screen readers.
+/// phrase — "Free delivery with Hero Pro" — by screen readers.
 class CartFreeDeliveryValue extends StatelessWidget {
   const CartFreeDeliveryValue({super.key});
 

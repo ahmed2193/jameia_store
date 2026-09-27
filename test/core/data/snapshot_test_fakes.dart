@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
 
 final DateTime _fetchedAt = DateTime.utc(2026, 9, 27, 12);
 

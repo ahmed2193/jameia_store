@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/motion/motion_widgets.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/motion_widgets.dart';
 
 /// Verifies the SINGLE reduced-motion gate: with `MediaQueryData.disableAnimations`
 /// true (OS "remove animations"), every core motion primitive renders its FINAL

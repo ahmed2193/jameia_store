@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/features/checkout/data/mappers/checkout_mapper.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/features/checkout/data/mappers/checkout_mapper.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:hero_mart/src/core/domain/entities/delivery_slot_entity.dart';
 
 void main() {
   const slot = DeliverySlotEntity(

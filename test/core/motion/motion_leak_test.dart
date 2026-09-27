@@ -5,8 +5,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/pop_scale.dart';
-import 'package:jameia_mart/src/core/motion/stagger_entrance.dart';
+import 'package:hero_mart/src/core/motion/pop_scale.dart';
+import 'package:hero_mart/src/core/motion/stagger_entrance.dart';
 
 Widget _host(Widget child) => MediaQuery(
   data: const MediaQueryData(),

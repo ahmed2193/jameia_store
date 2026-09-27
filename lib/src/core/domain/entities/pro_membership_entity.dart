@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import 'auth_customer_entity.dart';
 
-/// Where the customer stands with Jm3eia Pro. Every Pro surface keys on it:
+/// Where the customer stands with Hero Pro. Every Pro surface keys on it:
 /// the home header and banner, the Mine row, the cart nudge and the Pro page.
 enum ProStanding {
   /// Nobody is signed in: Pro is on sale, and joining starts with sign-in.
@@ -22,7 +22,7 @@ enum ProStanding {
   lapsed,
 }
 
-/// The customer's Jm3eia Pro membership as the app-global Pro status holds
+/// The customer's Hero Pro membership as the app-global Pro status holds
 /// it: the subscription route's answer (`GET /v1/account/subscription`), or
 /// the customer record (`customer.pro`) until that answer lands.
 class ProMembershipEntity extends Equatable {

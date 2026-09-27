@@ -12,7 +12,7 @@ import 'sticker_text.dart';
 class CountdownDigitBox extends StatelessWidget {
   const CountdownDigitBox({super.key, required this.digits});
 
-  /// The smallest box (the Keeta boxes measure 13–14 dp).
+  /// The smallest box (the Hero boxes measure 13–14 dp).
   static const double side = AppSize.s14;
 
   static const BoxDecoration _fill = BoxDecoration(

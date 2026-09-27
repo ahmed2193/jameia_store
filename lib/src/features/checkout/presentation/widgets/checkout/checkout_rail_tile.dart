@@ -8,7 +8,7 @@ import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/widgets/catalog_product_card.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_state.dart';
@@ -28,7 +28,7 @@ class CheckoutRailTile extends StatelessWidget {
     Haptics.selection();
     FlyToCart.flyFrom(
       context,
-      thumbnail: JameiaImage(
+      thumbnail: HeroImage(
         url: product.image,
         width: CatalogProductCard.defaultWidth,
         height: CatalogProductCard.defaultWidth,

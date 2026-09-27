@@ -53,7 +53,7 @@ class ProductListingArgs {
   /// Shown after the hero's heading (a fire for a sale); `null` = none.
   final String? emoji;
 
-  /// A collection or a brand: the talabat collection page (hero, category
+  /// A collection or a brand: the Hero collection page (hero, category
   /// tabs, no sort / filter toolbar). Search and tag lists stay plain.
   bool get isCollectionLook =>
       _isSet(query.collectionSlug) || _isSet(query.brandSlug);

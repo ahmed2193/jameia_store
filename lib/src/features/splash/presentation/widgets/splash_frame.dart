@@ -2,7 +2,10 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
-/// A ring spreading from [center] (landing splash, tap), [progress] 0 → 1.
+import '../../../../core/design/hero_mark.dart';
+import '../../../../core/design/hero_mark_painting.dart';
+
+/// A ring spreading from [center] (take-off, arrival, tap), [progress] 0 → 1.
 @immutable
 class SplashRipple {
   const SplashRipple(
@@ -18,29 +21,35 @@ class SplashRipple {
   /// Size and opacity multiplier (a tap ripple is smaller than a landing).
   final double strength;
 
-  /// A landing ring lies flat on the ground (an ellipse); a tap ring is a
-  /// circle.
+  /// A take-off ring lies flat on the ground (an ellipse); a mid-air or tap
+  /// ring is a circle.
   final bool ground;
 }
+
+/// One piece of the name on its way from the bag to its place: [flight]
+/// 0 (in the bag's opening) → 1 (in place), then [squash] as it lands.
+typedef SplashDelivery = ({double flight, double squash});
 
 /// Everything that moves in one frame of the splash, already eased. A
 /// choreography turns the clock into a frame; the painter draws it.
 @immutable
 class SplashFrame {
   const SplashFrame({
-    required this.cartCenter,
-    required this.cartUnit,
+    required this.markCenter,
+    required this.markUnit,
     this.squash = 0,
     this.lift = 0,
+    this.lean = 0,
+    this.capeWave = HeroMark.restWave,
+    this.capePhase = HeroMark.restPhase,
+    this.capeFold = 0,
     this.speedLines = 0,
-    this.letters = const <double>[],
-    this.swoosh = 0,
-    this.stripes = 0,
-    this.leaf = 0,
+    this.deliveries = const <SplashDelivery>[],
     this.burst = 0,
     this.groceries = const <double>[],
     this.ambient = 0,
     this.glowCenter,
+    this.glowPulse = 0,
     this.ripples = const <SplashRipple>[],
     this.confetti = 0,
     this.confettiOrigin,
@@ -48,39 +57,39 @@ class SplashFrame {
     this.ms = 0,
   });
 
-  /// Screen centre of the cart's painted bounds.
-  final Offset cartCenter;
+  /// Screen centre of the mark's painted bounds.
+  final Offset markCenter;
 
-  /// Cart size: dp per cart design unit.
-  final double cartUnit;
+  /// Mark size: dp per design unit.
+  final double markUnit;
 
-  /// Positive = flattened (wider, shorter), negative = stretched tall; the
-  /// wheels stay on the ground.
+  /// Positive = flattened on its bottom edge, negative = stretched tall.
   final double squash;
 
-  /// Hop height of the cart above its resting place, in cart design units.
+  /// Height of the mark above its place, in design units.
   final double lift;
 
-  /// Streaks trailing the moving cart, 0 (none) → 1 (longest).
+  /// Extra tilt, radians (negative tips it back, nose up).
+  final double lean;
+
+  /// The cape's travelling wave (amplitude in design units, phase in
+  /// radians) and how much of its darker underside shows (0 → 1).
+  final double capeWave;
+  final double capePhase;
+  final double capeFold;
+
+  /// Streaks trailing the flying mark, 0 (none) → 1 (longest).
   final double speedLines;
 
-  /// Reveal of each letter of "ameıaMart" (may overshoot 1 while springing).
-  final List<double> letters;
+  /// Each piece of the name the bag has sent out, in delivery order. Pieces
+  /// not sent yet are missing.
+  final List<SplashDelivery> deliveries;
 
-  /// Swoosh drawn from the left, 0 → 1.
-  final double swoosh;
-
-  /// Yellow bands on the swoosh, 0 → 1 (may overshoot).
-  final double stripes;
-
-  /// Leaf grown from its stalk, 0 → 1 (may overshoot).
-  final double leaf;
-
-  /// White disc spreading from the cart, 0 → 1 of the screen.
+  /// White disc spreading from the mark, 0 → 1 of the screen.
   final double burst;
 
-  /// Drop of each grocery into the basket; 1 = resting inside, 0 = not
-  /// shown yet. Empty = no groceries.
+  /// Drop of each grocery into the bag; 1 = resting inside, 0 = not shown
+  /// yet. Empty = no groceries.
   final List<double> groceries;
 
   /// Living colour behind the logo (glow + drifting aurora), 0 → 1. Zero on
@@ -90,40 +99,56 @@ class SplashFrame {
   /// Where the soft glow sits; `null` = the screen centre.
   final Offset? glowCenter;
 
-  /// Rings spreading from landings.
+  /// Extra glow as the mark arrives, 0 → 1 → 0.
+  final double glowPulse;
+
+  /// Rings spreading from take-off, arrival and taps.
   final List<SplashRipple> ripples;
 
-  /// Celebration burst from [confettiOrigin] when the cart lands in its
-  /// slot, 0 (not yet) → 1 (settled and faded).
+  /// Celebration burst from [confettiOrigin] when the name is complete,
+  /// 0 (not yet) → 1 (settled and faded).
   final double confetti;
   final Offset? confettiOrigin;
 
-  /// Light sweep across the finished name, 0 → 1.
+  /// Light sweep across the finished lockup, 0 → 1.
   final double shine;
 
   /// Milliseconds into the run (drives the aurora's drift).
   final double ms;
 
-  /// This frame with a touch reaction layered on: the cart's extra
-  /// [lift] / [squash] and the tap [ripples].
+  /// The mark's pose in this frame.
+  HeroMarkPose get pose => HeroMarkPose(
+    squash: squash,
+    lift: lift,
+    lean: lean,
+    wave: capeWave,
+    phase: capePhase,
+    fold: capeFold,
+  );
+
+  /// This frame with a touch reaction layered on: the mark's extra [lift],
+  /// [squash] and cape [wave], and the tap [ripples].
   SplashFrame withTouch({
     double lift = 0,
     double squash = 0,
+    double wave = 0,
     List<SplashRipple> ripples = const <SplashRipple>[],
   }) => SplashFrame(
-    cartCenter: cartCenter,
-    cartUnit: cartUnit,
+    markCenter: markCenter,
+    markUnit: markUnit,
     squash: this.squash + squash,
     lift: this.lift + lift,
+    lean: lean,
+    capeWave: capeWave + wave,
+    capePhase: capePhase,
+    capeFold: capeFold,
     speedLines: speedLines,
-    letters: letters,
-    swoosh: swoosh,
-    stripes: stripes,
-    leaf: leaf,
+    deliveries: deliveries,
     burst: burst,
     groceries: groceries,
     ambient: ambient,
     glowCenter: glowCenter,
+    glowPulse: glowPulse,
     ripples: [...this.ripples, ...ripples],
     confetti: confetti,
     confettiOrigin: confettiOrigin,

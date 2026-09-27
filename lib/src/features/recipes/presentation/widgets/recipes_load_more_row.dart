@@ -26,7 +26,7 @@ class RecipesLoadMoreRow extends StatelessWidget {
         NextPageLoad.idle => const SizedBox.shrink(),
         NextPageLoad.loading => const Padding(
           padding: EdgeInsets.all(AppSpacing.s16),
-          child: AppLoader(),
+          child: AppLoader.inline(),
         ),
         NextPageLoad.failed when ConnectivityScope.isOfflineOf(context) =>
           const LoadMoreOfflineNote(),

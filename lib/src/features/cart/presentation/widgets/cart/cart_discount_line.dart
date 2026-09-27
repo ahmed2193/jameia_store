@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/widgets/jameia_summary_line.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 import 'cart_discount_amount.dart';
 
 /// A discount in the cart's payment summary: "Coupon discount   - KD 0.500"
@@ -13,7 +13,7 @@ class CartDiscountLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JameiaSummaryLine(
+    return HeroSummaryLine(
       label: label,
       value: CartDiscountAmount(kd: kd),
     );

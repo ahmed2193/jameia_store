@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'catalog_merch_tag.dart';
+
 /// How a backend product is sold: one price, a choice of variants (the card
 /// carries no price of its own), or a fixed bundle of other products.
 enum CatalogProductType { standard, variant, bundle, other }
@@ -7,7 +9,7 @@ enum CatalogProductType { standard, variant, bundle, other }
 /// The unit a price refers to (`per piece`, `per kg` …).
 enum UnitOfSale { piece, kg, litre, pack, other }
 
-/// A product of the jm3eia backend catalogue as every list shows it: home
+/// A product of the Hero backend catalogue as every list shows it: home
 /// rails, category / brand / collection listings, search results, the related
 /// and bundle rows of a product page.
 ///
@@ -101,6 +103,22 @@ class CatalogProductEntity extends Equatable {
   double get compareAtKd => hasDiscount ? compareAtFils! / filsPerDinar : 0;
 
   bool hasTag(String tag) => tags.contains(tag);
+
+  /// The merchandising tags it wears ("Best seller", "Fresh"), most telling
+  /// first. A tag slug the app does not know is not one of them.
+  List<CatalogMerchTag> get merchTags => <CatalogMerchTag>[
+    for (final tag in CatalogMerchTag.values)
+      if (hasTag(tag.slug)) tag,
+  ];
+
+  /// The most telling of [merchTags], or `null` without one — read per card
+  /// while a listing lays out, so it builds no list.
+  CatalogMerchTag? get leadMerchTag {
+    for (final tag in CatalogMerchTag.values) {
+      if (hasTag(tag.slug)) return tag;
+    }
+    return null;
+  }
 
   @override
   List<Object?> get props => [

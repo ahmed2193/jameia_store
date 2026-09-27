@@ -1,14 +1,14 @@
 // Home DTOs + mappers, fed with the payloads the live host really sends.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/features/home/data/mappers/home_bootstrap_mapper.dart';
-import 'package:jameia_mart/src/features/home/data/mappers/home_feed_mapper.dart';
-import 'package:jameia_mart/src/features/home/data/models/home_feed_model.dart';
-import 'package:jameia_mart/src/features/home/data/models/home_init_model.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_icon.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_link.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_section_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/features/home/data/mappers/home_bootstrap_mapper.dart';
+import 'package:hero_mart/src/features/home/data/mappers/home_feed_mapper.dart';
+import 'package:hero_mart/src/features/home/data/models/home_feed_model.dart';
+import 'package:hero_mart/src/features/home/data/models/home_init_model.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_icon.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_link.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_section_entity.dart';
 
 import 'home_test_fakes.dart';
 
@@ -203,7 +203,7 @@ void main() {
     test('maps store, delivery zone and Pro perks', () {
       final bootstrap = HomeInitModel.fromJson(liveInitJson()).toEntity();
 
-      expect(bootstrap.storeName, 'Jm3eia');
+      expect(bootstrap.storeName, 'Hero');
       expect(bootstrap.delivery?.mode, HomeDeliveryMode.delivery);
       expect(bootstrap.delivery?.zoneName, 'Salmiya & Sharq');
       expect(bootstrap.delivery?.placeName, 'Salmiya & Sharq');

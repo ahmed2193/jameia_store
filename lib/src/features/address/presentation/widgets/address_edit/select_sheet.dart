@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/widgets/core_widgets.dart';
-import '../../../../../core/widgets/jameia_map.dart';
+import '../../../../../core/widgets/hero_map.dart';
 import 'candidate_row.dart';
 import 'not_serviceable_banner.dart';
 import 'sheet_grabber.dart';

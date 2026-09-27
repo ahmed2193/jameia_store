@@ -1,10 +1,10 @@
 // Address form rules (AddressDraft) and the PATCH diff (AddressUpdate).
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/address_label.dart';
-import 'package:jameia_mart/src/core/domain/entities/geo_point_entity.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_draft.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_field.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_update.dart';
+import 'package:hero_mart/src/core/domain/entities/address_label.dart';
+import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_draft.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_field.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_update.dart';
 
 import 'address_test_fakes.dart';
 

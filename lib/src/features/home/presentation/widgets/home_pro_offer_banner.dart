@@ -14,7 +14,7 @@ import 'home_reveal_scope.dart';
 
 /// The Pro offer at the end of the home feed, for everyone without the perks:
 /// the perks the backend configured (`init.store.pro`) on the Pro violet,
-/// with a "Join Pro" pill — for a [lapsed] member "Come back to Jm3eia Pro"
+/// with a "Join Pro" pill — for a [lapsed] member "Come back to Hero Pro"
 /// and "Rejoin". A soft shine sweeps across it now and then while it is on
 /// screen.
 class HomeProOfferBanner extends StatelessWidget {

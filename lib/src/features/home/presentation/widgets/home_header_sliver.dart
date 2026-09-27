@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/routes/routes.dart';
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/utils/address_display.dart';
 import '../../../address/presentation/cubit/address_book_cubit.dart';
@@ -17,7 +17,7 @@ import '../../domain/entities/home_bootstrap.dart';
 import 'home_hero_delegate.dart';
 
 /// The home header. The store row comes from the launch snapshot (name, the
-/// zone's delivery time), with the "pro" tag of a Jm3eia Pro member (the
+/// zone's delivery time), with the "pro" tag of a Hero Pro member (the
 /// app-global Pro status — a guest, a non-member and a status not known yet
 /// see the plain store name). The delivery line always shows the
 /// customer's default saved address, live from the app-global address book;
@@ -34,7 +34,7 @@ class HomeHeaderSliver extends StatelessWidget {
   Future<void> _pickAddress(BuildContext context) async {
     final addressBook = context.read<AddressBookCubit>();
     final picked = await context.push<Object?>(Routes.addressList);
-    if (picked is! JameiaAddressEntity) return;
+    if (picked is! HeroAddressEntity) return;
     final failure = await addressBook.makeDefault(picked.id);
     if (failure != null && context.mounted) {
       showFailureSnackBar(context, failure, action: true);
@@ -56,7 +56,7 @@ class HomeHeaderSliver extends StatelessWidget {
     return BlocSelector<
       AddressBookCubit,
       AddressBookState,
-      JameiaAddressEntity?
+      HeroAddressEntity?
     >(
       selector: (state) => state.book.defaultAddress,
       builder: (context, defaultAddress) =>
@@ -71,7 +71,7 @@ class HomeHeaderSliver extends StatelessWidget {
               delegate: HomeHeroDelegate(
                 storeName: bootstrap.storeName.isNotEmpty
                     ? bootstrap.storeName
-                    : 'home.jameia'.tr(),
+                    : 'home.hero'.tr(),
                 isPro: isMember,
                 etaMinutes: delivery?.etaMinutes ?? 0,
                 placeLabel:

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
-import '../../../../../core/widgets/jameia_summary_line.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 
 /// A deduction on the invoice (offer, Pro, coupon, loyalty): the label and
 /// the minus amount in brand deep green, one left-to-right money run.
@@ -14,9 +14,9 @@ class InvoiceDiscountLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JameiaSummaryLine(
+    return HeroSummaryLine(
       label: label,
-      value: JameiaMoneyText(
+      value: HeroMoneyText(
         kd: kd,
         negative: true,
         color: AppColors.brandDeep,

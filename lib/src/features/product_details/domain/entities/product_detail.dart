@@ -5,6 +5,7 @@ import '../../../../core/domain/entities/catalog_category_entity.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/domain/entities/catalog_variant_entity.dart';
 import '../../../../core/domain/entities/recipe_summary_entity.dart';
+import 'product_price_quote.dart';
 
 /// One product of a bundle: what it is, how many, and what it costs inside the
 /// bundle.
@@ -114,31 +115,30 @@ class ProductDetail extends Equatable {
       ? variant?.priceFilsFor(pro: pro) ?? 0
       : product.priceFilsFor(pro: pro);
 
-  /// What [quantity] units of the selection cost, in KD (the buy bar's total).
-  double lineTotalKd({
-    required CatalogVariantEntity? variant,
-    required bool pro,
-    required int quantity,
-  }) =>
-      unitPriceFils(variant: variant, pro: pro) *
-      quantity /
-      CatalogProductEntity.filsPerDinar;
-
-  /// What [quantity] units come to at the struck price — the deal's price
-  /// before, valid at [now], else the regular price a Pro member does not
-  /// pay — in KD (the buy bar's struck total); `null` without one.
-  double? struckTotalKd({
+  /// Everything the buy bar prints for [quantity] pieces of the selection,
+  /// for a customer who is a Pro member when [pro], at [now]: the price,
+  /// the struck price — the deal's price before, valid at [now], else the
+  /// regular price a member does not pay — the deal's percent off, and the
+  /// Pro line.
+  ProductPriceQuote quoteFor({
     required CatalogVariantEntity? variant,
     required bool pro,
     required DateTime now,
     required int quantity,
   }) {
-    final struck =
-        compareAtFils(variant: variant, now: now) ??
-        regularPriceFilsWhenPro(variant: variant, pro: pro);
-    return struck == null
-        ? null
-        : struck * quantity / CatalogProductEntity.filsPerDinar;
+    final unit = unitPriceFils(variant: variant, pro: pro);
+    final compareAt = compareAtFils(variant: variant, now: now);
+    final regular = regularPriceFilsWhenPro(variant: variant, pro: pro);
+    final struck = compareAt ?? regular;
+    return ProductPriceQuote(
+      unitFils: unit,
+      amountFils: unit * quantity,
+      struckFils: struck == null ? null : struck * quantity,
+      isDeal: compareAt != null,
+      savePercent: discountPercent(variant: variant, now: now),
+      proHintFils: pro ? null : proPriceFilsHint(variant: variant),
+      proApplied: regular != null,
+    );
   }
 
   /// The struck price valid at [now], or `null`.

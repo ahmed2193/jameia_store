@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 import '../onboarding/assistant_onboarding_sheet.dart';
@@ -24,7 +24,7 @@ class AssistantChatMenu extends StatelessWidget {
         _replayTour(context);
       case _MenuItem.newChat:
         context.read<AssistantChatCubit>().startNewChat();
-        showJameiaSnackBar(context, 'assistant.new_chat_started'.tr());
+        showHeroSnackBar(context, 'assistant.new_chat_started'.tr());
       case _MenuItem.handOff:
         AssistantHandoffDialog.confirm(context);
     }

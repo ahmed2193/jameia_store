@@ -7,33 +7,33 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/motion/float_loop.dart';
-import 'package:jameia_mart/src/core/motion/fly_to_cart.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/motion/rolling_number.dart';
-import 'package:jameia_mart/src/core/motion/rotating_line.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_submit_button.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_state.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_fact_text.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_line.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_total.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_hint_bubble.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_button.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_order_bar.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_savings_hint.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_title_bar.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/float_loop.dart';
+import 'package:hero_mart/src/core/motion/fly_to_cart.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/rolling_number.dart';
+import 'package:hero_mart/src/core/motion/rotating_line.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
+import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_state.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_fact_text.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_line.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_total.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_hint_bubble.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_button.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_order_bar.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_savings_hint.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_title_bar.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/rebuild_probe.dart';
@@ -212,7 +212,7 @@ void main() {
   }
 
   Future<void> tapPlaceOrder(WidgetTester tester) async {
-    await tester.tap(find.byType(JameiaSubmitButton));
+    await tester.tap(find.byType(HeroSubmitButton));
     await tester.pump();
   }
 
@@ -263,7 +263,7 @@ void main() {
       (tester) async {
         Finder struck() => inBar(
           find.byWidgetPredicate(
-            (widget) => widget is JameiaMoneyText && widget.strike,
+            (widget) => widget is HeroMoneyText && widget.strike,
           ),
         );
         useCart(snapshot(lines: const [riceOnSale, oil]));
@@ -272,7 +272,7 @@ void main() {
 
         // 2.600 + 0.600 the rice saves.
         expect(struck(), findsOneWidget);
-        expect(tester.widget<JameiaMoneyText>(struck()).kd, 3.2);
+        expect(tester.widget<HeroMoneyText>(struck()).kd, 3.2);
 
         await emit(
           tester,
@@ -541,7 +541,7 @@ void main() {
           isOffline: true,
           reconnectEpoch: 0,
           onNudge: () => nudges++,
-          onCheckNow: () async {
+          checkOnline: () async {
             checks++;
             return false;
           },
@@ -578,7 +578,7 @@ void main() {
           isOffline: true,
           reconnectEpoch: 0,
           onNudge: () {},
-          onCheckNow: () async => true,
+          checkOnline: () async => true,
           child: const CheckoutPlaceOrderBar(),
         ),
       );
@@ -719,11 +719,11 @@ void main() {
     ) async {
       await pumpBar(tester, child: const CheckoutTitleBar());
       expect(find.text('Checkout'), findsOneWidget);
-      expect(find.text('Jm3eia · Salmiya'), findsNothing);
+      expect(find.text('Hero · Salmiya'), findsNothing);
 
       await checkoutCubit.start(defaultAddressId: 'a1');
       await tester.pumpAndSettle();
-      expect(find.text('Jm3eia · Salmiya'), findsOneWidget);
+      expect(find.text('Hero · Salmiya'), findsOneWidget);
     });
 
     testWidgets('shows only what is known', (tester) async {

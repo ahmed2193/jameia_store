@@ -7,7 +7,7 @@ import 'checkout_coupons_row.dart';
 import 'checkout_points_row.dart';
 import 'checkout_unlock_tag.dart';
 
-/// The Keeta voucher card: cream, a faint tan hairline, 12 dp corners, the
+/// The Hero voucher card: cream, a faint tan hairline, 12 dp corners, the
 /// coupons-and-offers row and (when it applies) the points row under a
 /// hairline. The red unlock tag sits on the card's top edge at the end, half
 /// outside it, so however long it gets it never covers the row's text; it

@@ -1,24 +1,35 @@
 // Shared fakes of the product page's widget tests: the app-global cart as a
 // real Cubit that keeps lines (so the buy bar's stepper follows it), stub
-// use cases, a signed-out session, and the page's new i18n keys.
+// use cases, a signed-out session, the page's new i18n keys, the English
+// strings the widget tests read and a fixed-step settle.
+import 'dart:convert';
+
 import 'package:dartz/dartz.dart';
+import 'package:easy_localization/easy_localization.dart' show EasyLocalization;
+// ignore: implementation_imports
+import 'package:easy_localization/src/localization.dart';
+// ignore: implementation_imports
+import 'package:easy_localization/src/translations.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_ref.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_state.dart';
-import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
-import 'package:jameia_mart/src/features/product_details/domain/entities/product_reviews.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_reviews_usecase.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_detail_usecase.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_reviews_usecase.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_ref.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_state.dart';
+import 'package:hero_mart/src/features/product_details/domain/entities/product_detail.dart';
+import 'package:hero_mart/src/features/product_details/domain/entities/product_reviews.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/get_product_reviews_usecase.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/watch_product_detail_usecase.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/watch_product_reviews_usecase.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 import '../auth/auth_test_fakes.dart';
@@ -53,6 +64,28 @@ Map<String, dynamic> withNewProductKeys(
     (key, value) => product.putIfAbsent(key, () => value),
   );
   return <String, dynamic>{...translations, 'product': product};
+}
+
+/// Loads the app's English strings, [kNewProductKeys] filled in, for widget
+/// tests that read `.tr()` without an `EasyLocalization` root. Call it from
+/// `setUpAll`, after `SharedPreferences.setMockInitialValues`.
+Future<void> speakEnglish() async {
+  await EasyLocalization.ensureInitialized();
+  final raw = await rootBundle.loadString('assets/i18n/en.json');
+  Localization.load(
+    const Locale('en'),
+    translations: Translations(
+      withNewProductKeys(json.decode(raw) as Map<String, dynamic>, 'en'),
+    ),
+  );
+}
+
+/// [frames] frames of 100 ms: long enough for a page transition or a photo
+/// flight to land, where `pumpAndSettle` would wait on a looping animation.
+Future<void> settle(WidgetTester tester, {int frames = 12}) async {
+  for (var i = 0; i < frames; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 }
 
 /// The product read: [served], from the server.

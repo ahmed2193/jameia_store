@@ -8,8 +8,6 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/branded_loader.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../auth/presentation/cubit/auth_session_state.dart';
 import 'settings_logout_dialog.dart';
@@ -28,7 +26,7 @@ class SettingsLogoutTile extends StatelessWidget {
 
   Future<void> _logOut(BuildContext context) async {
     final session = context.read<AuthSessionCubit>();
-    final confirmed = await showJameiaDialog<bool>(
+    final confirmed = await showHeroDialog<bool>(
       context,
       barrierLabel: 'settings.logout_barrier'.tr(),
       barrierColor: AppColors.overlayPrimary,
@@ -64,13 +62,8 @@ class SettingsLogoutTile extends StatelessWidget {
                 title: title,
                 titleColor: AppColors.logoutRed,
                 chevron: false,
+                // The page's busy overlay shows the sign-out in flight.
                 onTap: logout.busy ? null : () => _logOut(context),
-                trailing: logout.busy
-                    ? const BrandedLoader.inline(
-                        size: AppSize.s20,
-                        color: AppColors.logoutRed,
-                      )
-                    : null,
               ),
             ],
           ),

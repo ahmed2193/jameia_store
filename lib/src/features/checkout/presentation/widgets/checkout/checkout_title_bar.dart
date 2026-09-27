@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/widgets/jameia_title_bar.dart';
+import '../../../../../core/widgets/hero_title_bar.dart';
 import '../../cubit/checkout_cubit.dart';
 
 /// The checkout's app bar: "Checkout" over a grey `{store} · {branch}` line
@@ -13,7 +13,7 @@ class CheckoutTitleBar extends StatelessWidget implements PreferredSizeWidget {
   const CheckoutTitleBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(JameiaTitleBar.height);
+  Size get preferredSize => const Size.fromHeight(HeroTitleBar.height);
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +30,6 @@ class CheckoutTitleBar extends StatelessWidget implements PreferredSizeWidget {
         : store.isNotEmpty
         ? store
         : branch;
-    return JameiaTitleBar(title: 'checkout.title'.tr(), subtitle: subtitle);
+    return HeroTitleBar(title: 'checkout.title'.tr(), subtitle: subtitle);
   }
 }

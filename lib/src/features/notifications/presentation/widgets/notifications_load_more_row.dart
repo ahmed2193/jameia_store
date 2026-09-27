@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_spacing.dart';
-import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/next_page_sentinel.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../cubit/notifications_cubit.dart';
@@ -25,7 +24,7 @@ class NotificationsLoadMoreRow extends StatelessWidget {
       builder: (context, failed) => Padding(
         padding: const EdgeInsets.all(AppSpacing.s16),
         child: !failed
-            ? const AppLoader(size: AppSize.s20)
+            ? const AppLoader.inline()
             : Center(
                 child: TextButton(
                   onPressed: () => cubit.loadMore(retry: true),

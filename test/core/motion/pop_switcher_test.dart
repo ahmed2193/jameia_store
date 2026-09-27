@@ -3,7 +3,7 @@
 // reduced motion swaps in one frame.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/pop_switcher.dart';
+import 'package:hero_mart/src/core/motion/pop_switcher.dart';
 
 Widget _host(
   Object key, {

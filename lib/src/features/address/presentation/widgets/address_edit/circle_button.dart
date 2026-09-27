@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/responsive/app_size.dart';
 
 /// White circular leading button used in the address-edit top bar.
 class CircleButton extends StatelessWidget {
@@ -13,15 +14,15 @@ class CircleButton extends StatelessWidget {
     return Material(
       color: AppColors.white,
       shape: const CircleBorder(),
-      elevation: 2,
+      elevation: AppSize.s2,
       shadowColor: AppColors.overlayDivider,
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onTap,
         child: SizedBox(
-          width: 40,
-          height: 40,
-          child: Icon(icon, size: 20, color: AppColors.primaryText),
+          width: AppSize.s40,
+          height: AppSize.s40,
+          child: Icon(icon, size: AppSize.s20, color: AppColors.primaryText),
         ),
       ),
     );

@@ -22,7 +22,7 @@ class SettingsFeedbackListener extends StatelessWidget {
           (previous.isClearingCache && !current.isClearingCache),
       listener: (context, state) {
         final failure = state.failure;
-        showJameiaSnackBar(
+        showHeroSnackBar(
           context,
           failure != null
               ? failure.localizedMessage

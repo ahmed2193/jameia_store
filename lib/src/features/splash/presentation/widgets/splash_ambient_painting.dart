@@ -7,13 +7,18 @@ import 'splash_frame.dart';
 import 'splash_palette.dart';
 
 /// The living colour behind the logo: a few large soft blobs drifting slowly
-/// (lighter green, warm yellow, deep green) and a glow that follows the logo
+/// (lighter green, warm yellow, deep green) and a glow that follows the logo and swells as it arrives
 /// — and the finger, see `SplashTouch`. Radial gradients only, no blur, so it
 /// stays cheap on every frame.
 abstract final class SplashAmbientPainting {
   /// Glow radius as a share of the screen's shorter side, and its strength.
   static const double glowRadius = 0.85;
   static const double glowOpacity = 0.6;
+
+  /// The glow swells by this share of its radius, and brightens by this
+  /// much opacity, at the peak of an arrival pulse.
+  static const double pulseGrow = 0.25;
+  static const double pulseOpacity = 0.35;
 
   /// How far the blobs wander, as a share of the shorter side.
   static const double drift = 0.08;
@@ -53,9 +58,10 @@ abstract final class SplashAmbientPainting {
     _soft(
       canvas,
       (frame.glowCenter ?? size.center(Offset.zero)) + glowShift,
-      glowRadius * side,
+      glowRadius * side * (1 + pulseGrow * frame.glowPulse),
       palette.glow,
-      glowOpacity * frame.ambient,
+      (glowOpacity + pulseOpacity * frame.glowPulse).clamp(0.0, 1.0) *
+          frame.ambient,
     );
   }
 

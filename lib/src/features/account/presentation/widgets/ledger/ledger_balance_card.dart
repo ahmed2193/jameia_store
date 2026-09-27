@@ -21,12 +21,12 @@ class LedgerBalanceCard extends StatelessWidget {
   static const List<Color> _gradient = [
     AppColors.proAmber,
     AppColors.accent3,
-    kJameiaPillPin,
+    kHeroPillPin,
   ];
   static const double _shadowAlpha = 0.22;
   static final List<BoxShadow> _shadow = [
     BoxShadow(
-      color: kJameiaPillPin.withValues(alpha: _shadowAlpha),
+      color: kHeroPillPin.withValues(alpha: _shadowAlpha),
       offset: const Offset(0, AppSpacing.s8),
       blurRadius: AppSize.s24,
       spreadRadius: -AppSpacing.s6,

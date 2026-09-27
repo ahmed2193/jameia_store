@@ -5,7 +5,7 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 
 import '../constants/app_constants.dart';
 
-/// Whether the jm3eia backend can be reached — the app's one reachability
+/// Whether the Hero backend can be reached — the app's one reachability
 /// monitor. Feature code never reads it directly: `features/connectivity`
 /// turns it into the app-global `ConnectivityCubit`, and the Dio chain feeds
 /// it through `ReachabilitySignalInterceptor`.
@@ -14,15 +14,16 @@ abstract class NetworkInfo {
   bool? get isReachable;
 
   /// Every change of [isReachable]. The first listener starts the monitor
-  /// (an immediate probe, then a poll); the last one to leave stops it, so
-  /// nothing probes while nobody listens.
+  /// (the poll — the app's own requests answer first); the last one to
+  /// leave stops it, so nothing probes while nobody listens.
   Stream<bool> get onReachabilityChanged;
 
   /// Probes now (joining a probe already running) and returns the result.
   Future<bool> checkNow();
 
   /// Any HTTP response from the backend proves it is reachable — marks it
-  /// reachable at once, without waiting for the next poll.
+  /// reachable at once, without waiting for the next poll, and moves the
+  /// idle poll out (live traffic needs no probe).
   void reportReachable();
 
   /// A request failed in transport (no route, timeout): re-check at once.
@@ -46,8 +47,12 @@ abstract class NetworkInfo {
 /// backend reachable the monitor could never report it unreachable again.
 ///
 /// Polls every [AppConstants.connectivityPoll] while unreachable (fast
-/// recovery) and every [AppConstants.connectivityPollOnline] while reachable;
-/// nothing while paused or unobserved.
+/// recovery) and every [AppConstants.connectivityPollOnline] of silence while
+/// reachable (every response restarts that wait); nothing while paused or
+/// unobserved. There is no probe at launch: the startup requests report
+/// within milliseconds (a response marks the backend reachable, a transport
+/// failure probes at once), and a probe racing them is the one that times
+/// out.
 class NetworkInfoImpl implements NetworkInfo {
   NetworkInfoImpl(
     this._checker, {
@@ -122,9 +127,8 @@ class NetworkInfoImpl implements NetworkInfo {
   @override
   void reportReachable() {
     _evidence++;
-    if (_reachable == true) return;
     _set(true);
-    if (_probing == null) _schedule();
+    if (_probing == null) _schedule(); // the traffic proves it: poll later
   }
 
   @override
@@ -148,9 +152,7 @@ class NetworkInfoImpl implements NetworkInfo {
     if (_changes.hasListener) unawaited(_probe());
   }
 
-  void _startMonitoring() {
-    if (!_paused) unawaited(_probe());
-  }
+  void _startMonitoring() => _schedule();
 
   void _stopPolling() {
     _poll?.cancel();

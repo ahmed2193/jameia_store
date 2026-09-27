@@ -7,6 +7,7 @@ import 'dart:isolate';
 import 'package:path_provider/path_provider.dart';
 
 import 'cache_key.dart';
+import 'cache_namespace.dart';
 
 /// A cached response as it was saved.
 class CachedJson {

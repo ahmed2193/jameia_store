@@ -52,7 +52,7 @@ class _ProOutcomeListenerState extends State<ProOutcomeListener> {
     // Scroll-controlled: the sheet takes the height its content needs
     // instead of being capped at 9/16 of the screen (a small phone at large
     // text cut its button off).
-    await showJameiaBottomSheet<void>(
+    await showHeroBottomSheet<void>(
       context,
       isScrollControlled: true,
       backgroundColor: AppColors.white,
@@ -72,7 +72,7 @@ class _ProOutcomeListenerState extends State<ProOutcomeListener> {
         case ProMembershipOutcome.subscribed:
           unawaited(_celebrate());
         case ProMembershipOutcome.cancelled:
-          showJameiaSnackBar(context, 'pro.cancelled_toast'.tr());
+          showHeroSnackBar(context, 'pro.cancelled_toast'.tr());
       }
       // The reply carries no customer object: re-read the session so
       // `isPro` (member prices everywhere) follows.

@@ -56,7 +56,7 @@ class CouponUseButton extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: AlignmentDirectional.centerStart,
                         end: AlignmentDirectional.centerEnd,
-                        colors: [AppColors.accent3, kJameiaPillPin],
+                        colors: [AppColors.accent3, kHeroPillPin],
                       ),
                     ),
                     child: Padding(

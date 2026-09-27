@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../domain/entities/catalog_merch_tag.dart';
 import '../domain/entities/catalog_product_entity.dart';
 import '../responsive/app_size.dart';
 
@@ -20,48 +21,47 @@ class ShelfTagPill extends StatelessWidget {
   /// without one); it scales with the reader's text.
   static const double height = AppSize.s22;
 
-  /// Backend tags, most telling first.
-  static const String _bestSeller = 'best-seller';
-  static const String _fresh = 'fresh';
-
   /// Whether [product] has a tag the pill shows — a page that need not line
   /// cards up skips the pill's empty line without one.
   static bool wears(CatalogProductEntity product) =>
-      product.hasTag(_bestSeller) || product.hasTag(_fresh);
+      product.leadMerchTag != null;
 
   @override
   Widget build(BuildContext context) {
-    final (label, ink, plate) = product.hasTag(_bestSeller)
-        ? (
-            'shop.tag_best_seller',
-            AppColors.accent1Dark,
-            AppColors.accent1Light,
-          )
-        : product.hasTag(_fresh)
-        ? ('shop.tag_fresh', AppColors.martGreenDark, AppColors.martGreenLight)
-        : (null, AppColors.primaryText, AppColors.white);
+    final line = MediaQuery.textScalerOf(context).scale(height);
+    // The most telling tag only.
+    final tag = product.leadMerchTag;
+    if (tag == null) return SizedBox(height: line);
+    final (ink, plate) = switch (tag) {
+      CatalogMerchTag.bestSeller => (
+        AppColors.accent1Dark,
+        AppColors.accent1Light,
+      ),
+      CatalogMerchTag.fresh => (
+        AppColors.martGreenDark,
+        AppColors.martGreenLight,
+      ),
+    };
     return SizedBox(
-      height: MediaQuery.textScalerOf(context).scale(height),
-      child: label == null
-          ? null
-          : Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Container(
-                padding: const EdgeInsetsDirectional.symmetric(
-                  horizontal: AppSpacing.s6,
-                  vertical: AppSpacing.s2,
-                ),
-                decoration: BoxDecoration(
-                  color: plate,
-                  borderRadius: BorderRadius.circular(AppRadius.r6),
-                ),
-                child: Text(
-                  label.tr(),
-                  maxLines: 1,
-                  style: AppTextStyles.bodyMedium.copyWith(color: ink),
-                ),
-              ),
-            ),
+      height: line,
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Container(
+          padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpacing.s6,
+            vertical: AppSpacing.s2,
+          ),
+          decoration: BoxDecoration(
+            color: plate,
+            borderRadius: const BorderRadius.all(Radius.circular(AppRadius.r6)),
+          ),
+          child: Text(
+            tag.labelKey.tr(),
+            maxLines: 1,
+            style: AppTextStyles.bodyMedium.copyWith(color: ink),
+          ),
+        ),
+      ),
     );
   }
 }

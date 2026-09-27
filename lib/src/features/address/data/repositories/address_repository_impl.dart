@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/data/repositories/base_repository_mixin.dart';
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/address_draft.dart';
@@ -34,7 +34,7 @@ class AddressRepositoryImpl
 
   @override
   Future<Either<Failure, Unit>> saveCachedAddresses(
-    List<JameiaAddressEntity> addresses, {
+    List<HeroAddressEntity> addresses, {
     String? ownerId,
   }) => execute(() async {
     await _local.saveAddresses(
@@ -50,17 +50,17 @@ class AddressRepositoryImpl
   });
 
   @override
-  Future<Either<Failure, List<JameiaAddressEntity>>> fetchAddresses() =>
+  Future<Either<Failure, List<HeroAddressEntity>>> fetchAddresses() =>
       execute(() async => (await _remote.getAddresses()).toEntities());
 
   @override
-  Future<Either<Failure, JameiaAddressEntity>> addAddress(AddressDraft draft) =>
+  Future<Either<Failure, HeroAddressEntity>> addAddress(AddressDraft draft) =>
       execute(
         () async => (await _remote.createAddress(draft.toBody())).toEntity(),
       );
 
   @override
-  Future<Either<Failure, JameiaAddressEntity>> updateAddress(
+  Future<Either<Failure, HeroAddressEntity>> updateAddress(
     String id,
     AddressUpdate update,
   ) => execute(

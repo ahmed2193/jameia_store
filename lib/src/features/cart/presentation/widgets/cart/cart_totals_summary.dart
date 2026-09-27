@@ -8,8 +8,8 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_totals_entity.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
-import '../../../../../core/widgets/jameia_summary_line.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 import '../../../../../core/widgets/thin_divider.dart';
 import '../../cubit/cart_cubit.dart';
 import 'cart_discount_line.dart';
@@ -19,7 +19,7 @@ import 'cart_pro_nudge.dart';
 /// Subtotal, discounts, delivery fee and total as the server computed them.
 /// While taps are still on their way, the discounts and total may lag: the
 /// summary says so instead of guessing (a fade-through, no rolling — the bar
-/// below rolls the same total). Jm3eia Pro shows on the delivery row: a
+/// below rolls the same total). Hero Pro shows on the delivery row: a
 /// member's free delivery carries the "pro" tag, and a customer without Pro
 /// who pays a fee is told Pro would waive it.
 class CartTotalsSummary extends StatelessWidget {
@@ -38,9 +38,9 @@ class CartTotalsSummary extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        JameiaSummaryLine(
+        HeroSummaryLine(
           label: 'cart.summary_subtotal'.tr(),
-          value: JameiaMoneyText(kd: totals.subtotalKd),
+          value: HeroMoneyText(kd: totals.subtotalKd),
         ),
         if (totals.offerDiscountFils > 0)
           CartDiscountLine(
@@ -57,28 +57,28 @@ class CartTotalsSummary extends StatelessWidget {
             label: 'cart.summary_loyalty'.tr(),
             kd: totals.loyaltyDiscountKd,
           ),
-        JameiaSummaryLine(
+        HeroSummaryLine(
           label: 'cart.summary_delivery'.tr(),
           // Without the express part, which gets its own row below: the
           // server folds it into deliveryFee, so showing both would add
           // up past the total.
           value: totals.freeDelivery
               ? const CartFreeDeliveryValue()
-              : JameiaMoneyText(kd: totals.deliveryFeeWithoutExpressKd),
+              : HeroMoneyText(kd: totals.deliveryFeeWithoutExpressKd),
         ),
-        // Jm3eia Pro would waive that fee: a customer without Pro is told
+        // Hero Pro would waive that fee: a customer without Pro is told
         // how much (never a member).
         const CartProNudge(),
         if (totals.expressSurchargeFils > 0)
-          JameiaSummaryLine(
+          HeroSummaryLine(
             label: 'cart.summary_express'.tr(),
-            value: JameiaMoneyText(kd: totals.expressSurchargeKd),
+            value: HeroMoneyText(kd: totals.expressSurchargeKd),
           ),
         const Padding(
           padding: EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
           child: ThinDivider(),
         ),
-        JameiaSummaryLine(
+        HeroSummaryLine(
           label: 'cart.summary_total'.tr(),
           emphasized: true,
           value: FadeThroughSwitcher(
@@ -89,7 +89,7 @@ class CartTotalsSummary extends StatelessWidget {
                     'cart.updating'.tr(),
                     style: const TextStyle(color: AppColors.secondaryText),
                   )
-                : JameiaMoneyText(kd: totals.totalKd),
+                : HeroMoneyText(kd: totals.totalKd),
           ),
         ),
         if (eta != null && eta > 0)

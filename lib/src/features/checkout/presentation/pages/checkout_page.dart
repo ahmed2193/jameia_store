@@ -11,7 +11,8 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/motion/fade_through_switcher.dart';
 import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
-import '../../../../core/widgets/jameia_state_view.dart';
+import '../../../../core/widgets/cubit_busy_overlay.dart';
+import '../../../../core/widgets/hero_state_view.dart';
 import '../../../address/presentation/cubit/address_book_cubit.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
@@ -27,7 +28,7 @@ import '../widgets/checkout/checkout_ui_controller.dart';
 /// What the page shows; the switch between them fades through.
 enum _CheckoutBucket { loading, error, signedOut, empty, content }
 
-/// Checkout (`Routes.checkout`), Keeta style: destination and timing, the
+/// Checkout (`Routes.checkout`), Hero style: destination and timing, the
 /// deals rail, the order and its savings, payment and notes over the
 /// app-global cart, then `POST /v1/orders`.
 ///
@@ -122,56 +123,64 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
         ],
         child: CheckoutPageListeners(
-          child: Scaffold(
-            backgroundColor: AppColors.smallBackground,
-            appBar: const CheckoutTitleBar(),
-            body: Builder(
-              builder: (context) {
-                final (status, loadFailure, requiresSignIn) = context
-                    .select<CheckoutCubit, (CheckoutStatus, Failure?, bool)>(
-                      (cubit) => (
-                        cubit.state.status,
-                        cubit.state.loadFailure,
-                        cubit.state.requiresSignIn,
+          // Placing holds the whole screen; the check shows as tracking
+          // takes over.
+          child: CubitBusyOverlay<CheckoutCubit, CheckoutState>(
+            busyOf: (state) => state.isPlacing,
+            doneOf: (state) => state.status == CheckoutStatus.placed,
+            label: 'checkout.placing'.tr(),
+            doneLabel: 'checkout.order_placed'.tr(),
+            child: Scaffold(
+              backgroundColor: AppColors.smallBackground,
+              appBar: const CheckoutTitleBar(),
+              body: Builder(
+                builder: (context) {
+                  final (status, loadFailure, requiresSignIn) = context
+                      .select<CheckoutCubit, (CheckoutStatus, Failure?, bool)>(
+                        (cubit) => (
+                          cubit.state.status,
+                          cubit.state.loadFailure,
+                          cubit.state.requiresSignIn,
+                        ),
+                      );
+                  final railSettled = context.select<CheckoutRailCubit, bool>(
+                    (cubit) => cubit.state.isSettled,
+                  );
+                  final cartEmpty = context.select<CartCubit, bool>(
+                    (cubit) => cubit.state.isEmpty,
+                  );
+                  final bucket = _bucketOf(
+                    status: status,
+                    requiresSignIn: requiresSignIn,
+                    railSettled: railSettled,
+                    cartEmpty: cartEmpty,
+                  );
+                  return FadeThroughSwitcher(
+                    stateKey: bucket,
+                    alignment: AlignmentDirectional.topCenter,
+                    child: switch (bucket) {
+                      _CheckoutBucket.loading => const AppLoader(),
+                      _CheckoutBucket.signedOut => HeroStateView.signedOut(
+                        message: 'checkout.sign_in_required'.tr(),
                       ),
-                    );
-                final railSettled = context.select<CheckoutRailCubit, bool>(
-                  (cubit) => cubit.state.isSettled,
-                );
-                final cartEmpty = context.select<CartCubit, bool>(
-                  (cubit) => cubit.state.isEmpty,
-                );
-                final bucket = _bucketOf(
-                  status: status,
-                  requiresSignIn: requiresSignIn,
-                  railSettled: railSettled,
-                  cartEmpty: cartEmpty,
-                );
-                return FadeThroughSwitcher(
-                  stateKey: bucket,
-                  alignment: AlignmentDirectional.topCenter,
-                  child: switch (bucket) {
-                    _CheckoutBucket.loading => const AppLoader(),
-                    _CheckoutBucket.signedOut => JameiaStateView.signedOut(
-                      message: 'checkout.sign_in_required'.tr(),
-                    ),
-                    _CheckoutBucket.error => JameiaStateView.error(
-                      message: loadFailure?.localizedMessage,
-                      onRetry: () => context.read<CheckoutCubit>().retry(
-                        defaultAddressId: _defaultAddressId(context),
-                        expressSelected: _expressSelected(context),
+                      _CheckoutBucket.error => HeroStateView.error(
+                        message: loadFailure?.localizedMessage,
+                        onRetry: () => context.read<CheckoutCubit>().retry(
+                          defaultAddressId: _defaultAddressId(context),
+                          expressSelected: _expressSelected(context),
+                        ),
                       ),
-                    ),
-                    _CheckoutBucket.empty => JameiaStateView(
-                      icon: Icons.shopping_basket_outlined,
-                      message: 'checkout.cart_empty'.tr(),
-                      actionLabel: 'cart.start_shopping'.tr(),
-                      onAction: () => context.pop(),
-                    ),
-                    _CheckoutBucket.content => const CheckoutBody(),
-                  },
-                );
-              },
+                      _CheckoutBucket.empty => HeroStateView(
+                        icon: Icons.shopping_basket_outlined,
+                        message: 'checkout.cart_empty'.tr(),
+                        actionLabel: 'cart.start_shopping'.tr(),
+                        onAction: () => context.pop(),
+                      ),
+                      _CheckoutBucket.content => const CheckoutBody(),
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ),

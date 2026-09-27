@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_day_part.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_starter.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_day_part.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_starter.dart';
 
 void main() {
   group('AssistantDayPart.of', () {

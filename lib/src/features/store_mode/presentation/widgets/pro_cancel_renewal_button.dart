@@ -5,23 +5,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/navigation/navigation.dart';
-import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/app_loader.dart';
 import '../cubit/pro_membership_cubit.dart';
 import '../cubit/pro_membership_state.dart';
 import 'pro_confirm_dialog.dart';
 
 /// "Cancel renewal": asks first, then stops the renewal (the paid period keeps
-/// running). A loader while the call is in flight; disabled during any other
-/// money action.
+/// running). The page's busy overlay holds the screen while the call is in
+/// flight; disabled during any other money action.
 class ProCancelRenewalButton extends StatelessWidget {
   const ProCancelRenewalButton({super.key});
 
-  static const double _loaderBox = AppSize.s40;
-
   Future<void> _cancel(BuildContext context) async {
     final cubit = context.read<ProMembershipCubit>();
-    final confirmed = await showJameiaDialog<bool>(
+    final confirmed = await showHeroDialog<bool>(
       context,
       barrierLabel: 'pro.cancel_renewal'.tr(),
       pageBuilder: (_) => ProConfirmDialog(
@@ -41,18 +37,14 @@ class ProCancelRenewalButton extends StatelessWidget {
           previous.isCancelling != current.isCancelling ||
           previous.isBusy != current.isBusy,
       builder: (context, state) {
-        if (state.isCancelling) {
-          return const SizedBox(
-            height: _loaderBox,
-            child: AppLoader(size: AppSize.s16),
-          );
-        }
+        // Its own call keeps the red under the overlay; another one greys it.
+        final blocked = state.isBusy && !state.isCancelling;
         return TextButton(
           onPressed: state.isBusy ? null : () => _cancel(context),
           child: Text(
             'pro.cancel_renewal'.tr(),
             style: AppTextStyles.bodyLarge.copyWith(
-              color: state.isBusy ? AppColors.disabledText : AppColors.error,
+              color: blocked ? AppColors.disabledText : AppColors.error,
               fontWeight: AppTextStyles.bold,
             ),
           ),

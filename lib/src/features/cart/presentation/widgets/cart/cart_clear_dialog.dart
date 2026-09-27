@@ -24,7 +24,7 @@ class CartClearDialog extends StatelessWidget {
 
   /// Asks, then clears the cart on a yes.
   static Future<void> confirmAndClear(BuildContext context) async {
-    final confirmed = await showJameiaDialog<bool>(
+    final confirmed = await showHeroDialog<bool>(
       context,
       barrierLabel: 'cart.clear'.tr(),
       pageBuilder: (_) => const CartClearDialog(),

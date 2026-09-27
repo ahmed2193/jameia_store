@@ -1,49 +1,33 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/domain/entities/data_freshness.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 import '../../domain/entities/content_page_entity.dart';
 
-enum ContentPageStatus { initial, loading, loaded, error }
+class ContentPageState extends Equatable
+    implements ScreenLoadState<ContentPageState> {
+  const ContentPageState({this.load = const ScreenLoad(), this.page});
 
-class ContentPageState extends Equatable {
-  const ContentPageState({
-    this.status = ContentPageStatus.initial,
-    this.page,
-    this.freshness = DataFreshness.none,
-    this.failure,
-  });
-
-  final ContentPageStatus status;
+  /// The page's read, its freshness (the device copy, a failed reload …)
+  /// and the failure that goes with them.
+  @override
+  final ScreenLoad load;
   final ContentPageEntity? page;
 
-  /// How fresh [page] is (the device copy, a failed reload …).
-  final DataFreshness freshness;
-
-  /// Transient with [ContentPageStatus.loaded] (cleared on the next
-  /// [copyWith]); with [ContentPageStatus.error] the reason for the
-  /// full-screen state, kept while the status stays `error`.
-  final Failure? failure;
-
-  bool get isLoaded => status == ContentPageStatus.loaded;
-
-  ContentPageState copyWith({
-    ContentPageStatus? status,
-    ContentPageEntity? page,
-    DataFreshness? freshness,
-    Failure? failure,
-  }) {
-    final nextStatus = status ?? this.status;
-    return ContentPageState(
-      status: nextStatus,
-      page: page ?? this.page,
-      freshness: freshness ?? this.freshness,
-      failure:
-          failure ??
-          (nextStatus == ContentPageStatus.error ? this.failure : null),
-    );
-  }
+  LoadPhase get status => load.phase;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
 
   @override
-  List<Object?> get props => [status, page, freshness, failure];
+  ContentPageState withLoad(ScreenLoad load) => copyWith(load: load);
+
+  ContentPageState copyWith({ScreenLoad? load, ContentPageEntity? page}) =>
+      ContentPageState(
+        load: load ?? this.load.settled(),
+        page: page ?? this.page,
+      );
+
+  @override
+  List<Object?> get props => [load, page];
 }

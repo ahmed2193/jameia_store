@@ -10,10 +10,10 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/second_clock.dart';
-import 'package:jameia_mart/src/core/motion/second_clock_scope.dart';
-import 'package:jameia_mart/src/core/widgets/countdown_digit_box.dart';
-import 'package:jameia_mart/src/core/widgets/countdown_digits.dart';
+import 'package:hero_mart/src/core/motion/second_clock.dart';
+import 'package:hero_mart/src/core/motion/second_clock_scope.dart';
+import 'package:hero_mart/src/core/widgets/countdown_digit_box.dart';
+import 'package:hero_mart/src/core/widgets/countdown_digits.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/rebuild_probe.dart';

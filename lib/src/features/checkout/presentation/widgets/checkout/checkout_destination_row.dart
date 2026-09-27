@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
 import 'checkout_destination_trailing.dart';
 
-/// The flat Keeta row of a destination (delivery address or pickup branch):
+/// The flat Hero row of a destination (delivery address or pickup branch):
 /// a 20 dp icon, what is chosen or the prompt to choose, and a loader /
 /// chevron at the end, over a hairline that runs from the text to the end
 /// edge. The row ignores taps while the server selects it.
@@ -27,7 +27,7 @@ class CheckoutDestinationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JameiaListRow(
+    return HeroListRow(
       dense: true,
       divider: true,
       icon: icon,

@@ -5,9 +5,9 @@
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/connectivity/data/datasources/connectivity_data_source.dart';
-import 'package:jameia_mart/src/features/connectivity/data/repositories/connectivity_repository_impl.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
+import 'package:hero_mart/src/features/connectivity/data/datasources/connectivity_data_source.dart';
+import 'package:hero_mart/src/features/connectivity/data/repositories/connectivity_repository_impl.dart';
+import 'package:hero_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
 
 import '../../core/network/network_test_fakes.dart';
 

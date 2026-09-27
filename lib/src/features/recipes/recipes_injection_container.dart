@@ -11,7 +11,7 @@ import 'domain/usecases/watch_recipes_usecase.dart';
 import 'presentation/cubit/recipe_detail_cubit.dart';
 import 'presentation/cubit/recipes_cubit.dart';
 
-/// Recipes feature DI — the jm3eia backend (`GET /v1/recipes`,
+/// Recipes feature DI — the Hero backend (`GET /v1/recipes`,
 /// `GET /v1/recipes/:slug`), the first page and each recipe kept on the
 /// device. Called from `setupServiceLocator`.
 void initRecipesFeature() {

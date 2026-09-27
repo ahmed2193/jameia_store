@@ -1,15 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/mappers/catalog_product_mapper.dart';
-import 'package:jameia_mart/src/core/data/mappers/catalog_product_query_mapper.dart';
-import 'package:jameia_mart/src/core/data/mappers/catalog_taxonomy_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/category_model.dart';
-import 'package:jameia_mart/src/core/data/models/product_model.dart';
-import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_variant_entity.dart';
+import 'package:hero_mart/src/core/data/mappers/catalog_product_mapper.dart';
+import 'package:hero_mart/src/core/data/mappers/catalog_product_query_mapper.dart';
+import 'package:hero_mart/src/core/data/mappers/catalog_taxonomy_mapper.dart';
+import 'package:hero_mart/src/core/data/models/category_model.dart';
+import 'package:hero_mart/src/core/data/models/product_model.dart';
+import 'package:hero_mart/src/core/data/models/products_page_model.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_products_page.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_variant_entity.dart';
 
 CatalogProductEntity _product(String id, {int price = 1000}) =>
     CatalogProductEntity(id: id, slug: id, name: id, priceFils: price);

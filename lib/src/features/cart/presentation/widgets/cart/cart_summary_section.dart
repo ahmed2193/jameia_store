@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/widgets/jameia_surface_card.dart';
+import '../../../../../core/widgets/hero_surface_card.dart';
 import 'cart_section.dart';
 import 'cart_totals_summary.dart';
 
@@ -14,7 +14,7 @@ class CartSummarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     return CartSection(
       title: 'cart.section_summary'.tr(),
-      card: const JameiaSurfaceCard(child: CartTotalsSummary()),
+      card: const HeroSurfaceCard(child: CartTotalsSummary()),
     );
   }
 }

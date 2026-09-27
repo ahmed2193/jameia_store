@@ -60,16 +60,26 @@ mixin SnapshotLoaderMixin<S> on Cubit<S> {
 
   /// Runs [refresh] once for a reconnect when [needed] (the screen is stale
   /// or failed). A read still running on [channel] answers first — its reply
-  /// may make the refresh unnecessary — and a second call while all this
-  /// runs joins it.
+  /// may make the refresh unnecessary; with none the refresh starts at once
+  /// — and a second call while all this runs joins it.
   Future<void> refreshOnReconnect({
     required bool Function() needed,
     required Future<void> Function() refresh,
     Object channel = _mainChannel,
-  }) => _reconnecting ??= () async {
-    await _loads[channel]?.done;
+  }) => _reconnecting ??= _reconnect(
+    needed,
+    refresh,
+    _loads[channel],
+  ).whenComplete(() => _reconnecting = null);
+
+  Future<void> _reconnect(
+    bool Function() needed,
+    Future<void> Function() refresh,
+    _Load? running,
+  ) async {
+    if (running != null) await running.done;
     if (!isClosed && needed()) await refresh();
-  }().whenComplete(() => _reconnecting = null);
+  }
 
   /// Cancels every load without waiting: the cancel of a read parked on its
   /// request only completes with that request, and the cubit must be closed

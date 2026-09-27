@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 
 /// Lightweight formatting helpers (currency, distance, counts).
 ///
-/// Jameia shows region currency; the clone uses Kuwaiti Dinar (KD / د.ك, 3
+/// Hero shows region currency; the clone uses Kuwaiti Dinar (KD / د.ك, 3
 /// decimals) as the demo currency to match the GCC market in the reference.
 ///
 /// Locale awareness: the currency **label** and its placement follow the active

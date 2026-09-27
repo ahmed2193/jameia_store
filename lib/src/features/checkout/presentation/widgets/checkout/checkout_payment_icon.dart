@@ -3,8 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/responsive/app_size.dart';
 
-/// The 22 dp art at the start of a payment row (Keeta's plates): the cash
-/// note or the yellow wallet plate (`JameiaAssets.checkoutCash` /
+/// The 22 dp art at the start of a payment row (Hero's plates): the cash
+/// note or the yellow wallet plate (`HeroAssets.checkoutCash` /
 /// `checkoutWallet`). Decorative: the row's title names the method.
 class CheckoutPaymentIcon extends StatelessWidget {
   const CheckoutPaymentIcon({super.key, required this.asset});

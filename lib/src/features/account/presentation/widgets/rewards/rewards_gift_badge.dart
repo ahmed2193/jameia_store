@@ -15,7 +15,7 @@ class RewardsGiftBadge extends StatelessWidget {
   static const List<Color> _gradient = [
     AppColors.proAmber,
     AppColors.accent3,
-    kJameiaPillPin,
+    kHeroPillPin,
   ];
 
   @override

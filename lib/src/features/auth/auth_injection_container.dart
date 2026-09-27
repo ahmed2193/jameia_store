@@ -6,6 +6,7 @@ import 'domain/entities/phone_number.dart';
 import 'domain/repositories/auth_repository.dart';
 import 'domain/usecases/clear_cached_customer_usecase.dart';
 import 'domain/usecases/get_cached_customer_usecase.dart';
+import 'domain/usecases/get_welcome_bonus_usecase.dart';
 import 'domain/usecases/logout_usecase.dart';
 import 'domain/usecases/restore_session_usecase.dart';
 import 'domain/usecases/save_cached_customer_usecase.dart';
@@ -16,7 +17,7 @@ import 'presentation/cubit/auth_session_cubit.dart';
 import 'presentation/cubit/login_cubit.dart';
 import 'presentation/cubit/otp_cubit.dart';
 
-/// Auth feature DI — the OTP login flow over the jm3eia API and the device
+/// Auth feature DI — the OTP login flow over the Hero API and the device
 /// copy of the signed-in customer. Depends on the core `ApiConsumer`,
 /// `SessionStore`, `SessionExpiryNotifier` and `LocalStorage` registered by
 /// `setupServiceLocator` before any feature init.
@@ -49,9 +50,10 @@ void initAuthFeature() {
     ..registerLazySingleton(() => GetCachedCustomerUseCase(sl()))
     ..registerLazySingleton(() => SaveCachedCustomerUseCase(sl()))
     ..registerLazySingleton(() => ClearCachedCustomerUseCase(sl()))
+    ..registerLazySingleton(() => GetWelcomeBonusUseCase(sl()))
     // Presentation — page-scoped cubits are factories; the OTP cubit takes the
     // phone (+ optional echoed code) from the route args.
-    ..registerFactory(() => LoginCubit(sl()))
+    ..registerFactory(() => LoginCubit(sl(), sl()))
     ..registerFactoryParam<OtpCubit, PhoneNumber, String?>(
       (phone, debugCode) => OtpCubit(
         sendOtp: sl(),

@@ -13,42 +13,42 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/core/motion/entrance_cascade_item.dart';
-import 'package:jameia_mart/src/core/widgets/app_button.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_secondary_button.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_tag.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_title_bar.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/pages/orders_page.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/cancel_order_sheet.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_actions.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_card.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/order_status_chip.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_empty_view.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/orders_list.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
+import 'package:hero_mart/src/core/widgets/app_button.dart';
+import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
+import 'package:hero_mart/src/core/widgets/hero_secondary_button.dart';
+import 'package:hero_mart/src/core/widgets/hero_tag.dart';
+import 'package:hero_mart/src/core/widgets/hero_title_bar.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/pages/orders_page.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/cancel_order_sheet.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_actions.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_card.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_status_chip.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/orders_empty_view.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/orders_list.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/fake_cart_repository.dart';
@@ -189,10 +189,10 @@ void main() {
         in find
             .descendant(
               of: cardOf(id),
-              matching: find.byType(JameiaSecondaryButton),
+              matching: find.byType(HeroSecondaryButton),
             )
             .evaluate())
-      (button.widget as JameiaSecondaryButton).label,
+      (button.widget as HeroSecondaryButton).label,
   ];
 
   group('OrdersPage', () {
@@ -201,10 +201,10 @@ void main() {
     ) async {
       await pump(tester, const OrdersPage());
 
-      expect(find.byType(JameiaTitleBar), findsOneWidget);
+      expect(find.byType(HeroTitleBar), findsOneWidget);
       expect(
         find.descendant(
-          of: find.byType(JameiaTitleBar),
+          of: find.byType(HeroTitleBar),
           matching: find.text('Orders'),
         ),
         findsOneWidget,
@@ -216,7 +216,7 @@ void main() {
     testWidgets('embedded in the Cart tab it draws no bar', (tester) async {
       await pump(tester, const OrdersPage(embedded: true));
 
-      expect(find.byType(JameiaTitleBar), findsNothing);
+      expect(find.byType(HeroTitleBar), findsNothing);
       expect(find.byType(AppBar), findsNothing);
       expect(find.byType(OrderCard), findsOneWidget);
     });
@@ -301,21 +301,21 @@ void main() {
 
       await pump(tester, const Scaffold(body: OrdersList()));
 
-      JameiaTagTone toneOf(String id) => tester
-          .widget<JameiaTag>(
+      HeroTagTone toneOf(String id) => tester
+          .widget<HeroTag>(
             find.descendant(
               of: find.descendant(
                 of: cardOf(id),
                 matching: find.byType(OrderStatusChip),
               ),
-              matching: find.byType(JameiaTag),
+              matching: find.byType(HeroTag),
             ),
           )
           .tone;
-      expect(toneOf('o0'), JameiaTagTone.brandSoft);
-      expect(toneOf('o1'), JameiaTagTone.neutral);
-      expect(toneOf('o2'), JameiaTagTone.error);
-      expect(toneOf('o3'), JameiaTagTone.error);
+      expect(toneOf('o0'), HeroTagTone.brandSoft);
+      expect(toneOf('o1'), HeroTagTone.neutral);
+      expect(toneOf('o2'), HeroTagTone.error);
+      expect(toneOf('o3'), HeroTagTone.error);
     });
 
     testWidgets('no orders: centred, and a pull still refreshes', (
@@ -363,7 +363,7 @@ void main() {
       final card = find.byType(OrderCard).first;
       expect(Directionality.of(tester.element(card)), TextDirection.rtl);
       final money = find.descendant(
-        of: find.descendant(of: card, matching: find.byType(JameiaMoneyText)),
+        of: find.descendant(of: card, matching: find.byType(HeroMoneyText)),
         matching: find.byType(Text),
       );
       expect(money, findsOneWidget);

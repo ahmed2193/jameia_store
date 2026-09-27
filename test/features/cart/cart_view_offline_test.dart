@@ -4,12 +4,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/widgets/cart/cart_view.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cart_page_harness.dart';

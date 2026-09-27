@@ -4,7 +4,7 @@ import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/address_model.dart';
 
-/// The jm3eia address-book routes (customer only, Bearer attached by the
+/// The Hero address-book routes (customer only, Bearer attached by the
 /// network layer). Receives the envelope's `results` and throws
 /// `AppException` only.
 ///

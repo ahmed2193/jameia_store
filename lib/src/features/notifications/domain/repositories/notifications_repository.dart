@@ -5,7 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/notification_entity.dart';
 import '../entities/notifications_feed.dart';
 
-/// Customer inbox over the jm3eia notifications API. Every call needs a
+/// Customer inbox over the Hero notifications API. Every call needs a
 /// signed-in customer (Bearer attached by the network layer); a guest gets
 /// `Left(UnauthorizedFailure)`.
 ///

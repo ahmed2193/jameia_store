@@ -55,7 +55,7 @@ class ProJoinButton extends StatelessWidget {
       );
       return;
     }
-    final confirmed = await showJameiaDialog<bool>(
+    final confirmed = await showHeroDialog<bool>(
       context,
       barrierLabel: 'pro.subscribe'.tr(),
       pageBuilder: (_) => ProConfirmDialog(
@@ -82,7 +82,7 @@ class ProJoinButton extends StatelessWidget {
         final plan = state.selectedPlan;
         return ProCtaButton(
           label: _label(state),
-          loading: plan != null && state.submittingPlanId == plan.id,
+          holding: plan != null && state.submittingPlanId == plan.id,
           enabled: !state.isBusy && plan != null,
           onPressed: plan == null ? null : () => _join(context, plan),
         );

@@ -5,7 +5,7 @@ import 'api_envelope.dart';
 import 'api_headers.dart';
 
 /// Translates transport failures and error envelopes into the typed
-/// `AppException` hierarchy — the ONE place that knows jm3eia HTTP semantics.
+/// `AppException` hierarchy — the ONE place that knows Hero HTTP semantics.
 ///
 /// Reference: https://docs.jm3eia.store/developers/errors.html
 abstract final class ApiExceptionMapper {

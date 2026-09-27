@@ -12,12 +12,12 @@ import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/shake_x.dart';
 import '../../../../../core/utils/failure_message.dart';
-import '../../../../../core/widgets/jameia_input_decoration.dart';
-import '../../../../../core/widgets/jameia_sheet_header.dart';
-import '../../../../../core/widgets/jameia_submit_button.dart';
+import '../../../../../core/widgets/hero_input_decoration.dart';
+import '../../../../../core/widgets/keyboard_inset_padding.dart';
+import '../../../../../core/widgets/hero_sheet_header.dart';
+import '../../../../../core/widgets/hero_submit_button.dart';
 import '../../../domain/entities/cart_snapshot.dart';
 import '../../cubit/cart_cubit.dart';
-import 'cart_keyboard_inset.dart';
 
 /// Bottom sheet that takes a coupon code and applies it on the server
 /// (`POST /v1/cart/coupon`); closes on success (the button's check shows
@@ -72,14 +72,14 @@ class _CartCouponSheetState extends State<CartCouponSheet> {
     );
     // The keyboard inset is read below this build, so the keyboard sliding
     // in does not rebuild the sheet.
-    return CartKeyboardInset(
+    return KeyboardInsetPadding(
       child: SafeArea(
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            JameiaSheetHeader(title: 'cart.coupon_title'.tr()),
+            HeroSheetHeader(title: 'cart.coupon_title'.tr()),
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(
                 AppSpacing.gutter,
@@ -103,7 +103,7 @@ class _CartCouponSheetState extends State<CartCouponSheet> {
                       onSubmitted: (_) => _apply(),
                       style: AppTextStyles.itemTitle,
                       cursorColor: AppColors.primaryText,
-                      decoration: JameiaInputDecoration.outlined(
+                      decoration: HeroInputDecoration.outlined(
                         hintText: 'cart.coupon_hint'.tr(),
                         counterText: '',
                       ),
@@ -128,7 +128,7 @@ class _CartCouponSheetState extends State<CartCouponSheet> {
                           ),
                   ),
                   const SizedBox(height: AppSpacing.s16),
-                  JameiaSubmitButton(
+                  HeroSubmitButton(
                     label: 'cart.coupon_apply'.tr(),
                     loading: busy,
                     success: coupon != null,

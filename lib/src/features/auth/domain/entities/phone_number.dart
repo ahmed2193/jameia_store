@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/domain/text/ascii_digits.dart';
 
 /// A customer phone number as the login flow handles it: a dial code plus the
-/// local digits the user typed. Jameia serves Kuwait, so the only constructor
+/// local digits the user typed. Hero serves Kuwait, so the only constructor
 /// is [PhoneNumber.kuwait]; the entity owns the parsing and validity rules and
 /// the E.164 form the backend receives.
 class PhoneNumber extends Equatable {

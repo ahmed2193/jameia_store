@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/network/api_headers.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/core/network/interceptors/auth_interceptor.dart';
-import 'package:jameia_mart/src/core/storage/auth_tokens.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/network/api_headers.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/core/network/interceptors/auth_interceptor.dart';
+import 'package:hero_mart/src/core/storage/auth_tokens.dart';
 
 import 'network_test_fakes.dart';
 

@@ -2,9 +2,9 @@ import 'dart:math';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/storage/auth_tokens.dart';
-import 'package:jameia_mart/src/core/storage/session_store.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/storage/auth_tokens.dart';
+import 'package:hero_mart/src/core/storage/session_store.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

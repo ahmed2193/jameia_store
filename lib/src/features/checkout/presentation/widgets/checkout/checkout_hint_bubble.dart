@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_line_thumb.dart';
+import '../../../../../core/widgets/hero_line_thumb.dart';
 import 'checkout_hint_tail_painter.dart';
 
 /// The dark "KD x off this item" bubble over "Place order": the line's
@@ -24,7 +24,7 @@ class CheckoutHintBubble extends StatelessWidget {
     required this.quantity,
   });
 
-  /// The nearest width on the size scale (Keeta measures 168).
+  /// The nearest width on the size scale (Hero measures 168).
   static const double width = AppSize.s170;
   static const double minHeight = AppSize.s50;
   static const double plateSize = AppSize.s40;
@@ -75,7 +75,7 @@ class CheckoutHintBubble extends StatelessWidget {
                           // The 56 dp line thumb (one CDN url and decode with
                           // the cart row), scaled into the 40 dp plate.
                           child: FittedBox(
-                            child: JameiaLineThumb(url: imageUrl),
+                            child: HeroLineThumb(url: imageUrl),
                           ),
                         ),
                       ),

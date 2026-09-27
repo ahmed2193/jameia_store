@@ -21,7 +21,7 @@ class CouponsSummaryCard extends StatelessWidget {
   static const Offset _shadowOffset = Offset(0, AppSpacing.s8);
   static final List<BoxShadow> _shadow = [
     BoxShadow(
-      color: kJameiaPillPin.withValues(alpha: _shadowAlpha),
+      color: kHeroPillPin.withValues(alpha: _shadowAlpha),
       offset: _shadowOffset,
       blurRadius: AppSize.s24,
       spreadRadius: -AppSpacing.s6,

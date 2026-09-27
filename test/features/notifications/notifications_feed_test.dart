@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/notifications/domain/entities/notification_entity.dart';
-import 'package:jameia_mart/src/features/notifications/domain/entities/notifications_feed.dart';
+import 'package:hero_mart/src/features/notifications/domain/entities/notification_entity.dart';
+import 'package:hero_mart/src/features/notifications/domain/entities/notifications_feed.dart';
 
 import 'notifications_test_fakes.dart';
 

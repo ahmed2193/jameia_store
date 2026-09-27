@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// Warm amber → orange disc with the rider glyph, heading the code card.
@@ -11,7 +11,7 @@ class DeliveryCodeBadge extends StatelessWidget {
   static const List<Color> _gradient = [
     AppColors.proAmber,
     AppColors.accent3,
-    kJameiaPillPin,
+    kHeroPillPin,
   ];
 
   @override
@@ -28,7 +28,7 @@ class DeliveryCodeBadge extends StatelessWidget {
           ),
         ),
         child: Icon(
-          JameiaIcons.delivery,
+          HeroIcons.delivery,
           size: AppSize.s22,
           color: AppColors.white,
         ),

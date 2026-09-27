@@ -5,11 +5,11 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_book.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/cached_address_book.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_state.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
+import 'package:hero_mart/src/features/address/domain/entities/cached_address_book.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_state.dart';
 
 import 'address_test_fakes.dart';
 

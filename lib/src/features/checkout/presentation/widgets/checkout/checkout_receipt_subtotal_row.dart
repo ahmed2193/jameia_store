@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_info_sheet.dart';
@@ -74,14 +74,14 @@ class CheckoutReceiptSubtotalRow extends StatelessWidget {
           ),
         ),
       ),
-      value: JameiaMoneyText(kd: figures.subtotalKd),
+      value: HeroMoneyText(kd: figures.subtotalKd),
       note: figures.promo
           ? 'checkout.receipt_promo_items'.tr(
               namedArgs: {'amount': Formatters.price(figures.promoKd)},
             )
           : null,
       struck: figures.promo
-          ? JameiaMoneyText(
+          ? HeroMoneyText(
               kd: figures.listSubtotalKd,
               strike: true,
               color: AppColors.tertiaryText,

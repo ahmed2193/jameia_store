@@ -7,17 +7,17 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_close_button.dart';
+import '../../../../../core/widgets/hero_close_button.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_ink_theme.dart';
 
-/// The Keeta sheet shell every checkout sheet shares: a white card with a
+/// The Hero sheet shell every checkout sheet shares: a white card with a
 /// 12 dp top radius, a floating 30 dp white close disc 16 dp above it (at
 /// the start), an optional bold [title], the [child], and an optional
 /// [footer] (a sticker button) under a hairline. The strip around the disc
 /// is part of the sheet, not the scrim, so a tap on it closes the sheet too.
 ///
-/// Never taller than [maxHeightFactor] of the screen; it moves up with the
+/// Never taller than [defaultMaxHeightFactor] of the screen; it moves up with the
 /// keyboard. [child] should scroll when it can be long (it gets the space
 /// left).
 ///
@@ -29,7 +29,6 @@ class CheckoutSheetFrame extends StatelessWidget {
     required this.child,
     this.title,
     this.footer,
-    this.maxHeightFactor = defaultMaxHeightFactor,
   });
 
   /// The floating close disc.
@@ -49,7 +48,6 @@ class CheckoutSheetFrame extends StatelessWidget {
   final Widget child;
   final String? title;
   final Widget? footer;
-  final double maxHeightFactor;
 
   /// Shows [builder] as a checkout sheet. Pass [checkout] whenever the
   /// sheet reads the page's `CheckoutCubit`; [large] uses the slower slide
@@ -60,7 +58,7 @@ class CheckoutSheetFrame extends StatelessWidget {
     required WidgetBuilder builder,
     CheckoutCubit? checkout,
     bool large = false,
-  }) => showJameiaBottomSheet<T>(
+  }) => showHeroBottomSheet<T>(
     context,
     large: large,
     isScrollControlled: true,
@@ -86,7 +84,7 @@ class CheckoutSheetFrame extends StatelessWidget {
       padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxHeight: media.size.height * maxHeightFactor + stripHeight,
+          maxHeight: media.size.height * defaultMaxHeightFactor + stripHeight,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -119,7 +117,7 @@ class CheckoutSheetFrame extends StatelessWidget {
                           maxHeight: AppSize.s48,
                           child: Transform.scale(
                             scale: _crossScale,
-                            child: const JameiaCloseButton(),
+                            child: const HeroCloseButton(),
                           ),
                         ),
                       ),

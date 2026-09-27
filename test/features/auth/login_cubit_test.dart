@@ -1,10 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/phone_number.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/login_cubit.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/login_state.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/login_cubit.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/login_state.dart';
 
 import 'auth_test_fakes.dart';
 

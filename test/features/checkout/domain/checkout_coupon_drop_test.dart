@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_coupon_drop.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_coupon_drop.dart';
 
 CartEntity _cart([CartCouponEntity? coupon]) => CartEntity(coupon: coupon);
 

@@ -34,7 +34,7 @@ class NotificationsPage extends StatelessWidget {
       context.read<UnreadNotificationsCubit>().set(state.feed.unreadCount);
     }
     if (state.allMarkedRead) {
-      showJameiaSnackBar(context, 'notifications.all_read_toast'.tr());
+      showHeroSnackBar(context, 'notifications.all_read_toast'.tr());
     }
   }
 

@@ -18,7 +18,7 @@ class AssistantHandoffDialog extends StatelessWidget {
   /// Asks, then hands the chat off (the cubit guards a double submit).
   static Future<void> confirm(BuildContext context) async {
     final cubit = context.read<AssistantChatCubit>();
-    final confirmed = await showJameiaDialog<bool>(
+    final confirmed = await showHeroDialog<bool>(
       context,
       barrierLabel: 'assistant.talk_to_person'.tr(),
       barrierColor: AppColors.overlayPrimary,

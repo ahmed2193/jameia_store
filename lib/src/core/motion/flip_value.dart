@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'motion.dart';
 
-/// Value-swap FLIP — Jameia's vertical price/total flip family
+/// Value-swap FLIP — Hero's vertical price/total flip family
 /// (`checkout_goods_price_flip`, `freeshipping_anim`, ~280ms). Swap the [child]
 /// whenever [flipKey] changes; the outgoing value slides/fades out while the
 /// incoming one settles in, sharing one [AppMotion.flip] token. Reduced-motion →

@@ -14,7 +14,7 @@ import 'domain/usecases/watch_home_bootstrap_usecase.dart';
 import 'domain/usecases/watch_home_feed_usecase.dart';
 import 'presentation/cubit/home_cubit.dart';
 
-/// Home feature DI — the jm3eia backend (`GET /v1/home`, `GET /v1/init`),
+/// Home feature DI — the Hero backend (`GET /v1/home`, `GET /v1/init`),
 /// their saved copies (the offline cache), and local popup stamps. Called
 /// from `setupServiceLocator`.
 void initHomeFeature() {

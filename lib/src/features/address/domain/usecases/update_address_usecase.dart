@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../entities/address_update.dart';
@@ -20,7 +20,7 @@ class UpdateAddressParams extends Equatable {
 /// `PATCH /v1/account/addresses/:addressId`. An empty update is refused so the
 /// UI never fires a no-op request.
 class UpdateAddressUseCase
-    implements UseCase<JameiaAddressEntity, UpdateAddressParams> {
+    implements UseCase<HeroAddressEntity, UpdateAddressParams> {
   const UpdateAddressUseCase(this._repository);
 
   static const String nothingToSaveMessage = 'Nothing to save';
@@ -28,7 +28,7 @@ class UpdateAddressUseCase
   final AddressRepository _repository;
 
   @override
-  Future<Either<Failure, JameiaAddressEntity>> call(
+  Future<Either<Failure, HeroAddressEntity>> call(
     UpdateAddressParams params,
   ) async {
     if (params.update.isEmpty) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// Small white disc with a pencil on the avatar's bottom-end corner: the
@@ -26,7 +26,7 @@ class MineAvatarEditBadge extends StatelessWidget {
         boxShadow: AppShadows.low,
       ),
       child: const Icon(
-        JameiaIcons.edit,
+        HeroIcons.edit,
         size: _glyph,
         color: AppColors.primaryText,
       ),

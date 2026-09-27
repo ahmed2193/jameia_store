@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/data/mappers/order_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/order_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/branch_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/delivery_selection_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/repositories/checkout_repository.dart';
+import 'package:hero_mart/src/core/data/mappers/order_mapper.dart';
+import 'package:hero_mart/src/core/data/models/order_model.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/loyalty_program.dart';
+import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/branch_entity.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/delivery_selection_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/delivery_slot_entity.dart';
+import 'package:hero_mart/src/features/checkout/domain/repositories/checkout_repository.dart';
 
 import '../orders/order_test_fixtures.dart';
 
@@ -39,7 +39,7 @@ class FakeCheckoutRepository implements CheckoutRepository {
   /// What `GET /v1/init` answers: the store name and a running loyalty
   /// programme (1 fils a point, from 100 points).
   CheckoutStoreRules rules = const CheckoutStoreRules(
-    storeName: 'Jm3eia',
+    storeName: 'Hero',
     loyalty: LoyaltyProgram(
       enabled: true,
       minRedeemPoints: 100,

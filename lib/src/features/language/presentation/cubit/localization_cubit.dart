@@ -16,13 +16,7 @@ import 'localization_state.dart';
 /// decide whether to fire the success haptic + post-switch refresh.
 class LanguageChangeResult {
   final bool success;
-  final String? oldLanguage;
-  final String? newLanguage;
-  const LanguageChangeResult({
-    required this.success,
-    this.oldLanguage,
-    this.newLanguage,
-  });
+  const LanguageChangeResult({required this.success});
 }
 
 /// Central language orchestration — models khayool's `LocalizationCubit`.
@@ -85,9 +79,8 @@ class LocalizationCubit extends Cubit<LocalizationState> {
       if (isClosed) return;
       emit(state.copyWith(locale: locale, isInitialized: true));
     } catch (e) {
-      if (!isClosed) {
-        emit(state.copyWith(isInitialized: true, error: e.toString()));
-      }
+      log('initializeLocale failed: $e', name: _logName);
+      if (!isClosed) emit(state.copyWith(isInitialized: true));
     }
   }
 
@@ -101,11 +94,7 @@ class LocalizationCubit extends Cubit<LocalizationState> {
   ) async {
     final oldLanguage = state.languageCode;
     if (state.isLoading || code == oldLanguage) {
-      return LanguageChangeResult(
-        success: true,
-        oldLanguage: oldLanguage,
-        newLanguage: oldLanguage,
-      );
+      return const LanguageChangeResult(success: true);
     }
     emit(state.copyWith(isLoading: true));
     try {
@@ -116,34 +105,17 @@ class LocalizationCubit extends Cubit<LocalizationState> {
       }
       Intl.defaultLocale = code;
       if (isClosed) {
-        return LanguageChangeResult(
-          success: false,
-          oldLanguage: oldLanguage,
-          newLanguage: code,
-        );
+        return const LanguageChangeResult(success: false);
       }
       emit(state.copyWith(locale: locale, isLoading: false));
       unawaited(syncToServer());
-      return LanguageChangeResult(
-        success: true,
-        oldLanguage: oldLanguage,
-        newLanguage: code,
-      );
+      return const LanguageChangeResult(success: true);
     } catch (e) {
-      if (!isClosed) {
-        emit(state.copyWith(isLoading: false, error: e.toString()));
-      }
-      return LanguageChangeResult(
-        success: false,
-        oldLanguage: oldLanguage,
-        newLanguage: oldLanguage,
-      );
+      log('changeLanguageAndWait failed: $e', name: _logName);
+      if (!isClosed) emit(state.copyWith(isLoading: false));
+      return const LanguageChangeResult(success: false);
     }
   }
-
-  /// Toggle between the two supported locales.
-  Future<LanguageChangeResult> toggle(BuildContext context) =>
-      changeLanguageAndWait(context, state.isArabic ? 'en' : 'ar');
 
   /// [syncToServer], but only when the account holds a different language and
   /// only once the launch restore has run: before
@@ -162,7 +134,7 @@ class LocalizationCubit extends Cubit<LocalizationState> {
     final code = state.languageCode;
     final result = await _syncLanguage(SyncLanguageParams(code));
     result.fold((failure) {
-      _syncOwed = failure is NetworkFailure || failure is TimeoutFailure;
+      _syncOwed = failure.isTransport;
       log('language sync ($code) skipped: ${failure.message}', name: _logName);
     }, (_) => _syncOwed = false);
   }

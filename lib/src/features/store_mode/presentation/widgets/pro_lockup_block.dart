@@ -5,7 +5,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
 
-/// One chunky block of the "Jm3eia | Pro" lockup: bold white [label] on a
+/// One chunky block of the "Hero | Pro" lockup: bold white [label] on a
 /// rounded slab of [color], or of [gradient] when given.
 class ProLockupBlock extends StatelessWidget {
   const ProLockupBlock({

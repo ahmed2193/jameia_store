@@ -6,8 +6,9 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// Outlined social sign-in pill with a leading brand icon (the label stays
-/// centred on the whole pill).
+/// White outlined sign-in pill with the provider's logo at its start and a
+/// bold label centred on the whole pill (the phone step's primary is the
+/// green pill above it).
 class LoginSocialButton extends StatelessWidget {
   const LoginSocialButton({
     super.key,
@@ -17,6 +18,7 @@ class LoginSocialButton extends StatelessWidget {
   });
 
   static const double _height = AppSize.s52;
+  static const double _logo = AppSize.s24;
   static const double _pressedScale = 0.97;
   static const BorderRadius _radius = BorderRadius.all(
     Radius.circular(AppRadius.pill),
@@ -36,7 +38,7 @@ class LoginSocialButton extends StatelessWidget {
         color: AppColors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: _radius,
-          side: BorderSide(color: AppColors.divider),
+          side: BorderSide(color: AppColors.disabledText),
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -51,8 +53,8 @@ class LoginSocialButton extends StatelessWidget {
                 children: [
                   Image.asset(
                     icon,
-                    width: AppSize.s22,
-                    height: AppSize.s22,
+                    width: _logo,
+                    height: _logo,
                     fit: BoxFit.contain,
                     excludeFromSemantics: true,
                   ),
@@ -63,14 +65,15 @@ class LoginSocialButton extends StatelessWidget {
                         child: Text(
                           label,
                           maxLines: 1,
-                          style: AppTextStyles.headingSmall.copyWith(
-                            fontWeight: AppTextStyles.medium,
+                          style: AppTextStyles.headingMedium.copyWith(
+                            fontWeight: AppTextStyles.bold,
+                            color: AppColors.primaryText,
                           ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppSize.s22),
+                  const SizedBox(width: _logo),
                 ],
               ),
             ),

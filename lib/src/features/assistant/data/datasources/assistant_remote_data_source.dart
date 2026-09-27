@@ -10,7 +10,7 @@ import '../models/assistant_conversation_model.dart';
 import '../models/assistant_reply_models.dart';
 import '../models/assistant_stream_event_model.dart';
 
-/// The jm3eia shopping assistant. Identity is automatic: the Bearer while
+/// The Hero shopping assistant. Identity is automatic: the Bearer while
 /// signed in, `X-Assistant-Guest` otherwise (both added by the interceptors
 /// — this class never touches a header or the session).
 abstract class AssistantRemoteDataSource {

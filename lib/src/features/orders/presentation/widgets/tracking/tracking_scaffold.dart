@@ -8,7 +8,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/navigation/screen_failure_listener.dart';
 import '../../../../../core/responsive/content_clamp.dart';
-import '../../../../../core/widgets/jameia_title_bar.dart';
+import '../../../../../core/widgets/hero_title_bar.dart';
 import '../../cubit/order_tracking_cubit.dart';
 import '../../cubit/order_tracking_state.dart';
 import '../order_detail_state_switcher.dart';
@@ -22,7 +22,7 @@ class TrackingScaffold extends StatelessWidget {
   const TrackingScaffold({super.key});
 
   void _onCancelled(BuildContext context, OrderTrackingState state) =>
-      showJameiaSnackBar(context, 'orders.cancelled_done'.tr());
+      showHeroSnackBar(context, 'orders.cancelled_done'.tr());
 
   static void _signIn(BuildContext context) => context.go(Routes.login);
 
@@ -36,7 +36,7 @@ class TrackingScaffold extends StatelessWidget {
         onUnauthorized: _signIn,
         child: Scaffold(
           backgroundColor: AppColors.white,
-          appBar: JameiaTitleBar(title: 'orders.tracking_title'.tr()),
+          appBar: HeroTitleBar(title: 'orders.tracking_title'.tr()),
           body: ContentClamp(
             child: BlocBuilder<OrderTrackingCubit, OrderTrackingState>(
               buildWhen: (previous, current) =>

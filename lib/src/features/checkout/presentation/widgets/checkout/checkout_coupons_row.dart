@@ -5,9 +5,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_savings_figure.dart';
 
@@ -23,10 +23,10 @@ class CheckoutCouponsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JameiaListRow(
+    return HeroListRow(
       dense: true,
       leading: SvgPicture.asset(
-        JameiaAssets.checkoutVoucherDisc,
+        HeroAssets.checkoutVoucherDisc,
         width: discSize,
         height: discSize,
         excludeFromSemantics: true,

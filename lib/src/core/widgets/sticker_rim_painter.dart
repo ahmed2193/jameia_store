@@ -36,7 +36,10 @@ class StickerRimPainter extends CustomPainter {
       ..color = outline;
     // copyWith drops the fill colour once a foreground paint is given.
     final painter = TextPainter(
-      text: TextSpan(text: text, style: style.copyWith(foreground: stroke)),
+      text: TextSpan(
+        text: text,
+        style: style.copyWith(foreground: stroke),
+      ),
       textDirection: textDirection,
       textScaler: textScaler,
       textAlign: textAlign,

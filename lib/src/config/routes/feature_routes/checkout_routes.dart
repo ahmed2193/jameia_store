@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 
-import '../../../core/navigation/jameia_shared_axis_page.dart';
+import '../../../core/navigation/hero_shared_axis_page.dart';
 import '../../../core/navigation/navigation.dart';
 import '../../../features/cart/presentation/pages/cart_preview_page.dart';
 import '../../../features/checkout/presentation/pages/checkout_page.dart';
@@ -15,7 +15,7 @@ import '../routes.dart';
 final List<RouteBase> checkoutRoutes = <RouteBase>[
   GoRoute(
     path: Routes.cartPreview,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const CartPreviewPage(),
@@ -23,7 +23,7 @@ final List<RouteBase> checkoutRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.checkout,
-    pageBuilder: (_, state) => JameiaSharedAxisPage<Object?>(
+    pageBuilder: (_, state) => HeroSharedAxisPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const CheckoutPage(),
@@ -33,7 +33,7 @@ final List<RouteBase> checkoutRoutes = <RouteBase>[
     path: Routes.checkoutVouchers,
     pageBuilder: (_, state) {
       final branchId = state.extra;
-      return JameiaSharedAxisPage<Object?>(
+      return HeroSharedAxisPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: CheckoutVouchersPage(

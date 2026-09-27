@@ -4,21 +4,21 @@
 // use cases that read and write its log.
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_day_part.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_outcome.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_policy.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_onboarding_step.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_starter.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/claim_assistant_nudge_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/complete_assistant_onboarding_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_launcher_hidden_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_onboarded_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/hide_assistant_launcher_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/record_assistant_nudge_outcome_usecase.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_day_part.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_nudge.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_nudge_outcome.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_nudge_policy.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_onboarding_step.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_starter.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/claim_assistant_nudge_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/complete_assistant_onboarding_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_launcher_hidden_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_onboarded_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/hide_assistant_launcher_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/record_assistant_nudge_outcome_usecase.dart';
 
 import '../presentation/assistant_nudge_fakes.dart';
 

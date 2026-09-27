@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../../../../core/design/jameia_assets.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/responsive/app_size.dart';
 
-/// The store badge the home header opens with: the JameiaMart app icon on a
+/// The store badge the home header opens with: the Hero app icon on a
 /// rounded, hairline-framed tile.
 class HomeStoreLogo extends StatelessWidget {
   const HomeStoreLogo({super.key});
@@ -26,7 +26,7 @@ class HomeStoreLogo extends StatelessWidget {
         border: Border.all(color: AppColors.divider),
       ),
       child: Image.asset(
-        JameiaAssets.appLogo,
+        HeroAssets.appLogo,
         width: size,
         height: size,
         fit: BoxFit.cover,

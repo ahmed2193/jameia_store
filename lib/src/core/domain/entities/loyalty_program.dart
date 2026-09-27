@@ -37,10 +37,17 @@ class LoyaltyProgram extends Equatable {
 
   /// Earned points lapse after this many months; 0 = never.
   final int pointsExpireMonths;
+
+  /// Awarded once when an account is created.
   final int welcomeBonusPoints;
 
   /// Awarded once when date of birth, gender and household size are filled.
   final int profileBonusPoints;
+
+  /// The points a new account gets today: the programme runs and grants a
+  /// welcome bonus; 0 otherwise (nothing to promise at sign-in).
+  int get welcomeBonusOnOffer =>
+      enabled && welcomeBonusPoints > 0 ? welcomeBonusPoints : 0;
 
   /// The discount one point is worth, in dinar (1 fils → 0.001).
   double get pointValueKd => redemptionPerPoint / filsPerDinar;

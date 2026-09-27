@@ -13,29 +13,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/config/routes/route_args/login_args.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/pro_membership_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/widgets/stale_age_pill.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/repositories/pro_membership_repository.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/cancel_pro_subscription_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_brands_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/subscribe_to_pro_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/watch_pro_program_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/watch_pro_subscription_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_brands_cubit.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_membership_cubit.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_join_button.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_membership_body.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_outcome_listener.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/widgets/pro_status_reporter.dart';
+import 'package:hero_mart/src/config/routes/route_args/login_args.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/pro_membership_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/widgets/stale_age_pill.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/store_mode/domain/entities/pro_membership.dart';
+import 'package:hero_mart/src/features/store_mode/domain/repositories/pro_membership_repository.dart';
+import 'package:hero_mart/src/features/store_mode/domain/usecases/cancel_pro_subscription_usecase.dart';
+import 'package:hero_mart/src/features/store_mode/domain/usecases/get_pro_brands_usecase.dart';
+import 'package:hero_mart/src/features/store_mode/domain/usecases/subscribe_to_pro_usecase.dart';
+import 'package:hero_mart/src/features/store_mode/domain/usecases/watch_pro_program_usecase.dart';
+import 'package:hero_mart/src/features/store_mode/domain/usecases/watch_pro_subscription_usecase.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/cubit/pro_brands_cubit.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/cubit/pro_membership_cubit.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/widgets/pro_join_button.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/widgets/pro_membership_body.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/widgets/pro_outcome_listener.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/widgets/pro_status_reporter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
@@ -66,7 +66,7 @@ const AuthCustomerEntity _customer = AuthCustomerEntity(
 );
 
 const Map<String, List<String>> _fonts = {
-  'Jameia': ['Jameia-Regular.otf', 'Jameia-Medium.otf', 'Jameia-Bold.otf'],
+  'Hero': ['Hero-Regular.otf', 'Hero-Medium.otf', 'Hero-Bold.otf'],
   'NotoSansArabicUI': [
     'NotoSansArabicUI-Regular.ttf',
     'NotoSansArabicUI-Medium.ttf',
@@ -325,7 +325,7 @@ void main() {
 
     expect(find.text("You're a Pro member"), findsOneWidget);
     // The member card: the programme, the renewal date, the hint.
-    expect(find.text('Jm3eia Pro'), findsOneWidget);
+    expect(find.text('Hero Pro'), findsOneWidget);
     expect(find.text('Renews on Sat, Oct 17, 2026'), findsOneWidget);
     expect(find.text('Your member card for every order'), findsOneWidget);
     expect(find.text('Cancel renewal'), findsOneWidget);
@@ -460,7 +460,7 @@ void main() {
     await settle(tester);
 
     expect(membership.state.isMember, isTrue);
-    expect(find.text('Welcome to Jm3eia Pro!'), findsOneWidget);
+    expect(find.text('Welcome to Hero Pro!'), findsOneWidget);
     // Behind the sheet the page is a member's now: the card, no CTA.
     expect(find.text('Your member card for every order'), findsOneWidget);
     expect(find.byType(ProJoinButton), findsNothing);
@@ -468,7 +468,7 @@ void main() {
     await tester.tap(find.text('Start shopping'));
     await settle(tester);
 
-    expect(find.text('Welcome to Jm3eia Pro!'), findsNothing);
+    expect(find.text('Welcome to Hero Pro!'), findsNothing);
     expect(tester.takeException(), isNull);
 
     await teardownApp(tester);
@@ -516,7 +516,7 @@ void main() {
     repository.program = const Right(ProProgram(plans: []));
     await pump(tester);
 
-    expect(find.text('Jm3eia Pro is not available right now'), findsOneWidget);
+    expect(find.text('Hero Pro is not available right now'), findsOneWidget);
 
     await teardownApp(tester);
   });

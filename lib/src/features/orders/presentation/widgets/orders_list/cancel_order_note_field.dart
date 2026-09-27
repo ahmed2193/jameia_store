@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/widgets/jameia_input_decoration.dart';
+import '../../../../../core/widgets/hero_input_decoration.dart';
 import '../../../domain/entities/cancel_order_request.dart';
 
 /// The optional note of a cancel request, capped at the length the API
@@ -32,7 +32,7 @@ class CancelOrderNoteField extends StatelessWidget {
         maxLines: _noteLines,
         style: AppTextStyles.itemTitle,
         cursorColor: AppColors.primaryText,
-        decoration: JameiaInputDecoration.outlined(
+        decoration: HeroInputDecoration.outlined(
           hintText: 'orders.cancel_note_hint'.tr(),
         ),
       ),

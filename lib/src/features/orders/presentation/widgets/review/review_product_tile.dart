@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_line_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_card_image.dart';
+import '../../../../../core/widgets/hero_card_image.dart';
 import '../../cubit/order_review_cubit.dart';
 import 'review_star_bar.dart';
 
@@ -43,7 +43,7 @@ class ReviewProductTile extends StatelessWidget {
           DecoratedBox(
             position: DecorationPosition.foreground,
             decoration: _thumbHairline,
-            child: JameiaCardImage(
+            child: HeroCardImage(
               url: line.image,
               width: AppSize.s56,
               height: AppSize.s56,

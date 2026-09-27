@@ -6,7 +6,6 @@ import 'home_feed_mapper.dart';
 extension HomeBootstrapMapper on HomeInitModel {
   HomeBootstrap toEntity() => HomeBootstrap(
     storeName: storeName,
-    tagline: tagline,
     delivery: delivery?.toEntity(),
     pro: HomeProInfo(
       enabled: proEnabled,
@@ -28,7 +27,6 @@ extension HomeDeliveryMapper on HomeDeliveryModel {
     etaMinutes: etaMinutes,
     deliveryFeeFils: deliveryFee,
     minOrderFils: minOrder,
-    expressAvailable: expressAvailable,
   );
 }
 

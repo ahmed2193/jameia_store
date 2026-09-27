@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_offer_line_entity.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import 'checkout_line_frame.dart';
 import 'checkout_red_tag.dart';
@@ -72,7 +72,7 @@ class CheckoutGiftRow extends StatelessWidget {
                       ),
                     ),
                     if (product.hasListPrice)
-                      JameiaMoneyText(
+                      HeroMoneyText(
                         kd: product.priceKd,
                         strike: true,
                         style: AppTextStyles.bodySmall,

@@ -4,7 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 
 /// A rail pill that opens something (a category, a brand): round picture —
 /// or [initial] when there is none — then the name. 48 dp tall.
@@ -44,7 +44,7 @@ class AssistantPillChip extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (imageUrl.isNotEmpty)
-                  JameiaImage.circle(url: imageUrl, size: AppSize.s36)
+                  HeroImage.circle(url: imageUrl, size: AppSize.s36)
                 else
                   CircleAvatar(
                     radius: AppSize.s18,

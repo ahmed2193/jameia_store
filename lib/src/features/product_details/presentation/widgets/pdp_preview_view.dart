@@ -26,6 +26,7 @@ class PdpPreviewView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => PdpScaffoldView(
+    productSlug: preview.slug,
     title: preview.name,
     images: [if (preview.image.isNotEmpty) preview.image],
     galleryKey: galleryKey,

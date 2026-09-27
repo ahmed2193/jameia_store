@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/network/api_headers.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/interceptors/app_headers_interceptor.dart';
+import 'package:hero_mart/src/core/network/api_headers.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/interceptors/app_headers_interceptor.dart';
 
 import 'network_test_fakes.dart';
 

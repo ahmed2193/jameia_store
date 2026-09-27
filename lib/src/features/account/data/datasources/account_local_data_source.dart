@@ -1,9 +1,9 @@
-import '../../../../core/data/jameia_repository.dart';
+import '../../../../core/data/hero_repository.dart';
 import '../../../../core/data/models/models.dart';
 
-/// Offline source for the account ("Mine") surfaces. The live Jameia tab hits the
+/// Offline source for the account ("Mine") surfaces. The live Hero tab hits the
 /// user / coupon / favourite / message-count endpoints; here everything comes
-/// from the in-memory [JameiaRepository]. The unread customer-service count has no
+/// from the in-memory [HeroRepository]. The unread customer-service count has no
 /// offline source (API `/csapi/chat/message/count`), so it is a fixed stub.
 abstract class AccountLocalDataSource {
   UserProfile user();
@@ -15,7 +15,7 @@ abstract class AccountLocalDataSource {
 class AccountLocalDataSourceImpl implements AccountLocalDataSource {
   AccountLocalDataSourceImpl(this.catalog);
 
-  final JameiaRepository catalog;
+  final HeroRepository catalog;
 
   @override
   UserProfile user() => catalog.user;

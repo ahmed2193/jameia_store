@@ -14,7 +14,7 @@ import 'presentation/cubit/localization_cubit.dart';
 /// Language feature DI — local persistence on the shared [LocalStorage]
 /// (shared_preferences) plus the account mirror over the core `ApiConsumer`.
 ///
-/// Runs after `initCoreStorage` / `_initSession` / `_initNetwork` have
+/// Runs after the core init (`setupServiceLocator`) has
 /// registered [LocalStorage], [SessionStore] and [ApiConsumer]. Idempotent.
 Future<void> initLanguageFeature() async {
   if (sl.isRegistered<LangRepository>()) return; // idempotent

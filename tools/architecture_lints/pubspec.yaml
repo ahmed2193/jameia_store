@@ -1,6 +1,6 @@
 name: architecture_lints
 description: In-repo analyzer plugin (analysis_server_plugin) that makes
-  `flutter analyze` enforce the JameiaMart architecture and UI rules
+  `flutter analyze` enforce the Hero architecture and UI rules
   documented in the app's CLAUDE.md.
 version: 0.1.0
 publish_to: none

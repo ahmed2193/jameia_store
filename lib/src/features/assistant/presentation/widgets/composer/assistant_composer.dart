@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../domain/entities/assistant_message_entity.dart';
 import '../../../domain/entities/assistant_prompt.dart';
 import '../../../domain/entities/assistant_thread.dart';
@@ -63,7 +63,7 @@ class _AssistantComposerState extends State<AssistantComposer> {
       case AssistantPromptStatus.tooLong:
         Haptics.warning();
         setState(() => _shakes++);
-        showJameiaSnackBar(
+        showHeroSnackBar(
           context,
           'assistant.too_long'.tr(
             namedArgs: {'max': '${AssistantPrompt.maxLength}'},

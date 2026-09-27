@@ -13,7 +13,7 @@ class MineGiftBadge extends StatelessWidget {
   static const List<Color> _warm = [
     AppColors.proAmber,
     AppColors.accent3,
-    kJameiaPillPin,
+    kHeroPillPin,
   ];
 
   @override

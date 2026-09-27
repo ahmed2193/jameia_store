@@ -1,21 +1,21 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_policy.dart';
-import 'package:jameia_mart/src/features/assistant/domain/repositories/assistant_voice_repository.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/cancel_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/finish_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_voice_language_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/listen_to_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/open_assistant_voice_settings_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/prepare_assistant_voice_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/request_assistant_voice_access_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/save_assistant_voice_language_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_voice_cubit.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_policy.dart';
+import 'package:hero_mart/src/features/assistant/domain/repositories/assistant_voice_repository.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/cancel_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/finish_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_voice_language_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/listen_to_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/open_assistant_voice_settings_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/prepare_assistant_voice_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/request_assistant_voice_access_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/save_assistant_voice_language_usecase.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_voice_cubit.dart';
 
 /// An `AssistantVoiceRepository` the test drives: it answers access at once
 /// (or holds it until [answerAccess] when [holdAccess]), and each [listen]

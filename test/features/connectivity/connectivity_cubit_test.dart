@@ -2,16 +2,21 @@
 // confirmed by one more live check (one failed probe never shows the
 // banner), coming back is instant and bumps the reconnect epoch once per recovery,
 // "Back online" hides by itself, emits are distinct, checks set isChecking
-// (the banner's retry holds it for a dwell), and the lifecycle reaches the
-// monitor. Timings are injected (tens of ms) — the repo's test convention.
+// (the banner's retry holds it for a dwell), the lifecycle reaches the
+// monitor (an offline verdict due at a pause waits for the return), a submit
+// is confirmed by a live check, and the automatic retries after a failed
+// load come in waves (never a loop). Timings are injected (tens of ms) — the
+// repo's test convention.
 
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
-import 'package:jameia_mart/src/features/connectivity/presentation/cubit/connectivity_banner_mode.dart';
-import 'package:jameia_mart/src/features/connectivity/presentation/cubit/connectivity_cubit.dart';
-import 'package:jameia_mart/src/features/connectivity/presentation/cubit/connectivity_state.dart';
+import 'package:hero_mart/src/core/constants/app_constants.dart';
+import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
+import 'package:hero_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
+import 'package:hero_mart/src/features/connectivity/presentation/cubit/connectivity_banner_mode.dart';
+import 'package:hero_mart/src/features/connectivity/presentation/cubit/connectivity_cubit.dart';
+import 'package:hero_mart/src/features/connectivity/presentation/cubit/connectivity_state.dart';
 
 import 'connectivity_test_fakes.dart';
 
@@ -230,6 +235,97 @@ void main() {
       ..pause()
       ..resume();
     expect(repository.monitoring, [false, true]);
+  });
+
+  test('an offline verdict due at a pause waits for the return: no check in '
+      'the background, the debounce again after it', () async {
+    repository
+      ..checkResult = ConnectivityStatus.offline
+      ..report(ConnectivityStatus.offline);
+    await _flush();
+    cubit.pause();
+    await _wait(testOfflineAfter * 2);
+    expect(repository.checkCalls, 0, reason: 'no probe in the background');
+    expect(cubit.state.isOffline, isFalse);
+
+    cubit.resume();
+    await _flush();
+    expect(cubit.state.isOffline, isFalse, reason: 'debounced again');
+    await _wait(testOfflineAfter * 2);
+    expect(repository.checkCalls, 1);
+    expect(cubit.state.isOffline, isTrue);
+  });
+
+  test('a pause with nothing due owes nothing; a "reachable" report clears a '
+      'verdict owed', () async {
+    cubit
+      ..pause()
+      ..resume();
+    await _wait(testOfflineAfter * 2);
+    expect(repository.checkCalls, 0);
+
+    repository.report(ConnectivityStatus.offline);
+    await _flush();
+    cubit.pause();
+    repository.report(ConnectivityStatus.online); // an API response
+    await _flush();
+    cubit.resume();
+    await _wait(testOfflineAfter * 2);
+    expect(repository.checkCalls, 0);
+    expect(cubit.state.isOffline, isFalse);
+  });
+
+  test('confirmOnline lets a submit go unless the live check finds no '
+      'connection', () async {
+    repository.checkResult = ConnectivityStatus.online;
+    expect(await cubit.confirmOnline(), isTrue);
+    repository.checkResult = ConnectivityStatus.unknown;
+    expect(await cubit.confirmOnline(), isTrue, reason: 'the probe can err');
+    repository.checkResult = ConnectivityStatus.offline;
+    expect(await cubit.confirmOnline(), isFalse);
+  });
+
+  group('recheckForRetry', () {
+    late DateTime time;
+    late ConnectivityCubit clocked;
+
+    setUp(() {
+      time = DateTime(2026, 9, 27, 12);
+      clocked = buildConnectivityCubit(repository, now: () => time);
+    });
+
+    tearDown(() => clocked.close());
+
+    Future<ConnectionRecheck> askAfter(Duration elapsed) {
+      time = time.add(elapsed);
+      return clocked.recheckForRetry();
+    }
+
+    test('no connection: offline, never a retry', () async {
+      repository.checkResult = ConnectivityStatus.offline;
+      expect(await askAfter(Duration.zero), ConnectionRecheck.offline);
+      expect(repository.checkCalls, 1, reason: 'a live check');
+    });
+
+    test('the loads that failed together all retry; one that fails again '
+        'after its retry gets "reachable" until the gap passed', () async {
+      expect(await askAfter(Duration.zero), ConnectionRecheck.retry);
+      expect(
+        await askAfter(testOfflineAfter ~/ 2),
+        ConnectionRecheck.retry,
+        reason: 'the same wave',
+      );
+      expect(
+        await askAfter(testOfflineAfter),
+        ConnectionRecheck.reachable,
+        reason: 'later than the wave: it failed again',
+      );
+      expect(
+        await askAfter(AppConstants.readRetryGap),
+        ConnectionRecheck.retry,
+        reason: 'a new wave',
+      );
+    });
   });
 
   test('closing cancels the pending timers', () async {

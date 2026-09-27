@@ -7,7 +7,7 @@ import '../../../../../core/motion/locale_swap_veil.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/spring_curve.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_segmented_control.dart';
+import '../../../../../core/widgets/hero_segmented_control.dart';
 import '../../cubit/setting_cubit.dart';
 import 'settings_language.dart';
 import 'settings_tile.dart';
@@ -70,7 +70,7 @@ class _SettingsLanguageTileState extends State<SettingsLanguageTile> {
       icon: Icons.translate_rounded,
       tone: SettingsTone.sky,
       title: widget.title,
-      below: JameiaSegmentedControl<SettingsLanguage>(
+      below: HeroSegmentedControl<SettingsLanguage>(
         values: SettingsLanguage.values,
         selected: _pending ?? SettingsLanguage.of(widget.languageCode),
         labelOf: (language) => language.labelKey.tr(),

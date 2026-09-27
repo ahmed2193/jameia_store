@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/profile_field.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/profile_update.dart';
-import 'package:jameia_mart/src/features/account/presentation/cubit/profile_cubit.dart';
-import 'package:jameia_mart/src/features/account/presentation/cubit/profile_state.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/account/domain/entities/profile_field.dart';
+import 'package:hero_mart/src/features/account/domain/entities/profile_update.dart';
+import 'package:hero_mart/src/features/account/presentation/cubit/profile_cubit.dart';
+import 'package:hero_mart/src/features/account/presentation/cubit/profile_state.dart';
 
 import 'account_test_fakes.dart';
 

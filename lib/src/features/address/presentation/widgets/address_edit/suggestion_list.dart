@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/widgets/jameia_map.dart';
+import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_map.dart';
 
 /// Autocomplete results dropdown floating under the search box.
 class SuggestionList extends StatelessWidget {
@@ -17,17 +18,17 @@ class SuggestionList extends StatelessWidget {
     return Material(
       color: AppColors.white,
       borderRadius: BorderRadius.circular(AppRadius.card),
-      elevation: 4,
+      elevation: AppSize.s4,
       shadowColor: AppColors.overlayDivider,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 260),
+        constraints: const BoxConstraints(maxHeight: AppSize.s260),
         child: ListView.separated(
           shrinkWrap: true,
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.s4),
           itemCount: items.length,
           separatorBuilder: (context, index) => const Divider(
-            height: 0.5,
-            thickness: 0.5,
+            height: AppSize.s0_5,
+            thickness: AppSize.s0_5,
             color: AppColors.divider,
           ),
           itemBuilder: (context, i) {
@@ -42,8 +43,8 @@ class SuggestionList extends StatelessWidget {
                 child: Row(
                   children: [
                     const Icon(
-                      JameiaIcons.location,
-                      size: 16,
+                      HeroIcons.location,
+                      size: AppSize.s16,
                       color: AppColors.secondaryText,
                     ),
                     const SizedBox(width: AppSpacing.s10),

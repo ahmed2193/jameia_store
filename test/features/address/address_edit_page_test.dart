@@ -15,15 +15,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/config/theme/app_theme.dart';
-import 'package:jameia_mart/src/core/domain/entities/jameia_address_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_book.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_edit_cubit.dart';
-import 'package:jameia_mart/src/features/address/presentation/pages/address_edit_page.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/domain/entities/hero_address_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_edit_cubit.dart';
+import 'package:hero_mart/src/features/address/presentation/pages/address_edit_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'address_test_fakes.dart';
@@ -66,7 +66,7 @@ void main() {
     );
     await book.start(customerId: 'aaaaaaaaaaaaaaaaaaaaaaaa');
     if (sl.isRegistered<AddressEditCubit>()) sl.unregister<AddressEditCubit>();
-    sl.registerFactoryParam<AddressEditCubit, JameiaAddressEntity?, bool?>(
+    sl.registerFactoryParam<AddressEditCubit, HeroAddressEntity?, bool?>(
       (edited, isFirstAddress) => AddressEditCubit(
         addAddress: addAddress,
         updateAddress: updateAddress,
@@ -113,8 +113,8 @@ void main() {
         GoRoute(
           path: Routes.addressEdit,
           builder: (_, state) => AddressEditPage(
-            address: state.extra is JameiaAddressEntity
-                ? state.extra! as JameiaAddressEntity
+            address: state.extra is HeroAddressEntity
+                ? state.extra! as HeroAddressEntity
                 : null,
           ),
         ),
@@ -189,7 +189,7 @@ void main() {
     expect(updateAddress.calls.single.update.street, '15');
     expect(updateAddress.calls.single.update.floor, isNull);
     expect(book.state.book.byId(original.id)?.street, '15');
-    expect((popped.single! as JameiaAddressEntity).street, '15');
+    expect((popped.single! as HeroAddressEntity).street, '15');
     expect(find.text('Address saved'), findsOneWidget);
 
     await teardownApp(tester);

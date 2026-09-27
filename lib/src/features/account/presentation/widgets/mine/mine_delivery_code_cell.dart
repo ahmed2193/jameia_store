@@ -7,7 +7,7 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../cubit/account_cubit.dart';
 import 'mine_code_pill.dart';
 import 'mine_menu_cell.dart';
@@ -39,7 +39,7 @@ class MineDeliveryCodeCell extends StatelessWidget {
           borderRadius: _radius,
           clipBehavior: Clip.antiAlias,
           child: MineMenuCell(
-            icon: JameiaIcons.confirmReceipt,
+            icon: HeroIcons.confirmReceipt,
             tone: MineTone.brand,
             label: 'account.delivery_code'.tr(),
             onTap: () => context.push(Routes.mineDeliveryCode),

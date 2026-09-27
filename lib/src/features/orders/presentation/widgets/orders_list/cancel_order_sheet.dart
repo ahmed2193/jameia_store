@@ -11,13 +11,13 @@ import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
-import '../../../../../core/widgets/jameia_sheet_header.dart';
+import '../../../../../core/widgets/hero_sheet_header.dart';
+import '../../../../../core/widgets/keyboard_inset_padding.dart';
 import '../../../../../core/widgets/offline_inline_note.dart';
 import '../../../../../core/widgets/option_row.dart';
 import '../../../../../core/widgets/thin_divider.dart';
 import '../../../domain/entities/cancel_order_request.dart';
 import 'cancel_order_note_field.dart';
-import 'cancel_order_sheet_insets.dart';
 
 /// The five reasons `POST /v1/orders/{id}/cancel` accepts plus an optional
 /// note; pops the [CancelOrderRequest] to send, or nothing (✕ or a barrier
@@ -41,11 +41,11 @@ class CancelOrderSheet extends StatefulWidget {
     required String orderId,
   }) {
     final sheet = CancelOrderSheet(orderId: orderId);
-    return showJameiaBottomSheet<CancelOrderRequest>(
+    return showHeroBottomSheet<CancelOrderRequest>(
       context,
       isScrollControlled: true,
       backgroundColor: AppColors.white,
-      shape: JameiaSheetHeader.shape,
+      shape: HeroSheetHeader.shape,
       builder: (_) => sheet,
     );
   }
@@ -114,7 +114,7 @@ class _CancelOrderSheetState extends State<CancelOrderSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * _maxHeightFactor,
       ),
-      child: CancelOrderSheetInsets(
+      child: KeyboardInsetPadding(
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
@@ -122,7 +122,7 @@ class _CancelOrderSheetState extends State<CancelOrderSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                JameiaSheetHeader(title: 'orders.cancel_title'.tr()),
+                HeroSheetHeader(title: 'orders.cancel_title'.tr()),
                 for (final (index, reason)
                     in CancelOrderReason.values.indexed) ...[
                   if (index > 0) const ThinDivider(indent: AppSpacing.gutter),

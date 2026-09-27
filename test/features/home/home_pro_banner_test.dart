@@ -9,13 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_pro_banner.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_pro_member_banner.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_pro_offer_banner.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_pro_banner.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_pro_member_banner.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_pro_offer_banner.dart';
+import 'package:hero_mart/src/features/store_mode/domain/entities/pro_membership.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../store_mode/pro_status_fakes.dart';
@@ -115,7 +115,7 @@ void main() {
     final status = await settledProStatus();
     await pump(tester, status, onTap: () => taps++);
 
-    expect(find.text('Jm3eia Pro'), findsOneWidget);
+    expect(find.text('Hero Pro'), findsOneWidget);
     expect(find.text('Join Pro'), findsOneWidget);
     expect(find.text('Free delivery'), findsOneWidget);
     expect(find.text('×2 points'), findsOneWidget);
@@ -135,7 +135,7 @@ void main() {
     );
     await pump(tester, status);
 
-    expect(find.text('Come back to Jm3eia Pro'), findsOneWidget);
+    expect(find.text('Come back to Hero Pro'), findsOneWidget);
     expect(find.text('Rejoin'), findsOneWidget);
     expect(find.text('Join Pro'), findsNothing);
 

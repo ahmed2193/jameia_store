@@ -13,7 +13,7 @@ import '../widgets/offers_body.dart';
 import '../widgets/offers_cart_bar.dart';
 
 /// The store's active offers (`GET /v1/offers`) — the automatic promotions the
-/// backend applies to the cart — as a talabat collection page: the store's
+/// backend applies to the cart — as a Hero collection page: the store's
 /// name in a top bar over a cream hero, the offers as flat cards, and the
 /// "View cart" pill once the basket has items. Offer text arrives resolved
 /// for the request language, so a language switch reloads.

@@ -6,7 +6,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/ledger.dart';
 import '../entities/loyalty_entry_entity.dart';
 
-/// The customer's loyalty points and the store's programme on the jm3eia
+/// The customer's loyalty points and the store's programme on the Hero
 /// backend: https://docs.jm3eia.store/developers/account.html
 abstract class LoyaltyRepository {
   /// `GET /v1/account/loyalty?page=1&limit` — the points balance plus the

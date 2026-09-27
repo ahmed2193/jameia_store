@@ -6,8 +6,8 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
-import '../../../../../core/widgets/jameia_bar_total.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_bar_total.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_receipt.dart';
@@ -51,7 +51,7 @@ class CheckoutBarTotal extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          JameiaBarTotal(
+          HeroBarTotal(
             kd: settled ? totalKd : null,
             placeholder: quoted
                 ? 'checkout.updating'.tr()
@@ -66,7 +66,7 @@ class CheckoutBarTotal extends StatelessWidget {
           ),
           if (struck != null) ...[
             const SizedBox(width: AppSpacing.s6),
-            JameiaMoneyText(
+            HeroMoneyText(
               kd: struck,
               strike: true,
               color: AppColors.tertiaryText,

@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
+import '../../../../../core/widgets/cubit_busy_overlay.dart';
 import '../../../../../core/widgets/reconnect_refresh.dart';
 import '../../cubit/order_tracking_cubit.dart';
+import '../../cubit/order_tracking_state.dart';
 import 'tracking_scaffold.dart';
 
 /// Owns when the tracking page polls: it subscribes to the router's
@@ -64,10 +66,16 @@ class _OrderTrackingViewState extends State<OrderTrackingView>
   }
 
   // `ModalRoute.of` above rebuilds this State on every push / pop over the
-  // page; the const frame is skipped, so nothing below it rebuilds.
+  // page; the const frame is skipped, so nothing below it rebuilds. A cancel
+  // holds the screen until the server answers.
   @override
   Widget build(BuildContext context) => ReconnectRefresh(
     onReconnected: () => context.read<OrderTrackingCubit>().onReconnected(),
-    child: const TrackingScaffold(),
+    child: const CubitBusyOverlay<OrderTrackingCubit, OrderTrackingState>(
+      busyOf: _cancelling,
+      child: TrackingScaffold(),
+    ),
   );
+
+  static bool _cancelling(OrderTrackingState state) => state.isCancelling;
 }

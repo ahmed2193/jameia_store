@@ -1,4 +1,4 @@
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 
 /// The wire shape of a cart product (the catalogue card the backend embeds).
 Map<String, dynamic> productJson({

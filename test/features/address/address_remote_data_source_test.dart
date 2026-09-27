@@ -2,10 +2,10 @@
 // method, path, body, the envelope unwrap and the error mapping.
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/features/address/data/datasources/address_remote_data_source.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/features/address/data/datasources/address_remote_data_source.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import 'address_test_fakes.dart';

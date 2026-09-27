@@ -1,12 +1,12 @@
 # FEATURE NAME
 
-Jm3eia Assistant: a streaming AI shopping chat on `/v1/assistant`. It covers the SSE turn, rich cards, cart proposals, history, handoff, feedback and a full motion layer.
+Hero Assistant: a streaming AI shopping chat on `/v1/assistant`. It covers the SSE turn, rich cards, cart proposals, history, handoff, feedback and a full motion layer.
 
 ---
 
 ## CONTEXT
 
-The jm3eia backend has a shopping assistant. It is an LLM with store tools (product search, cart,
+The Hero backend has a shopping assistant. It is an LLM with store tools (product search, cart,
 delivery, recipes, offers, orders, FAQ). It answers over **server-sent events** and attaches
 typed UI cards ("blocks") to every reply. The app has no assistant yet:
 - `EndPoints` already lists the routes (`core/network/end_points.dart:107-126`).
@@ -17,7 +17,7 @@ typed UI cards ("blocks") to every reply. The app has no assistant yet:
   Do not build on it and do not change it.
 
 This task:
-1. Adds a new feature **`features/assistant`** on the jm3eia API: chat thread, streaming replies,
+1. Adds a new feature **`features/assistant`** on the Hero API: chat thread, streaming replies,
    every documented block kind, cart proposals confirmed through the assistant, suggestion chips,
    message feedback, handoff to a human, conversation history.
 2. Extends **`EventStreamClient`** in core with a one-shot `POST` stream (no auto-reconnect).
@@ -28,9 +28,9 @@ This task:
 
 Read before writing (CLAUDE.md §0.1):
 - `CLAUDE.md` (wins over this prompt if they disagree).
-- The skills: `jameia-api-integration` (+ `references/layer-templates.md`, `patterns.md`,
-  `backend-contract.md`), `jameia-api-streaming` (mandatory: SSE rules, one-shot `POST` gap),
-  `jameia-api-session` (guest key, merge on login), `jameia-api-testing`, `jameia-api-verify`.
+- The skills: `hero-api-integration` (+ `references/layer-templates.md`, `patterns.md`,
+  `backend-contract.md`), `hero-api-streaming` (mandatory: SSE rules, one-shot `POST` gap),
+  `hero-api-session` (guest key, merge on login), `hero-api-testing`, `hero-api-verify`.
 - The shipped features to mirror:
   - `features/notifications`: SSE datasource, `guardStream`, paginated feed with generation
     counter, optimistic update + rollback, transient `Failure` in state.
@@ -42,7 +42,7 @@ Read before writing (CLAUDE.md §0.1):
 Every fact under API SPEC marked **(live)** was observed against `https://api.jm3eia.store` on
 2026-09-24: 6 guest turns (EN + AR), list/detail/feedback/confirm, validation and ownership errors.
 The raw frames are saved in `test/features/assistant/fixtures/live_2026_09_24/`.
-Re-run the probe with `.claude/skills/jameia-api-verify/scripts/assistant_sse_probe.js`. Every
+Re-run the probe with `.claude/skills/hero-api-verify/scripts/assistant_sse_probe.js`. Every
 live send creates a real conversation and uses LLM tokens, so keep live runs few. **Never call
 `handoff` on the live host**: it opens a real support ticket. Use the mock.
 
@@ -64,14 +64,14 @@ Visual direction:
   `SuiRadius.inputPill` (24) in `core/constants/app_constants.dart`.
 - `AppColors.chatBubbleMine` exists but belongs to the rider chat's olive palette. Use
   `primary` / `brandForeground` for the user bubble unless it looks wrong next to the green brand.
-  If you add a token, add exactly one (e.g. `assistantBubbleIncoming`) in `AppColors` + `JameiaColors`.
+  If you add a token, add exactly one (e.g. `assistantBubbleIncoming`) in `AppColors` + `HeroColors`.
 
 ---
 
 ## API SPEC
 
 Source of truth = the live spec. Re-read each route before building its layer:
-`node .claude/skills/jameia-api-integration/scripts/openapi_route.js assistant`. On Git Bash, a
+`node .claude/skills/hero-api-integration/scripts/openapi_route.js assistant`. On Git Bash, a
 filter with a leading `/` needs `MSYS_NO_PATHCONV=1`. Docs:
 https://docs.jm3eia.store/developers/assistant.html. Paths already exist in `EndPoints` (no new
 constants needed). `assistantMessages` is already in `EndPoints.streamingPaths`.
@@ -337,11 +337,11 @@ already resolved for `Accept-Language`.
   - One request in flight per message; the last tap wins (per-message generation).
   - Roll back + snackbar on failure.
   - Initial state = `message.feedback` from the server.
-- **Long-press a bubble** → `showJameiaBottomSheet` with **Copy** (`Clipboard` + snackbar
+- **Long-press a bubble** → `showHeroBottomSheet` with **Copy** (`Clipboard` + snackbar
   `assistant.copied`).
 
 ### Handoff ("Talk to a person")
-- The overflow item opens a confirm dialog (`showJameiaDialog`).
+- The overflow item opens a confirm dialog (`showHeroDialog`).
 - On confirm → `RequestAssistantHandoffUseCase(conversationId)` with an **empty body**. Never guess
   `category` / `subcategory` values.
 - Busy + double-submit guard.
@@ -417,8 +417,8 @@ Rules for every animation (CLAUDE.md §7 + the existing `core/motion` layer):
 
 | Element | Motion | Built from | Token | Reduced motion |
 |---|---|---|---|---|
-| Chat page open | full-screen slide-up | `JameiaSlideUpTransitionPage` | existing | instant (existing) |
-| History page | standard push | `JameiaTransitionPage` | existing | instant |
+| Chat page open | full-screen slide-up | `HeroSlideUpTransitionPage` | existing | instant (existing) |
+| History page | standard push | `HeroTransitionPage` | existing | instant |
 | Home entry button | press scale + one soft "breathe" pulse of the icon (scale 1→1.08→1, 2 cycles) when home first appears per app run | `PressScale` + small controller | `AppMotion.breathe`, `signature` | no pulse |
 | Welcome hero | icon pops in; title/body/chips stagger up | `PopScale.onMount`, `StaggerEntrance` (index 0..5) | `medium`, `emphasized`; stagger 30 ms | static |
 | Starter / suggestion chips | stagger in from the start edge (mirrored in RTL); press scale; the tapped row fades out | `StaggerEntrance(beginOffset: ±0.08,0)`, `PressScale`, `AnimatedOpacity` | `medium`, `fast` | static |
@@ -443,7 +443,7 @@ Rules for every animation (CLAUDE.md §7 + the existing `core/motion` layer):
 | FAQ block rows | expand / collapse | `AnimatedAccordion` | existing | instant |
 | Thread / history loading | shimmering skeleton bubbles / rows | `Skeletonized` + `SkeletonBone` (new `AssistantThreadSkeleton`, `AssistantHistorySkeleton`) | `shimmer` | solid (built-in) |
 | History list first page | rows stagger in | `StaggerEntrance` (maxIndex 10) | 30 ms | static |
-| Snackbars / sheets / dialogs | existing helpers | `showJameiaSnackBar` / `showJameiaBottomSheet` / `showJameiaDialog` | existing | existing |
+| Snackbars / sheets / dialogs | existing helpers | `showHeroSnackBar` / `showHeroBottomSheet` / `showHeroDialog` | existing | existing |
 
 New motion code (and nothing else):
 - `AssistantBubbleEntrance`, `AssistantStreamingCaret` and the Home-button pulse live in the
@@ -510,7 +510,7 @@ Do not add Lottie / GIF assets or packages (`pubspec.yaml` is out of scope).
     `CategoryModel` / `CatalogCategoryEntity`, `BrandModel` / `BrandEntity`,
     `RecipeSummaryModel` / `RecipeSummaryEntity`, `OrderStatus` + `OrderMapper.orderStatusOf`,
     `JsonRead`;
-  - widgets: `CatalogProductCard`, `CatalogRecipeCard`, `JameiaImage`, `AppButton`,
+  - widgets: `CatalogProductCard`, `CatalogRecipeCard`, `HeroImage`, `AppButton`,
     `AppOutlineButton`, `TagChip`, `PriceText`, `ErrorView`, `EmptyStateView`, `SignedOutView`,
     `BrandedRefresh`, `AppLoader`, `Skeletonized` / `SkeletonBone`, `AnimatedAccordion`.
 - **Shared ENTITIES move to core; DTOs stay in their feature's `data/`** (CLAUDE.md §4: only
@@ -549,9 +549,9 @@ Do not add Lottie / GIF assets or packages (`pubspec.yaml` is out of scope).
   - `AssistantAvailabilityCubit` is built by `AppGlobalCubits` and provided in `app.dart`. Add it
     to the CLAUDE.md §4 app-global list (home and account read it through `BlocSelector`).
 - **Routes:**
-  - `Routes.assistant` = `/assistant` (`JameiaSlideUpTransitionPage`, extra `AssistantChatArgs?` in
+  - `Routes.assistant` = `/assistant` (`HeroSlideUpTransitionPage`, extra `AssistantChatArgs?` in
     `config/routes/route_args/`).
-  - `Routes.assistantHistory` = `/assistant/history` (`JameiaTransitionPage`).
+  - `Routes.assistantHistory` = `/assistant/history` (`HeroTransitionPage`).
   - Both go in `feature_routes/assistant_routes.dart` + `app_router.dart`, with
     `test/app_router_test.dart` coverage.
 - **i18n.** Every key goes in **both** `assets/i18n/en.json` and `ar.json` under `assistant.*`:
@@ -562,7 +562,7 @@ Do not add Lottie / GIF assets or packages (`pubspec.yaml` is out of scope).
   - **Insertion trap:** other sessions append keys concurrently. Re-read both files right before
     editing, and insert by tracking brace depth from the `"assistant": {` block header, never by a
     string match that could land in another block.
-- **Mock API:** new `.claude/skills/jameia-api-verify/scripts/mock_api/assistant.js`, plus ONE
+- **Mock API:** new `.claude/skills/hero-api-verify/scripts/mock_api/assistant.js`, plus ONE
   require / dispatch line in `server.js` (re-read `server.js` first; another session edits it).
   - All 6 routes, guest vs Bearer ownership.
   - Word-by-word deltas at ~10 ms, a `: connected` comment, and a heartbeat comment every 15 s.
@@ -579,7 +579,7 @@ Do not add Lottie / GIF assets or packages (`pubspec.yaml` is out of scope).
     the API, with L1–L20 as contract notes);
   - CLAUDE.md §1 feature list, §3.2 "On the API today", §4 app-global cubit list, and remove the
     §12 "`EventStreamClient` is `GET` only" gap;
-  - the `jameia-api-streaming` skill "Limits" section (document `send`).
+  - the `hero-api-streaming` skill "Limits" section (document `send`).
 
 ---
 
@@ -605,7 +605,7 @@ Do not add Lottie / GIF assets or packages (`pubspec.yaml` is out of scope).
     the bottom only when already within the threshold of it).
 - **Rails:** horizontal `ListView.builder` with a fixed extent from `CatalogProductCard.cellHeight`
   (text-scale aware).
-- **Images:** `JameiaImage` with `memCacheWidth/Height` = `context.cacheCapFor(displaySize)`; no
+- **Images:** `HeroImage` with `memCacheWidth/Height` = `context.cacheCapFor(displaySize)`; no
   full 600 px decodes for 130 dp cards.
 - **No platform views in the list:** `locations` render as tiles, not an inline `GoogleMap`.
 - **Network:**
@@ -644,7 +644,7 @@ Do not add Lottie / GIF assets or packages (`pubspec.yaml` is out of scope).
     is not (it would spam the screen reader);
   - the thinking / tool line has a label.
 - **Navigation** via `Routes` + GoRouter only; route extras are primitives or args classes (never
-  DTOs). Sheets, dialogs and snackbars via the `showJameia*` helpers.
+  DTOs). Sheets, dialogs and snackbars via the `showHero*` helpers.
 - Test at 320 dp width, text scale 1.3, Arabic (RTL), and with reduced motion on.
 
 ---
@@ -736,7 +736,7 @@ fine). Each phase ends green before the next starts.
    - Widget tests: page smoke per state; each block renders from a fixture; unknown kind ignored;
      reduced motion (`MediaQuery(disableAnimations: true)`) → no running tickers.
    - Router test for both routes.
-7. **Verify on a device / emulator** (`jameia-api-verify` checklist).
+7. **Verify on a device / emulator** (`hero-api-verify` checklist).
    - Against the mock: every knob, reading the `api` / `sse` trace for each call (method, path,
      body, headers: Bearer vs `X-Assistant-Guest`).
    - Then ONE short guest session against the live host: send, products, chips, feedback, history;

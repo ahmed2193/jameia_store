@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 
-/// Jameia's public social profiles on About. The icon font has no brand
+/// Hero's public social profiles on About. The icon font has no brand
 /// glyphs, so each gets a distinct Material glyph and tint.
 enum AboutSocial {
   facebook(

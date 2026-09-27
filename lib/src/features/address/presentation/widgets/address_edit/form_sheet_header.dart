@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'circle_button.dart';
 import 'sheet_grabber.dart';
@@ -37,7 +37,7 @@ class FormSheetHeader extends StatelessWidget {
           ),
           child: Row(
             children: [
-              CircleButton(icon: JameiaIcons.close, onTap: onClose),
+              CircleButton(icon: HeroIcons.close, onTap: onClose),
               Expanded(
                 child: Text(
                   (isEdit ? 'addr.edit_address' : 'addr.new_address').tr(),

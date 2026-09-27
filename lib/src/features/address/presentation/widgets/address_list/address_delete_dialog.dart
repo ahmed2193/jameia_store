@@ -8,7 +8,7 @@ import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
 
 /// Centred delete confirmation (RE §5): pops `true` on Confirm, `false` on
-/// Cancel. Presented through `showJameiaDialog`.
+/// Cancel. Presented through `showHeroDialog`.
 class AddressDeleteDialog extends StatelessWidget {
   const AddressDeleteDialog({super.key});
 

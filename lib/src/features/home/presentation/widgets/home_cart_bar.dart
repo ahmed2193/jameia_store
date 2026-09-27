@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/motion/motion.dart';
-import '../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
@@ -44,7 +44,7 @@ class HomeCartBar extends StatelessWidget {
                   message: 'home.start_adding'.tr(
                     namedArgs: {'amount': amount},
                   ),
-                  onInfo: () => showJameiaSnackBar(
+                  onInfo: () => showHeroSnackBar(
                     context,
                     'home.min_order_info'.tr(namedArgs: {'amount': amount}),
                   ),

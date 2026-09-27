@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../design/jameia_assets.dart';
+import '../design/hero_assets.dart';
 import '../motion/motion_widgets.dart';
 import '../responsive/app_size.dart';
 
@@ -40,7 +40,7 @@ class CartBasketBadge extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             Image.asset(
-              count > 0 ? JameiaAssets.globalCartFull : JameiaAssets.globalCart,
+              count > 0 ? HeroAssets.globalCartFull : HeroAssets.globalCart,
               key: targetKey,
               width: size,
               height: size,

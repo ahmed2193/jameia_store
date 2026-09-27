@@ -1,12 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
 
 import 'fake_orders_repository.dart';
 
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_state.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_state.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 
 void main() {
   late FakeOrdersRepository repository;
@@ -24,7 +25,7 @@ void main() {
 
     await cubit.load('o1');
 
-    expect(cubit.state.status, OrderReviewStatus.loaded);
+    expect(cubit.state.status, LoadPhase.loaded);
     expect(cubit.state.canSubmit, isFalse);
     await cubit.close();
   });
@@ -68,7 +69,7 @@ void main() {
 
     expect(submitted, isFalse);
     expect(cubit.state.submitted, isFalse);
-    expect(cubit.state.failedAction, OrderReviewAction.submit);
+    expect(cubit.state.load.failedOn, FailedCall.action);
     expect(cubit.state.canSubmit, isTrue); // the rating is kept for a retry
     await cubit.close();
   });
@@ -92,7 +93,7 @@ void main() {
 
     await cubit.load('o1');
 
-    expect(cubit.state.status, OrderReviewStatus.error);
+    expect(cubit.state.status, LoadPhase.error);
     expect(cubit.state.isSignedOut, isTrue);
     await cubit.close();
   });

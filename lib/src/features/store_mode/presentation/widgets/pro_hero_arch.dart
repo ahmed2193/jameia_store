@@ -9,7 +9,7 @@ import 'pro_hero_bag.dart';
 import 'pro_hero_tone.dart';
 import 'pro_spark_painter.dart';
 
-/// Bottom of the hero band: the Jameia bag inside an outlined dome, with a
+/// Bottom of the hero band: the Hero bag inside an outlined dome, with a
 /// spark doodle at the dome's top-start corner. The dome's foot meets the
 /// band's bottom edge.
 ///

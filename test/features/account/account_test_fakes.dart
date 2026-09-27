@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/ledger.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/ledger_entry.dart';
-import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
-import 'package:jameia_mart/src/features/account/domain/usecases/get_ledger_usecase.dart';
-import 'package:jameia_mart/src/features/account/domain/usecases/get_loyalty_program_usecase.dart';
-import 'package:jameia_mart/src/features/account/domain/usecases/get_profile_usecase.dart';
-import 'package:jameia_mart/src/features/account/domain/usecases/update_profile_usecase.dart';
-import 'package:jameia_mart/src/features/account/domain/usecases/watch_ledger_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/account/domain/entities/ledger.dart';
+import 'package:hero_mart/src/features/account/domain/entities/ledger_entry.dart';
+import 'package:hero_mart/src/core/domain/entities/loyalty_program.dart';
+import 'package:hero_mart/src/features/account/domain/usecases/get_ledger_usecase.dart';
+import 'package:hero_mart/src/features/account/domain/usecases/get_loyalty_program_usecase.dart';
+import 'package:hero_mart/src/features/account/domain/usecases/get_profile_usecase.dart';
+import 'package:hero_mart/src/features/account/domain/usecases/update_profile_usecase.dart';
+import 'package:hero_mart/src/features/account/domain/usecases/watch_ledger_usecase.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 

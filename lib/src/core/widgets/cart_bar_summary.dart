@@ -5,8 +5,8 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import 'cart_basket_badge.dart';
 import 'cart_delivery_note.dart';
-import 'jameia_bar_total.dart';
-import 'jameia_money_text.dart';
+import 'hero_bar_total.dart';
+import 'hero_money_text.dart';
 
 /// The start of a basket bar ("View cart", "Checkout"): the green basket
 /// with its count ([CartBasketBadge]), the amount in bold — its digits roll
@@ -59,7 +59,7 @@ class CartBarSummary extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    JameiaBarTotal(
+                    HeroBarTotal(
                       kd: amountKd,
                       placeholder: placeholder,
                       alignment: AlignmentDirectional.centerStart,
@@ -68,7 +68,7 @@ class CartBarSummary extends StatelessWidget {
                     ),
                     if (struck != null && amountKd != null) ...[
                       const SizedBox(width: AppSpacing.s6),
-                      JameiaMoneyText(
+                      HeroMoneyText(
                         kd: struck,
                         strike: true,
                         color: AppColors.tertiaryText,

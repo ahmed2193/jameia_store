@@ -6,9 +6,8 @@ import '../../../../config/routes/routes.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/back_to_top_overlay.dart';
-import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/widgets/branded_refresh.dart';
-import '../../../../core/widgets/cubit_stale_notice.dart';
+import '../../../../core/widgets/screen_stale_notice.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import '../../domain/entities/home_feed.dart';
 import '../cubit/home_cubit.dart';
@@ -42,8 +41,6 @@ class HomeFeedView extends StatelessWidget {
   static const int _slidesOrder = 2;
   static const int _sectionsOrder = 3;
 
-  static DataFreshness _freshnessOf(HomeState state) => state.freshness;
-
   @override
   Widget build(BuildContext context) {
     return ContentClamp(
@@ -60,9 +57,7 @@ class HomeFeedView extends StatelessWidget {
                 HomeHeaderSliver(bootstrap: bootstrap),
                 // Selects only the freshness: never rebuilds the feed.
                 const SliverToBoxAdapter(
-                  child: CubitStaleNotice<HomeCubit, HomeState>(
-                    freshnessOf: _freshnessOf,
-                  ),
+                  child: ScreenStaleNotice<HomeCubit, HomeState>(),
                 ),
                 const SliverToBoxAdapter(
                   child: HomeReveal(child: HomeGreetingStrip()),

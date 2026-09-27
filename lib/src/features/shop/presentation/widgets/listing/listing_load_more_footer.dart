@@ -50,7 +50,7 @@ class ListingLoadMoreFooter extends StatelessWidget {
         if (nextPage != NextPageLoad.loading) return const SizedBox.shrink();
         return const Padding(
           padding: EdgeInsets.all(AppSpacing.s16),
-          child: Center(child: AppLoader()),
+          child: AppLoader.inline(),
         );
       },
     );

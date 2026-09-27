@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/home_icon.dart';
 
 /// Draws a backend-chosen [HomeIcon]: the uploaded image, or the Material
@@ -52,7 +52,7 @@ class HomeIconView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (icon.isImage) {
-      return JameiaImage(
+      return HeroImage(
         url: icon.imageUrl,
         width: size,
         height: size,

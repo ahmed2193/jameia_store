@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../../../../../core/widgets/jameia_secondary_button.dart';
-import '../../../../../core/widgets/jameia_sheet_header.dart';
+import '../../../../../core/widgets/hero_secondary_button.dart';
+import '../../../../../core/widgets/hero_sheet_header.dart';
 import '../../../domain/entities/cancel_order_request.dart';
 import '../../cubit/order_tracking_cubit.dart';
 import '../orders_list/cancel_order_sheet.dart';
@@ -20,11 +20,11 @@ class TrackingCancelButton extends StatelessWidget {
 
   Future<void> _cancel(BuildContext context) async {
     final cubit = context.read<OrderTrackingCubit>();
-    final request = await showJameiaBottomSheet<CancelOrderRequest>(
+    final request = await showHeroBottomSheet<CancelOrderRequest>(
       context,
       isScrollControlled: true,
       backgroundColor: AppColors.white,
-      shape: JameiaSheetHeader.shape,
+      shape: HeroSheetHeader.shape,
       builder: (_) => CancelOrderSheet(orderId: orderId),
     );
     if (request == null) return;
@@ -43,7 +43,7 @@ class TrackingCancelButton extends StatelessWidget {
         AppSpacing.gutter,
         0,
       ),
-      child: JameiaSecondaryButton(
+      child: HeroSecondaryButton(
         label: 'orders.cancel_order'.tr(),
         expanded: true,
         onPressed: cancelling ? null : () => _cancel(context),

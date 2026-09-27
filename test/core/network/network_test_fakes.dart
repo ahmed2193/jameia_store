@@ -4,12 +4,12 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:jameia_mart/src/core/network/locale_provider.dart';
-import 'package:jameia_mart/src/core/network/network_info.dart';
-import 'package:jameia_mart/src/core/network/session_expiry_notifier.dart';
-import 'package:jameia_mart/src/core/network/token_refresher.dart';
-import 'package:jameia_mart/src/core/storage/auth_tokens.dart';
-import 'package:jameia_mart/src/core/storage/session_store.dart';
+import 'package:hero_mart/src/core/network/locale_provider.dart';
+import 'package:hero_mart/src/core/network/network_info.dart';
+import 'package:hero_mart/src/core/network/session_expiry_notifier.dart';
+import 'package:hero_mart/src/core/network/token_refresher.dart';
+import 'package:hero_mart/src/core/storage/auth_tokens.dart';
+import 'package:hero_mart/src/core/storage/session_store.dart';
 
 /// Scripted transport: every request is recorded and answered by [handler]
 /// (which receives the 0-based call index).
@@ -35,7 +35,7 @@ class FakeHttpClientAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-/// A jm3eia envelope body with the given status.
+/// A Hero envelope body with the given status.
 ResponseBody envelope({
   required int status,
   required String statusMessage,

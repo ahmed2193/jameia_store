@@ -34,7 +34,7 @@ class DeliveryCodeSaveBar extends StatelessWidget {
             listenWhen: (previous, current) => !previous.saved && current.saved,
             listener: (context, _) {
               FocusScope.of(context).unfocus();
-              showJameiaSnackBar(
+              showHeroSnackBar(
                 context,
                 'account.code_updated'.tr(),
                 behavior: SnackBarBehavior.floating,

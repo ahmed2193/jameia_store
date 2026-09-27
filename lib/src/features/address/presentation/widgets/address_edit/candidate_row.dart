@@ -4,6 +4,7 @@ import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/radio_dot.dart';
 
 /// One candidate row: a radio circle + title + subtitle.
@@ -51,7 +52,7 @@ class CandidateRow extends StatelessWidget {
                           fontWeight: AppTextStyles.bold,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: AppSize.s2),
                       Text(
                         subtitle,
                         maxLines: 1,

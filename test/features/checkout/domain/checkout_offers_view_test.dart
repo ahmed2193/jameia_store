@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_reward_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_offers_view.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_offers_view.dart';
 
 final DateTime _now = DateTime(2026, 9, 26, 12);
 

@@ -55,13 +55,13 @@ class HomeHeroSearchField extends StatelessWidget {
                     const Icon(
                       Icons.search_rounded,
                       size: _glyphSize,
-                      color: kJameiaSearchHint,
+                      color: kHeroSearchHint,
                     ),
                     const SizedBox(width: AppSpacing.s10),
                     Expanded(
                       child: HomeSearchHint(
                         style: AppTextStyles.subheadingLarge.copyWith(
-                          color: kJameiaSearchHint,
+                          color: kHeroSearchHint,
                         ),
                       ),
                     ),

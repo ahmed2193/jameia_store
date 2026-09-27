@@ -10,7 +10,7 @@ import '../../../../../core/responsive/app_size.dart';
 /// edges are bitten by a row of semicircles (the page shows through them),
 /// like a till roll torn at both ends.
 ///
-/// Geometry (Keeta, measured): bites of [biteRadius] whose centres sit
+/// Geometry (Hero, measured): bites of [biteRadius] whose centres sit
 /// [biteOffset] outside the edge, one every [period], the row centred on
 /// the card; the bottom row mirrors the top one in the same columns. It is
 /// symmetric, so it needs no RTL handling.

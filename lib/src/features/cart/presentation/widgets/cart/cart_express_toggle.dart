@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
 import '../../../domain/entities/cart_snapshot.dart';
 import '../../cubit/cart_cubit.dart';
 
@@ -34,7 +34,7 @@ class CartExpressToggle extends StatelessWidget {
       context.read<CartCubit>().setExpress(enabled: enabled);
     }
 
-    return JameiaListRow(
+    return HeroListRow(
       icon: Icons.bolt_rounded,
       title: 'cart.express_title'.tr(),
       subtitle: 'cart.express_subtitle'.tr(

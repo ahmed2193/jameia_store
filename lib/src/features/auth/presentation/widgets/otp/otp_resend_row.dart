@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/branded_loader.dart';
+import '../../../../../core/widgets/branded_dot_loader.dart';
 import '../../cubit/otp_cubit.dart';
 import '../../cubit/otp_state.dart';
 
@@ -50,10 +50,7 @@ class OtpResendRow extends StatelessWidget {
             ? _ResendPhase.ready
             : _ResendPhase.waiting;
         final child = switch (phase) {
-          _ResendPhase.sending => const BrandedLoader.inline(
-            size: AppSize.s22,
-            color: AppColors.primary,
-          ),
+          _ResendPhase.sending => const BrandedDotLoader(size: AppSize.s22),
           _ResendPhase.ready => Semantics(
             liveRegion: true,
             child: TextButton.icon(

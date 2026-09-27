@@ -8,7 +8,7 @@ import 'config/di/app_global_cubits.dart';
 import 'config/routes/app_router.dart';
 import 'config/routes/routes.dart';
 import 'config/theme/app_theme.dart';
-import 'core/widgets/jameia_image.dart';
+import 'core/widgets/hero_image.dart';
 import 'features/account/presentation/cubit/setting_cubit.dart';
 import 'features/address/presentation/cubit/address_book_cubit.dart';
 import 'features/assistant/presentation/cubit/assistant_availability_cubit.dart';
@@ -25,15 +25,15 @@ import 'features/store_mode/presentation/cubit/pro_status_cubit.dart';
 
 /// App root: the app-global cubits above a [MaterialApp.router] driven by the
 /// single [appRouter] (GoRouter).
-class JameiaApp extends StatefulWidget {
-  const JameiaApp({super.key});
+class HeroApp extends StatefulWidget {
+  const HeroApp({super.key});
 
   @override
-  State<JameiaApp> createState() => _JameiaAppState();
+  State<HeroApp> createState() => _HeroAppState();
 }
 
-class _JameiaAppState extends State<JameiaApp> {
-  static const String _appTitle = 'JameiaMart';
+class _HeroAppState extends State<HeroApp> {
+  static const String _appTitle = 'Hero';
   static const double _maxTextScaleFactor = 1.3;
 
   /// One-shot guard so `initializeLocale` is scheduled only once even as the
@@ -68,7 +68,7 @@ class _JameiaAppState extends State<JameiaApp> {
     unawaited(context.read<AssistantAvailabilityCubit>().onReconnected());
     unawaited(context.read<ProStatusCubit>().onReconnected());
     unawaited(context.read<LocalizationCubit>().onReconnected());
-    JameiaImage.retryAllPendingImages();
+    HeroImage.retryAllPendingImages();
   }
 
   @override
@@ -82,7 +82,7 @@ class _JameiaAppState extends State<JameiaApp> {
         BlocProvider<LocalizationCubit>(
           create: (_) => AppGlobalCubits.localization(),
         ),
-        BlocProvider<SettingCubit>(create: (_) => SettingCubit()),
+        BlocProvider<SettingCubit>(create: (_) => AppGlobalCubits.setting()),
         BlocProvider<AuthSessionCubit>(
           create: (_) => AppGlobalCubits.authSession(),
         ),

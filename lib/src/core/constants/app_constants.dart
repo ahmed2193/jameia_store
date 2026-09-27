@@ -4,7 +4,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'JameiaMart';
+  static const String appName = 'Hero';
 
   // ── Networking ─────────────────────────────────────────────────────────────
   // The API host is build-time config: `AppEnv.apiBaseUrl` (`--dart-define`).
@@ -17,7 +17,7 @@ class AppConstants {
   /// default so NO secret ships in source; a web-service key can't be restricted
   /// by app signature, so a leaked literal is billable by anyone. When empty the
   /// LBS layer skips the billed Places calls and falls back to the native
-  /// geocoder + offline [JameiaGeocode].
+  /// geocoder + offline [HeroGeocode].
   static const String mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
 
   // ── Storage keys (shared_preferences) ──────────────────────────────────────
@@ -69,8 +69,9 @@ class AppConstants {
 
   /// A screen whose first load failed for want of a connection, while the
   /// app did not know it was offline, checks the connection and — reachable
-  /// after all — loads again by itself. At most one such automatic retry in
-  /// this window app-wide, so a backend that is down is never hammered.
+  /// after all — loads again by itself. At most one such wave of automatic
+  /// retries (the loads that failed together) in this window, so a backend
+  /// that is down is never hammered and a load never loops.
   static const Duration readRetryGap = Duration(seconds: 15);
 
   /// Search/filter typeahead debounce (business timer, not motion).
@@ -84,149 +85,6 @@ class AppConstants {
 
   /// KD is a 3-decimal currency (1 KD = 1000 fils) — prices render to 3 places.
   static const int kCurrencyDecimals = 3;
-}
-
-/// SUI spacing scale ([FACT] `dimen/sui_space_*`, dp) — a dense scale where
-/// **12 / 16dp are the dominant gutters**. Use these instead of raw numbers.
-class SuiSpace {
-  SuiSpace._();
-
-  static const double xxs = 2;
-  static const double xs = 4;
-  static const double s = 8;
-  static const double m = 12; // dominant gutter
-  static const double l = 16; // dominant gutter
-  static const double xl = 20;
-  static const double xxl = 24;
-  static const double xxxl = 32;
-
-  // Dense-scale exact steps ([FACT] `dimen/sui_space_*`) — named so call sites
-  // never fall back to raw literals between the semantic tiers above.
-  /// 1dp hairline gap ([FACT] `dimen/sui_space_1`).
-  static const double s1 = 1;
-
-  /// 3dp micro gap ([FACT] `dimen/sui_space_3`).
-  static const double s3 = 3;
-
-  /// 5dp gap ([FACT] `dimen/sui_space_5`).
-  static const double s5 = 5;
-
-  /// 6dp gap ([FACT] `dimen/sui_space_6`).
-  static const double s6 = 6;
-
-  /// 9dp gap ([FACT] `dimen/sui_space_9`).
-  static const double s9 = 9;
-
-  /// 10dp gap ([FACT] `dimen/sui_space_10`) — common module gutter.
-  static const double s10 = 10;
-
-  /// 11dp gap ([FACT] `dimen/sui_space_11`).
-  static const double s11 = 11;
-
-  /// 13dp gap ([FACT] `dimen/sui_space_13`).
-  static const double s13 = 13;
-
-  /// 14dp gap ([FACT] `dimen/sui_space_14`).
-  static const double s14 = 14;
-
-  /// 15dp gap ([FACT] `dimen/sui_space_15`).
-  static const double s15 = 15;
-
-  /// 18dp gap ([FACT] `dimen/sui_space_18`) — inter-tab gap.
-  static const double s18 = 18;
-
-  /// 19dp gap ([FACT] `dimen/sui_space_19`).
-  static const double s19 = 19;
-
-  /// 22dp gap ([FACT] `dimen/sui_space_22`).
-  static const double s22 = 22;
-
-  /// 26dp gap ([FACT] `dimen/sui_space_26`).
-  static const double s26 = 26;
-
-  /// 28dp gap ([FACT] `dimen/sui_space_28`).
-  static const double s28 = 28;
-
-  /// 30dp gap ([FACT] `dimen/sui_space_30`).
-  static const double s30 = 30;
-
-  /// 36dp gap ([FACT] `dimen/sui_space_36`).
-  static const double s36 = 36;
-
-  /// 40dp gap ([FACT] `dimen/sui_space_40`).
-  static const double s40 = 40;
-
-  /// 44dp gap ([FACT] `dimen/sui_space_44`) — primary control height.
-  static const double s44 = 44;
-
-  /// 46dp gap ([FACT] `dimen/sui_space_46`).
-  static const double s46 = 46;
-
-  /// 48dp gap ([FACT] `dimen/sui_space_48`) — min touch target.
-  static const double s48 = 48;
-
-  /// 50dp gap ([FACT] `dimen/sui_space_50`).
-  static const double s50 = 50;
-
-  /// 66dp gap ([FACT] `dimen/sui_space_66`).
-  static const double s66 = 66;
-
-  /// 300dp fixed block ([FACT] `dimen/sui_space_300`).
-  static const double s300 = 300;
-
-  // Additional layout rungs (component widths/heights that recur across feature
-  // widgets — avatars, cards, thumbnails, banners). Same convention: a named
-  // step so call sites never fall back to a raw literal.
-  static const double s34 = 34;
-  static const double s37 = 37; // compact PLP filter-chip strip height
-  static const double s38 = 38;
-  static const double s45 = 45; // compact PLP circle-row collapsed extent
-  static const double s54 = 54;
-  static const double s56 = 56;
-  static const double s60 = 60;
-  static const double s64 = 64;
-  static const double s72 = 72;
-  static const double s80 = 80;
-  static const double s84 = 84; // compact PLP circle-row expanded extent
-  static const double s90 = 90;
-  static const double s92 = 92;
-  static const double s96 = 96;
-  static const double s116 = 116; // PLP filter-sheet section rail width
-  static const double s140 = 140;
-  static const double s200 = 200;
-  static const double s220 = 220;
-}
-
-/// Icon glyph-size ramp (dp) — recurring `Icon(size:)` rungs. Mirrors the
-/// [SuiSpace] / `AppTextStyles.size*` ramp convention so an inline icon size
-/// references a named step instead of a raw magic number.
-class SuiIcon {
-  SuiIcon._();
-
-  static const double size9 = 9;
-  static const double size11 = 11;
-  static const double size12 = 12;
-  static const double size13 = 13;
-  static const double size14 = 14;
-  static const double size15 = 15;
-  static const double size16 = 16;
-  static const double size17 = 17;
-  static const double size18 = 18;
-  static const double size20 = 20;
-  static const double size22 = 22;
-  static const double size23 = 23;
-  static const double size24 = 24;
-  static const double size26 = 26;
-  static const double size28 = 28;
-  static const double size30 = 30;
-  static const double size32 = 32;
-  static const double size34 = 34;
-  static const double size36 = 36;
-  static const double size40 = 40;
-  static const double size52 = 52;
-  static const double size56 = 56;
-  static const double size64 = 64;
-  static const double size72 = 72;
 }
 
 /// SUI corner radii ([FACT] `dimen/.../radius`) — cards, sheets, buttons, chips.
@@ -387,9 +245,9 @@ class SuiSize {
   // ── Layout convention aliases ───────────────────────────────────────────────
   /// Standardized outer page gutter (dp). 1Day keeps a consistent ≈12dp
   /// page edge inset for top-level home sections (strips, free-shipping,
-  /// masonry sliver, deal modules); in-card padding stays at SuiSpace.s(8).
+  /// masonry sliver, deal modules); in-card padding stays at 8dp.
   /// Use this alias at section call sites to kill the 8↔12 gutter drift
-  /// (sizing_spacing.md #35). Value mirrors SuiSpace.m.
+  /// (sizing_spacing.md #35).
   static const double pageGutter = 12;
 
   /// Masonry / product-card image aspect (W÷H). 3:4 portrait, matches the
@@ -476,19 +334,4 @@ class SuiSize {
 
   /// Store banner-hero height.
   static const double storeBannerH = 190;
-}
-
-/// Image decode-width budgets (px) for [ProductImage.memWidth], keyed per
-/// surface so a 56dp tile doesn't decode at hero resolution. Targets match the
-/// 1Day APK analysis (display-side px on a ~3× phone):
-/// tile 56dp≈168px → 160 · strip 96–132dp≈300px → 320 · card ~270px → 600 ·
-/// hero full-bleed ≈1080px → 1080. Oversized decode is the top Android
-/// list-jank + GC-pressure cause; pass the right token at each call site.
-class SuiImage {
-  SuiImage._();
-
-  static const int memTile = 160; // icon circles / small thumbnails
-  static const int memStrip = 320; // editorial strip & rail cards
-  static const int memCard = 600; // masonry / catalog product cards (default)
-  static const int memHero = 1080; // full-bleed hero banners
 }

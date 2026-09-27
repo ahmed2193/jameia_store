@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../../core/utils/address_display.dart';
 
 /// Tag text, the address line (city, block, street, building, floor,
@@ -12,7 +12,7 @@ import '../../../../../core/utils/address_display.dart';
 class AddressRowDetails extends StatelessWidget {
   const AddressRowDetails({super.key, required this.address});
 
-  final JameiaAddressEntity address;
+  final HeroAddressEntity address;
 
   /// "Block 7" for a number; a named part ("Fahad Al-Salem Street") as is.
   static final RegExp _startsWithDigit = RegExp(r'^\d');

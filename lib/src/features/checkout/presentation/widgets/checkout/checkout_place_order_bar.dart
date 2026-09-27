@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
-import '../../../../../core/widgets/jameia_bottom_bar.dart';
+import '../../../../../core/widgets/hero_bottom_bar.dart';
 import '../../cubit/checkout_cubit.dart';
 import '../../cubit/checkout_state.dart';
 import 'checkout_bar_line.dart';
@@ -54,7 +54,7 @@ class _CheckoutPlaceOrderBarState extends State<CheckoutPlaceOrderBar> {
       (cubit) => cubit.state.status == CheckoutStatus.placed,
     );
     final offline = ConnectivityScope.isOfflineOf(context);
-    return JameiaBottomBar(
+    return HeroBottomBar(
       padding: const EdgeInsetsDirectional.symmetric(
         horizontal: AppSpacing.s12,
         vertical: AppSpacing.s8,

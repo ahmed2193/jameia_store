@@ -6,15 +6,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/change_bump.dart';
-import 'package:jameia_mart/src/core/motion/collapse_reveal.dart';
-import 'package:jameia_mart/src/core/motion/confetti_overlay.dart';
-import 'package:jameia_mart/src/core/motion/confetti_overlay_view.dart';
-import 'package:jameia_mart/src/core/motion/entrance_cascade.dart';
-import 'package:jameia_mart/src/core/motion/entrance_cascade_item.dart';
-import 'package:jameia_mart/src/core/motion/rolling_number.dart';
-import 'package:jameia_mart/src/core/navigation/jameia_slide_fade_transition.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_bar_total.dart';
+import 'package:hero_mart/src/core/motion/change_bump.dart';
+import 'package:hero_mart/src/core/motion/collapse_reveal.dart';
+import 'package:hero_mart/src/core/motion/confetti_overlay.dart';
+import 'package:hero_mart/src/core/motion/confetti_overlay_view.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
+import 'package:hero_mart/src/core/motion/rolling_number.dart';
+import 'package:hero_mart/src/core/navigation/hero_slide_fade_transition.dart';
+import 'package:hero_mart/src/core/widgets/hero_bar_total.dart';
 
 Widget _host(Widget child, {bool reduced = false}) => MaterialApp(
   home: MediaQuery(
@@ -116,12 +116,12 @@ void main() {
     });
   });
 
-  testWidgets('JameiaBarTotal keeps its roller across a pending state', (
+  testWidgets('HeroBarTotal keeps its roller across a pending state', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     Widget bar(double? kd) => _host(
-      JameiaBarTotal(
+      HeroBarTotal(
         kd: kd,
         placeholder: 'Updating…',
         style: const TextStyle(fontSize: 18),
@@ -188,7 +188,7 @@ void main() {
           data: const MediaQueryData(),
           child: Directionality(
             textDirection: TextDirection.ltr,
-            child: JameiaSlideFadeTransition(
+            child: HeroSlideFadeTransition(
               animation: controller,
               curve: Curves.easeOut,
               child: Text('page $i'),

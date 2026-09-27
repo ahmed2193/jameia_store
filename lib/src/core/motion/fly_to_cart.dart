@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_spacing.dart';
 import 'motion.dart';
 
-/// **core/motion/fly_to_cart.dart** — the Jameia "add to cart" flight: when a
+/// **core/motion/fly_to_cart.dart** — the Hero "add to cart" flight: when a
 /// product is added, a shrinking thumbnail arcs from the tapped item along a
 /// parabola into the cart badge, which then pops (the badge handles its own pop
 /// via `PopScale` keyed on quantity).

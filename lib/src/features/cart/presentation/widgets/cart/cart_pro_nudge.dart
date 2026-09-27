@@ -15,8 +15,8 @@ import '../../../../../core/utils/formatters.dart';
 import '../../../../store_mode/presentation/cubit/pro_status_cubit.dart';
 import '../../cubit/cart_cubit.dart';
 
-/// Under the delivery row, for a customer without Jm3eia Pro whose basket
-/// pays a delivery fee: "Save 0.750 KD on delivery with Jm3eia Pro · Join ›"
+/// Under the delivery row, for a customer without Hero Pro whose basket
+/// pays a delivery fee: "Save 0.750 KD on delivery with Hero Pro · Join ›"
 /// — the real fee, only while Pro includes free delivery, never for a
 /// member. Opens the Pro page (a guest signs in from there). Grows in and
 /// out with the fee.

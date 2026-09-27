@@ -6,35 +6,42 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/motion/motion.dart';
-import '../../../../core/widgets/jameia_image.dart';
 import '../../../../core/widgets/round_outlined_button.dart';
 import '../widgets/pdp_dots_pill.dart';
 import '../widgets/pdp_thumbnail_strip.dart';
+import '../widgets/pdp_zoomable_photo.dart';
 
-/// Full-screen, pinch-to-zoom viewer of a product's photos on light grey:
-/// a round close button at the reading start, the photos, the dots pill and
-/// a strip of thumbnails that jumps to a photo. Pops with the page it was
-/// left on (close button or system back), so the product page's gallery
-/// follows. One photo: no dots, no strip.
+/// Full-screen viewer of a product's photos on light grey, Hero
+/// style: a round close button at the reading start, the photos (pinch or
+/// double-tap to zoom; the pager holds still while one is zoomed), the dots
+/// pill and a strip of thumbnails that brings a photo up — its lone
+/// thumbnail too when there is one photo. The photo flies in from the
+/// product page's gallery and back to the page it was left on (close button
+/// or system back), so the gallery follows.
 class PdpImageViewerPage extends StatefulWidget {
   const PdpImageViewerPage({
     super.key,
     required this.images,
     required this.initialIndex,
+    required this.productSlug,
   });
 
   final List<String> images;
   final int initialIndex;
+
+  /// The product the photos belong to (scopes their flight).
+  final String productSlug;
 
   @override
   State<PdpImageViewerPage> createState() => _PdpImageViewerPageState();
 }
 
 class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
-  static const double _maxZoom = 4;
-
   late final PageController _controller;
   late int _page;
+
+  /// The photo shown is zoomed in: the pager holds still.
+  bool _zoomed = false;
 
   @override
   void initState() {
@@ -68,10 +75,19 @@ class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
     );
   }
 
+  void _onZoomChanged(bool zoomed) {
+    if (zoomed != _zoomed) setState(() => _zoomed = zoomed);
+  }
+
+  /// A new photo comes up at rest.
+  void _onPageChanged(int page) => setState(() {
+    _page = page;
+    _zoomed = false;
+  });
+
   @override
   Widget build(BuildContext context) {
     final images = widget.images;
-    final paged = images.length > 1;
     return PopScope<int>(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -88,8 +104,11 @@ class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
                   children: [
                     PageView.builder(
                       controller: _controller,
+                      physics: _zoomed
+                          ? const NeverScrollableScrollPhysics()
+                          : null,
                       itemCount: images.length,
-                      onPageChanged: (page) => setState(() => _page = page),
+                      onPageChanged: _onPageChanged,
                       itemBuilder: (context, index) => Semantics(
                         image: true,
                         label: 'product.image_of'.tr(
@@ -98,18 +117,11 @@ class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
                             'total': '${images.length}',
                           },
                         ),
-                        child: InteractiveViewer(
-                          maxScale: _maxZoom,
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.symmetric(
-                              horizontal: AppSpacing.s24,
-                              vertical: AppSpacing.s48,
-                            ),
-                            child: JameiaImage(
-                              url: images[index],
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                        child: PdpZoomablePhoto(
+                          url: images[index],
+                          index: index,
+                          productSlug: widget.productSlug,
+                          onZoomChanged: _onZoomChanged,
                         ),
                       ),
                     ),
@@ -128,22 +140,22 @@ class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
                         ),
                       ),
                     ),
-                    if (paged)
-                      PositionedDirectional(
-                        bottom: AppSpacing.s24,
-                        start: 0,
-                        end: 0,
-                        child: Center(
-                          child: PdpDotsPill(
-                            controller: _controller,
-                            count: images.length,
-                          ),
+                    PositionedDirectional(
+                      bottom: AppSpacing.s24,
+                      start: 0,
+                      end: 0,
+                      // Nothing for one photo: it is not a pager.
+                      child: Center(
+                        child: PdpDotsPill(
+                          controller: _controller,
+                          count: images.length,
                         ),
                       ),
+                    ),
                   ],
                 ),
               ),
-              if (paged)
+              if (images.isNotEmpty)
                 PdpThumbnailStrip(
                   images: images,
                   current: _page,

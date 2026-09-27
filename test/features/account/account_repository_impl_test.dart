@@ -1,12 +1,12 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/models/models.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/account/data/datasources/account_local_data_source.dart';
-import 'package:jameia_mart/src/features/account/data/datasources/account_remote_data_source.dart';
-import 'package:jameia_mart/src/features/account/data/repositories/account_repository_impl.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/profile_update.dart';
+import 'package:hero_mart/src/core/data/models/models.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/account/data/datasources/account_local_data_source.dart';
+import 'package:hero_mart/src/features/account/data/datasources/account_remote_data_source.dart';
+import 'package:hero_mart/src/features/account/data/repositories/account_repository_impl.dart';
+import 'package:hero_mart/src/features/account/domain/entities/profile_update.dart';
 
 class _FakeRemote implements AccountRemoteDataSource {
   Object? error;

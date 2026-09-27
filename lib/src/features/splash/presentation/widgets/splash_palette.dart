@@ -1,49 +1,39 @@
 import 'dart:ui';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_mark_painting.dart';
 
-/// The colours of one splash scene: the white logo on the brand green of the
-/// launch screen ([onBrand]) or the full-colour logo on white ([onWhite],
-/// what the burst reveal turns the screen into).
+/// The colours of one splash scene: the white bag in its yellow cape on the
+/// Hero green of the launch screen ([onBrand]), or the full-colour logo on
+/// white ([onWhite], what the burst reveal turns the screen into).
 class SplashPalette {
   const SplashPalette._({
     required this.background,
-    required this.cartInk,
-    required this.cartFill,
-    required this.slat,
-    required this.letterInk,
-    required this.letterAccent,
-    required this.swoosh,
-    required this.stripe,
-    required this.leaf,
+    required this.mark,
+    required this.letter,
     required this.speedLine,
-    required this.shadow,
     required this.bottle,
+    required this.bottleCap,
     required this.fruit,
+    required this.fruitLeaf,
     required this.greens,
     required this.glow,
     required this.aurora,
     required this.ripple,
     required this.confetti,
     required this.shine,
-    required this.letterFlash,
   });
 
   /// White logo on the brand green — the native launch screen's colours.
   static const SplashPalette onBrand = SplashPalette._(
     background: AppColors.primary,
-    cartInk: AppColors.white,
-    cartFill: AppColors.white,
-    slat: AppColors.accent4,
-    letterInk: AppColors.white,
-    letterAccent: AppColors.white,
-    swoosh: AppColors.white,
-    stripe: AppColors.accent4,
-    leaf: AppColors.accent4,
+    mark: HeroMarkColors.onBrand,
+    letter: AppColors.white,
     speedLine: AppColors.subtitleOverlay,
-    shadow: AppColors.primaryDark,
-    bottle: AppColors.white,
+    bottle: AppColors.brandLightBg,
+    bottleCap: AppColors.accent4,
     fruit: AppColors.accent3,
+    fruitLeaf: AppColors.brandDeep,
     greens: AppColors.brandDeep,
     glow: AppColors.brandDarkBg,
     aurora: [AppColors.brandDarkBg, AppColors.accent4, AppColors.brandDeep],
@@ -55,25 +45,18 @@ class SplashPalette {
       AppColors.accent3,
     ],
     shine: AppColors.white,
-    letterFlash: AppColors.accent4,
   );
 
-  /// The logo's own colours on white: deep green "Jameia", green "Mart",
-  /// orange slats and stripes.
+  /// The logo's own colours on white: green bag, amber cape, deep green name.
   static const SplashPalette onWhite = SplashPalette._(
     background: AppColors.white,
-    cartInk: AppColors.brandDeep,
-    cartFill: AppColors.white,
-    slat: AppColors.accent3,
-    letterInk: AppColors.brandDeep,
-    letterAccent: AppColors.primary,
-    swoosh: AppColors.primary,
-    stripe: AppColors.accent3,
-    leaf: AppColors.primary,
+    mark: HeroMarkColors.onWhite,
+    letter: AppColors.primaryDark,
     speedLine: AppColors.brandLightBg,
-    shadow: AppColors.overlayDivider,
     bottle: AppColors.brandLightBg,
+    bottleCap: AppColors.proAmber,
     fruit: AppColors.accent3,
+    fruitLeaf: AppColors.primary,
     greens: AppColors.primary,
     glow: AppColors.brandLightBg,
     aurora: [
@@ -85,36 +68,26 @@ class SplashPalette {
     confetti: [
       AppColors.primary,
       AppColors.accent3,
-      AppColors.accent4,
+      AppColors.proAmber,
       AppColors.brandDeep,
     ],
     shine: AppColors.white,
-    letterFlash: AppColors.accent3,
   );
 
   final Color background;
 
-  /// Handle, stem, bowl outline, knob and wheels.
-  final Color cartInk;
+  /// The bag, its cape and the cape's underside.
+  final HeroMarkColors mark;
 
-  /// Inside of the basket bowl.
-  final Color cartFill;
-  final Color slat;
-
-  /// "ameia" — and [letterAccent] for "Mart".
-  final Color letterInk;
-  final Color letterAccent;
-  final Color swoosh;
-  final Color stripe;
-  final Color leaf;
+  /// The delivered name (and the tagline under it).
+  final Color letter;
   final Color speedLine;
-
-  /// Ground shadow under the hopping cart (drawn translucent).
-  final Color shadow;
 
   /// The groceries of the basket scene.
   final Color bottle;
+  final Color bottleCap;
   final Color fruit;
+  final Color fruitLeaf;
   final Color greens;
 
   /// Soft light behind the logo.
@@ -123,15 +96,12 @@ class SplashPalette {
   /// Colours of the slow blobs drifting in the background.
   final List<Color> aurora;
 
-  /// Landing and tap rings.
+  /// Take-off, arrival and tap rings.
   final Color ripple;
 
-  /// Pieces of the landing burst.
+  /// Pieces of the celebration burst.
   final List<Color> confetti;
 
-  /// The light that sweeps the finished name.
+  /// The light that sweeps the finished lockup.
   final Color shine;
-
-  /// Tint a letter springs in with before it settles to its colour.
-  final Color letterFlash;
 }

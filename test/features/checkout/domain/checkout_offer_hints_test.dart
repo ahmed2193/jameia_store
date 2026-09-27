@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_reward_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_offer_hints.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_offer_hints.dart';
 
 /// The live offers: free delivery over 5 KWD (all branches), 10% over 15 KWD
 /// capped at 3 KWD (Salmiya b1 + Hawalli b2), 2 KWD off 3 dairy items, and a

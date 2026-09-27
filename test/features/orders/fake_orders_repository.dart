@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/data/mappers/order_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/order_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/cancel_order_request.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/orders_page.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/product_review_request.dart';
-import 'package:jameia_mart/src/features/orders/domain/repositories/orders_repository.dart';
+import 'package:hero_mart/src/core/data/mappers/order_mapper.dart';
+import 'package:hero_mart/src/core/data/models/order_model.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/cancel_order_request.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/orders_page.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/product_review_request.dart';
+import 'package:hero_mart/src/features/orders/domain/repositories/orders_repository.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 import 'order_test_fixtures.dart';

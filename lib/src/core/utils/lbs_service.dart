@@ -7,11 +7,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
 import '../constants/app_constants.dart';
-import 'jameia_geocode.dart';
+import 'hero_geocode.dart';
 
 /// A fully-resolved place for a pinned [LatLng] — the structured name / city /
 /// area / street / house breakdown the address form pre-fills and the candidate
-/// list renders. Mirrors Jameia's `poi_detail` / `nearby_address` response.
+/// list renders. Mirrors Hero's `poi_detail` / `nearby_address` response.
 class ResolvedAddress {
   const ResolvedAddress({
     required this.pos,
@@ -39,7 +39,7 @@ class ResolvedAddress {
   /// Locality / city (e.g. "Kuwait City", "Salmiya").
   final String city;
 
-  /// District / neighbourhood (sub-locality), Jameia's "area".
+  /// District / neighbourhood (sub-locality), Hero's "area".
   final String area;
 
   /// Thoroughfare / street name.
@@ -80,7 +80,7 @@ class ResolvedAddress {
   }
 }
 
-/// Async LBS layer over [JameiaGeocode]. Resolves coordinates to REAL,
+/// Async LBS layer over [HeroGeocode]. Resolves coordinates to REAL,
 /// locale-aware places:
 ///   • [reverse]  — pin → street address (native geocoder).
 ///   • [nearby]   — pin → the selected point + its 2 nearest REAL places
@@ -88,15 +88,15 @@ class ResolvedAddress {
 ///   • [search]   — free text → real matching places (Google Places Text Search).
 /// Every call is localized to the app locale and falls back gracefully to the
 /// deterministic offline data when the network / API is unavailable.
-class JameiaLbs {
-  JameiaLbs._();
+class HeroLbs {
+  HeroLbs._();
 
   /// Google Maps Platform key for the HTTP Places endpoints, read from
   /// [AppConstants.mapsApiKey] (injected via `--dart-define=MAPS_API_KEY=...`).
   /// NEVER hardcode it — a web-service key can't be constrained by the Android
   /// app-signature restriction, so a leaked literal is billable by anyone. When
   /// empty the Places calls are skipped and lookups fall back to the native
-  /// geocoder + offline [JameiaGeocode].
+  /// geocoder + offline [HeroGeocode].
   static String get _key => AppConstants.mapsApiKey;
 
   static const _placesBase = 'https://maps.googleapis.com/maps/api/place';
@@ -113,7 +113,7 @@ class JameiaLbs {
     LatLng p, {
     String localeId = 'en',
   }) async {
-    final offline = JameiaGeocode.reverse(p);
+    final offline = HeroGeocode.reverse(p);
     try {
       // Built inside the try: with no native geocoder registered (unit tests,
       // unsupported platforms) the constructor throws → offline fallback.
@@ -187,7 +187,7 @@ class JameiaLbs {
       }
     }
     // Offline fallback: pin address + deterministic nearby variations.
-    final offsets = JameiaGeocode.nearbyCandidates(p);
+    final offsets = HeroGeocode.nearbyCandidates(p);
     for (final c in offsets.skip(1).take(count)) {
       final r = await reverse(c.pos, localeId: localeId);
       out.add(r.asCandidate);
@@ -259,7 +259,7 @@ class JameiaLbs {
     } catch (_) {
       /* fall through */
     }
-    return JameiaGeocode.autocomplete(q);
+    return HeroGeocode.autocomplete(q);
   }
 
   // ── mapping helpers ─────────────────────────────────────────────────────────

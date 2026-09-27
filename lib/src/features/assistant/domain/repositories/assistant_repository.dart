@@ -10,7 +10,7 @@ import '../entities/assistant_message_entity.dart';
 import '../entities/assistant_stream_event.dart';
 import '../entities/assistant_thread.dart';
 
-/// The jm3eia shopping assistant (`/v1/assistant/*`). Signed in → the
+/// The Hero shopping assistant (`/v1/assistant/*`). Signed in → the
 /// customer's threads; signed out → the device guest's (`X-Assistant-Guest`,
 /// merged into the customer at login).
 abstract class AssistantRepository {

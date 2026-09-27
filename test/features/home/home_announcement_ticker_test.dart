@@ -3,10 +3,10 @@
 // motion, and says where it is with its dots.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_announcement_item.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_announcement_dots.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_announcement_ticker.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_announcement_item.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_announcement_dots.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_announcement_ticker.dart';
 
 const List<HomeAnnouncementItem> _items = [
   HomeAnnouncementItem(id: 'a1', text: 'Free delivery over 5.000 KWD'),

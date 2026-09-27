@@ -12,7 +12,7 @@ import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/cart_bar_summary.dart';
-import '../../../../../core/widgets/jameia_bottom_bar.dart';
+import '../../../../../core/widgets/hero_bottom_bar.dart';
 import '../../../../../core/widgets/sticker_button.dart';
 import '../../cubit/cart_cubit.dart';
 import '../../cubit/cart_state.dart';
@@ -91,7 +91,7 @@ class _CartCheckoutBarState extends State<CartCheckoutBar> {
         final reason = _reason(state);
         final busy = state.busyAction == CartAction.sync;
         final totals = state.cart.totals;
-        return JameiaBottomBar(
+        return HeroBottomBar(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

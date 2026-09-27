@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/responsive/app_size.dart';
 
 /// Live search field — `autocomplete(query)` typeahead (RE §3.2 step 3).
 class AddressSearchBox extends StatelessWidget {
@@ -19,7 +20,7 @@ class AddressSearchBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 40,
+      height: AppSize.s40,
       padding: const EdgeInsetsDirectional.symmetric(
         horizontal: AppSpacing.s12,
       ),
@@ -29,7 +30,7 @@ class AddressSearchBox extends StatelessWidget {
         boxShadow: const [
           BoxShadow(
             color: AppColors.overlayDivider,
-            blurRadius: 8,
+            blurRadius: AppSize.s8,
             offset: Offset(0, 2),
           ),
         ],
@@ -37,8 +38,8 @@ class AddressSearchBox extends StatelessWidget {
       child: Row(
         children: [
           const Icon(
-            JameiaIcons.search,
-            size: 18,
+            HeroIcons.search,
+            size: AppSize.s18,
             color: AppColors.secondaryText,
           ),
           const SizedBox(width: AppSpacing.s8),

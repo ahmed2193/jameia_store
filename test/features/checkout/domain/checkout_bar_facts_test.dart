@@ -1,15 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_loyalty_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_savings.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_bar_fact.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_bar_facts.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_offer_hints.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_loyalty_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_savings.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_bar_fact.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_bar_facts.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_offer_hints.dart';
 
 const CartLineEntity _line = CartLineEntity(
   key: 'l1',

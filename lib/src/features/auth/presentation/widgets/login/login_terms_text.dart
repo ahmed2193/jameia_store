@@ -1,13 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// Terms-of-service / privacy-policy fine print with tappable links.
+/// The fine print at the foot of the sign-in sheet: continuing accepts the
+/// store's Terms & Conditions and Privacy Policy, both underlined links that
+/// open the store's own pages (`GET /v1/pages/{slug}`, pushed so "back"
+/// returns to sign-in with the number still typed).
 class LoginTermsText extends StatefulWidget {
   const LoginTermsText({super.key});
 
@@ -16,24 +20,18 @@ class LoginTermsText extends StatefulWidget {
 }
 
 class _LoginTermsTextState extends State<LoginTermsText> {
-  late final TapGestureRecognizer _terms;
-  late final TapGestureRecognizer _privacy;
+  /// CMS page slugs.
+  static const String _termsSlug = 'terms';
+  static const String _privacySlug = 'privacy';
 
-  @override
-  void initState() {
-    super.initState();
-    _terms = TapGestureRecognizer()
-      ..onTap = () => _open('auth.terms_of_service'.tr());
-    _privacy = TapGestureRecognizer()
-      ..onTap = () => _open('auth.privacy_policy'.tr());
-  }
+  late final TapGestureRecognizer _terms = TapGestureRecognizer()
+    ..onTap = () => _open(_termsSlug);
+  late final TapGestureRecognizer _privacy = TapGestureRecognizer()
+    ..onTap = () => _open(_privacySlug);
 
-  void _open(String label) {
+  void _open(String slug) {
     if (!mounted) return;
-    showJameiaSnackBar(
-      context,
-      'auth.opening_x'.tr(namedArgs: {'label': label}),
-    );
+    context.push(Routes.contentPage, extra: slug);
   }
 
   @override
@@ -46,12 +44,13 @@ class _LoginTermsTextState extends State<LoginTermsText> {
   @override
   Widget build(BuildContext context) {
     final base = AppTextStyles.captionLarge.copyWith(
-      color: AppColors.tertiaryText,
+      color: AppColors.secondaryText,
       height: AppSize.lh1_4,
     );
     final link = base.copyWith(
-      color: AppColors.link,
-      fontWeight: AppTextStyles.medium,
+      color: AppColors.primaryText,
+      decoration: TextDecoration.underline,
+      decorationColor: AppColors.primaryText,
     );
     return Text.rich(
       TextSpan(

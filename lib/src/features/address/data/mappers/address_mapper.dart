@@ -1,13 +1,13 @@
 import '../../../../core/domain/entities/geo_point_entity.dart';
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../models/address_model.dart';
 
 /// API row → entity. Coordinates become a pin only when both are present.
 extension AddressModelMapper on AddressModel {
-  JameiaAddressEntity toEntity() {
+  HeroAddressEntity toEntity() {
     final latitude = lat;
     final longitude = lng;
-    return JameiaAddressEntity(
+    return HeroAddressEntity(
       id: id,
       label: label,
       city: city,
@@ -29,12 +29,12 @@ extension AddressModelMapper on AddressModel {
 }
 
 extension AddressModelListMapper on List<AddressModel> {
-  List<JameiaAddressEntity> toEntities() =>
+  List<HeroAddressEntity> toEntities() =>
       map((model) => model.toEntity()).toList(growable: false);
 }
 
 /// Entity → API row, for the device cache (the write path).
-extension AddressEntityModelMapper on JameiaAddressEntity {
+extension AddressEntityModelMapper on HeroAddressEntity {
   AddressModel toModel() => AddressModel(
     id: id,
     label: label,
@@ -54,7 +54,7 @@ extension AddressEntityModelMapper on JameiaAddressEntity {
   );
 }
 
-extension AddressEntityListModelMapper on List<JameiaAddressEntity> {
+extension AddressEntityListModelMapper on List<HeroAddressEntity> {
   List<AddressModel> toModels() =>
       map((address) => address.toModel()).toList(growable: false);
 }

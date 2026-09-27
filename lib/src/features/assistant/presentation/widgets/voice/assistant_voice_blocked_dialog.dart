@@ -19,7 +19,7 @@ class AssistantVoiceBlockedDialog extends StatelessWidget {
   /// Asks, then opens the settings when the customer agrees.
   static Future<void> show(BuildContext context) async {
     final voice = context.read<AssistantVoiceCubit>();
-    final settings = await showJameiaDialog<bool>(
+    final settings = await showHeroDialog<bool>(
       context,
       barrierLabel: 'assistant.voice.blocked_title'.tr(),
       barrierColor: AppColors.overlayPrimary,

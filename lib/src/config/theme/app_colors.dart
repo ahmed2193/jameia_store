@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Jameia design-token color system — extracted verbatim from the APK theme JSON
+/// Hero design-token color system — extracted verbatim from the APK theme JSON
 /// (`assets/Theme/base/base/{light,dark}.json`, v3.5.214).
 ///
 /// 3-tier W3C token model: reference palettes (`_Ramp`s) → semantic system tokens
@@ -9,15 +9,13 @@ import 'package:flutter/material.dart';
 /// Brand color = yellow `#FFE41F` (light) / `#F5DA0F` (dark); foreground = black/white.
 /// Raw `Color(0x..)` literals live ONLY in this token layer — never in feature code.
 ///
-/// Light is the primary surface (Jameia ships light-first). Full dark ramps are kept
-/// for parity and surfaced through [JameiaColors] (the [ThemeExtension]).
+/// Light is the primary surface (Hero ships light-first). Full dark ramps are kept
+/// for parity and surfaced through [HeroColors] (the [ThemeExtension]).
 class AppColors {
   AppColors._();
 
   // ── Brand (yellow) ─────────────────────────────────────────────────────────
-  static const Color primary = Color(
-    0xFF22C55E,
-  ); // JameiaMart green (green-500)
+  static const Color primary = Color(0xFF22C55E); // Hero green (green-500)
   static const Color primaryDark = Color(
     0xFF16A34A,
   ); // green-600 (pressed/border)
@@ -27,17 +25,13 @@ class AppColors {
   static const Color brandDarkBg = Color(0xFF4ADE80); // green-400 brand tint
   static const Color brandLightBg = Color(0xFFDCFCE7); // green-100 brand tint
 
-  /// Deep brand green (the "Jameia" wordmark of the logo, green-700): brand
+  /// Deep brand green (the "Hero" wordmark of the logo, green-700): brand
   /// text on white (5:1) — the search screens' highlights and links.
   static const Color brandDeep = Color(0xFF15803D);
 
-  /// Chosen / applied surface: Keeta's selected-choice mint (#EFFFF4);
+  /// Chosen / applied surface: Hero's selected-choice mint (#EFFFF4);
   /// lighter than [brandLightBg].
   static const Color brandWash = Color(0xFFF0FDF4);
-
-  /// Receipt paper: Keeta's receipt fill (neutral c2); neutral, where
-  /// [smallBackground] is slate.
-  static const Color receiptPaper = Color(0xFFF5F6FA);
 
   /// Press highlight: [primary] at 10 %, the one brand touch tint.
   static const Color pressTint = Color(0x1A22C55E);
@@ -48,12 +42,12 @@ class AppColors {
   static const Color stickerOutline = Color(0xFF0B2E13);
 
   // ── Neutral semantic roles (light) ──────────────────────────────────────────
-  // Jameia's rendered Mach screens use #222222 primary / #808080 secondary
+  // Hero's rendered Mach screens use #222222 primary / #808080 secondary
   // (verified across every bundle.css.json) — softer than the theme-JSON
   // #000/#555. We match the rendered values; `black` below stays true #000.
   static const Color primaryText = Color(
     0xFF111827,
-  ); // slate-900 ink (JameiaMart Text)
+  ); // slate-900 ink (Hero Text)
   static const Color secondaryText = Color(0xFF808080);
   static const Color tertiaryText = Color(0xFF999999); // neutral.c8
   static const Color disabledText = Color(0xFFC2C2C2); // neutral.c6
@@ -78,7 +72,7 @@ class AppColors {
   static const Color accent2 = Color(0xFF00B080); // green.c7
   static const Color accent2Dark = Color(0xFF00805D); // green.c9
   static const Color accent2Light = Color(0xFFE8FCF8); // green.c1
-  static const Color accent3 = Color(0xFFF99022); // JameiaMart accent orange
+  static const Color accent3 = Color(0xFFF99022); // Hero accent orange
   static const Color accent3Dark = Color(0xFFE07D12); // accent orange (pressed)
   static const Color accent3Light = Color(
     0xFFFEF1E1,
@@ -89,14 +83,14 @@ class AppColors {
   static const Color accent4Foreground = Color(0xFF6F2C03); // orange.c14
 
   // ── Backend accent families the palette above lacks ───────────────────────
-  // The jm3eia backend tints home blocks with one of seven families (emerald,
+  // The Hero backend tints home blocks with one of seven families (emerald,
   // amber, rose, violet, sky, orange, zinc). Five map onto existing tokens;
   // violet and the light sky wash had no counterpart.
   static const Color accentViolet = Color(0xFF7C3AED);
   static const Color accentVioletLight = Color(0xFFF3EEFF);
   static const Color accentSkyLight = Color(0xFFE8F1FD);
 
-  // ── Jm3eia Pro paywall ────────────────────────────────────────────────────
+  // ── Hero Pro paywall ────────────────────────────────────────────────────
   // Pro is violet (`accentViolet` / `accentVioletLight`); the paywall's second
   // accent — the "Save N%" badge and the headline on the violet hero band — is
   // a lime with no counterpart in the palette above.
@@ -110,11 +104,6 @@ class AppColors {
   static const Color proFuchsia = Color(0xFFA21CAF);
   static const Color proAmber = Color(0xFFFBBF24);
   static const List<Color> proGradient = [proIndigo, accentViolet, proFuchsia];
-
-  // The warm amber → orange → pin-orange ramp of the Rewards and coupons
-  // surfaces (balance / summary hero, reward backdrop, gift badge, coupon
-  // stub).
-  static const List<Color> warmGradient = [proAmber, accent3, kJameiaPillPin];
 
   // ── System states ─────────────────────────────────────────────────────────
   static const Color link = Color(0xFF1963CC); // blue.c9
@@ -135,21 +124,17 @@ class AppColors {
   // promotionTag — dark/medium/light backgrounds with their own fg-on colors.
   static const Color promotionTagBg = Color(0xFFFFE41F); // promotionTag.darkBg
   static const Color promotionTagFg = Color(0xFF662200); // fgOnDark
-  static const Color promotionTagMediumBg = Color(0xFFFFEE6B); // mediumBg
-  static const Color promotionTagFgOnMedium = Color(0xFF662200); // fgOnMedium
   static const Color promotionTagLightBg = Color(0xFFFFF6B0); // lightBg
   static const Color promotionTagFgOnLight = Color(0xFF662200); // fgOnLight
   // freeDelivery — fg-on-white + light/medium backgrounds with their fg-on colors.
   static const Color freeDelivery = Color(0xFF00A175); // fgOnWhite (green)
   static const Color freeDeliveryBg = Color(0xFFE2F6F0); // lightBg
   static const Color freeDeliveryFgOnLight = Color(0xFF008C65); // fgOnLight
-  static const Color freeDeliveryMediumBg = Color(0xFFC3EADE); // mediumBg
-  static const Color freeDeliveryFgOnMedium = Color(0xFF006348); // fgOnMedium
 
-  // ── KeeMart grocery PDP green (product-detail screen only) ──────────────────
-  // The live KeeMart product-detail page uses a vivid spring-green accent for the
+  // ── Hero grocery PDP green (product-detail screen only) ──────────────────
+  // The live Hero product-detail page uses a vivid spring-green accent for the
   // add-to-cart CTA, the floating "+" add buttons, the kcal badge and the
-  // flash-deal bolt — distinct from Jameia's yellow brand, which stays everywhere
+  // flash-deal bolt — distinct from Hero's yellow brand, which stays everywhere
   // else. Scoped to the product-detail surface.
   static const Color martGreen = Color(0xFF16B364); // add-to-cart / "+" / bolt
   static const Color martGreenDark = Color(0xFF0E9552); // pressed / border
@@ -158,8 +143,11 @@ class AppColors {
   // ── Overlays (literal hex+alpha) ────────────────────────────────────────────
   static const Color overlayPrimary = Color(0x99000000); // black 60%
   static const Color overlayDivider = Color(0x14000000); // black 8%
-  static const Color overlayOnContent = Color(0x08000000); // black 3%
   static const Color popupScrim = Color(0xBF000000); // black 75% (popup digest)
+
+  /// The dim behind the blocking busy overlay (black 45 %): the page stays
+  /// readable behind the white loader disc.
+  static const Color busyScrim = Color(0x73000000);
 
   // ── Reference-exact extras (golden card / sku / newborn / separators) ───────
   static const Color couponRibbon = Color(
@@ -168,9 +156,6 @@ class AppColors {
   static const Color skuOptionFg = Color(
     0xFF713901,
   ); // sku spec chip / price brown (be15a6)
-  static const Color newbornBadge = Color(
-    0xFFFFE320,
-  ); // newborn carousel badge yellow
   static const Color dotSep = Color(0xFFC2C2C2); // 2dp dot separator (c82c4a)
   static const Color vBarSep = Color(0xFFA5A5A5); // 1×15 vertical bar (je25a6)
   static const Color tabIndicator = Color(
@@ -179,35 +164,12 @@ class AppColors {
   static const Color subtitleOverlay = Color(
     0xCCFFFFFF,
   ); // 80% white subtitle over image
-  static const Color couponGradientStart = Color(
-    0xFFFFFBD9,
-  ); // shop coupon strip gradient
-  static const Color couponGradientEnd = Color(0xFFFFF8AD);
-  static const Color heroFadeStart = Color(
-    0x00F8FAFC,
-  ); // shop hero → page fade (transparent)
-  static const Color heroFadeEnd = Color(
-    0xFFF8FAFC,
-  ); // shop hero → page fade (opaque bg)
 
   // ── Presentation extras (relocated from inline literals — value-identical) ───
   // Neutral text/border greys used across account, search, home & checkout.
   static const Color labelGrey = Color(
     0xFF4D4D4D,
   ); // 12dp secondary label / meta
-  static const Color versionText = Color(
-    0xFF595959,
-  ); // about-screen version caption
-  static const Color radioBorder = Color(
-    0xFF666666,
-  ); // checkout radio unselected ring
-  static const Color searchHintInk = Color(
-    0xFF737373,
-  ); // home search-bar placeholder
-  static const Color tileTitleInk = Color(
-    0xFF1F1F1F,
-  ); // kingkong / king-tile title ink
-  static const Color adTagText = Color(0xFFE5E5E5); // golden-feed "Ad" label
 
   // Solid accents / fills.
   static const Color chatBubbleMine = Color(
@@ -216,36 +178,18 @@ class AppColors {
   static const Color logoutRed = Color(
     0xFFE31727,
   ); // settings log-out action red
-  static const Color inviteBannerBg = Color(
-    0xFFFFFEE0,
-  ); // mine invite banner gradient top
   static const Color unreadBadgeBg = Color(
     0xFFFFDE38,
   ); // customer-service unread badge bg
   static const Color deliveryCodeBg = Color(
     0xFFFFF6CB,
   ); // delivery-code panel highlight
-  static const Color termsLink = Color(
-    0xFF1F7CFF,
-  ); // region terms+privacy link blue
-  static const Color punctualGradientTop = Color(
-    0xFF11CC9A,
-  ); // punctual hero gradient top
-  static const Color couponAmberHint = Color(
-    0xFFF08A24,
-  ); // checkout coupon "min spend" amber
   static const Color couponBadgeRed = Color(
     0xFFF14E24,
   ); // checkout coupon count badge red
   static const Color tooltipFill = Color(
     0xFF333333,
   ); // checkout savings-hint bubble + tail (solid, not an alpha scrim)
-  static const Color couponStripBrown = Color(
-    0xFF893C00,
-  ); // search coupon strip icon/text
-  static const Color couponStripBg = Color(
-    0xFFFFF3F0,
-  ); // search coupon strip bg
   static const Color brandTileBorder = Color(
     0xFFF0F0F0,
   ); // popular-brands tile hairline
@@ -259,39 +203,22 @@ class AppColors {
   // Voucher ticket (home popup) — cream fill, brown ink, tan condition text.
   static const Color voucherCream = Color(0xFFFFFEF5); // amount panel fill
   static const Color voucherBrown = Color(0xFF6A2F00); // amount / title ink
-  static const Color voucherTan = Color(0xFFA77D5B); // condition text
   static const Color voucherTanFaint = Color(
     0x33A77D5B,
   ); // tear-line perforation (tan 20%)
 
   // Black-alpha scrims / hairlines (literal alpha over #000000).
-  static const Color scrimTop40 = Color(
-    0x66000000,
-  ); // hero/feed top scrim + ad shadow
   static const Color scrimTransparent = Color(
     0x00000000,
   ); // fully-transparent gradient stop
-  static const Color scrimSoft20 = Color(0x33000000); // soft top gradient scrim
   static const Color shadowInk10 = Color(
     0x1A000000,
   ); // 10% soft shadow / thin separator
-  static const Color hairlineInk07 = Color(
-    0x12000000,
-  ); // 0.5dp row divider (#00000012)
-  static const Color hairlineInk12 = Color(
-    0x1E000000,
-  ); // 0.5dp top divider (#0000001E)
-  static const Color separatorInk10 = Color(
-    0x19000000,
-  ); // filter-bar vertical separator
 
   // Ink-tint (#222222) overlays / dots.
   static const Color dotInactive = Color(
     0x4C222222,
   ); // page-indicator inactive dot
-  static const Color closedOverlay = Color(
-    0x99222222,
-  ); // "shop closed" cover overlay
   static const Color rowDividerInk = Color(
     0x14222222,
   ); // address-list row hairline
@@ -307,69 +234,8 @@ class AppColors {
     0x801A160C,
   ); // banner gradient bottom (~50%)
   static const Color bannerTagBg = Color(0x7F1A160C); // shop-banner tag chip bg
-  static const Color gatheringScrimTop = Color(
-    0x006C3726,
-  ); // gathering card gradient top (0%)
-  static const Color gatheringScrimBottom = Color(
-    0xAB030303,
-  ); // gathering card gradient bottom
 
   // ── Full reference ramps (light) ────────────────────────────────────────────
-  /// neutral c1..c16 (light).
-  static const List<Color> neutral = [
-    Color(0xFFFFFFFF),
-    Color(0xFFF5F6FA),
-    Color(0xFFF0F1F5),
-    Color(0xFFEBEBEB),
-    Color(0xFFD9D9D9),
-    Color(0xFFC2C2C2),
-    Color(0xFFB3B3B3),
-    Color(0xFF999999),
-    Color(0xFF888888),
-    Color(0xFF777777),
-    Color(0xFF666666),
-    Color(0xFF555555),
-    Color(0xFF444444),
-    Color(0xFF333333),
-    Color(0xFF1A1A1A),
-    Color(0xFF000000),
-  ];
-
-  /// yellow c1..c14 (light) — brand ramp.
-  static const List<Color> yellow = [
-    Color(0xFFFFFDE0),
-    Color(0xFFFFFBC2),
-    Color(0xFFFFF9A3),
-    Color(0xFFFFF185),
-    Color(0xFFFFF05B),
-    Color(0xFFFFEA52),
-    Color(0xFFFFE41F),
-    Color(0xFFF5DA0F),
-    Color(0xFFE5CB00),
-    Color(0xFFD6BA00),
-    Color(0xFFCCAD00),
-    Color(0xFFB89900),
-    Color(0xFFA38300),
-    Color(0xFF7A6200),
-  ];
-
-  /// red c1..c14 (light).
-  static const List<Color> red = [
-    Color(0xFFFFF5F2),
-    Color(0xFFFFD0C2),
-    Color(0xFFFFB59E),
-    Color(0xFFFF9D80),
-    Color(0xFFFF8566),
-    Color(0xFFFF6842),
-    Color(0xFFFF5324),
-    Color(0xFFFA420F),
-    Color(0xFFF0390E),
-    Color(0xFFE5370D),
-    Color(0xFFDB2C00),
-    Color(0xFFCC2A04),
-    Color(0xFFBD2400),
-    Color(0xFFA31F00),
-  ];
 
   /// green c1..c14 (light).
   static const List<Color> green = [
@@ -407,79 +273,6 @@ class AppColors {
     Color(0xFF6F2C03),
   ];
 
-  /// blue c1..c14 (light).
-  static const List<Color> blue = [
-    Color(0xFFE6F4FF),
-    Color(0xFFD4E9FF),
-    Color(0xFFC2DEFF),
-    Color(0xFFABD0FF),
-    Color(0xFF8FC3FF),
-    Color(0xFF75B6FF),
-    Color(0xFF5CAAFF),
-    Color(0xFF458EF5),
-    Color(0xFF1963CC),
-    Color(0xFF135AC4),
-    Color(0xFF0D49A9),
-    Color(0xFF08398E),
-    Color(0xFF042973),
-    Color(0xFF001D66),
-  ];
-
-  /// gold c1..c14 (light) — accent3 ramp.
-  static const List<Color> gold = [
-    Color(0xFFFFF6E6),
-    Color(0xFFFAE6C4),
-    Color(0xFFFFCB70),
-    Color(0xFFFFB83D),
-    Color(0xFFFFAD1F),
-    Color(0xFFEB9B13),
-    Color(0xFFCC8100),
-    Color(0xFFCC8A18),
-    Color(0xFFB87400),
-    Color(0xFFA86B00),
-    Color(0xFF9E6400),
-    Color(0xFF945E00),
-    Color(0xFF8A5700),
-    Color(0xFF7A4E00),
-  ];
-
-  /// cyan c1..c14 (light) — success ramp (mixes cyan/green in source).
-  static const List<Color> cyan = [
-    Color(0xFFF1FEFA),
-    Color(0xFFD7FAE0),
-    Color(0xFFB7F7C6),
-    Color(0xFF9DF2B3),
-    Color(0xFF8CEBA3),
-    Color(0xFF77E38E),
-    Color(0xFF00B080),
-    Color(0xFF28C658),
-    Color(0xFF00805D),
-    Color(0xFF0D9E2A),
-    Color(0xFF098D23),
-    Color(0xFF04781F),
-    Color(0xFF025F19),
-    Color(0xFF00450D),
-  ];
-
-  /// purple c1..c14 (light). NOTE: c12 = #8F0038 is a verbatim source anomaly
-  /// (breaks ramp ordering) — kept exactly as in the token file.
-  static const List<Color> purple = [
-    Color(0xFFF9F0FF),
-    Color(0xFFF2E4FF),
-    Color(0xFFE8D1FF),
-    Color(0xFFD7B7FA),
-    Color(0xFFC394F2),
-    Color(0xFFB07EE8),
-    Color(0xFF965EDC),
-    Color(0xFF722ED1),
-    Color(0xFF6429BB),
-    Color(0xFF541EAB),
-    Color(0xFF301063),
-    Color(0xFF8F0038),
-    Color(0xFF1F0A47),
-    Color(0xFF120338),
-  ];
-
   /// magenta c1..c14 (light). NOTE: c9 = #F0390E is a verbatim source anomaly
   /// (breaks ramp ordering) — kept exactly as in the token file.
   static const List<Color> magenta = [
@@ -500,35 +293,22 @@ class AppColors {
   ];
 }
 
-// ── Jameia-store surfaces (ported verbatim from jm3eia jameia_store) ─────────
-// The jameia home hero/search/promo/categories block uses its own brand-orange
-// palette (independent of Jameia's yellow brand) so the ported top matches the
-// jm3eia design 1:1. Kept as top-level consts in the token layer (mirrors
-// jm3eia's app_colors.dart), never inlined in feature code.
-const Color kJameiaHeroTop = Color(0xFFFD811F); // hero gradient top-left
-const Color kJameiaHeroBottom = Color(0xFFFE7618); // hero gradient bottom-right
-const Color kJameiaPillPin = Color(0xFFFF6108); // address-pill location pin
-const Color kJameiaPillChevron = Color(0xFFFF7300); // address-pill chevron
-const Color kJameiaSearchHint = Color(0xFF696969); // search hint + scan glyph
-const Color kJameiaAccentMart = Color(0xFFFA8F11); // active Mart outline/glow
-const Color kJameiaAccentVip = Color(0xFFB3261E); // active VIP outline/glow
-const Color kJameiaPromoCream = Color(0xFFFDF5EB); // Jameia card fill
-const Color kJameiaPromoPink = Color(0xFFFEF2F2); // Fast-delivery card fill
-const Color kJameiaPromoTitle = Color(0xFF5A0B0B); // promo card maroon title
-const Color kJameiaPromoSubtitle = Color(0xFF1C1C1C); // promo subtitle ink
-const Color kJameiaPromoArrow = Color(0xFFFA450E); // circle-arrow fill
-const Color kJameiaPromoNumber = Color(0xFFFC4914); // big prep-minutes numeral
-const Color kJameiaSectionTitle = Color(0xFF101828); // "Shop by category" title
-const Color kJameiaViewAll = Color(0xFFFF6B2B); // "View all" action
-const Color kJameiaDotActive = Color(0xFF475569); // categories active dot
-const Color kJameiaDotInactive = Color(0xFFD9D9D9); // categories inactive dot
+// ── Hero-store surfaces (ported verbatim from the source store screen) ──
+// The Hero home hero/search/promo/categories block uses its own brand-orange
+// palette (independent of Hero's yellow brand) so the ported top matches the
+// Hero design 1:1. Kept as top-level consts in the token layer (mirrors
+// Hero's app_colors.dart), never inlined in feature code.
+const Color kHeroPillPin = Color(0xFFFF6108); // address-pill location pin
+const Color kHeroPillChevron = Color(0xFFFF7300); // address-pill chevron
+const Color kHeroSearchHint = Color(0xFF696969); // search hint + scan glyph
+const Color kHeroPromoCream = Color(0xFFFDF5EB); // Hero card fill
 
 /// Resolved semantic token bundle for one brightness. Carried on the [ThemeData]
-/// as a [ThemeExtension] so widgets read `Theme.of(context).extension<JameiaColors>()`
+/// as a [ThemeExtension] so widgets read `Theme.of(context).extension<HeroColors>()`
 /// (or the `context.colors` shorthand) and automatically flip in dark mode.
 @immutable
-class JameiaColors extends ThemeExtension<JameiaColors> {
-  const JameiaColors({
+class HeroColors extends ThemeExtension<HeroColors> {
+  const HeroColors({
     required this.brandPrimary,
     required this.brandForeground,
     required this.primaryText,
@@ -570,7 +350,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
   /// The offline banner surface (see [AppColors.offlineSurface]).
   final Color offlineSurface;
 
-  static const JameiaColors light = JameiaColors(
+  static const HeroColors light = HeroColors(
     brandPrimary: Color(0xFF22C55E),
     brandForeground: Color(0xFFFFFFFF),
     primaryText: Color(0xFF111827),
@@ -591,7 +371,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
     offlineSurface: Color(0xFF1F2937),
   );
 
-  static const JameiaColors dark = JameiaColors(
+  static const HeroColors dark = HeroColors(
     brandPrimary: Color(0xFF22C55E),
     brandForeground: Color(0xFFFFFFFF),
     primaryText: Color(0xFFFFFFFF),
@@ -613,7 +393,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
   );
 
   @override
-  JameiaColors copyWith({
+  HeroColors copyWith({
     Color? brandPrimary,
     Color? brandForeground,
     Color? primaryText,
@@ -633,7 +413,7 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
     Color? overlay,
     Color? offlineSurface,
   }) {
-    return JameiaColors(
+    return HeroColors(
       brandPrimary: brandPrimary ?? this.brandPrimary,
       brandForeground: brandForeground ?? this.brandForeground,
       primaryText: primaryText ?? this.primaryText,
@@ -656,9 +436,9 @@ class JameiaColors extends ThemeExtension<JameiaColors> {
   }
 
   @override
-  JameiaColors lerp(ThemeExtension<JameiaColors>? other, double t) {
-    if (other is! JameiaColors) return this;
-    return JameiaColors(
+  HeroColors lerp(ThemeExtension<HeroColors>? other, double t) {
+    if (other is! HeroColors) return this;
+    return HeroColors(
       brandPrimary: Color.lerp(brandPrimary, other.brandPrimary, t)!,
       brandForeground: Color.lerp(brandForeground, other.brandForeground, t)!,
       primaryText: Color.lerp(primaryText, other.primaryText, t)!,

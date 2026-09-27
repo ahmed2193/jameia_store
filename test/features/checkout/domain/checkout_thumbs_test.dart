@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_ref.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_thumbs.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_ref.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_thumbs.dart';
 
 CartLineEntity _line(
   String id, {

@@ -5,7 +5,7 @@ import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/orders_page_model.dart';
 
-/// The jm3eia customer order routes plus product reviews. `results` only
+/// The Hero customer order routes plus product reviews. `results` only
 /// (the envelope is unwrapped by `DioConsumer`); throws `AppException`. An
 /// order read (or a cancel) comes back with its raw `results` too, which the
 /// repository keeps on the device.

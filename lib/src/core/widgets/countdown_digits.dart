@@ -8,7 +8,7 @@ import '../motion/second_clock.dart';
 import '../motion/second_clock_scope.dart';
 import 'countdown_digit_box.dart';
 
-/// The Keeta red-box countdown, "06 : 36 : 36" (hours : minutes : seconds),
+/// The Hero red-box countdown, "06 : 36 : 36" (hours : minutes : seconds),
 /// for an offer that ends within [window].
 ///
 /// It ticks on the nearest [SecondClockScope]'s clock: one timer for every

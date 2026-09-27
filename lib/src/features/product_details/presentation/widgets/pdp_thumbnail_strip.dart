@@ -7,9 +7,9 @@ import '../../../../core/motion/motion.dart';
 import 'pdp_thumbnail.dart';
 
 /// The white strip of photo thumbnails along the bottom of the full-screen
-/// viewer, under a hairline. The photo shown ([current]) is outlined, and
-/// the strip keeps it in view by moving its own scroll position only; a tap
-/// on a thumbnail reports [onSelect].
+/// viewer, under a hairline, 16 dp of air around them. The photo shown
+/// ([current]) is outlined, and the strip keeps it in view by moving its own
+/// scroll position only; a tap on a thumbnail reports [onSelect].
 class PdpThumbnailStrip extends StatefulWidget {
   const PdpThumbnailStrip({
     super.key,
@@ -22,9 +22,9 @@ class PdpThumbnailStrip extends StatefulWidget {
   final int current;
   final ValueChanged<int> onSelect;
 
-  static const double _gap = AppSpacing.s12;
+  static const double _gap = AppSpacing.s16;
   static const double _side = AppSpacing.s16;
-  static const double _height = PdpThumbnail.size + AppSpacing.s24;
+  static const double _height = PdpThumbnail.size + _side * 2;
 
   @override
   State<PdpThumbnailStrip> createState() => _PdpThumbnailStripState();
@@ -92,10 +92,7 @@ class _PdpThumbnailStripState extends State<PdpThumbnailStrip> {
           child: ListView.separated(
             controller: _scroll,
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: PdpThumbnailStrip._side,
-              vertical: AppSpacing.s12,
-            ),
+            padding: const EdgeInsetsDirectional.all(PdpThumbnailStrip._side),
             itemCount: images.length,
             separatorBuilder: (_, _) =>
                 const SizedBox(width: PdpThumbnailStrip._gap),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/address_label.dart';
 import '../../../../../core/responsive/app_size.dart';
 
@@ -14,10 +14,10 @@ class AddressLabelGlyph extends StatelessWidget {
   Widget build(BuildContext context) {
     return Image.asset(
       switch (label) {
-        AddressLabel.home => JameiaAssets.labelHome,
-        AddressLabel.work => JameiaAssets.labelOffice,
-        AddressLabel.gathering => JameiaAssets.labelGathering,
-        AddressLabel.other => JameiaAssets.labelOther,
+        AddressLabel.home => HeroAssets.labelHome,
+        AddressLabel.work => HeroAssets.labelOffice,
+        AddressLabel.gathering => HeroAssets.labelGathering,
+        AddressLabel.other => HeroAssets.labelOther,
       },
       width: AppSize.s18,
       height: AppSize.s18,

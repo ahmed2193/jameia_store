@@ -1,4 +1,4 @@
-// Jm3eia Pro on the cart's delivery row, keyed on the app-global Pro status:
+// Hero Pro on the cart's delivery row, keyed on the app-global Pro status:
 // a customer without Pro who pays a delivery fee is told the real amount Pro
 // would save (and the nudge opens the Pro page); a member's free delivery
 // carries the "pro" tag and is never nudged; an unknown standing shows
@@ -7,18 +7,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/pages/cart_tab_page.dart';
-import 'package:jameia_mart/src/features/cart/presentation/widgets/cart/cart_pro_nudge.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/pages/cart_tab_page.dart';
+import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_pro_nudge.dart';
+import 'package:hero_mart/src/features/store_mode/domain/entities/pro_membership.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../store_mode/pro_status_fakes.dart';
@@ -128,7 +128,7 @@ void main() {
     await pump(tester, status, _snapshot());
 
     expect(
-      find.text('Save KD 0.750 on delivery with Jm3eia Pro'),
+      find.text('Save KD 0.750 on delivery with Hero Pro'),
       findsOneWidget,
     );
     expect(find.text('Join'), findsOneWidget);
@@ -158,8 +158,8 @@ void main() {
 
     expect(find.text('pro'), findsOneWidget);
     expect(find.text('Free'), findsOneWidget);
-    expect(find.bySemanticsLabel('Free delivery with Jm3eia Pro'), findsOne);
-    expect(find.textContaining('on delivery with Jm3eia Pro'), findsNothing);
+    expect(find.bySemanticsLabel('Free delivery with Hero Pro'), findsOne);
+    expect(find.textContaining('on delivery with Hero Pro'), findsNothing);
 
     await teardownApp(tester, status);
   });
@@ -170,7 +170,7 @@ void main() {
     final status = buildProStatus();
     await pump(tester, status, _snapshot());
 
-    expect(find.textContaining('on delivery with Jm3eia Pro'), findsNothing);
+    expect(find.textContaining('on delivery with Hero Pro'), findsNothing);
     expect(find.text('pro'), findsNothing);
 
     await teardownApp(tester, status);
@@ -182,7 +182,7 @@ void main() {
     final status = await settledProStatus(customer: _customer);
     await pump(tester, status, _snapshot());
     expect(
-      find.text('Save KD 0.750 on delivery with Jm3eia Pro'),
+      find.text('Save KD 0.750 on delivery with Hero Pro'),
       findsOneWidget,
     );
 
@@ -195,7 +195,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
 
-    expect(find.textContaining('on delivery with Jm3eia Pro'), findsNothing);
+    expect(find.textContaining('on delivery with Hero Pro'), findsNothing);
     // Free thanks to the offer, not to Pro: no tag either.
     expect(find.text('pro'), findsNothing);
 

@@ -11,7 +11,7 @@ import 'offer_reward_disc.dart';
 import 'offer_terms.dart';
 import 'offer_title.dart';
 
-/// One automatic cart promotion as a flat talabat card: a tinted disc for
+/// One automatic cart promotion as a flat Hero card: a tinted disc for
 /// the kind of reward, the backend's name and description, the reward in a
 /// lime chip, a running clock when the offer ends within
 /// [countdownWindow], and the small print ([OfferTerms]).

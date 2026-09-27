@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/domain/entities/connection_recheck.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../domain/entities/connectivity_status.dart';
@@ -23,7 +24,10 @@ import 'connectivity_state.dart';
 ///   * coming back is instant on the first "reachable" report — a probe or
 ///     any API response — and bumps [ConnectivityState.reconnectEpoch];
 ///   * "Back online" shows for [AppConstants.backOnlineHold], then hides;
-///   * [pause] / [resume] follow the app lifecycle (no probe in background).
+///   * [pause] / [resume] follow the app lifecycle (no probe in background —
+///     an offline verdict still due waits for the return);
+///   * the live checks the screens ask for: [confirmOnline] before a submit
+///     and [recheckForRetry] after a load that failed in transport.
 class ConnectivityCubit extends Cubit<ConnectivityState>
     with SafeCubitMixin<ConnectivityState> {
   ConnectivityCubit({
@@ -34,6 +38,7 @@ class ConnectivityCubit extends Cubit<ConnectivityState>
     this._offlineAfter = AppConstants.offlineDebounce,
     this._backOnlineFor = AppConstants.backOnlineHold,
     this._retryDwell = AppConstants.connectivityRetryDwell,
+    this._retryGap = AppConstants.readRetryGap,
   }) : super(const ConnectivityState());
 
   static const String _logName = 'ConnectivityCubit';
@@ -46,6 +51,9 @@ class ConnectivityCubit extends Cubit<ConnectivityState>
   final Duration _backOnlineFor;
   final Duration _retryDwell;
 
+  /// At most one wave of automatic retries per gap (see [recheckForRetry]).
+  final Duration _retryGap;
+
   StreamSubscription<ConnectivityStatus>? _reports;
   Timer? _offlineDebounce;
   Timer? _backOnlineHold;
@@ -57,6 +65,14 @@ class ConnectivityCubit extends Cubit<ConnectivityState>
   /// Bumped by every "reachable" report: a confirming check that started
   /// before one is older news.
   int _reachableReports = 0;
+
+  /// The app went to the background while an "unreachable" report was being
+  /// debounced: the verdict is owed on the return (no check runs in the
+  /// background, and the monitor reports only changes).
+  bool _offlineOwed = false;
+
+  /// When the current wave of automatic retries was asked for.
+  DateTime? _retryWaveAt;
 
   /// Follows the monitor; the first listener starts it. Idempotent.
   void start() {
@@ -76,11 +92,57 @@ class ConnectivityCubit extends Cubit<ConnectivityState>
   /// at once.
   Future<void> retry() => _startCheck(_retryDwell);
 
-  /// The app went to the background: no probes until [resume].
-  void pause() => _monitor(active: false);
+  /// Before a submit that is never queued (placing or cancelling an order):
+  /// a live check; anything but a confirmed "offline" lets it try (the probe
+  /// can be wrong).
+  Future<bool> confirmOnline() async =>
+      await checkNow() != ConnectivityStatus.offline;
 
-  /// Back in the foreground: polling restarts with an immediate check.
-  void resume() => _monitor(active: true);
+  /// A load failed in transport while the app did not read as offline: a
+  /// live check, and whether the load goes again by itself.
+  ///
+  /// Loads that fail together — a page and its reviews, the tabs of the
+  /// shell — ask within [AppConstants.offlineDebounce] of each other (the
+  /// hold every asking screen keeps) and all go again. A load that fails
+  /// AGAIN after its automatic retry asks later than that, so it gets
+  /// [ConnectionRecheck.reachable] until the gap passed: the store did not
+  /// answer, and a retry loop is impossible.
+  Future<ConnectionRecheck> recheckForRetry() async {
+    final askedAt = _now();
+    if (await checkNow() == ConnectivityStatus.offline) {
+      return ConnectionRecheck.offline;
+    }
+    final wave = _retryWaveAt;
+    if (wave == null || askedAt.difference(wave) >= _retryGap) {
+      _retryWaveAt = askedAt;
+      return ConnectionRecheck.retry;
+    }
+    return askedAt.difference(wave) < _offlineAfter
+        ? ConnectionRecheck.retry
+        : ConnectionRecheck.reachable;
+  }
+
+  /// The app went to the background: no probes until [resume]. An offline
+  /// verdict still being debounced waits for the return: its confirming
+  /// check would be a probe in the background.
+  void pause() {
+    final debounce = _offlineDebounce;
+    if (debounce != null) {
+      debounce.cancel();
+      _offlineDebounce = null;
+      _offlineOwed = true;
+    }
+    _monitor(active: false);
+  }
+
+  /// Back in the foreground: polling restarts with an immediate check, and
+  /// an offline verdict owed from before the pause is debounced again.
+  void resume() {
+    _monitor(active: true);
+    if (!_offlineOwed) return;
+    _offlineOwed = false;
+    _onReport(ConnectivityStatus.offline);
+  }
 
   Future<ConnectivityStatus> _startCheck(Duration minimum) =>
       _checking ??= _runCheck(minimum).whenComplete(() => _checking = null);
@@ -104,6 +166,7 @@ class ConnectivityCubit extends Cubit<ConnectivityState>
     switch (reported) {
       case ConnectivityStatus.online:
         _reachableReports++;
+        _offlineOwed = false;
         _offlineDebounce?.cancel();
         _offlineDebounce = null;
         _markOnline();

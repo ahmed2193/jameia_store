@@ -1,61 +1,28 @@
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
-import '../../domain/entities/faq_item.dart';
-import '../../domain/repositories/support_repository.dart';
+import '../../domain/usecases/get_faqs_usecase.dart';
+import 'customer_service_question_state.dart';
 
-enum CustomerServiceQuestionStatus { initial, loading, loaded, error }
+export 'customer_service_question_state.dart';
 
-/// State for `mach_pro_sailor_c_customer_service_question` — the FAQ list.
-///
-/// Search filtering + which item is expanded are transient view concerns handled
-/// locally in the screen (`TextEditingController` + `ValueNotifier`s), so they
-/// stay out of the cubit.
-class CustomerServiceQuestionState extends Equatable {
-  const CustomerServiceQuestionState({
-    this.status = CustomerServiceQuestionStatus.initial,
-    this.faqs = const [],
-    this.error,
-  });
-
-  final CustomerServiceQuestionStatus status;
-  final List<FaqItem> faqs;
-  final String? error;
-
-  CustomerServiceQuestionState copyWith({
-    CustomerServiceQuestionStatus? status,
-    List<FaqItem>? faqs,
-    String? error,
-  }) => CustomerServiceQuestionState(
-    status: status ?? this.status,
-    faqs: faqs ?? this.faqs,
-    error: error ?? this.error,
-  );
-
-  @override
-  List<Object?> get props => [status, faqs, error];
-}
-
-/// Page-scoped cubit — resolved via `sl<CustomerServiceQuestionCubit>()`; loads
-/// the FAQ list on construction through the [SupportRepository].
+/// Page-scoped cubit of the FAQ topics page; the page calls [load].
 class CustomerServiceQuestionCubit extends Cubit<CustomerServiceQuestionState>
     with SafeCubitMixin<CustomerServiceQuestionState> {
-  CustomerServiceQuestionCubit(this._repository)
-    : super(const CustomerServiceQuestionState()) {
-    load();
-  }
+  CustomerServiceQuestionCubit(this._getFaqs)
+    : super(const CustomerServiceQuestionState());
 
-  final SupportRepository _repository;
+  final GetFaqsUseCase _getFaqs;
 
   Future<void> load() async {
     safeEmit(state.copyWith(status: CustomerServiceQuestionStatus.loading));
-    final result = await _repository.getFaqs();
+    final result = await _getFaqs(const NoParams());
     result.fold(
       (failure) => safeEmit(
         state.copyWith(
           status: CustomerServiceQuestionStatus.error,
-          error: failure.message,
+          errorMessage: failure.message,
         ),
       ),
       (faqs) => safeEmit(

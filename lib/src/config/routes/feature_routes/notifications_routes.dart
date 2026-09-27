@@ -9,7 +9,7 @@ import '../routes.dart';
 final List<RouteBase> notificationsRoutes = <RouteBase>[
   GoRoute(
     path: Routes.notifications,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const NotificationsPage(),

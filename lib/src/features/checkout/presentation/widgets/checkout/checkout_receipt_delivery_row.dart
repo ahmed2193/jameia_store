@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
 import '../../../../../core/domain/entities/offer_entity.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/checkout_offer_hints.dart';
@@ -22,7 +22,7 @@ import 'checkout_receipt_row.dart';
 /// charged (`CartTotalsEntity.deliveryIsFree`, the bar's rule too);
 /// otherwise the fee without the express surcharge (express has
 /// its own line). The grey sub-line says why it is free — the applied offer
-/// by name, or Jm3eia Pro — or what is missing for free delivery.
+/// by name, or Hero Pro — or what is missing for free delivery.
 ///
 /// Pickup: "Pickup", "—" until a branch is chosen, then "No fee" at zero or
 /// the server's fee.
@@ -105,7 +105,7 @@ class CheckoutReceiptDeliveryRow extends StatelessWidget {
             ? const Text(CheckoutReceipt.unquoted)
             : delivery.feeFils == 0
             ? Text('checkout.receipt_no_fee'.tr())
-            : JameiaMoneyText(kd: delivery.feeKd),
+            : HeroMoneyText(kd: delivery.feeKd),
       );
     }
 
@@ -133,10 +133,10 @@ class CheckoutReceiptDeliveryRow extends StatelessWidget {
               'checkout.summary_free'.tr(),
               style: const TextStyle(color: AppColors.freeDelivery),
             )
-          : JameiaMoneyText(kd: delivery.feeKd),
+          : HeroMoneyText(kd: delivery.feeKd),
       note: note,
       struck: checkout.quoted && delivery.free && delivery.waived
-          ? JameiaMoneyText(
+          ? HeroMoneyText(
               kd: delivery.waivedKd,
               strike: true,
               color: AppColors.tertiaryText,

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
-import '../../../../../core/widgets/branded_loader.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/branded_dot_loader.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
 
 /// End of a destination row (address or branch): a small loader while the
 /// server selects it, the flat row's ink chevron otherwise. The two fade
@@ -19,13 +19,10 @@ class CheckoutDestinationTrailing extends StatelessWidget {
       stateKey: selecting,
       alignment: AlignmentDirectional.centerEnd,
       child: selecting
-          ? const BrandedLoader.inline(
-              size: JameiaListRow.denseLeadSize,
-              color: AppColors.primaryText,
-            )
+          ? const BrandedDotLoader(size: HeroListRow.denseLeadSize)
           : const Icon(
               Icons.chevron_right_rounded,
-              size: JameiaListRow.denseLeadSize,
+              size: HeroListRow.denseLeadSize,
               color: AppColors.primaryText,
             ),
     );

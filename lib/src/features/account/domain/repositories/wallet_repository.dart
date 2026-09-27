@@ -5,7 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/ledger.dart';
 import '../entities/wallet_entry_entity.dart';
 
-/// The customer's wallet on the jm3eia backend (customer Bearer):
+/// The customer's wallet on the Hero backend (customer Bearer):
 /// https://docs.jm3eia.store/developers/account.html
 abstract class WalletRepository {
   /// `GET /v1/account/wallet?page=1&limit` — the balance in fils plus the

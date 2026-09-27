@@ -6,29 +6,29 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/config/routes/route_args/shell_tabs.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_mark_icon.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/shell/presentation/widgets/shell_basket_tab.dart';
-import 'package:jameia_mart/src/features/shell/presentation/widgets/shell_bottom_nav.dart';
+import 'package:hero_mart/src/config/routes/route_args/shell_tabs.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/widgets/hero_mark_icon.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/shell/presentation/widgets/shell_basket_tab.dart';
+import 'package:hero_mart/src/features/shell/presentation/widgets/shell_bottom_nav.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/fake_cart_repository.dart';
@@ -231,18 +231,18 @@ void main() {
     await pump(tester, nav(ShellBottomNav.homeTab));
     expect(find.byIcon(Icons.home_rounded), findsNothing);
     expect(
-      tester.widget<JameiaMarkIcon>(find.byType(JameiaMarkIcon)).active,
+      tester.widget<HeroMarkIcon>(find.byType(HeroMarkIcon)).active,
       isTrue,
     );
 
     await pump(tester, nav(ShellBottomNav.searchTab));
     expect(
-      tester.widget<JameiaMarkIcon>(find.byType(JameiaMarkIcon)).active,
+      tester.widget<HeroMarkIcon>(find.byType(HeroMarkIcon)).active,
       isFalse,
     );
     expect(find.byIcon(Icons.search_rounded), findsOneWidget);
 
-    await tester.tap(find.byType(JameiaMarkIcon));
+    await tester.tap(find.byType(HeroMarkIcon));
     expect(taps, [ShellBottomNav.homeTab]);
   });
 }

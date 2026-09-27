@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/widgets/jameia_section_header.dart';
-import '../../../../../core/widgets/jameia_surface_card.dart';
+import '../../../../../core/widgets/hero_section_header.dart';
+import '../../../../../core/widgets/hero_surface_card.dart';
 
 /// One invoice section: a group title over a hairline card of summary rows
 /// in the page gutters. Every section of the invoice uses this shell, so they
@@ -42,7 +42,7 @@ class InvoiceSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        JameiaSectionHeader(
+        HeroSectionHeader(
           title: title,
           titleStyle: AppTextStyles.groupTitle,
           padding: headerPadding,
@@ -51,7 +51,7 @@ class InvoiceSection extends StatelessWidget {
           padding: const EdgeInsetsDirectional.symmetric(
             horizontal: AppSpacing.gutter,
           ),
-          child: JameiaSurfaceCard(
+          child: HeroSurfaceCard(
             padding: const EdgeInsetsDirectional.symmetric(
               horizontal: AppSpacing.s16,
               vertical: AppSpacing.s8,

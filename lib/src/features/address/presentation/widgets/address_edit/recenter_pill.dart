@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/responsive/app_size.dart';
 
 /// White "Locate me" recenter pill.
 class RecenterPill extends StatelessWidget {
@@ -16,7 +17,7 @@ class RecenterPill extends StatelessWidget {
     return Material(
       color: AppColors.white,
       borderRadius: BorderRadius.circular(AppRadius.pill),
-      elevation: 2,
+      elevation: AppSize.s2,
       shadowColor: AppColors.overlayDivider,
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -30,8 +31,8 @@ class RecenterPill extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                JameiaIcons.location,
-                size: 18,
+                HeroIcons.location,
+                size: AppSize.s18,
                 color: AppColors.primaryText,
               ),
               const SizedBox(width: AppSpacing.s6),

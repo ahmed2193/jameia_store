@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/widgets/jameia_state_view.dart';
+import '../../../../../core/widgets/hero_state_view.dart';
 
 /// No orders yet: the empty state centred in the space the list would take,
 /// inside a scrollable that always accepts a drag, so pull-to-refresh still
@@ -19,7 +19,7 @@ class OrdersEmptyView extends StatelessWidget {
         children: [
           SizedBox(
             height: constraints.maxHeight,
-            child: JameiaStateView(
+            child: HeroStateView(
               message: 'orders.empty'.tr(),
               icon: Icons.receipt_long_outlined,
             ),

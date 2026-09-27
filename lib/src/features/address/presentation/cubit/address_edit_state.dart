@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/address_draft.dart';
 import '../../domain/entities/address_field.dart';
@@ -24,7 +24,7 @@ class AddressEditState extends Equatable {
   final AddressDraft draft;
 
   /// The address being edited; `null` while creating one.
-  final JameiaAddressEntity? original;
+  final HeroAddressEntity? original;
   final AddressEditStatus status;
 
   /// Set by the first submit with invalid fields: inline errors show from
@@ -32,7 +32,7 @@ class AddressEditState extends Equatable {
   final bool showErrors;
 
   /// The server's copy once saved (the original when nothing changed).
-  final JameiaAddressEntity? saved;
+  final HeroAddressEntity? saved;
 
   /// Transient — cleared on every [copyWith]; the page toasts it.
   final Failure? failure;
@@ -58,7 +58,7 @@ class AddressEditState extends Equatable {
     AddressDraft? draft,
     AddressEditStatus? status,
     bool? showErrors,
-    JameiaAddressEntity? saved,
+    HeroAddressEntity? saved,
     Failure? failure,
     bool rejected = false,
   }) => AddressEditState(

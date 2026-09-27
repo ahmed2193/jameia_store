@@ -9,7 +9,7 @@ import '../../../../core/motion/fly_to_cart.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/catalog_product_card.dart';
-import '../../../../core/widgets/jameia_card_image.dart';
+import '../../../../core/widgets/hero_card_image.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
@@ -102,7 +102,7 @@ class _HomeProductTileState extends State<HomeProductTile> {
                     }
                     FlyToCart.flyFrom(
                       context,
-                      thumbnail: JameiaCardImage(
+                      thumbnail: HeroCardImage(
                         url: product.image,
                         width: AppSize.s56,
                         height: AppSize.s56,

@@ -6,7 +6,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../domain/entities/assistant_voice_problem.dart';
 import '../../cubit/assistant_voice_cubit.dart';
 import '../../cubit/assistant_voice_state.dart';
@@ -73,16 +73,16 @@ class AssistantVoiceListener extends StatelessWidget {
         Haptics.selection();
         onTooShort();
       case AssistantVoiceNotice.noSpeech:
-        showJameiaSnackBar(context, 'assistant.voice.no_speech'.tr());
+        showHeroSnackBar(context, 'assistant.voice.no_speech'.tr());
       case AssistantVoiceNotice.failed:
         if (text.isNotEmpty) onReview(text);
-        showJameiaSnackBar(context, _problemKey(state.problem).tr());
+        showHeroSnackBar(context, _problemKey(state.problem).tr());
       case AssistantVoiceNotice.micDenied:
-        showJameiaSnackBar(context, 'assistant.voice.mic_denied'.tr());
+        showHeroSnackBar(context, 'assistant.voice.mic_denied'.tr());
       case AssistantVoiceNotice.micBlocked:
         unawaited(AssistantVoiceBlockedDialog.show(context));
       case AssistantVoiceNotice.unavailable:
-        showJameiaSnackBar(context, 'assistant.voice.unavailable'.tr());
+        showHeroSnackBar(context, 'assistant.voice.unavailable'.tr());
       case null:
         return;
     }

@@ -7,14 +7,14 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_line_entity.dart';
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/widgets/jameia_text_link.dart';
+import '../../../../../core/widgets/hero_text_link.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import 'checkout_line_frame.dart';
 import 'checkout_line_issue_tag.dart';
 import 'checkout_line_price.dart';
 import 'checkout_red_tag.dart';
 
-/// One paid line in the items sheet, Keeta-style: the 56 dp thumb, then the
+/// One paid line in the items sheet, Hero-style: the 56 dp thumb, then the
 /// bold name (two lines) at the top and, at the bottom, its tags — why the
 /// server flagged it, "N% off" for a line on a deal — over "2x KD 0.600",
 /// the struck "was" price and the line total. A line that blocks the order
@@ -90,7 +90,7 @@ class CheckoutLineRow extends StatelessWidget {
       below: line.blocksCheckout
           ? Align(
               alignment: AlignmentDirectional.centerStart,
-              child: JameiaTextLink(
+              child: HeroTextLink(
                 label: 'checkout.line_remove'.tr(),
                 color: AppColors.errorDeep,
                 navigates: false,

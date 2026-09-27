@@ -1,12 +1,12 @@
-import '../../utils/jameia_geocode.dart';
+import '../../utils/hero_geocode.dart';
 
 /// Delivery address model.
 ///
 /// Carries both the legacy flat fields (`label`/`line`/`area`) AND the
-/// schema-driven Jameia fields (structType, labelType, dropOff, composed
+/// schema-driven Hero fields (structType, labelType, dropOff, composed
 /// brief/detail lines, recipient + per-struct address parts). New fields default
-/// so the bundled `jameia_data.json` (flat shape) still parses.
-class JameiaAddress {
+/// so the bundled `hero_data.json` (flat shape) still parses.
+class HeroAddress {
   final String id;
   final String label; // tag display: Home | Work | Hangout | Other
   final String line; // legacy one-line address (== detail/brief fallback)
@@ -17,7 +17,7 @@ class JameiaAddress {
   final double lat;
   final double lng;
 
-  // ── Schema-driven fields (Jameia parity) ─────────────────────────────────────
+  // ── Schema-driven fields (Hero parity) ─────────────────────────────────────
   final StructType structType;
   final LabelType labelType;
   final DropOff dropOff;
@@ -36,7 +36,7 @@ class JameiaAddress {
   final String additionalDirection;
   final String note;
 
-  const JameiaAddress({
+  const HeroAddress({
     required this.id,
     required this.label,
     required this.line,
@@ -69,7 +69,7 @@ class JameiaAddress {
   /// when the address book is somehow empty — so they never throw. Not shown in
   /// normal use (the book is seeded non-empty and delete keeps the last row);
   /// coordinates default to the Kuwait City base so any map stays sane.
-  static final JameiaAddress empty = JameiaAddress(
+  static final HeroAddress empty = HeroAddress(
     id: '',
     label: '',
     line: '',
@@ -77,15 +77,9 @@ class JameiaAddress {
     recipient: '',
     phone: '',
     isDefault: false,
-    lat: JameiaGeocode.base.latitude,
-    lng: JameiaGeocode.base.longitude,
+    lat: HeroGeocode.base.latitude,
+    lng: HeroGeocode.base.longitude,
   );
-
-  /// Two-line display: the brief line (or legacy [line]) + area.
-  String get fullText {
-    final head = brief.isNotEmpty ? brief : line;
-    return area.isEmpty ? head : '$head, $area';
-  }
 
   /// Home-bar / picker headline. Prefers an explicit POI name, else the brief.
   String get displayTitle {
@@ -94,7 +88,7 @@ class JameiaAddress {
     return line.isNotEmpty ? line : area;
   }
 
-  JameiaAddress copyWith({
+  HeroAddress copyWith({
     String? id,
     String? label,
     String? line,
@@ -121,7 +115,7 @@ class JameiaAddress {
     String? avenue,
     String? additionalDirection,
     String? note,
-  }) => JameiaAddress(
+  }) => HeroAddress(
     id: id ?? this.id,
     label: label ?? this.label,
     line: line ?? this.line,
@@ -150,7 +144,7 @@ class JameiaAddress {
     note: note ?? this.note,
   );
 
-  factory JameiaAddress.fromJson(Map<String, dynamic> j) => JameiaAddress(
+  factory HeroAddress.fromJson(Map<String, dynamic> j) => HeroAddress(
     id: j['id'] as String,
     label: j['label'] as String? ?? 'Home',
     line: j['line'] as String? ?? '',
@@ -181,7 +175,7 @@ class JameiaAddress {
     note: j['note'] as String? ?? '',
   );
 
-  /// Serializes back to the `jameia_data.json` address shape — used to persist
+  /// Serializes back to the `hero_data.json` address shape — used to persist
   /// user-added/edited addresses to local storage (shared_preferences).
   Map<String, dynamic> toJson() => {
     'id': id,

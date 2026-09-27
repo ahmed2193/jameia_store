@@ -8,7 +8,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_speech_recognizer.dart';
+import 'package:hero_mart/src/features/assistant/data/datasources/assistant_speech_recognizer.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 void main() {

@@ -9,7 +9,7 @@ import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_card_image.dart';
+import '../../../../../core/widgets/hero_card_image.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 
 /// The cart gestures of a product shown in the chat, shared by the rail
@@ -20,7 +20,7 @@ abstract final class AssistantCartTaps {
     Haptics.selection();
     FlyToCart.flyFrom(
       context,
-      thumbnail: JameiaCardImage(
+      thumbnail: HeroCardImage(
         url: product.image,
         width: AppSize.s56,
         height: AppSize.s56,

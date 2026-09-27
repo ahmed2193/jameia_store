@@ -85,14 +85,12 @@ class RecipeIngredientModel {
     required this.id,
     required this.product,
     this.purchaseQty = 1,
-    this.useQty = 0,
     this.note = '',
   });
 
   static const String idKey = 'id';
   static const String productKey = 'product';
   static const String purchaseQtyKey = 'purchaseQty';
-  static const String useQtyKey = 'useQty';
   static const String noteKey = 'note';
 
   /// Throws [ParsingException] without the nested product (nothing to show or
@@ -107,7 +105,6 @@ class RecipeIngredientModel {
       id: JsonRead.string(json[idKey]) ?? model.id,
       product: model,
       purchaseQty: JsonRead.decimal(json[purchaseQtyKey]) ?? 1,
-      useQty: JsonRead.decimal(json[useQtyKey]) ?? 0,
       note: JsonRead.string(json[noteKey]) ?? '',
     );
   }
@@ -117,7 +114,6 @@ class RecipeIngredientModel {
 
   /// A number on the wire (may be fractional for weighed goods).
   final double purchaseQty;
-  final double useQty;
   final String note;
 }
 

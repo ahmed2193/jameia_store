@@ -9,7 +9,6 @@ import 'feature_routes/assistant_routes.dart';
 import 'feature_routes/auth_routes.dart';
 import 'feature_routes/checkout_routes.dart';
 import 'feature_routes/coupons_routes.dart';
-import 'feature_routes/discovery_routes.dart';
 import 'feature_routes/marketing_routes.dart';
 import 'feature_routes/notifications_routes.dart';
 import 'feature_routes/orders_routes.dart';
@@ -25,9 +24,9 @@ import 'feature_routes/support_routes.dart';
 import 'placeholder_page.dart';
 import 'routes.dart';
 
-/// Every top-level route (Jameia Mach Pro page router equivalent), grouped per
+/// Every top-level route (Hero Mach Pro page router equivalent), grouped per
 /// feature under `feature_routes/`. Each [GoRoute] builds its page through
-/// [JameiaTransitionPage] / [JameiaSlideUpTransitionPage] and reads its arguments
+/// [HeroTransitionPage] / [HeroSlideUpTransitionPage] and reads its arguments
 /// from `state.extra`.
 final List<RouteBase> appRoutes = <RouteBase>[
   ...splashRoutes,
@@ -45,7 +44,6 @@ final List<RouteBase> appRoutes = <RouteBase>[
   ...notificationsRoutes,
   ...supportRoutes,
   ...marketingRoutes,
-  ...discoveryRoutes,
   ...authRoutes,
   ...assistantRoutes,
   ...placeholderRoutes,
@@ -71,7 +69,7 @@ GoRouter buildAppRouter({
     initialLocation: initialLocation,
     routes: appRoutes,
     observers: [routeObserver],
-    errorPageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    errorPageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: PlaceholderPage(title: PlaceholderPage.titleFor(state.uri.path)),

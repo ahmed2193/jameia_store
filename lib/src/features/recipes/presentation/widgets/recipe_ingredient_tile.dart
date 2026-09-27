@@ -10,7 +10,7 @@ import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/catalog_circle_add_button.dart';
 import '../../../../core/widgets/catalog_pill_stepper.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../../domain/entities/recipe_detail.dart';
@@ -41,7 +41,7 @@ class RecipeIngredientTile extends StatelessWidget {
         padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s6),
         child: Row(
           children: [
-            JameiaImage(
+            HeroImage(
               url: product.image,
               width: AppSize.s56,
               height: AppSize.s56,

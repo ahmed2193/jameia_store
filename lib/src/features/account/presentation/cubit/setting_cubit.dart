@@ -19,19 +19,16 @@ import 'setting_state.dart';
 /// khayool's `SettingCubit.changeLanguage`), the push-notification choice and
 /// the cache clean-up.
 ///
-/// The three use cases are optional only until the app root injects them
-/// (`AppGlobalCubits`); without them the choice lives in memory for the run
+/// The app root injects the three use cases (`AppGlobalCubits.setting`); a
+/// test may leave them out, and then the choice lives in memory for the run
 /// and the clean-up has nothing to empty.
 class SettingCubit extends Cubit<SettingState>
     with SafeCubitMixin<SettingState> {
   SettingCubit({
-    GetNotificationsEnabledUseCase? getNotificationsEnabled,
-    SetNotificationsEnabledUseCase? setNotificationsEnabled,
-    ClearAppCacheUseCase? clearAppCache,
-  }) : _getNotificationsEnabled = getNotificationsEnabled,
-       _setNotificationsEnabled = setNotificationsEnabled,
-       _clearAppCache = clearAppCache,
-       super(const SettingState());
+    this._getNotificationsEnabled,
+    this._setNotificationsEnabled,
+    this._clearAppCache,
+  }) : super(const SettingState());
 
   final GetNotificationsEnabledUseCase? _getNotificationsEnabled;
   final SetNotificationsEnabledUseCase? _setNotificationsEnabled;

@@ -71,7 +71,7 @@ class _RewardCardState extends State<RewardCard> {
   Future<void> _redeem() async {
     final cart = context.read<CartCubit>();
     if (cart.state.isEmpty) {
-      showJameiaSnackBar(context, 'loyalty.rewards_empty_cart'.tr());
+      showHeroSnackBar(context, 'loyalty.rewards_empty_cart'.tr());
       return;
     }
     final points = widget.reward.points;
@@ -88,7 +88,7 @@ class _RewardCardState extends State<RewardCard> {
       Haptics.success();
       widget.onRedeemed();
     }
-    showJameiaSnackBar(
+    showHeroSnackBar(
       context,
       applied
           ? 'loyalty.reward_applied'.tr(namedArgs: {'points': '$points'})

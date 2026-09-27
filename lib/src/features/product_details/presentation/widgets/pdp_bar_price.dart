@@ -7,12 +7,12 @@ import '../../../../core/motion/rolling_number.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/shelf_marker_painter.dart';
 
-/// The price at the start of the buy bar, bold and large: what the
+/// The price in the buy bar's price block, bold and large: what the
 /// selection costs — per piece, or the line total once it is in the cart —
 /// its changed digits rolling. On a [deal] the lime marker draws itself
 /// under it (again for another [option]) and the struck total sits below; a
 /// Pro member paying less sees the regular total struck. All amounts arrive
-/// decided by the domain (`ProductDetail`).
+/// decided by the domain (`ProductDetail`); the block scales it down to fit.
 class PdpBarPrice extends StatefulWidget {
   const PdpBarPrice({
     super.key,
@@ -87,36 +87,32 @@ class _PdpBarPriceState extends State<PdpBarPrice>
         fontWeight: AppTextStyles.bold,
       ),
     );
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      alignment: AlignmentDirectional.centerStart,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (widget.deal)
-            CustomPaint(
-              painter: ShelfMarkerPainter(
-                progress: _marker,
-                color: AppColors.proLime,
-                textDirection: Directionality.of(context),
-              ),
-              child: amount,
-            )
-          else
-            amount,
-          if (struck != null)
-            Text(
-              Formatters.price(struck),
-              maxLines: 1,
-              style: AppTextStyles.bodyLarge.copyWith(
-                color: AppColors.tertiaryText,
-                decoration: TextDecoration.lineThrough,
-                decorationColor: AppColors.tertiaryText,
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.deal)
+          CustomPaint(
+            painter: ShelfMarkerPainter(
+              progress: _marker,
+              color: AppColors.proLime,
+              textDirection: Directionality.of(context),
             ),
-        ],
-      ),
+            child: amount,
+          )
+        else
+          amount,
+        if (struck != null)
+          Text(
+            Formatters.price(struck),
+            maxLines: 1,
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.tertiaryText,
+              decoration: TextDecoration.lineThrough,
+              decorationColor: AppColors.tertiaryText,
+            ),
+          ),
+      ],
     );
   }
 }

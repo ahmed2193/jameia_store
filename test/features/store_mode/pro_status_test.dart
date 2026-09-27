@@ -7,17 +7,17 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/pro_membership_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/repositories/pro_membership_repository.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_membership_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/usecases/get_pro_program_usecase.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/pro_membership_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/store_mode/domain/entities/pro_membership.dart';
+import 'package:hero_mart/src/features/store_mode/domain/repositories/pro_membership_repository.dart';
+import 'package:hero_mart/src/features/store_mode/domain/usecases/get_pro_membership_usecase.dart';
+import 'package:hero_mart/src/features/store_mode/domain/usecases/get_pro_program_usecase.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 

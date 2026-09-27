@@ -32,7 +32,7 @@ class AssistantOnboardingSheet extends StatefulWidget {
   const AssistantOnboardingSheet({super.key});
 
   static Future<AssistantOnboardingResult?> show(BuildContext context) =>
-      showJameiaBottomSheet<AssistantOnboardingResult>(
+      showHeroBottomSheet<AssistantOnboardingResult>(
         context,
         large: true,
         isScrollControlled: true,

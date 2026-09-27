@@ -5,7 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_line_entity.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 
 /// The bottom line of an items-sheet row: "2x KD 0.600" (the count left to
 /// right in Arabic too), the struck "was" price of a line on a deal, and the
@@ -41,9 +41,9 @@ class CheckoutLinePrice extends StatelessWidget {
                   style: strong.copyWith(fontFeatures: AppTextStyles.tabular),
                 ),
               ),
-              JameiaMoneyText(kd: line.unitPriceKd, style: strong),
+              HeroMoneyText(kd: line.unitPriceKd, style: strong),
               if (line.hasDiscount)
-                JameiaMoneyText(
+                HeroMoneyText(
                   kd: line.compareAtKd,
                   strike: true,
                   style: AppTextStyles.bodySmall,
@@ -53,7 +53,7 @@ class CheckoutLinePrice extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.s8),
-        JameiaMoneyText(kd: line.lineTotalKd, style: strong),
+        HeroMoneyText(kd: line.lineTotalKd, style: strong),
       ],
     );
   }

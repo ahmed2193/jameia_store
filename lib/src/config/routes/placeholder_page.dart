@@ -12,8 +12,8 @@ class PlaceholderPage extends StatelessWidget {
 
   static const String _fallbackTitle = 'Screen';
 
-  /// Derives the placeholder title from a route path: `'/punctual-rule'` ->
-  /// `'punctual rule'` (null -> `'Screen'`).
+  /// Derives the placeholder title from a route path: `'/invite-friends'` ->
+  /// `'invite friends'` (null -> `'Screen'`).
   static String titleFor(String? location) =>
       (location ?? _fallbackTitle).replaceFirst('/', '').replaceAll('-', ' ');
 

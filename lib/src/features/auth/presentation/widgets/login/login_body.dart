@@ -3,24 +3,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/motion/motion_widgets.dart';
+import '../../../../../core/widgets/brand_sheet_fold.dart';
 import '../../cubit/login_cubit.dart';
-import '../auth_back_button.dart';
-import 'login_brand_hero.dart';
+import '../auth_cascade_item.dart';
 import 'login_continue_button.dart';
 import 'login_expired_banner.dart';
-import 'login_heading.dart';
-import 'login_hero_collapse.dart';
+import 'login_offer_card.dart';
 import 'login_or_divider.dart';
-import 'login_phone_field.dart';
+import 'login_phone_row.dart';
 import 'login_social_section.dart';
 import 'login_terms_text.dart';
+import 'login_welcome_heading.dart';
 
-/// Scrollable login layout: the brand card (folds away with the keyboard),
-/// heading, phone unit and Continue right under it — so the CTA sits just
-/// above the keyboard — then the social buttons and the fine print pinned
-/// to the bottom. Owns the phone controller + focus, forwards edits to
-/// [LoginCubit], and decides when an invalid number is pointed out.
+/// What the sign-in sheet holds, top to bottom: the offer card (or, after
+/// an expired session, why the customer is here) — it folds away with the
+/// header while the keyboard is up — "Welcome", the phone unit with
+/// Continue right under it (so it sits just above the keyboard), then "or
+/// with" the other ways in, and the fine print at the foot. Everything
+/// cascades in as the sheet rises.
+///
+/// Owns the phone controller and focus, forwards edits to [LoginCubit], and
+/// decides when an invalid number is pointed out.
 class LoginBody extends StatefulWidget {
   const LoginBody({super.key, this.sessionExpired = false});
 
@@ -31,10 +34,6 @@ class LoginBody extends StatefulWidget {
 }
 
 class _LoginBodyState extends State<LoginBody> {
-  /// Heading → phone → CTA cascade (60 ms apart, a short rise).
-  static const Duration _stagger = Duration(milliseconds: 60);
-  static const Offset _rise = Offset(0, 0.15);
-
   final TextEditingController _phone = TextEditingController();
   final FocusNode _phoneFocus = FocusNode();
 
@@ -91,97 +90,76 @@ class _LoginBodyState extends State<LoginBody> {
 
   @override
   Widget build(BuildContext context) {
-    // The Scaffold already resizes for the keyboard, so no inset math here.
-    return CustomScrollView(
-      slivers: [
-        const SliverPadding(
-          padding: EdgeInsetsDirectional.fromSTEB(
-            AppSpacing.s16,
-            AppSpacing.s8,
-            AppSpacing.s16,
-            0,
-          ),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return SafeArea(
+      top: false,
+      child: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.s24,
+              AppSpacing.s24,
+              AppSpacing.s24,
+              0,
+            ),
+            sliver: SliverList.list(
               children: [
-                AuthBackButton(),
-                LoginHeroCollapse(
+                BrandSheetFold(
                   child: Padding(
-                    padding: EdgeInsetsDirectional.only(top: AppSpacing.s8),
-                    child: LoginBrandHero(),
+                    padding: const EdgeInsetsDirectional.only(
+                      bottom: AppSpacing.s24,
+                    ),
+                    child: AuthCascadeItem(
+                      index: 0,
+                      child: widget.sessionExpired
+                          ? const LoginExpiredBanner()
+                          : const LoginOfferCard(),
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        ),
-        SliverPadding(
-          padding: const EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.s24,
-          ),
-          sliver: SliverList.list(
-            children: [
-              const SizedBox(height: AppSpacing.s28),
-              if (widget.sessionExpired) ...[
-                const LoginExpiredBanner(),
+                const AuthCascadeItem(index: 1, child: LoginWelcomeHeading()),
+                const SizedBox(height: AppSpacing.s24),
+                AuthCascadeItem(
+                  index: 2,
+                  child: LoginPhoneRow(
+                    controller: _phone,
+                    focusNode: _phoneFocus,
+                    errorRevealed: _errorRevealed,
+                    nudges: _nudges,
+                    onSubmitted: _submit,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.s20),
-              ],
-              const StaggerEntrance(
-                index: 0,
-                stagger: _stagger,
-                beginOffset: _rise,
-                child: LoginHeading(),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              StaggerEntrance(
-                index: 1,
-                stagger: _stagger,
-                beginOffset: _rise,
-                child: LoginPhoneField(
-                  controller: _phone,
-                  focusNode: _phoneFocus,
-                  errorRevealed: _errorRevealed,
-                  nudges: _nudges,
-                  onSubmitted: _submit,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              StaggerEntrance(
-                index: 2,
-                stagger: _stagger,
-                beginOffset: _rise,
-                child: LoginContinueButton(onBlocked: _nudge),
-              ),
-            ],
-          ),
-        ),
-        const SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(
-              AppSpacing.s24,
-              AppSpacing.s28,
-              AppSpacing.s24,
-              AppSpacing.s16,
-            ),
-            child: Column(
-              children: [
-                StaggerEntrance(
+                AuthCascadeItem(
                   index: 3,
-                  stagger: _stagger,
-                  child: LoginOrDivider(),
+                  child: LoginContinueButton(onBlocked: _nudge),
                 ),
-                SizedBox(height: AppSpacing.s20),
-                LoginSocialSection(firstStaggerIndex: 4, stagger: _stagger),
-                Spacer(),
-                SizedBox(height: AppSpacing.s24),
-                LoginTermsText(),
               ],
             ),
           ),
-        ),
-      ],
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.s24,
+                AppSpacing.s28,
+                AppSpacing.s24,
+                AppSpacing.s16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AuthCascadeItem(index: 4, child: LoginOrDivider()),
+                  SizedBox(height: AppSpacing.s16),
+                  LoginSocialSection(firstCascadeIndex: 5),
+                  Spacer(),
+                  SizedBox(height: AppSpacing.s24),
+                  AuthCascadeItem(index: 7, child: LoginTermsText()),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

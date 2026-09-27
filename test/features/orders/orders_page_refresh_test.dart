@@ -6,32 +6,32 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/pages/orders_page.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/pages/orders_page.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/fake_cart_repository.dart';
@@ -149,18 +149,20 @@ void main() {
     expect(listCalls(), afterOpen);
   });
 
-  testWidgets('offline, coming back to the tab asks nothing', (tester) async {
+  testWidgets('offline, coming back to the tab: the read runs, fails '
+      'quietly, and the list stays (the reconnect refreshes it)', (
+    tester,
+  ) async {
     await pump(tester, active: true, offline: true);
     final afterOpen = listCalls();
+    repository.listFailure = const NetworkFailure();
 
     await pump(tester, active: false, offline: true);
     await pump(tester, active: true, offline: true);
 
-    expect(
-      listCalls(),
-      afterOpen,
-      reason: 'it could only fail: the reconnect refresh catches up',
-    );
+    expect(listCalls(), afterOpen + 1, reason: 'no offline pre-check');
+    expect(find.byType(SnackBar), findsNothing, reason: 'offline: the banner');
+    expect(find.text('No connection'), findsNothing, reason: 'the list stays');
   });
 
   testWidgets('offline with nothing saved: No connection; retry loads', (

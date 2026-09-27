@@ -7,9 +7,9 @@ import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/order_line_entity.dart';
-import '../../../../core/widgets/jameia_money_text.dart';
-import '../../../../core/widgets/jameia_section_header.dart';
-import '../../../../core/widgets/jameia_summary_line.dart';
+import '../../../../core/widgets/hero_money_text.dart';
+import '../../../../core/widgets/hero_section_header.dart';
+import '../../../../core/widgets/hero_summary_line.dart';
 import '../../../../core/widgets/thin_divider.dart';
 import 'order_line_row.dart';
 import 'order_offer_line_row.dart';
@@ -87,7 +87,7 @@ class _OrderLinesSliverState extends State<OrderLinesSliver> {
     final section = SliverMainAxisGroup(
       slivers: [
         SliverToBoxAdapter(
-          child: JameiaSectionHeader(
+          child: HeroSectionHeader(
             title: 'orders.items_title'.tr(),
             titleStyle: AppTextStyles.groupTitle,
             seeAllLabel: 'orders.invoice'.tr(),
@@ -132,10 +132,10 @@ class _OrderLinesSliverState extends State<OrderLinesSliver> {
               children: [
                 const ThinDivider(),
                 const SizedBox(height: AppSpacing.s6),
-                JameiaSummaryLine(
+                HeroSummaryLine(
                   label: 'orders.total'.tr(),
                   emphasized: true,
-                  value: JameiaMoneyText(kd: widget.totalKd),
+                  value: HeroMoneyText(kd: widget.totalKd),
                 ),
               ],
             ),

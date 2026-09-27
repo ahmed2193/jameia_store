@@ -3,25 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../../../core/error/failures.dart';
-import '../../../../core/navigation/jameia_snack_bar.dart';
-import '../../../../core/utils/failure_message.dart';
+import '../../../../core/domain/entities/screen_load.dart';
+import '../../../../core/navigation/screen_failure_listener.dart';
 import '../../../../core/widgets/branded_refresh.dart';
 import '../../../../core/widgets/reconnect_refresh.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../cubit/home_cubit.dart';
 import '../cubit/home_state.dart';
+import 'home_failure_view.dart';
 import 'home_feed_view.dart';
 import 'home_loading_view.dart';
-import 'home_offline_view.dart';
 import 'home_popup_queue.dart';
 
 /// Switches the home tab on the cubit state — skeleton, feed (a saved copy
-/// included), empty, "no connection" (nothing saved, offline), error + retry —
-/// and runs the one-shot effects: the failed-refresh message (never while
-/// offline: the banner speaks), the marketing popup queue (only while Home
-/// is the visible shell tab), and one silent refresh when the connection
-/// returns.
+/// included), empty, and with nothing saved the failure under the real
+/// header ("Checking your connection…", "No connection", or the error +
+/// retry) — and runs the one-shot effects: the failed-refresh message told
+/// the shared way (offline: only the banner), the marketing popup queue
+/// (only while Home is the visible shell tab), and one silent refresh when
+/// the connection returns.
 class HomeBody extends StatefulWidget {
   const HomeBody({super.key});
 
@@ -57,51 +57,40 @@ class _HomeBodyState extends State<HomeBody> {
           _isVisible = info.visibleFraction > _visibleFraction;
           if (mounted) _showDuePopups();
         },
-        child: BlocConsumer<HomeCubit, HomeState>(
-          listenWhen: (previous, current) =>
-              (current.failure != null &&
-                  current.isLoaded &&
-                  previous.failure != current.failure) ||
-              (current.hasPendingPopups && !previous.hasPendingPopups),
-          listener: (context, state) {
-            final failure = state.failure;
-            if (failure != null && state.isLoaded) {
-              showFailureSnackBar(context, failure);
-            }
-            _showDuePopups();
-          },
-          // The popup latch and a transient refresh failure change nothing on
-          // screen: never rebuild the whole feed for them.
-          buildWhen: (previous, current) =>
-              previous.status != current.status ||
-              previous.feed != current.feed ||
-              previous.bootstrap != current.bootstrap,
-          builder: (context, state) => switch (state.status) {
-            HomeStatus.initial ||
-            HomeStatus.loading => HomeLoadingView(bootstrap: state.bootstrap),
-            HomeStatus.error when state.failure is NetworkFailure =>
-              HomeOfflineView(
+        child: ScreenFailureListener<HomeCubit, HomeState>(
+          child: BlocConsumer<HomeCubit, HomeState>(
+            listenWhen: (previous, current) =>
+                current.hasPendingPopups && !previous.hasPendingPopups,
+            listener: (context, state) => _showDuePopups(),
+            // The popup latch and a transient refresh failure change nothing on
+            // screen: never rebuild the whole feed for them.
+            buildWhen: (previous, current) =>
+                current.load.screenChangedFrom(previous.load) ||
+                previous.feed != current.feed ||
+                previous.bootstrap != current.bootstrap,
+            builder: (context, state) => switch (state.status) {
+              LoadPhase.initial ||
+              LoadPhase.loading => HomeLoadingView(bootstrap: state.bootstrap),
+              LoadPhase.error => HomeFailureView(
                 bootstrap: state.bootstrap,
+                failure: state.failure,
                 onRetry: () => context.read<HomeCubit>().load(),
               ),
-            HomeStatus.error => ErrorView(
-              message: state.failure?.localizedMessage,
-              onRetry: () => context.read<HomeCubit>().load(),
-            ),
-            HomeStatus.loaded when state.isEmpty => BrandedRefresh(
-              onRefresh: () => context.read<HomeCubit>().refresh(),
-              child: EmptyStateView(
-                message: 'home.empty'.tr(),
-                icon: Icons.storefront_outlined,
-                actionLabel: 'common.refresh'.tr(),
-                onAction: () => context.read<HomeCubit>().load(),
+              LoadPhase.loaded when state.isEmpty => BrandedRefresh(
+                onRefresh: () => context.read<HomeCubit>().refresh(),
+                child: EmptyStateView(
+                  message: 'home.empty'.tr(),
+                  icon: Icons.storefront_outlined,
+                  actionLabel: 'common.refresh'.tr(),
+                  onAction: () => context.read<HomeCubit>().load(),
+                ),
               ),
-            ),
-            HomeStatus.loaded => HomeFeedView(
-              feed: state.feed,
-              bootstrap: state.bootstrap,
-            ),
-          },
+              LoadPhase.loaded => HomeFeedView(
+                feed: state.feed,
+                bootstrap: state.bootstrap,
+              ),
+            },
+          ),
         ),
       ),
     );

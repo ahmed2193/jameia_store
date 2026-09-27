@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 
 /// "n items" on the start side, the order total on the end side — the total
 /// as one left-to-right money run, static (a list row never rolls).
@@ -26,7 +26,7 @@ class OrderTotalRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.s12),
-        JameiaMoneyText(
+        HeroMoneyText(
           kd: order.totalKd,
           style: AppTextStyles.itemTitleStrong,
         ),

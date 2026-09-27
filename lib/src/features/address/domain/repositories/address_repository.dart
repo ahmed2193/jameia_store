@@ -1,12 +1,12 @@
 import 'package:dartz/dartz.dart';
 
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/address_draft.dart';
 import '../entities/address_update.dart';
 import '../entities/cached_address_book.dart';
 
-/// The customer's address book on the jm3eia API plus its copy on this
+/// The customer's address book on the Hero API plus its copy on this
 /// device. Every API route is customer-only: a guest gets
 /// `Left(UnauthorizedFailure)`.
 ///
@@ -23,7 +23,7 @@ abstract class AddressRepository {
   /// Replaces the device copy with [addresses] (stored as the API rows) saved
   /// for the customer [ownerId] (`null` when not known yet).
   Future<Either<Failure, Unit>> saveCachedAddresses(
-    List<JameiaAddressEntity> addresses, {
+    List<HeroAddressEntity> addresses, {
     String? ownerId,
   });
 
@@ -31,14 +31,14 @@ abstract class AddressRepository {
   Future<Either<Failure, Unit>> clearCachedAddresses();
 
   /// `GET /v1/account/addresses` — every saved address.
-  Future<Either<Failure, List<JameiaAddressEntity>>> fetchAddresses();
+  Future<Either<Failure, List<HeroAddressEntity>>> fetchAddresses();
 
   /// `POST /v1/account/addresses` — the created address.
-  Future<Either<Failure, JameiaAddressEntity>> addAddress(AddressDraft draft);
+  Future<Either<Failure, HeroAddressEntity>> addAddress(AddressDraft draft);
 
   /// `PATCH /v1/account/addresses/:addressId` with the changed fields only —
   /// the updated address.
-  Future<Either<Failure, JameiaAddressEntity>> updateAddress(
+  Future<Either<Failure, HeroAddressEntity>> updateAddress(
     String id,
     AddressUpdate update,
   );

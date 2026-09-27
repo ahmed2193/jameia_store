@@ -16,7 +16,7 @@ class AssistantCopySheet extends StatelessWidget {
   /// Opens the sheet for [text]; nothing to copy → nothing opens.
   static Future<void> show(BuildContext context, String text) async {
     if (text.trim().isEmpty) return;
-    await showJameiaBottomSheet<void>(
+    await showHeroBottomSheet<void>(
       context,
       builder: (_) => AssistantCopySheet(text: text),
     );
@@ -25,7 +25,7 @@ class AssistantCopySheet extends StatelessWidget {
   /// Copies [text] and confirms it.
   static Future<void> copy(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
-    if (context.mounted) showJameiaSnackBar(context, 'assistant.copied'.tr());
+    if (context.mounted) showHeroSnackBar(context, 'assistant.copied'.tr());
   }
 
   @override

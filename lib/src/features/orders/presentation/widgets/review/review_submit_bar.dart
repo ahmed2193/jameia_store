@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/motion/blocked_tap_shake.dart';
-import '../../../../../core/widgets/jameia_bottom_bar.dart';
-import '../../../../../core/widgets/jameia_submit_button.dart';
+import '../../../../../core/widgets/hero_bottom_bar.dart';
+import '../../../../../core/widgets/hero_submit_button.dart';
 import '../../cubit/order_review_cubit.dart';
 
 /// The pinned submit pill of the review page. A tap before any star is set
-/// shakes it (the hint above the list says what to do); submitting shows
-/// the loader, then a check while the page closes. It owns the submit
-/// selects, so a rating that flips "can submit" rebuilds this bar only —
-/// not the product list.
+/// shakes it (the hint above the list says what to do); while it sends, the
+/// page's busy overlay holds the screen and the pill keeps its label. It
+/// owns the submit selects, so a rating that flips "can submit" rebuilds
+/// this bar only — not the product list.
 class ReviewSubmitBar extends StatelessWidget {
   const ReviewSubmitBar({super.key});
 
@@ -26,14 +26,12 @@ class ReviewSubmitBar extends StatelessWidget {
     final submitted = context.select<OrderReviewCubit, bool>(
       (cubit) => cubit.state.submitted,
     );
-    return JameiaBottomBar(
+    return HeroBottomBar(
       child: BlockedTapShake(
         blocked: !canSubmit && !submitting && !submitted,
-        child: JameiaSubmitButton(
+        child: HeroSubmitButton(
           label: 'orders.review_submit'.tr(),
-          loading: submitting,
-          success: submitted,
-          successLabel: 'orders.review_thanks'.tr(),
+          holding: submitting || submitted,
           enabled: canSubmit,
           onPressed: () => context.read<OrderReviewCubit>().submit(),
         ),

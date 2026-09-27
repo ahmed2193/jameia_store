@@ -28,7 +28,7 @@ class CouponStub extends StatelessWidget {
   static const List<Color> gradient = [
     AppColors.proAmber,
     AppColors.accent3,
-    kJameiaPillPin,
+    kHeroPillPin,
   ];
   static const double _highlightAlpha = 0.3;
   static final List<Color> _highlight = [

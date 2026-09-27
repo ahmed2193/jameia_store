@@ -5,11 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/widgets/app_loader.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
-import '../../../../../core/widgets/jameia_state_view.dart';
+import '../../../../../core/widgets/cubit_busy_overlay.dart';
+import '../../../../../core/widgets/hero_state_view.dart';
 import '../../cubit/cart_cubit.dart';
 import '../../cubit/cart_state.dart';
 import 'cart_body.dart';
@@ -26,6 +27,7 @@ enum _CartBucket { loading, empty, content }
 ///
 /// The Cart tab stays mounted (off screen) in the shell, and every "+" on
 /// Home reaches it: while hidden, its animations are muted so nothing ticks.
+/// A confirmed "Clear cart" holds the screen until the server answers.
 class CartView extends StatelessWidget {
   const CartView({super.key, required this.onBrowse});
 
@@ -42,7 +44,7 @@ class CartView extends StatelessWidget {
     final background =
         state.failedAction == CartAction.sync ||
         state.failedAction == CartAction.none;
-    final transport = failure is NetworkFailure || failure is TimeoutFailure;
+    final transport = failure.isTransport;
     // The cart's own sync (taps going out, a re-read) could not reach the
     // server: offline it retries by itself and says nothing more.
     if (background && transport && ConnectivityScope.readIsOffline(context)) {
@@ -57,39 +59,45 @@ class CartView extends StatelessWidget {
     );
   }
 
+  static bool _clearing(CartState state) =>
+      state.busyAction == CartAction.clear;
+
   @override
   Widget build(BuildContext context) {
     return TickerMode(
       enabled: Visibility.of(context),
-      child: BlocListener<CartCubit, CartState>(
-        listenWhen: (previous, current) =>
-            current.failure != null && previous != current,
-        listener: _onFailure,
-        child: BlocBuilder<CartCubit, CartState>(
-          buildWhen: (previous, current) =>
-              previous.isRestored != current.isRestored ||
-              previous.isEmpty != current.isEmpty,
-          builder: (context, state) {
-            final bucket = !state.isRestored
-                ? _CartBucket.loading
-                : state.isEmpty
-                ? _CartBucket.empty
-                : _CartBucket.content;
-            return FadeThroughSwitcher(
-              stateKey: bucket,
-              alignment: AlignmentDirectional.topCenter,
-              child: switch (bucket) {
-                _CartBucket.loading => const AppLoader(),
-                _CartBucket.empty => JameiaStateView(
-                  message: 'cart.empty'.tr(),
-                  icon: Icons.shopping_cart_outlined,
-                  actionLabel: 'cart.start_shopping'.tr(),
-                  onAction: onBrowse,
-                ),
-                _CartBucket.content => const CartBody(),
-              },
-            );
-          },
+      child: CubitBusyOverlay<CartCubit, CartState>(
+        busyOf: _clearing,
+        child: BlocListener<CartCubit, CartState>(
+          listenWhen: (previous, current) =>
+              current.failure != null && previous != current,
+          listener: _onFailure,
+          child: BlocBuilder<CartCubit, CartState>(
+            buildWhen: (previous, current) =>
+                previous.isRestored != current.isRestored ||
+                previous.isEmpty != current.isEmpty,
+            builder: (context, state) {
+              final bucket = !state.isRestored
+                  ? _CartBucket.loading
+                  : state.isEmpty
+                  ? _CartBucket.empty
+                  : _CartBucket.content;
+              return FadeThroughSwitcher(
+                stateKey: bucket,
+                alignment: AlignmentDirectional.topCenter,
+                child: switch (bucket) {
+                  _CartBucket.loading => const AppLoader(),
+                  _CartBucket.empty => HeroStateView(
+                    message: 'cart.empty'.tr(),
+                    icon: Icons.shopping_cart_outlined,
+                    actionLabel: 'cart.start_shopping'.tr(),
+                    onAction: onBrowse,
+                  ),
+                  _CartBucket.content => const CartBody(),
+                },
+              );
+            },
+          ),
         ),
       ),
     );

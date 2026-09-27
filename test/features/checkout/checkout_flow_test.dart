@@ -10,37 +10,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/motion/shake_x.dart';
-import 'package:jameia_mart/src/core/responsive/app_size.dart';
-import 'package:jameia_mart/src/core/widgets/catalog_product_card.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_image.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_submit_button.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_add_button.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
-import 'package:jameia_mart/src/features/address/presentation/pages/address_list_page.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_rail_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_address_section.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_total.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_body.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_row.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_hint_bubble.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_button.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_rail_section.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_rail_tile.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_savings_section.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumb_slot.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/shake_x.dart';
+import 'package:hero_mart/src/core/responsive/app_size.dart';
+import 'package:hero_mart/src/core/widgets/catalog_product_card.dart';
+import 'package:hero_mart/src/core/widgets/hero_image.dart';
+import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
+import 'package:hero_mart/src/core/widgets/shelf_add_button.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
+import 'package:hero_mart/src/features/address/presentation/pages/address_list_page.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_rail_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_address_section.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_bar_total.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_body.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_row.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_hint_bubble.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_button.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_rail_section.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_rail_tile.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_savings_section.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumb_slot.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/rebuild_probe.dart';
@@ -233,12 +233,12 @@ void main() {
     find.descendant(of: tile(id), matching: find.byType(ShelfAddButton)),
   );
 
-  /// The [JameiaImage]s showing [product]'s picture.
-  Iterable<JameiaImage> imagesOf(
+  /// The [HeroImage]s showing [product]'s picture.
+  Iterable<HeroImage> imagesOf(
     WidgetTester tester,
     CatalogProductEntity product,
   ) => tester
-      .widgetList<JameiaImage>(find.byType(JameiaImage))
+      .widgetList<HeroImage>(find.byType(HeroImage))
       .where((image) => image.url == product.image);
 
   testWidgets('CT-R2: a rail add rebuilds its card, the strip and the bar, '
@@ -343,7 +343,7 @@ void main() {
     expect(tester.getRect(row).bottom, lessThan(0));
     final haptics = recordHaptics(tester);
 
-    await tester.tap(find.byType(JameiaSubmitButton));
+    await tester.tap(find.byType(HeroSubmitButton));
     await tester.pump();
     expect(haptics, hasLength(1));
 

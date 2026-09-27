@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
-import '../../../../../core/widgets/jameia_tag.dart';
+import '../../../../../core/widgets/hero_tag.dart';
 
 /// The status tag of an order: green wash while it is on its way, grey once
 /// delivered, red when cancelled or failed. With the list no longer split
@@ -20,12 +20,12 @@ class OrderStatusChip extends StatelessWidget {
     return FadeThroughSwitcher(
       stateKey: status,
       alignment: AlignmentDirectional.centerStart,
-      child: JameiaTag(
+      child: HeroTag(
         label: status.labelKey.tr(),
         tone: switch (status.group) {
-          OrderStatusGroup.inProgress => JameiaTagTone.brandSoft,
-          OrderStatusGroup.completed => JameiaTagTone.neutral,
-          OrderStatusGroup.cancelled => JameiaTagTone.error,
+          OrderStatusGroup.inProgress => HeroTagTone.brandSoft,
+          OrderStatusGroup.completed => HeroTagTone.neutral,
+          OrderStatusGroup.cancelled => HeroTagTone.error,
         },
       ),
     );

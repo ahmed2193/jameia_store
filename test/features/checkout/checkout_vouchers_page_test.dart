@@ -15,29 +15,29 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_reward_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/motion/second_clock_scope.dart';
-import 'package:jameia_mart/src/core/widgets/countdown_digits.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_submit_button.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/domain/usecases/get_store_offers_usecase.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_offers_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/pages/checkout_vouchers_page.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_sheet_frame.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/vouchers/checkout_code_field.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/vouchers/checkout_coupon_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/vouchers/checkout_offer_ticket.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/second_clock_scope.dart';
+import 'package:hero_mart/src/core/widgets/countdown_digits.dart';
+import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/domain/usecases/get_store_offers_usecase.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_offers_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/pages/checkout_vouchers_page.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_sheet_frame.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/vouchers/checkout_code_field.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/vouchers/checkout_coupon_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/vouchers/checkout_offer_ticket.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/rebuild_probe.dart';
@@ -259,7 +259,7 @@ void main() {
 
   Finder applyButton() => find.descendant(
     of: find.byType(CheckoutCouponSheet),
-    matching: find.byType(JameiaSubmitButton),
+    matching: find.byType(HeroSubmitButton),
   );
 
   /// The entrance cascade's own fade (the only one that keeps semantics).
@@ -427,7 +427,7 @@ void main() {
       expect(probe.of(CheckoutSheetFrame), 0);
       expect(probe.of(CheckoutCodeField), 0);
       expect(probe.of(CheckoutCouponSheet), 0);
-      expect(probe.of(JameiaSubmitButton), greaterThan(0));
+      expect(probe.of(HeroSubmitButton), greaterThan(0));
       probe.stop();
     });
   });

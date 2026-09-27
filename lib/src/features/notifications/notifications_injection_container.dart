@@ -15,7 +15,7 @@ import 'presentation/cubit/notifications_cubit.dart';
 import 'presentation/cubit/unread_notifications_cubit.dart';
 
 /// Notifications feature DI — the customer inbox + push registration over the
-/// jm3eia API (the inbox's first page is kept on the device for the
+/// Hero API (the inbox's first page is kept on the device for the
 /// signed-in customer). Depends on the core `ApiConsumer`,
 /// `EventStreamClient` and `CacheSlots` registered by `setupServiceLocator`
 /// before any feature init.

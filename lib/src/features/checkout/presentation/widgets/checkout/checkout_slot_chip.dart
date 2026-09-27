@@ -8,7 +8,7 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// One delivery window in the slot sheet, as a Keeta choice: a 36 dp box
+/// One delivery window in the slot sheet, as a Hero choice: a 36 dp box
 /// (8 dp corners) inside a 44 dp tap target. Selected → a light brand fill,
 /// a brand hairline and bold letters; bookable → white with a grey
 /// hairline; full → a muted fill that ignores taps. The fill and border

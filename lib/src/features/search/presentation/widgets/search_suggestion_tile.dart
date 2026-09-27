@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import 'search_highlighted_text.dart';
 import 'search_suggestion_price.dart';
 
@@ -42,7 +42,7 @@ class SearchSuggestionTile extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  JameiaImage(
+                  HeroImage(
                     url: product.image,
                     width: _thumb,
                     height: _thumb,

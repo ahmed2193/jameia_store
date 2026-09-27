@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/watch_params.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_feed.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_section_entity.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_slide_entity.dart';
-import 'package:jameia_mart/src/features/home/domain/repositories/home_repository.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/watch_params.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_feed.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_section_entity.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_slide_entity.dart';
+import 'package:hero_mart/src/features/home/domain/repositories/home_repository.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
 
 /// `results` of `GET /v1/home` captured from the live host (2026-09-17).
 Map<String, dynamic> liveHomeJson() => _fixture('home_en.json');

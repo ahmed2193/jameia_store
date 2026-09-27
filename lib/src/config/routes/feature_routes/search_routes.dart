@@ -19,7 +19,7 @@ final List<RouteBase> searchRoutes = <RouteBase>[
     pageBuilder: (_, state) {
       final query = state.extra;
       final text = query is String ? query.trim() : '';
-      return JameiaTransitionPage<Object?>(
+      return HeroTransitionPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: text.isEmpty

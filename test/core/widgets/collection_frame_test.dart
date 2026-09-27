@@ -1,4 +1,4 @@
-// The talabat collection page frame (offers, flash deals, best sellers, a
+// The Hero collection page frame (offers, flash deals, best sellers, a
 // brand): the store's name in a top bar that turns from the hero's warm tint
 // to white as the hero scrolls away, the hero itself, underline tabs with an
 // ink bar under the open one, the "View cart" pill and a flash-sale clock.
@@ -13,17 +13,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/config/theme/app_colors.dart';
-import 'package:jameia_mart/src/core/widgets/collection_app_bar_delegate.dart';
-import 'package:jameia_mart/src/core/widgets/collection_frame.dart';
-import 'package:jameia_mart/src/core/widgets/collection_tab_strip.dart';
-import 'package:jameia_mart/src/core/widgets/collection_tabs_delegate.dart';
-import 'package:jameia_mart/src/core/widgets/countdown_chip.dart';
-import 'package:jameia_mart/src/core/widgets/round_outlined_button.dart';
-import 'package:jameia_mart/src/core/widgets/view_cart_pill.dart';
+import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/core/widgets/collection_app_bar_delegate.dart';
+import 'package:hero_mart/src/core/widgets/collection_frame.dart';
+import 'package:hero_mart/src/core/widgets/collection_tab_strip.dart';
+import 'package:hero_mart/src/core/widgets/collection_tabs_delegate.dart';
+import 'package:hero_mart/src/core/widgets/countdown_chip.dart';
+import 'package:hero_mart/src/core/widgets/round_outlined_button.dart';
+import 'package:hero_mart/src/core/widgets/view_cart_pill.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String _store = 'Jm3eia';
+const String _store = 'Hero';
 const String _heading = 'Best sellers near you';
 
 void main() {

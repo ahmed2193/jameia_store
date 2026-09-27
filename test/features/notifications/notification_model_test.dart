@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/features/notifications/data/mappers/notification_mapper.dart';
-import 'package:jameia_mart/src/features/notifications/data/models/notification_model.dart';
-import 'package:jameia_mart/src/features/notifications/data/models/notifications_page_model.dart';
-import 'package:jameia_mart/src/features/notifications/domain/entities/notification_entity.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/features/notifications/data/mappers/notification_mapper.dart';
+import 'package:hero_mart/src/features/notifications/data/models/notification_model.dart';
+import 'package:hero_mart/src/features/notifications/data/models/notifications_page_model.dart';
+import 'package:hero_mart/src/features/notifications/domain/entities/notification_entity.dart';
 
 import 'notifications_test_fakes.dart';
 

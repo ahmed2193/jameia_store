@@ -1,4 +1,4 @@
-// Timing on the Keeta-style checkout: the "Expected" row opens the timing
+// Timing on the Hero-style checkout: the "Expected" row opens the timing
 // sheet (ASAP / Express when the cart offers it / Schedule when the address
 // has windows), Schedule goes on to the slot sheet, picking Schedule again
 // reopens it with the booked window marked, a refused express puts timing
@@ -12,25 +12,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/utils/formatters.dart';
-import 'package:jameia_mart/src/core/widgets/option_row.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_branch_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_row.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_chip.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_timing_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_where_when_block.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/delivery_slot_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/utils/formatters.dart';
+import 'package:hero_mart/src/core/widgets/option_row.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_branch_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_row.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_chip.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_timing_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_where_when_block.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/cart_test_fixtures.dart';

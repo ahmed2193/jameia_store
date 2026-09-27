@@ -2,13 +2,12 @@ import '../../../../core/data/models/json_read.dart';
 import '../../../../core/error/exceptions.dart';
 
 /// The part of `GET /v1/init` → `results` home renders: `store` (name,
-/// tagline, Pro programme), `delivery` (mode, branch, zone) and
+/// Pro programme), `delivery` (mode, branch, zone) and
 /// `content.popups`. The rest of the snapshot (user, wishlist ids, cart offers,
 /// payment, loyalty, feature flags) belongs to the features that own it.
 class HomeInitModel {
   const HomeInitModel({
     this.storeName = '',
-    this.tagline = '',
     this.proEnabled = false,
     this.proFreeDelivery = false,
     this.proPointsMultiplier = 1,
@@ -19,7 +18,6 @@ class HomeInitModel {
 
   static const String storeKey = 'store';
   static const String nameKey = 'name';
-  static const String taglineKey = 'tagline';
   static const String proKey = 'pro';
   static const String enabledKey = 'enabled';
   static const String perksKey = 'perks';
@@ -40,7 +38,6 @@ class HomeInitModel {
         JsonRead.object(json[contentKey]) ?? const <String, dynamic>{};
     return HomeInitModel(
       storeName: JsonRead.string(store[nameKey]) ?? '',
-      tagline: JsonRead.string(store[taglineKey]) ?? '',
       proEnabled: JsonRead.flag(pro[enabledKey]),
       proFreeDelivery: JsonRead.flag(perks[freeDeliveryKey]),
       proPointsMultiplier: JsonRead.integer(perks[pointsMultiplierKey]) ?? 1,
@@ -55,7 +52,6 @@ class HomeInitModel {
   }
 
   final String storeName;
-  final String tagline;
   final bool proEnabled;
   final bool proFreeDelivery;
   final int proPointsMultiplier;
@@ -65,7 +61,7 @@ class HomeInitModel {
 }
 
 /// `results.delivery`: `{ mode, branch{ name … }, zone: null | { name,
-/// deliveryFee, minOrder, etaMinutes, expressAvailable … } }`. Money is fils.
+/// deliveryFee, minOrder, etaMinutes … } }`. Money is fils.
 class HomeDeliveryModel {
   const HomeDeliveryModel({
     this.mode = deliveryMode,
@@ -74,7 +70,6 @@ class HomeDeliveryModel {
     this.deliveryFee = 0,
     this.minOrder = 0,
     this.etaMinutes = 0,
-    this.expressAvailable = false,
   });
 
   static const String modeKey = 'mode';
@@ -84,7 +79,6 @@ class HomeDeliveryModel {
   static const String deliveryFeeKey = 'deliveryFee';
   static const String minOrderKey = 'minOrder';
   static const String etaMinutesKey = 'etaMinutes';
-  static const String expressAvailableKey = 'expressAvailable';
   static const String deliveryMode = 'delivery';
   static const String pickupMode = 'pickup';
 
@@ -101,7 +95,6 @@ class HomeDeliveryModel {
       deliveryFee: JsonRead.integer(zone?[deliveryFeeKey]) ?? 0,
       minOrder: JsonRead.integer(zone?[minOrderKey]) ?? 0,
       etaMinutes: JsonRead.integer(zone?[etaMinutesKey]) ?? 0,
-      expressAvailable: JsonRead.flag(zone?[expressAvailableKey]),
     );
   }
 
@@ -112,7 +105,6 @@ class HomeDeliveryModel {
   final int deliveryFee;
   final int minOrder;
   final int etaMinutes;
-  final bool expressAvailable;
 }
 
 /// One row of `results.content.popups`.

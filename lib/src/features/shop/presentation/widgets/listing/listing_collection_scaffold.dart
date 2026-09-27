@@ -14,7 +14,7 @@ import 'catalog_cart_bar.dart';
 import 'listing_category_tabs.dart';
 import 'product_listing_body.dart';
 
-/// A collection or a brand as a talabat collection page: the store's name in
+/// A collection or a brand as a Hero collection page: the store's name in
 /// a top bar that turns white as the tinted hero (heading, emoji, line, a
 /// flash sale's countdown) scrolls away, the category tabs pinned under it
 /// once at least two categories have products, the grid with no sort /

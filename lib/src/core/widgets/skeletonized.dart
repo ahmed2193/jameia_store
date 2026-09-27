@@ -5,7 +5,7 @@ import '../motion/motion.dart';
 import '../../config/theme/app_colors.dart';
 
 /// Shimmer SKELETON wrapper. Feed a static stand-in layout that mirrors the real
-/// content; while [loading] is true it renders bones with Jameia's shimmer sweep
+/// content; while [loading] is true it renders bones with Hero's shimmer sweep
 /// ([AppMotion.shimmer], ~1.1s). Reduced-motion → a solid (non-sweeping) bone so
 /// the screen still reads as "loading" without movement.
 class Skeletonized extends StatelessWidget {

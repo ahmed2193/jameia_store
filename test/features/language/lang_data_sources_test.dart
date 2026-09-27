@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/core/storage/local_storage.dart';
-import 'package:jameia_mart/src/features/language/data/datasources/lang_local_data_source.dart';
-import 'package:jameia_mart/src/features/language/data/datasources/lang_remote_data_source.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/core/storage/local_storage.dart';
+import 'package:hero_mart/src/features/language/data/datasources/lang_local_data_source.dart';
+import 'package:hero_mart/src/features/language/data/datasources/lang_remote_data_source.dart';
 
 import '../../core/network/network_test_fakes.dart';
 

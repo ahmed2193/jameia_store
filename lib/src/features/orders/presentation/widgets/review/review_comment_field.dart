@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/widgets/jameia_input_decoration.dart';
+import '../../../../../core/widgets/hero_input_decoration.dart';
 import '../../../domain/entities/product_review_request.dart';
 import '../../cubit/order_review_cubit.dart';
 
@@ -55,7 +55,7 @@ class _ReviewCommentFieldState extends State<ReviewCommentField> {
         onChanged: _cubit.setComment,
         style: AppTextStyles.itemTitle,
         cursorColor: AppColors.primaryText,
-        decoration: JameiaInputDecoration.outlined(
+        decoration: HeroInputDecoration.outlined(
           hintText: 'orders.review_comment_hint'.tr(),
         ),
       ),

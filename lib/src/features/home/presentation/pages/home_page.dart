@@ -7,7 +7,7 @@ import '../cubit/home_cubit.dart';
 import '../widgets/home_body.dart';
 import '../widgets/home_cart_bar.dart';
 
-/// Home tab — the jm3eia storefront as the backend composes it
+/// Home tab — the Hero storefront as the backend composes it
 /// (`GET /v1/home` + the launch snapshot `GET /v1/init`).
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

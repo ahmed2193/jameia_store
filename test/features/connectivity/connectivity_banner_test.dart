@@ -17,12 +17,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/shake_x.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
-import 'package:jameia_mart/src/features/connectivity/presentation/cubit/connectivity_cubit.dart';
-import 'package:jameia_mart/src/features/connectivity/presentation/widgets/connectivity_bar_content.dart';
-import 'package:jameia_mart/src/features/connectivity/presentation/widgets/connectivity_banner_host.dart';
+import 'package:hero_mart/src/core/constants/app_constants.dart';
+import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
+import 'package:hero_mart/src/core/motion/shake_x.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
+import 'package:hero_mart/src/features/connectivity/presentation/cubit/connectivity_cubit.dart';
+import 'package:hero_mart/src/features/connectivity/presentation/widgets/connectivity_bar_content.dart';
+import 'package:hero_mart/src/features/connectivity/presentation/widgets/connectivity_banner_host.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'connectivity_test_fakes.dart';
@@ -83,11 +85,12 @@ void main() {
     TextDirection direction = TextDirection.ltr,
     double textScale = 1,
     bool reducedMotion = false,
+    DateTime Function()? now,
   }) async {
     tester.view.padding = const FakeViewPadding(top: 72); // 24 dp status bar
     addTearDown(tester.view.reset);
     // Built inside the test body: its timers must run on the fake clock.
-    cubit = buildConnectivityCubit(repository)..start();
+    cubit = buildConnectivityCubit(repository, now: now)..start();
     addTearDown(cubit.close);
     await tester.pumpWidget(
       MaterialApp(
@@ -235,13 +238,16 @@ void main() {
     expect(find.text("You're offline"), findsOneWidget);
   });
 
-  testWidgets('a read that failed in transport asks the host: a live check, '
-      'and at most one automatic retry per gap', (tester) async {
-    await pumpHost(tester);
+  testWidgets('a read that failed in transport asks the host: a live check; '
+      'the loads that failed together retry, one that fails again after its '
+      'retry does not until the gap passed', (tester) async {
+    var time = DateTime(2026, 9, 27, 12);
+    await pumpHost(tester, now: () => time);
     final recheck = ConnectivityScope.recheckerOf(
       tester.element(find.text('page body')),
     )!;
-    Future<bool> ask() async {
+    Future<ConnectionRecheck> ask({Duration after = Duration.zero}) async {
+      time = time.add(after);
       final answer = recheck();
       await tester.pump();
       await tester.pump(testOfflineAfter * 2);
@@ -250,12 +256,30 @@ void main() {
     }
 
     repository.checkResult = ConnectivityStatus.offline;
-    expect(await ask(), isFalse, reason: 'still unreachable: no retry');
+    expect(await ask(), ConnectionRecheck.offline, reason: 'no retry');
     expect(repository.checkCalls, greaterThanOrEqualTo(1));
 
     repository.checkResult = ConnectivityStatus.online;
-    expect(await ask(), isTrue, reason: 'reachable after all: load again');
-    expect(await ask(), isFalse, reason: 'one automatic retry per gap');
+    expect(
+      await ask(),
+      ConnectionRecheck.retry,
+      reason: 'reachable after all: load again',
+    );
+    expect(
+      await ask(after: testOfflineAfter ~/ 2),
+      ConnectionRecheck.retry,
+      reason: 'a load that failed together with it goes too',
+    );
+    expect(
+      await ask(after: testOfflineAfter),
+      ConnectionRecheck.reachable,
+      reason: 'failed again after its retry: the error, no loop',
+    );
+    expect(
+      await ask(after: AppConstants.readRetryGap),
+      ConnectionRecheck.retry,
+      reason: 'the gap passed: a new wave',
+    );
     await tester.pump(testBackOnlineFor * 2);
     await tester.pumpAndSettle();
   });

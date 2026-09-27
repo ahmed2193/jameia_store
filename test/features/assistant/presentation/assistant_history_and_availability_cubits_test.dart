@@ -1,10 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_availability.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_availability_state.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_history_state.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_availability.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_availability_state.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_history_state.dart';
 
 import 'assistant_test_fakes.dart';
 
@@ -20,7 +21,7 @@ void main() {
       final cubit = historyCubit(repository);
       addTearDown(cubit.close);
       final loading = cubit.load();
-      expect(cubit.state.status, AssistantHistoryStatus.loading);
+      expect(cubit.state.status, LoadPhase.loading);
       expect(repository.lists.single.args, (page: 1, limit: 20));
       repository.lists.single.open(
         Right(feedOf([conversation('a')], hasMore: true)),
@@ -73,7 +74,7 @@ void main() {
         repository.lists.last.open(const Left(NetworkFailure()));
         await more;
         expect(cubit.state.loadMoreFailed, isTrue);
-        expect(cubit.state.failedAction, AssistantHistoryAction.loadMore);
+        expect(cubit.state.load.failedOn, FailedCall.nextPage);
         expect(cubit.state.isLoaded, isTrue);
       },
     );

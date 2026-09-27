@@ -2,19 +2,19 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_action_result.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_block.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_cart_snapshot.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_error_code.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_handoff_ticket.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thread.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_chat_cubit.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_chat_state.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_action_result.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_block.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_cart_snapshot.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_error_code.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_handoff_ticket.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thread.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_chat_cubit.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_chat_state.dart';
 
 import 'assistant_test_fakes.dart';
 

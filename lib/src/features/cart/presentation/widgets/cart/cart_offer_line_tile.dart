@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_offer_line_entity.dart';
-import '../../../../../core/widgets/jameia_tag.dart';
+import '../../../../../core/widgets/hero_tag.dart';
 import 'cart_line_frame.dart';
 
 /// A free product an offer put in the cart: not editable, tagged as a gift,
@@ -29,7 +29,7 @@ class CartOfferLineTile extends StatelessWidget {
             style: AppTextStyles.itemTitle,
           ),
           const SizedBox(height: AppSpacing.s6),
-          JameiaTag(
+          HeroTag(
             label: 'cart.free_gift'.tr(namedArgs: {'offer': line.offerName}),
             icon: Icons.card_giftcard_rounded,
           ),

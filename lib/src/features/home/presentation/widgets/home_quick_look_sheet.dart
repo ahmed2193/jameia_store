@@ -12,7 +12,7 @@ import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/app_outline_button.dart';
 import '../../../../core/widgets/catalog_discount_badge.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../../../core/widgets/price_text.dart';
 import '../../../../core/widgets/rating_badge.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
@@ -43,7 +43,7 @@ class HomeQuickLookSheet extends StatelessWidget {
     BuildContext context, {
     required CatalogProductEntity product,
     required VoidCallback onOpen,
-  }) => showJameiaBottomSheet<void>(
+  }) => showHeroBottomSheet<void>(
     context,
     builder: (_) => HomeQuickLookSheet(product: product, onOpen: onOpen),
   );
@@ -83,7 +83,7 @@ class HomeQuickLookSheet extends StatelessWidget {
                 PopScale.onMount(
                   child: Stack(
                     children: [
-                      JameiaImage(
+                      HeroImage(
                         url: product.image,
                         width: _picture,
                         height: _picture,

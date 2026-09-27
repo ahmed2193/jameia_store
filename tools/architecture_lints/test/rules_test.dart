@@ -57,7 +57,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/domain/entities/money.dart';
-import '../../../../core/data/keeta_repository.dart';
+import '../../../../core/data/hero_repository.dart';
 import 'package:test/src/core/utils/formatters.dart';
 import 'package:test/src/core/domain/entities/shop.dart';
 ''',
@@ -65,7 +65,7 @@ import 'package:test/src/core/domain/entities/shop.dart';
         "'package:flutter/foundation.dart'",
         "'../../data/models/home_model.dart'",
         "'../../../../core/error/exceptions.dart'",
-        "'../../../../core/data/keeta_repository.dart'",
+        "'../../../../core/data/hero_repository.dart'",
         "'package:test/src/core/utils/formatters.dart'",
       ],
     );
@@ -94,19 +94,19 @@ class PresentationNoDataLayerTest extends ArchitectureRuleTest {
       r'''
 import 'package:flutter/widgets.dart';
 import '../../data/models/home_model.dart';
-import '../../../../core/data/keeta_repository.dart';
+import '../../../../core/data/hero_repository.dart';
 import '../../../../core/network/api_consumer.dart';
 import '../../../../core/storage/local_storage.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../../home_injection_container.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../domain/entities/home_entity.dart';
-import '../../../../core/widgets/keeta_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../cubit/home_cubit.dart';
 ''',
       [
         "'../../data/models/home_model.dart'",
-        "'../../../../core/data/keeta_repository.dart'",
+        "'../../../../core/data/hero_repository.dart'",
         "'../../../../core/network/api_consumer.dart'",
         "'../../../../core/storage/local_storage.dart'",
         "'../../domain/repositories/home_repository.dart'",
@@ -680,7 +680,7 @@ class NoCrossFeatureImportsTest extends ArchitectureRuleTest {
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/domain/entities/cart_item.dart';
 import 'package:test/src/features/shop/presentation/widgets/shop_tile.dart';
-import '../../../../core/widgets/keeta_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/home_entity.dart';
 ''',
       [

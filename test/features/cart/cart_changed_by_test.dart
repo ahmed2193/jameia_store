@@ -5,25 +5,25 @@
 // the checkout tells "the customer removed the coupon" from "the server
 // dropped it" by this.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/cart/data/repositories/cart_repository_impl.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_state.dart';
+import 'package:hero_mart/src/features/cart/data/repositories/cart_repository_impl.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/apply_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/clear_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/fetch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/flush_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_coupon_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_line_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/remove_cart_loyalty_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/reset_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/restore_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_express_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/set_cart_line_quantity_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/sync_cart_owner_usecase.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_state.dart';
 
 import 'cart_test_fakes.dart';
 import 'cart_test_fixtures.dart';

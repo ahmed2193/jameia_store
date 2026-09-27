@@ -2,12 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/app_env.dart';
 import '../../core/data/datasources/cache_slots.dart';
 import '../../core/data/datasources/catalog_cache_data_source.dart';
 import '../../core/data/datasources/catalog_remote_data_source.dart';
-import '../../core/data/jameia_repository.dart';
+import '../../core/data/hero_repository.dart';
 import '../../core/network/api_base_options.dart';
 import '../../core/network/api_consumer.dart';
 import '../../core/network/dio_consumer.dart';
@@ -23,8 +24,8 @@ import '../../core/network/session_expiry_notifier.dart';
 import '../../core/network/token_refresher.dart';
 import '../../core/storage/cache_owner.dart';
 import '../../core/storage/json_cache_store.dart';
+import '../../core/storage/local_storage.dart';
 import '../../core/storage/session_store.dart';
-import '../../core/storage/storage_injection.dart';
 import '../../features/account/account_injection_container.dart';
 import '../../features/address/address_injection_container.dart';
 import '../../features/assistant/assistant_injection_container.dart';
@@ -33,7 +34,6 @@ import '../../features/cart/cart_injection_container.dart';
 import '../../features/checkout/checkout_injection_container.dart';
 import '../../features/connectivity/connectivity_injection_container.dart';
 import '../../features/coupons/coupons_injection_container.dart';
-import '../../features/discovery/discovery_injection_container.dart';
 import '../../features/home/home_injection_container.dart';
 import '../../features/language/language_injection_container.dart';
 import '../../features/marketing/marketing_injection_container.dart';
@@ -65,19 +65,29 @@ Future<void> setupServiceLocator() async {
 
 Future<void> _initCore() async {
   // Offline catalogue — loaded once before the first frame.
-  if (!sl.isRegistered<JameiaRepository>()) {
-    final repo = JameiaRepository();
+  if (!sl.isRegistered<HeroRepository>()) {
+    final repo = HeroRepository();
     await repo.load();
-    sl.registerSingleton<JameiaRepository>(repo);
+    sl.registerSingleton<HeroRepository>(repo);
   }
 
-  // Shared LocalStorage / SharedPreferences.
-  await initCoreStorage();
+  await _initStorage();
 
   _initSession();
   _initNetwork();
   _initCache();
   _initCatalog();
+}
+
+/// The shared [LocalStorage] (and its backing [SharedPreferences]), registered
+/// once BEFORE any feature init: features only ever resolve
+/// `sl<LocalStorage>()`, so they never depend on each other's order.
+Future<void> _initStorage() async {
+  if (sl.isRegistered<LocalStorage>()) return; // idempotent
+  final prefs = await SharedPreferences.getInstance();
+  sl
+    ..registerSingleton<SharedPreferences>(prefs)
+    ..registerSingleton<LocalStorage>(LocalStorageImpl(prefs));
 }
 
 /// The on-device response cache (one file per key under the app's cache
@@ -198,7 +208,6 @@ Future<void> _initFeatures() async {
   initSearchFeature();
   initCheckoutFeature();
   initCouponsFeature();
-  initDiscoveryFeature();
   initMarketingFeature();
   initAccountFeature();
   initAuthFeature();

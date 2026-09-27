@@ -10,24 +10,23 @@ import '../../../../core/domain/entities/cart_line_ref.dart';
 import '../../../../core/motion/fly_to_cart.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_card_image.dart';
+import '../../../../core/widgets/hero_card_image.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import '../cubit/product_detail_cubit.dart';
 import '../cubit/product_detail_state.dart';
-import 'pdp_bar_price.dart';
+import 'pdp_bar_price_block.dart';
 import 'pdp_cart_cta.dart';
-import 'pdp_promo_tag.dart';
 
 /// Sticky buy bar of the product page, white on a soft top shadow: the
-/// price at the start (the line total once the selection is in the cart)
-/// under the red tag of the cart offer that counts the product, when one
-/// does, and the big green "Add to cart" block at the end, which turns into a stepper of
-/// that cart line. Adding flies the product from the gallery ([galleryKey])
-/// into the cart. Disabled with the reason as its label when the selection
-/// cannot be bought. Hidden until the product is loaded (the preview has no
-/// stock / variant truth yet).
+/// price block at the start — the deal's "Save N%", the price (the line
+/// total once the selection is in the cart), the struck price and the Pro
+/// line — and the big green "Add to cart" block at the end, which turns into
+/// a stepper of that cart line. Adding flies the product from the gallery
+/// ([galleryKey]) into the cart. Disabled with the reason as its label when
+/// the selection cannot be bought. Hidden until the product is loaded (the
+/// preview has no stock / variant truth yet).
 class PdpBottomBar extends StatelessWidget {
   const PdpBottomBar({super.key, this.galleryKey});
 
@@ -41,7 +40,7 @@ class PdpBottomBar extends StatelessWidget {
     final detail = state.detail;
     if (detail == null || !state.canAdd) return;
     Haptics.tap();
-    final thumbnail = JameiaCardImage(
+    final thumbnail = HeroCardImage(
       url: detail.product.image,
       width: _thumb,
       height: _thumb,
@@ -75,16 +74,13 @@ class PdpBottomBar extends StatelessWidget {
     return BlocBuilder<ProductDetailCubit, ProductDetailState>(
       buildWhen: (previous, current) =>
           previous.detail != current.detail ||
-          previous.selectedVariantId != current.selectedVariantId ||
-          previous.promo != current.promo,
+          previous.selectedVariantId != current.selectedVariantId,
       builder: (context, state) {
         final detail = state.detail;
         if (detail == null) return const SizedBox.shrink();
         final variant = state.selectedVariant;
         final ref = CartLineRef(detail.product.id, variant?.id);
-        final unitFils = detail.unitPriceFils(variant: variant, pro: isPro);
         final stock = detail.stockOf(variant);
-        final promo = state.promo;
         final disabledLabel = detail.needsVariant && variant == null
             ? 'catalog.choose_options'.tr()
             : 'catalog.out_of_stock'.tr();
@@ -107,43 +103,22 @@ class PdpBottomBar extends StatelessWidget {
                   final quantity = line?.quantity ?? 0;
                   // Per piece until the selection is in the cart, then the
                   // line total.
-                  final pieces = quantity < 1 ? 1 : quantity;
-                  final now = DateTime.now();
+                  final quote = detail.quoteFor(
+                    variant: variant,
+                    pro: isPro,
+                    now: DateTime.now(),
+                    quantity: quantity < 1 ? 1 : quantity,
+                  );
                   final cart = context.read<CartCubit>();
                   return Row(
                     children: [
                       Expanded(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (promo != null) ...[
-                              PdpPromoTag(label: promo.name),
-                              const SizedBox(height: AppSpacing.s6),
-                            ],
-                            if (unitFils > 0)
-                              PdpBarPrice(
-                                amountKd: detail.lineTotalKd(
-                                  variant: variant,
-                                  pro: isPro,
-                                  quantity: pieces,
-                                ),
-                                struckKd: detail.struckTotalKd(
-                                  variant: variant,
-                                  pro: isPro,
-                                  now: now,
-                                  quantity: pieces,
-                                ),
-                                deal:
-                                    detail.compareAtFils(
-                                      variant: variant,
-                                      now: now,
-                                    ) !=
-                                    null,
-                                option: (variant?.id, unitFils),
-                              ),
-                          ],
-                        ),
+                        child: quote.hasPrice
+                            ? PdpBarPriceBlock(
+                                quote: quote,
+                                option: (variant?.id, quote.unitFils),
+                              )
+                            : const SizedBox.shrink(),
                       ),
                       const SizedBox(width: AppSpacing.s12),
                       Expanded(

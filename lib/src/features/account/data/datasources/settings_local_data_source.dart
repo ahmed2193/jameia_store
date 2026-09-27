@@ -16,11 +16,11 @@ abstract class SettingsLocalDataSource {
 
 class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
   /// [clearImageCache] empties the shared image cache (the DI passes
-  /// `JameiaImageCacheManager.clearCache`).
+  /// `HeroImageCacheManager.clearCache`).
   const SettingsLocalDataSourceImpl(
     this._storage, {
-    required Future<void> Function() clearImageCache,
-  }) : _clearImageCache = clearImageCache;
+    required this._clearImageCache,
+  });
 
   final LocalStorage _storage;
   final Future<void> Function() _clearImageCache;

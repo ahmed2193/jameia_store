@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/motion/motion_widgets.dart';
-import 'package:jameia_mart/src/core/navigation/jameia_transition_page.dart';
-import 'package:jameia_mart/src/core/widgets/light_sweep.dart';
-import 'package:jameia_mart/src/core/widgets/light_sweep_band.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/motion_widgets.dart';
+import 'package:hero_mart/src/core/navigation/hero_transition_page.dart';
+import 'package:hero_mart/src/core/widgets/light_sweep.dart';
+import 'package:hero_mart/src/core/widgets/light_sweep_band.dart';
 
 Widget _host(Widget child, {bool reduced = false}) => MaterialApp(
   home: Builder(
@@ -374,7 +374,7 @@ void main() {
           GoRoute(path: '/', builder: (_, _) => const Text('home')),
           GoRoute(
             path: '/list',
-            pageBuilder: (_, state) => JameiaTransitionPage<void>(
+            pageBuilder: (_, state) => HeroTransitionPage<void>(
               key: state.pageKey,
               // A short list: it never scrolls, so no scroll event follows.
               child: Scaffold(

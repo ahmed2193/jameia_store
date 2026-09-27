@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
-import '../../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../../core/utils/address_display.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../address/presentation/cubit/address_book_cubit.dart';
@@ -19,7 +19,7 @@ class CheckoutAddressSection extends StatelessWidget {
   const CheckoutAddressSection({super.key});
 
   Future<void> _choose(BuildContext context) async {
-    final picked = await context.push<JameiaAddressEntity>(Routes.addressList);
+    final picked = await context.push<HeroAddressEntity>(Routes.addressList);
     if (picked != null && context.mounted) {
       await context.read<CheckoutCubit>().selectAddress(picked.id);
     }
@@ -37,7 +37,7 @@ class CheckoutAddressSection extends StatelessWidget {
             cubit.state.isSelecting,
           ),
         );
-    final address = context.select<AddressBookCubit, JameiaAddressEntity?>(
+    final address = context.select<AddressBookCubit, HeroAddressEntity?>(
       (cubit) => addressId == null ? null : cubit.state.book.byId(addressId),
     );
     return CheckoutDestinationRow(

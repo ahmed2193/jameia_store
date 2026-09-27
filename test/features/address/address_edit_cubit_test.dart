@@ -4,13 +4,13 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/address_label.dart';
-import 'package:jameia_mart/src/core/domain/entities/geo_point_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_draft.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_field.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_edit_cubit.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_edit_state.dart';
+import 'package:hero_mart/src/core/domain/entities/address_label.dart';
+import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_draft.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_field.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_edit_cubit.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_edit_state.dart';
 
 import 'address_test_fakes.dart';
 

@@ -6,7 +6,7 @@ import '../../domain/entities/pro_membership.dart';
 /// Colour set of the paywall's hero band, picked by the billing interval of
 /// the plan on show: the yearly plan gets the bold Pro gradient with lime
 /// accents and an amber glow, every other plan the light lavender band with
-/// Jm3eia green and a violet glow. Both bands have three stops, so switching
+/// Hero green and a violet glow. Both bands have three stops, so switching
 /// plans tweens one into the other.
 enum ProHeroTone {
   bold(
@@ -51,7 +51,7 @@ enum ProHeroTone {
   /// Arch outline and the spark doodle.
   final Color stroke;
 
-  /// Inside of the arch, behind the Jameia bag.
+  /// Inside of the arch, behind the Hero bag.
   final Color archFill;
 
   /// Soft breathing light behind the bag.

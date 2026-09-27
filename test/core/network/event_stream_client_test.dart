@@ -3,10 +3,10 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/network/api_headers.dart';
-import 'package:jameia_mart/src/core/network/event_stream_client.dart';
-import 'package:jameia_mart/src/core/network/interceptors/rate_limit_retry_interceptor.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/network/api_headers.dart';
+import 'package:hero_mart/src/core/network/event_stream_client.dart';
+import 'package:hero_mart/src/core/network/interceptors/rate_limit_retry_interceptor.dart';
 
 import 'network_test_fakes.dart';
 

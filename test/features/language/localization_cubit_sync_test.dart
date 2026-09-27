@@ -3,12 +3,12 @@
 // one the server refused, is not.
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/language/domain/repositories/lang_repository.dart';
-import 'package:jameia_mart/src/features/language/domain/usecases/change_lang_usecase.dart';
-import 'package:jameia_mart/src/features/language/domain/usecases/get_saved_lang_usecase.dart';
-import 'package:jameia_mart/src/features/language/domain/usecases/sync_language_usecase.dart';
-import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/language/domain/repositories/lang_repository.dart';
+import 'package:hero_mart/src/features/language/domain/usecases/change_lang_usecase.dart';
+import 'package:hero_mart/src/features/language/domain/usecases/get_saved_lang_usecase.dart';
+import 'package:hero_mart/src/features/language/domain/usecases/sync_language_usecase.dart';
+import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
 
 /// Answers each sync with the next queued reply (success once empty).
 class _Repository implements LangRepository {

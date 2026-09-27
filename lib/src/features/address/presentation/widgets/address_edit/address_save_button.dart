@@ -5,10 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/widgets/app_button.dart';
 import '../../cubit/address_edit_cubit.dart';
-import '../../cubit/address_edit_state.dart';
 
-/// Save CTA — always tappable so an invalid form shows its inline errors;
-/// spinning (and inert) while the POST / PATCH is in flight.
+/// Save CTA — always tappable so an invalid form shows its inline errors.
+/// While the POST / PATCH is in flight the page's busy overlay holds the
+/// screen; the pill keeps its label under it.
 class AddressSaveButton extends StatelessWidget {
   const AddressSaveButton({super.key});
 
@@ -21,14 +21,10 @@ class AddressSaveButton extends StatelessWidget {
         AppSpacing.s12,
         AppSpacing.s12,
       ),
-      child: BlocSelector<AddressEditCubit, AddressEditState, bool>(
-        selector: (state) => state.isSaving,
-        builder: (context, saving) => AppButton(
-          label: 'addr.save_address'.tr(),
-          loading: saving,
-          radius: AppRadius.r1,
-          onPressed: context.read<AddressEditCubit>().save,
-        ),
+      child: AppButton(
+        label: 'addr.save_address'.tr(),
+        radius: AppRadius.r1,
+        onPressed: context.read<AddressEditCubit>().save,
       ),
     );
   }

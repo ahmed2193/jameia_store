@@ -9,29 +9,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_ref.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_loyalty_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_reward_entity.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_close_button.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_title_bar.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_lines_layout.dart';
-import 'package:jameia_mart/src/features/cart/presentation/pages/cart_preview_page.dart';
-import 'package:jameia_mart/src/features/cart/presentation/pages/cart_tab_page.dart';
-import 'package:jameia_mart/src/features/cart/presentation/widgets/cart/cart_checkout_bar.dart';
-import 'package:jameia_mart/src/features/cart/presentation/widgets/cart/cart_coupon_row.dart';
-import 'package:jameia_mart/src/features/cart/presentation/widgets/cart/cart_coupon_sheet.dart';
-import 'package:jameia_mart/src/features/cart/presentation/widgets/cart/cart_line_tile.dart';
-import 'package:jameia_mart/src/features/cart/presentation/widgets/cart/cart_options_section.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_ref.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_loyalty_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
+import 'package:hero_mart/src/core/widgets/hero_close_button.dart';
+import 'package:hero_mart/src/core/widgets/hero_title_bar.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_lines_layout.dart';
+import 'package:hero_mart/src/features/cart/presentation/pages/cart_preview_page.dart';
+import 'package:hero_mart/src/features/cart/presentation/pages/cart_tab_page.dart';
+import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_checkout_bar.dart';
+import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_coupon_row.dart';
+import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_coupon_sheet.dart';
+import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_line_tile.dart';
+import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_options_section.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'cart_page_harness.dart';
@@ -266,7 +266,7 @@ void main() {
 
       expect(
         find.descendant(
-          of: find.byType(JameiaTitleBar),
+          of: find.byType(HeroTitleBar),
           matching: find.text('Cart'),
         ),
         findsOneWidget,
@@ -275,7 +275,7 @@ void main() {
       expect(find.text('Clear cart'), findsOneWidget);
       expect(
         find.descendant(
-          of: find.byType(JameiaTitleBar),
+          of: find.byType(HeroTitleBar),
           matching: find.byType(IconButton),
         ),
         findsNothing,
@@ -469,7 +469,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(CartCouponSheet), findsOneWidget);
 
-    await tester.tap(find.byType(JameiaCloseButton));
+    await tester.tap(find.byType(HeroCloseButton));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(CartCouponSheet), findsNothing);

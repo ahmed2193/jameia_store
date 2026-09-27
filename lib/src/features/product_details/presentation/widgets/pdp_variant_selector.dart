@@ -4,15 +4,17 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/catalog_variant_entity.dart';
 import '../../../../core/responsive/app_size.dart';
 import 'pdp_section.dart';
 import 'pdp_size_card.dart';
 
-/// The options of a variant product under a bold title, as talabat size
+/// The options of a variant product under Hero's "Size" heading, as size
 /// cards two to a row on a phone (more on a wide screen). Exactly one is
 /// selected (the first one that can be bought, until the customer picks
-/// another).
+/// another). The backend names each option but not the group, and keys its
+/// `optionValues` by raw ids, so the options stay one group.
 class PdpVariantSelector extends StatelessWidget {
   const PdpVariantSelector({
     super.key,
@@ -50,7 +52,8 @@ class PdpVariantSelector extends StatelessWidget {
       (variant) => !variant.isAvailable || variant.compareAtFilsAt(now) != null,
     );
     return PdpSection(
-      title: 'product.choose_size'.tr(),
+      title: 'product.size'.tr(),
+      titleStyle: AppTextStyles.headingLarge,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = cardWidthFor(constraints.maxWidth);

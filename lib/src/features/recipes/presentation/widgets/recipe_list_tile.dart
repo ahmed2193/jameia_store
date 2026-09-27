@@ -7,7 +7,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/recipe_summary_entity.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/catalog_recipe_tag.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 
 /// One recipe of the recipe list: photo, title, teaser, tags and
 /// "80 min · 6 servings".
@@ -39,7 +39,7 @@ class RecipeListTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            JameiaImage(
+            HeroImage(
               url: recipe.imageUrl,
               width: _image,
               height: _image,

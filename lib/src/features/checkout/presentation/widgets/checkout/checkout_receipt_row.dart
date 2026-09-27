@@ -11,7 +11,7 @@ import '../../../../../core/motion/collapse_reveal.dart';
 /// The sub-line opens and closes with the data (never on mount).
 ///
 /// 14 sp ink rows; [emphasized] is the 16 sp bold total. [value] is one
-/// widget (a `JameiaMoneyText`, a `Text`, a switcher) and takes the row's
+/// widget (a `HeroMoneyText`, a `Text`, a switcher) and takes the row's
 /// style from the surrounding [DefaultTextStyle].
 class CheckoutReceiptRow extends StatelessWidget {
   const CheckoutReceiptRow({

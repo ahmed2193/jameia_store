@@ -10,14 +10,14 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_prompt.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_voice_problem.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_voice_cubit.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_voice_state.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_prompt.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_language.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_problem.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_voice_cubit.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_voice_state.dart';
 
 import 'assistant_voice_fakes.dart';
 

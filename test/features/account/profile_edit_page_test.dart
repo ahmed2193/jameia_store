@@ -15,22 +15,23 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/app_router.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/config/theme/app_theme.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/utils/formatters.dart';
-import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
-import 'package:jameia_mart/src/features/account/presentation/cubit/loyalty_program_cubit.dart';
-import 'package:jameia_mart/src/features/account/presentation/cubit/profile_cubit.dart';
-import 'package:jameia_mart/src/features/account/presentation/cubit/setting_cubit.dart';
-import 'package:jameia_mart/src/features/account/presentation/pages/profile_edit_page.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
-import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/app_router.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/utils/formatters.dart';
+import 'package:hero_mart/src/core/domain/entities/loyalty_program.dart';
+import 'package:hero_mart/src/core/widgets/loader_done_mark.dart';
+import 'package:hero_mart/src/features/account/presentation/cubit/loyalty_program_cubit.dart';
+import 'package:hero_mart/src/features/account/presentation/cubit/profile_cubit.dart';
+import 'package:hero_mart/src/features/account/presentation/cubit/setting_cubit.dart';
+import 'package:hero_mart/src/features/account/presentation/pages/profile_edit_page.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
+import 'package:hero_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_test_fakes.dart';
@@ -452,7 +453,8 @@ void main() {
     await tester.tap(find.text('Save changes'));
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+    // The busy overlay's drawn check, over the page.
+    expect(find.byType(LoaderDoneMark), findsOneWidget);
     expect(router.state.uri.path, Routes.profileEdit);
 
     await settle(tester);

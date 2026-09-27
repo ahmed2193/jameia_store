@@ -23,7 +23,7 @@ class ListingToolbar extends StatelessWidget {
     CatalogProductSort? current,
   ) async {
     final cubit = context.read<ProductListingCubit>();
-    final picked = await showJameiaBottomSheet<({CatalogProductSort? sort})>(
+    final picked = await showHeroBottomSheet<({CatalogProductSort? sort})>(
       context,
       backgroundColor: AppColors.white,
       builder: (_) => ListingSortSheet(selected: current),
@@ -37,7 +37,7 @@ class ListingToolbar extends StatelessWidget {
     final cubit = context.read<ProductListingCubit>();
     await cubit.loadBrands();
     if (!context.mounted) return;
-    final picked = await showJameiaBottomSheet<({String? slug})>(
+    final picked = await showHeroBottomSheet<({String? slug})>(
       context,
       backgroundColor: AppColors.white,
       builder: (_) =>

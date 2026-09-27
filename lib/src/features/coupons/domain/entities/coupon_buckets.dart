@@ -5,7 +5,7 @@ import '../../../../core/domain/entities/coupon_entity.dart';
 /// The user's coupons partitioned into the three wallet tabs.
 ///
 /// A pure domain snapshot built by `GetCouponsUseCase`: the Available / Used /
-/// Expired tabs, the history feed and the checkout picker all read from it.
+/// Expired tabs and the history feed read from it.
 class CouponBuckets extends Equatable {
   const CouponBuckets({
     this.available = const [],
@@ -13,7 +13,7 @@ class CouponBuckets extends Equatable {
     this.expired = const [],
   });
 
-  /// Unused, still-valid coupons → "Available" tab / order picker.
+  /// Unused, still-valid coupons → "Available" tab.
   final List<CouponEntity> available;
 
   /// Coupons already redeemed → "Used" tab / history feed.
@@ -29,15 +29,6 @@ class CouponBuckets extends Equatable {
 
   /// Nothing used and nothing expired yet (an empty history feed).
   bool get hasNoHistory => used.isEmpty && expired.isEmpty;
-
-  /// The available coupon with [id], or `null` (no id, or not available).
-  CouponEntity? availableById(String? id) {
-    if (id == null) return null;
-    for (final coupon in available) {
-      if (coupon.id == id) return coupon;
-    }
-    return null;
-  }
 
   @override
   List<Object?> get props => [available, used, expired];

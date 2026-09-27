@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'mine_header_metrics.dart';
@@ -32,7 +32,7 @@ class MineScanAction extends StatelessWidget {
           side: const BorderSide(color: AppColors.divider),
         ),
         icon: Image.asset(
-          JameiaAssets.mineScanQrCode,
+          HeroAssets.mineScanQrCode,
           width: _glyph,
           height: _glyph,
         ),

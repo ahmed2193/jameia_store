@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_book.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
 
 import 'address_test_fakes.dart';
 

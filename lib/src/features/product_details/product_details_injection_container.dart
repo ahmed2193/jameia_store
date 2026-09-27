@@ -14,7 +14,7 @@ import 'domain/usecases/watch_product_reviews_usecase.dart';
 import 'presentation/cubit/product_detail_cubit.dart';
 import 'presentation/cubit/product_reviews_cubit.dart';
 
-/// Product page DI — the jm3eia backend (`GET /v1/products/:slug`,
+/// Product page DI — the Hero backend (`GET /v1/products/:slug`,
 /// `GET /v1/products/:slug/reviews`, and `GET /v1/offers` through the shared
 /// catalogue datasource); the product and its first reviews page are kept on
 /// the device. Called from `setupServiceLocator`.

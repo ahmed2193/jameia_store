@@ -11,7 +11,7 @@ import 'api_payload.dart';
 /// client shares it); the constructor still applies [buildApiBaseOptions] and
 /// any [interceptors] passed, so tests can build one from a bare `Dio()`. It:
 ///
-///   * unwraps the jm3eia envelope — callers receive `results`, never the
+///   * unwraps the Hero envelope — callers receive `results`, never the
 ///     `{ success, statusCode, statusMessage, results, error }` wrapper;
 ///   * translates every `DioException` (and a 2xx with `success: false`) into
 ///     a typed `AppException` through [ApiExceptionMapper], so no Dio type
@@ -115,7 +115,7 @@ class DioConsumer implements ApiConsumer {
   }
 
   /// `results` from an envelope; a body that is not an envelope (streams,
-  /// non-jm3eia hosts) passes through unchanged.
+  /// non-Hero hosts) passes through unchanged.
   static Object? _unwrap(Object? body) {
     final envelope = ApiEnvelope.tryParse(body);
     if (envelope == null) return body;

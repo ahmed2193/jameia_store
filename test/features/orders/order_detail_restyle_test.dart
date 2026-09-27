@@ -11,30 +11,30 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/data/mappers/order_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/order_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/responsive/app_size.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_submit_button.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/invoice/invoice_body.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/order_line_row.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/review/review_body.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/review/review_product_tile.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/review/review_star_icon.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/review/review_submit_bar.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/order_tracking_view.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_body.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_painter.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_stepper.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_status_header.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/data/mappers/order_mapper.dart';
+import 'package:hero_mart/src/core/data/models/order_model.dart';
+import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/responsive/app_size.dart';
+import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
+import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/invoice/invoice_body.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/order_line_row.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/review/review_body.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/review/review_product_tile.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/review/review_star_icon.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/review/review_submit_bar.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/order_tracking_view.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_body.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_painter.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_stepper.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_status_header.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/rebuild_probe.dart';
@@ -595,7 +595,7 @@ void main() {
         expect(find.byTooltip('Rate $star of 5'), findsOneWidget);
       }
 
-      await tester.tap(find.byType(JameiaSubmitButton));
+      await tester.tap(find.byType(HeroSubmitButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(
@@ -608,12 +608,18 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
       expect(reviewCubit.state.draft.ratingOf('p1'), 3);
 
-      await tester.tap(find.byType(JameiaSubmitButton));
+      await tester.tap(find.byType(HeroSubmitButton));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(reviewRepository.calls, contains('review:p1:3'));
       expect(reviewCubit.state.submitted, isTrue);
-      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+      // The pill keeps its label and takes no tap; the check is the page's
+      // busy overlay (not pumped here).
+      expect(
+        tester.widget<HeroSubmitButton>(find.byType(HeroSubmitButton)).holding,
+        isTrue,
+      );
+      expect(find.byIcon(Icons.check_rounded), findsNothing);
     });
 
     testWidgets('a multi-star fill cascades from the previous rating', (
@@ -733,7 +739,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         // Money is one left-to-right run in both languages.
-        final money = find.byType(JameiaMoneyText).first;
+        final money = find.byType(HeroMoneyText).first;
         final run = tester.widget<Directionality>(
           find.descendant(of: money, matching: find.byType(Directionality)),
         );

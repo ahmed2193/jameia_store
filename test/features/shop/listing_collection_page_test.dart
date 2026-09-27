@@ -1,4 +1,4 @@
-// A collection, a brand or the "view all" of a home rail opens as a talabat
+// A collection, a brand or the "view all" of a home rail opens as a Hero
 // collection page: the store's name in the top bar, the tinted hero (heading,
 // emoji, line, a flash sale's countdown), category tabs once two or more
 // categories have products, the grid without the sort / filter toolbar and
@@ -18,40 +18,40 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/route_args/product_listing_args.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/motion/fly_to_cart.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/widgets/collection_frame.dart';
-import 'package:jameia_mart/src/core/widgets/collection_hero.dart';
-import 'package:jameia_mart/src/core/widgets/collection_tab_strip.dart';
-import 'package:jameia_mart/src/core/widgets/countdown_chip.dart';
-import 'package:jameia_mart/src/core/widgets/round_outlined_button.dart';
-import 'package:jameia_mart/src/core/widgets/view_cart_pill.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_state.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_state.dart';
-import 'package:jameia_mart/src/features/language/presentation/cubit/localization_cubit.dart';
-import 'package:jameia_mart/src/features/language/presentation/cubit/localization_state.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_listing_category_tabs_usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/listing_tabs_cubit.dart';
-import 'package:jameia_mart/src/features/shop/presentation/cubit/product_listing_cubit.dart';
-import 'package:jameia_mart/src/features/shop/presentation/pages/product_listing_page.dart';
-import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/catalog_app_bar.dart';
-import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/catalog_cart_bar.dart';
-import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_results_count.dart';
-import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_toolbar.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/route_args/product_listing_args.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_products_page.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/fly_to_cart.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/widgets/collection_frame.dart';
+import 'package:hero_mart/src/core/widgets/collection_hero.dart';
+import 'package:hero_mart/src/core/widgets/collection_tab_strip.dart';
+import 'package:hero_mart/src/core/widgets/countdown_chip.dart';
+import 'package:hero_mart/src/core/widgets/round_outlined_button.dart';
+import 'package:hero_mart/src/core/widgets/view_cart_pill.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_state.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_state.dart';
+import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
+import 'package:hero_mart/src/features/language/presentation/cubit/localization_state.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/get_listing_category_tabs_usecase.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/listing_tabs_cubit.dart';
+import 'package:hero_mart/src/features/shop/presentation/cubit/product_listing_cubit.dart';
+import 'package:hero_mart/src/features/shop/presentation/pages/product_listing_page.dart';
+import 'package:hero_mart/src/features/shop/presentation/widgets/listing/catalog_app_bar.dart';
+import 'package:hero_mart/src/features/shop/presentation/widgets/listing/catalog_cart_bar.dart';
+import 'package:hero_mart/src/features/shop/presentation/widgets/listing/listing_results_count.dart';
+import 'package:hero_mart/src/features/shop/presentation/widgets/listing/listing_toolbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'shop_test_fakes.dart';
@@ -366,7 +366,7 @@ void main() {
 
       expect(find.byType(CollectionFrame), findsOneWidget);
       expect(find.byType(CatalogAppBar), findsNothing);
-      expect(find.text('Jm3eia'), findsOneWidget);
+      expect(find.text('Hero'), findsOneWidget);
       expect(heading(), findsOneWidget);
       expect(find.text(_subtitle), findsOneWidget);
       expect(find.text('all 0'), findsOneWidget);

@@ -7,7 +7,7 @@ import '../../../../core/domain/entities/catalog_products_page.dart';
 import '../../../../core/domain/entities/data_snapshot.dart';
 import '../../../../core/error/failures.dart';
 
-/// Read boundary of category browsing and product listings (jm3eia backend,
+/// Read boundary of category browsing and product listings (Hero backend,
 /// public routes). The screens read the copy saved on the device first
 /// (offline too), then the server's; only first pages are kept.
 abstract class CatalogBrowseRepository {

@@ -7,9 +7,10 @@ import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/sticker_text.dart';
 
-/// The deal over the buy bar's price: the name of the cart offer that
-/// counts this product ("2 KWD off dairy (3 items)", as the backend words
-/// it) in white sticker letters on a red tag. It pops in when it arrives.
+/// The deal in the sheet, under the product's name: the name of the cart
+/// offer that counts this product ("2 KWD off dairy (3 items)", as the
+/// backend words it) in white sticker letters on a red tag. It pops in when
+/// it arrives.
 class PdpPromoTag extends StatelessWidget {
   const PdpPromoTag({super.key, required this.label});
 

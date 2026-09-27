@@ -7,7 +7,7 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
@@ -48,7 +48,7 @@ class _AssistantCartButtonState extends State<AssistantCartButton> {
         clipBehavior: Clip.none,
         children: [
           Icon(
-            JameiaIcons.cart,
+            HeroIcons.cart,
             key: _targetKey,
             size: AppSize.s22,
             color: AppColors.primaryText,

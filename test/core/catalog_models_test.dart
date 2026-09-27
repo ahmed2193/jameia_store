@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/models/brand_model.dart';
-import 'package:jameia_mart/src/core/data/models/category_model.dart';
-import 'package:jameia_mart/src/core/data/models/json_read.dart';
-import 'package:jameia_mart/src/core/data/models/product_model.dart';
-import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
-import 'package:jameia_mart/src/core/data/models/recipe_summary_model.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/data/models/brand_model.dart';
+import 'package:hero_mart/src/core/data/models/category_model.dart';
+import 'package:hero_mart/src/core/data/models/json_read.dart';
+import 'package:hero_mart/src/core/data/models/product_model.dart';
+import 'package:hero_mart/src/core/data/models/products_page_model.dart';
+import 'package:hero_mart/src/core/data/models/recipe_summary_model.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
 
 /// Payloads are copied from the live host (`api.jm3eia.store`, 2026-09-17).
 const Map<String, dynamic> _riceCard = {

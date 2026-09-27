@@ -12,7 +12,7 @@ import 'pro_wave_clipper.dart';
 /// A member's hero, in place of the plan tabs and the plan's hero: the bold
 /// Pro band with its wavy edges, "You're Pro / Perks are on" — once
 /// cancelled "Still Pro / until 17 Oct" — rising in line by line, and the
-/// Jameia bag in its dome drawing itself, as on the paywall.
+/// Hero bag in its dome drawing itself, as on the paywall.
 class ProMemberHero extends StatelessWidget {
   const ProMemberHero({super.key, required this.membership});
 

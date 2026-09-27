@@ -1,6 +1,6 @@
 import '../constants/app_env.dart';
 
-/// Every jm3eia customer route, in one place, so a backend rename is a single
+/// Every Hero customer route, in one place, so a backend rename is a single
 /// edit. Paths are relative to `AppEnv.apiBaseUrl`; parameterised routes are
 /// functions (`EndPoints.product(slug)`).
 ///
@@ -30,11 +30,7 @@ abstract final class EndPoints {
 
   // --- Catalog (public; slugs, not ids) --------------------------------------
   static const String categories = '$_v/categories';
-  static String category(String slug) => '$categories/$slug';
   static const String brands = '$_v/brands';
-  static String brand(String slug) => '$brands/$slug';
-  static const String collections = '$_v/collections';
-  static String collection(String slug) => '$collections/$slug';
 
   /// Query: page, limit, categorySlug, brandSlug, collectionSlug, search, tag,
   /// inStock, onSale, minPrice, maxPrice, sort → `{ data, pagination }`.
@@ -47,7 +43,6 @@ abstract final class EndPoints {
   static String page(String slug) => '$_v/pages/$slug';
   static const String subscriptionPlans = '$_v/subscription-plans';
   static const String reviews = '$_v/reviews';
-  static String review(String reviewId) => '$reviews/$reviewId';
 
   // --- Cart (public; guest → X-Cart-Token, customer → Bearer) ---------------
   static const String cart = '$_v/cart';
@@ -58,13 +53,10 @@ abstract final class EndPoints {
   static const String cartExpress = '$cart/express';
 
   // --- Delivery --------------------------------------------------------------
-  static const String deliveryAreas = '$_v/delivery/areas';
   static const String deliveryBranches = '$_v/delivery/branches';
   static const String deliverySlots = '$_v/delivery/slots';
-  static const String deliverySelect = '$_v/delivery/select';
   static const String deliverySelectBranch = '$_v/delivery/select-branch';
   static const String deliverySelectAddress = '$_v/delivery/select-address';
-  static const String deliveryResolveLocation = '$_v/delivery/resolve-location';
 
   // --- Orders (customer) -----------------------------------------------------
   static const String orders = '$_v/orders';
@@ -79,11 +71,6 @@ abstract final class EndPoints {
   static const String accountAddresses = '$_v/account/addresses';
   static String accountAddress(String addressId) =>
       '$accountAddresses/$addressId';
-  static const String accountWishlist = '$_v/account/wishlist';
-  static String accountWishlistItem(String productId) =>
-      '$accountWishlist/$productId';
-  static const String accountViewed = '$_v/account/viewed';
-  static const String accountViewedMerge = '$accountViewed/merge';
   static const String accountSubscription = '$_v/account/subscription';
   static const String accountSubscriptionCancel = '$accountSubscription/cancel';
 
@@ -98,11 +85,6 @@ abstract final class EndPoints {
   static const String pushRegister = '$_v/push/register';
 
   // --- Support ---------------------------------------------------------------
-  static const String supportCategories = '$_v/support/categories';
-  static const String supportTickets = '$_v/support/tickets';
-  static String supportTicket(String ticketId) => '$supportTickets/$ticketId';
-  static String supportTicketMessages(String ticketId) =>
-      '$supportTickets/$ticketId/messages';
 
   // --- Assistant (customer or X-Assistant-Guest) -----------------------------
   static const String assistantConversations = '$_v/assistant/conversations';

@@ -14,7 +14,6 @@ enum HomePopupFrequency { session, day }
 class HomeBootstrap extends Equatable {
   const HomeBootstrap({
     this.storeName = '',
-    this.tagline = '',
     this.delivery,
     this.pro = const HomeProInfo(),
     this.popups = const <HomeMarketingPopup>[],
@@ -23,7 +22,6 @@ class HomeBootstrap extends Equatable {
   static const HomeBootstrap empty = HomeBootstrap();
 
   final String storeName;
-  final String tagline;
 
   /// `null` until the backend resolved a branch / zone for this customer.
   final HomeDelivery? delivery;
@@ -31,7 +29,7 @@ class HomeBootstrap extends Equatable {
   final List<HomeMarketingPopup> popups;
 
   @override
-  List<Object?> get props => [storeName, tagline, delivery, pro, popups];
+  List<Object?> get props => [storeName, delivery, pro, popups];
 }
 
 /// The delivery context of `init.delivery`: serving branch + the customer's
@@ -44,7 +42,6 @@ class HomeDelivery extends Equatable {
     this.etaMinutes = 0,
     this.deliveryFeeFils = 0,
     this.minOrderFils = 0,
-    this.expressAvailable = false,
   });
 
   static const int filsPerDinar = 1000;
@@ -57,7 +54,6 @@ class HomeDelivery extends Equatable {
   final int etaMinutes;
   final int deliveryFeeFils;
   final int minOrderFils;
-  final bool expressAvailable;
 
   /// What the header prints after "Deliver to": the zone for a delivery, the
   /// branch for a pickup (and as a fallback).
@@ -65,8 +61,6 @@ class HomeDelivery extends Equatable {
       ? branchName
       : zoneName;
 
-  bool get hasEta => etaMinutes > 0;
-  double get deliveryFeeKd => deliveryFeeFils / filsPerDinar;
   double get minOrderKd => minOrderFils / filsPerDinar;
 
   /// What a basket of [subtotalKd] is still short of the minimum order, in
@@ -90,7 +84,6 @@ class HomeDelivery extends Equatable {
     etaMinutes,
     deliveryFeeFils,
     minOrderFils,
-    expressAvailable,
   ];
 }
 

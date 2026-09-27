@@ -1,19 +1,19 @@
 // `GET /v1/init` → the store rules checkout obeys, parsed from the live
-// shape (`node .claude/skills/jameia-api-integration/scripts/openapi_route.js
+// shape (`node .claude/skills/hero-api-integration/scripts/openapi_route.js
 // init`): store fields only, cached per language for a few minutes.
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/features/checkout/data/datasources/checkout_remote_data_source.dart';
-import 'package:jameia_mart/src/features/checkout/data/mappers/store_rules_mapper.dart';
-import 'package:jameia_mart/src/features/checkout/data/models/store_rules_model.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/features/checkout/data/datasources/checkout_remote_data_source.dart';
+import 'package:hero_mart/src/features/checkout/data/mappers/store_rules_mapper.dart';
+import 'package:hero_mart/src/features/checkout/data/models/store_rules_model.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
 
 import '../../core/network/network_test_fakes.dart';
 
 Map<String, dynamic> _init({
-  String name = 'Jm3eia',
+  String name = 'Hero',
   bool codEnabled = true,
   String? defaultMethod = 'cod',
   bool maintenance = false,
@@ -86,7 +86,7 @@ void main() {
 
     expect(adapter.requests.single.method, 'GET');
     expect(adapter.requests.single.path, '/v1/init');
-    expect(rules.storeName, 'Jm3eia');
+    expect(rules.storeName, 'Hero');
     expect(rules.codEnabled, isTrue);
     expect(rules.defaultPaymentMethod, OrderPaymentMethod.cod);
     expect(rules.loyalty.enabled, isTrue);
@@ -129,9 +129,9 @@ void main() {
       CheckoutStoreRules.unknown,
     );
     final bare = StoreRulesModel.fromInitJson(const <String, dynamic>{
-      'store': <String, dynamic>{'name': 'Jm3eia'},
+      'store': <String, dynamic>{'name': 'Hero'},
     }).toEntity();
-    expect(bare.storeName, 'Jm3eia');
+    expect(bare.storeName, 'Hero');
     expect(bare.codEnabled, isTrue);
     expect(bare.proFreeDelivery, isFalse);
     expect(bare.loyalty.enabled, isFalse);
@@ -152,7 +152,7 @@ void main() {
     final dataSource = build(
       FakeHttpClientAdapter((_, _) {
         calls++;
-        return okBody(_init(name: calls.isOdd ? 'Jm3eia' : 'جميعة'));
+        return okBody(_init(name: calls.isOdd ? 'Hero' : 'جميعة'));
       }),
       locale: locale,
       clock: clock,

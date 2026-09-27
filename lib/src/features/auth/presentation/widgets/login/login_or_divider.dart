@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/widgets/core_widgets.dart';
 
-/// Centered "or" divider between phone and social sign-in.
+/// Centred "or with" between the phone sign-in and the other ways in.
 class LoginOrDivider extends StatelessWidget {
   const LoginOrDivider({super.key});
 
@@ -20,9 +20,9 @@ class LoginOrDivider extends StatelessWidget {
             horizontal: AppSpacing.s12,
           ),
           child: Text(
-            'auth.or'.tr(),
-            style: AppTextStyles.captionLarge.copyWith(
-              color: AppColors.tertiaryText,
+            'auth.or_with'.tr(),
+            style: AppTextStyles.subheadingLarge.copyWith(
+              color: AppColors.secondaryText,
             ),
           ),
         ),

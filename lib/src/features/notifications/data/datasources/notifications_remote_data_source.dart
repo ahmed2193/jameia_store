@@ -10,7 +10,7 @@ import '../../../../core/network/event_stream_client.dart';
 import '../models/notification_model.dart';
 import '../models/notifications_page_model.dart';
 
-/// The jm3eia customer notification routes. Request/response calls receive
+/// The Hero customer notification routes. Request/response calls receive
 /// the envelope's `results` (unwrapped by `DioConsumer`); the SSE route goes
 /// through [EventStreamClient]. Throws `AppException` only.
 ///

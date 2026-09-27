@@ -8,7 +8,7 @@ import '../../domain/usecases/get_account_overview_usecase.dart';
 
 enum AccountStatus { initial, loading, loaded, error }
 
-/// State for the Jameia "Mine" tab (`mach_pro_sailor_c_mine`) — the offline
+/// State for the Hero "Mine" tab (`mach_pro_sailor_c_mine`) — the offline
 /// seeded profile (delivery code, avatar) + quick-stat counts + customer-service
 /// unread badge. The signed-in customer (name, phone, wallet) comes from the
 /// app-global `AuthSessionCubit`, not from here.

@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/service_locator.dart';
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../cubit/address_book_cubit.dart';
@@ -20,7 +20,7 @@ class AddressEditPage extends StatelessWidget {
   const AddressEditPage({super.key, this.address});
 
   /// The address being edited; `null` for "New address".
-  final JameiaAddressEntity? address;
+  final HeroAddressEntity? address;
 
   static bool _listenWhen(
     AddressEditState previous,
@@ -35,13 +35,13 @@ class AddressEditPage extends StatelessWidget {
     if (state.status == AddressEditStatus.saved && saved != null) {
       if (saved != state.original) {
         context.read<AddressBookCubit>().applySaved(saved);
-        showJameiaSnackBar(context, 'addr.saved'.tr());
+        showHeroSnackBar(context, 'addr.saved'.tr());
       }
       context.pop(saved);
       return;
     }
     if (state.rejected) {
-      showJameiaSnackBar(context, 'addr.fix_errors'.tr());
+      showHeroSnackBar(context, 'addr.fix_errors'.tr());
       return;
     }
     final failure = state.failure;

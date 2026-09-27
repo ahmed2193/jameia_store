@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/address_label.dart';
 import '../../cubit/address_edit_cubit.dart';
 import '../../cubit/address_edit_state.dart';
@@ -21,22 +21,22 @@ class TagSection extends StatelessWidget {
         (
           label: AddressLabel.home,
           textKey: 'addr.tag.home',
-          icon: JameiaAssets.labelHome,
+          icon: HeroAssets.labelHome,
         ),
         (
           label: AddressLabel.work,
           textKey: 'addr.tag.work',
-          icon: JameiaAssets.labelOffice,
+          icon: HeroAssets.labelOffice,
         ),
         (
           label: AddressLabel.gathering,
           textKey: 'addr.tag.gathering',
-          icon: JameiaAssets.labelGathering,
+          icon: HeroAssets.labelGathering,
         ),
         (
           label: AddressLabel.other,
           textKey: 'addr.tag.other',
-          icon: JameiaAssets.labelOther,
+          icon: HeroAssets.labelOther,
         ),
       ];
 

@@ -7,8 +7,8 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_surface_card.dart';
-import '../../../../../core/widgets/jameia_text_link.dart';
+import '../../../../../core/widgets/hero_surface_card.dart';
+import '../../../../../core/widgets/hero_text_link.dart';
 import '../../cubit/cart_cubit.dart';
 
 /// Shown while taps could not reach the server (offline): they are kept and
@@ -30,8 +30,8 @@ class CartSyncBanner extends StatelessWidget {
           AppSpacing.gutter,
           0,
         ),
-        child: JameiaSurfaceCard(
-          tone: JameiaSurfaceTone.muted,
+        child: HeroSurfaceCard(
+          tone: HeroSurfaceTone.muted,
           padding: const EdgeInsetsDirectional.fromSTEB(
             AppSpacing.s16,
             AppSpacing.s8,
@@ -54,7 +54,7 @@ class CartSyncBanner extends StatelessWidget {
                   ),
                 ),
               ),
-              JameiaTextLink(
+              HeroTextLink(
                 label: 'cart.retry'.tr(),
                 navigates: false,
                 onTap: () => context.read<CartCubit>().prepareCheckout(),

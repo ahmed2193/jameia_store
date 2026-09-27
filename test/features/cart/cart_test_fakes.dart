@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/features/cart/data/datasources/cart_local_data_source.dart';
-import 'package:jameia_mart/src/features/cart/data/datasources/cart_remote_data_source.dart';
-import 'package:jameia_mart/src/features/cart/data/models/cart_mirror_model.dart';
-import 'package:jameia_mart/src/features/cart/data/models/cart_model.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/features/cart/data/datasources/cart_local_data_source.dart';
+import 'package:hero_mart/src/features/cart/data/datasources/cart_remote_data_source.dart';
+import 'package:hero_mart/src/features/cart/data/models/cart_mirror_model.dart';
+import 'package:hero_mart/src/features/cart/data/models/cart_model.dart';
 
 /// One recorded call to the fake cart API.
 class CartCall {

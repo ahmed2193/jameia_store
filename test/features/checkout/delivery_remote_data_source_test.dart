@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/locale_provider.dart';
-import 'package:jameia_mart/src/features/checkout/data/datasources/checkout_remote_data_source.dart';
-import 'package:jameia_mart/src/features/checkout/data/datasources/delivery_remote_data_source.dart';
-import 'package:jameia_mart/src/features/checkout/data/mappers/checkout_mapper.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/locale_provider.dart';
+import 'package:hero_mart/src/features/checkout/data/datasources/checkout_remote_data_source.dart';
+import 'package:hero_mart/src/features/checkout/data/datasources/delivery_remote_data_source.dart';
+import 'package:hero_mart/src/features/checkout/data/mappers/checkout_mapper.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import '../orders/order_test_fixtures.dart';

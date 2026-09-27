@@ -4,8 +4,8 @@
 // motion does nothing; a change on a covered page plays on reveal.
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/motion/tint_flash.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/tint_flash.dart';
 
 const Color _wash = Color(0xFF00AA00);
 

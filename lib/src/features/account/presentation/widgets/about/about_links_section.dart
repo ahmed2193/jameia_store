@@ -48,7 +48,7 @@ class AboutLinksSection extends StatelessWidget {
           icon: Icons.star_outline_rounded,
           tone: SettingsTone.amber,
           title: 'account.rate_us'.tr(),
-          onTap: () => showJameiaSnackBar(
+          onTap: () => showHeroSnackBar(
             context,
             'account.rate_us_thanks'.tr(),
             behavior: SnackBarBehavior.floating,

@@ -4,7 +4,7 @@ import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'haptics.dart';
 import 'motion.dart';
 
-/// Tap-down PRESS-SCALE — the subtle "press" feel Jameia gives every CTA / card /
+/// Tap-down PRESS-SCALE — the subtle "press" feel Hero gives every CTA / card /
 /// chip: shrink to [pressedScale] on touch-down, settle back on release, over
 /// [AppMotion.fast] with the signature ease-out. Wrap a tappable; supply [onTap]
 /// here (the wrapper handles the gesture) OR leave [onTap] null to animate a

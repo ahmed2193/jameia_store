@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_cart_facts.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/delivery_slot_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_cart_facts.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
 
 void main() {
   const ready = CheckoutDraft(addressId: 'a1');

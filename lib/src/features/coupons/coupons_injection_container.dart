@@ -6,8 +6,8 @@ import 'domain/usecases/get_coupons_usecase.dart';
 import 'presentation/cubit/coupons_cubit.dart';
 
 /// Coupons feature DI (offline local chain). The [CouponsCubit] is a factory
-/// (one per coupon screen: My coupons, history, the checkout picker); the use
-/// case, repository and datasource are lazy singletons.
+/// (one per coupon screen: My coupons, history); the use case, repository and
+/// datasource are lazy singletons.
 void initCouponsFeature() {
   if (sl.isRegistered<CouponsRepository>()) return; // idempotent
   sl

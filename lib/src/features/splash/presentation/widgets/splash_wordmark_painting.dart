@@ -1,91 +1,113 @@
 import 'dart:ui';
 
+import 'package:flutter/animation.dart';
+
 import 'splash_frame.dart';
 import 'splash_layout.dart';
 import 'splash_palette.dart';
-import 'splash_wordmark_geometry.dart';
-import 'splash_wordmark_glyphs.dart';
 
-/// Draws the name of the lockup — letters, swoosh, stripes and leaf — as far
-/// as the [SplashFrame] has revealed them.
+/// Draws the name as far as the bag has delivered it, and the light that
+/// sweeps the finished lockup. A piece is thrown out of the bag's opening:
+/// it pops up, then falls on a ballistic arc into its place, growing and
+/// turning upright on the way, and squashes as it lands. Pieces are painted
+/// before the mark, so they come out of the bag and pass behind it.
 abstract final class SplashWordmarkPainting {
-  /// Letters before this index are "ameia" ([SplashPalette.letterInk]), the
-  /// rest "Mart" ([SplashPalette.letterAccent]).
-  static const int martStart = 5;
+  /// A piece leaves the bag this small, turned this far (radians; each piece
+  /// turns the other way from the one before).
+  static const double launchScale = 0.35;
+  static const double launchTurn = 0.45;
 
-  /// A letter rises from this far under the baseline and grows from
-  /// [letterStartScale] as it springs in.
-  static const double letterRise = 260;
-  static const double letterStartScale = 0.55;
+  /// The arc's control point rises this far above the opening, as a share of
+  /// the drop from the opening to the piece's place: the piece peaks about a
+  /// fifth of that above the bag.
+  static const double popRise = 0.6;
 
-  /// A letter is fully opaque once its spring is this far along.
-  static const double letterOpaqueAt = 0.6;
+  /// A piece leaves the opening this share of the way towards its place, so
+  /// the pieces come out side by side rather than all from one point.
+  static const double launchSpread = 0.2;
 
-  /// Stripe lean (x shift per unit of height) and the height they span.
-  static const double stripeLean = 0.08;
-  static const double stripeReach = 900;
+  /// A piece is fully opaque this far into its flight.
+  static const double opaqueAt = 0.12;
 
-  /// Extra turn of the leaf while it grows, in radians.
-  static const double leafUnfurl = 0.6;
+  /// A landing squash also widens a piece by this share of it.
+  static const double landingSpread = 0.6;
 
-  /// Half width of the light band sweeping the name, its peak opacity, and
-  /// the margin of the layer it is clipped to (font units).
-  static const double shineHalfWidth = 520;
+  /// Half width of the light band sweeping the lockup, its peak opacity, and
+  /// the margin of the layer it is clipped to (dp).
+  static const double shineHalfWidth = 64;
   static const double shineOpacity = 0.75;
-  static const double shineMargin = 120;
+  static const double shineMargin = 12;
 
-  /// Top of the shine layer: above the leaf's tip.
-  static const double shineTop = -1100;
-
-  static final List<Rect> _letterBounds = [
-    for (final letter in SplashWordmarkGlyphs.letters) letter.getBounds(),
-  ];
-
-  static void paint(
+  static void paintDeliveries(
     Canvas canvas,
     SplashLayout layout,
     SplashFrame frame,
     SplashPalette palette,
   ) {
-    canvas
-      ..save()
-      ..translate(layout.textOrigin.dx, layout.textOrigin.dy)
-      ..scale(layout.scale);
-    final shining = frame.shine > 0 && frame.shine < 1;
-    // While the light sweeps, the name is drawn into its own layer so the
-    // band only lights the letters, swoosh and leaf (srcATop).
-    if (shining) canvas.saveLayer(_shineBounds, Paint());
-    if (frame.swoosh > 0) _swoosh(canvas, frame, palette);
-    _letters(canvas, frame, palette);
-    if (frame.leaf > 0) _leaf(canvas, frame, palette);
-    if (shining) {
-      _shine(canvas, frame, palette);
-      canvas.restore();
+    final pieces = layout.wordmark.pieces;
+    final bounds = layout.wordmark.pieceBounds;
+    final opening = SplashLayout.openingOf(layout.markCenter, layout.markUnit);
+    for (var i = 0; i < frame.deliveries.length && i < pieces.length; i++) {
+      final (:flight, :squash) = frame.deliveries[i];
+      final box = bounds[i];
+      final slot = layout.pieceCenter(i);
+      final start = Offset(
+        opening.dx + (slot.dx - opening.dx) * launchSpread,
+        opening.dy,
+      );
+      final rise = popRise * (slot.dy - start.dy).abs();
+      // Over the place itself: the piece moves out sideways early, clear of
+      // the handle, then drops in.
+      final control = Offset(slot.dx, start.dy - rise);
+      final at = _alongArc(start, control, slot, flight);
+      final grow = Curves.easeInOutCubic.transform(flight);
+      final scale =
+          layout.wordScale * (launchScale + (1 - launchScale) * grow);
+      final turn = (i.isEven ? -1 : 1) * launchTurn * (1 - grow);
+      final alpha = (flight / opaqueAt).clamp(0.0, 1.0);
+      final color = palette.letter;
+      canvas
+        ..save()
+        ..translate(at.dx, at.dy)
+        ..rotate(turn)
+        ..scale(scale);
+      if (squash > 0) {
+        // Squash onto the piece's own bottom edge.
+        final foot = box.height / 2;
+        canvas
+          ..translate(0, foot)
+          ..scale(1 + landingSpread * squash, 1 - squash)
+          ..translate(0, -foot);
+      }
+      canvas
+        ..translate(-box.center.dx, -box.center.dy)
+        ..drawPath(
+          pieces[i],
+          Paint()..color = color.withValues(alpha: color.a * alpha),
+        )
+        ..restore();
     }
-    canvas.restore();
   }
 
-  static final Rect _shineBounds = Rect.fromLTRB(
-    SplashWordmarkGeometry.swooshStart.dx - shineMargin,
-    shineTop,
-    SplashWordmarkGlyphs.width + shineMargin,
-    SplashWordmarkGeometry.swooshBounds.bottom + shineMargin,
-  );
-
-  static void _shine(Canvas canvas, SplashFrame frame, SplashPalette palette) {
-    final bounds = _shineBounds;
+  /// The light band at [shine] (0 → 1) of its sweep across [bounds], lighting
+  /// only what is already painted in the current layer (srcATop).
+  static void paintShine(
+    Canvas canvas,
+    Rect bounds,
+    double shine,
+    SplashPalette palette,
+  ) {
+    final area = bounds.inflate(shineMargin);
     final x =
-        bounds.left -
-        shineHalfWidth +
-        frame.shine * (bounds.width + 2 * shineHalfWidth);
+        area.left - shineHalfWidth + shine * (area.width + 2 * shineHalfWidth);
     final light = palette.shine;
     canvas.drawRect(
-      bounds,
+      area,
       Paint()
         ..blendMode = BlendMode.srcATop
         ..shader = Gradient.linear(
-          Offset(x - shineHalfWidth, bounds.top),
-          Offset(x + shineHalfWidth, bounds.bottom),
+          Offset(x - shineHalfWidth, area.top),
+          Offset(x + shineHalfWidth, area.bottom),
           [
             light.withValues(alpha: 0),
             light.withValues(alpha: light.a * shineOpacity),
@@ -96,83 +118,10 @@ abstract final class SplashWordmarkPainting {
     );
   }
 
-  static void _letters(
-    Canvas canvas,
-    SplashFrame frame,
-    SplashPalette palette,
-  ) {
-    final letters = SplashWordmarkGlyphs.letters;
-    for (var i = 0; i < frame.letters.length && i < letters.length; i++) {
-      final spring = frame.letters[i];
-      if (spring <= 0) continue;
-      // Each letter springs in tinted and settles to its own colour.
-      final settled = i < martStart ? palette.letterInk : palette.letterAccent;
-      final color =
-          Color.lerp(palette.letterFlash, settled, spring.clamp(0.0, 1.0)) ??
-          settled;
-      final alpha = (spring / letterOpaqueAt).clamp(0.0, 1.0);
-      final pivotX = _letterBounds[i].center.dx;
-      final scale = letterStartScale + (1 - letterStartScale) * spring;
-      canvas
-        ..save()
-        ..translate(pivotX, (1 - spring) * letterRise)
-        ..scale(scale)
-        ..translate(-pivotX, 0)
-        ..drawPath(
-          letters[i],
-          Paint()..color = color.withValues(alpha: color.a * alpha),
-        )
-        ..restore();
-    }
-  }
-
-  static void _swoosh(Canvas canvas, SplashFrame frame, SplashPalette palette) {
-    const start = SplashWordmarkGeometry.swooshStart;
-    final shape = SplashWordmarkGeometry.swoosh;
-    final bounds = SplashWordmarkGeometry.swooshBounds;
-    final drawn =
-        start.dx +
-        frame.swoosh * (SplashWordmarkGeometry.swooshRight - start.dx);
-    canvas
-      ..save()
-      ..clipRect(Rect.fromLTRB(bounds.left, bounds.top, drawn, bounds.bottom))
-      ..drawPath(shape, Paint()..color = palette.swoosh);
-    if (frame.stripes > 0) {
-      canvas.clipPath(shape);
-      final stripe = Paint()..color = palette.stripe;
-      final half = SplashWordmarkGeometry.stripeWidth / 2 * frame.stripes;
-      const lean = stripeLean * stripeReach;
-      for (final x in SplashWordmarkGeometry.stripeCenters) {
-        canvas.drawPath(
-          Path()
-            ..moveTo(x - half + lean, bounds.top)
-            ..lineTo(x + half + lean, bounds.top)
-            ..lineTo(x + half - lean, bounds.top + stripeReach)
-            ..lineTo(x - half - lean, bounds.top + stripeReach)
-            ..close(),
-          stripe,
-        );
-      }
-    }
-    canvas.restore();
-  }
-
-  static void _leaf(Canvas canvas, SplashFrame frame, SplashPalette palette) {
-    const base = SplashWordmarkGeometry.leafBase;
-    canvas
-      ..save()
-      ..translate(base.dx, base.dy)
-      ..rotate(SplashWordmarkGeometry.leafTilt - (1 - frame.leaf) * leafUnfurl)
-      ..scale(frame.leaf)
-      ..drawPath(SplashWordmarkGeometry.leaf, Paint()..color = palette.leaf)
-      ..drawLine(
-        SplashWordmarkGeometry.veinStart,
-        SplashWordmarkGeometry.veinEnd,
-        Paint()
-          ..color = palette.background
-          ..strokeWidth = SplashWordmarkGeometry.leafVeinWidth
-          ..strokeCap = StrokeCap.round,
-      )
-      ..restore();
+  /// Quadratic Bézier from [a] through [c] to [b] at [t]: with a constant
+  /// [t] speed this is a thrown object's parabola.
+  static Offset _alongArc(Offset a, Offset c, Offset b, double t) {
+    final u = 1 - t;
+    return a * (u * u) + c * (2 * u * t) + b * (t * t);
   }
 }

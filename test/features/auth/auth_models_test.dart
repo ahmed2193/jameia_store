@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/data/mappers/customer_mapper.dart';
-import 'package:jameia_mart/src/features/auth/data/mappers/otp_challenge_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/customer_model.dart';
-import 'package:jameia_mart/src/features/auth/data/models/otp_challenge_model.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/otp_challenge.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/phone_number.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/data/mappers/customer_mapper.dart';
+import 'package:hero_mart/src/features/auth/data/mappers/otp_challenge_mapper.dart';
+import 'package:hero_mart/src/core/data/models/customer_model.dart';
+import 'package:hero_mart/src/features/auth/data/models/otp_challenge_model.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/otp_challenge.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
 
 void main() {
   group('CustomerModel.fromJson', () {

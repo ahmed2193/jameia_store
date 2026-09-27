@@ -5,20 +5,25 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 
 /// One flat block of the product page's sheet: edge to edge, 16 dp gutters,
-/// an optional bold ink title. It paints no background of its own (the
-/// white is the sheet's, so the first block keeps the sheet's rounded
-/// corners). Blocks are set apart by [PdpSectionDivider] hairlines, never
-/// floated as cards.
+/// an optional ink title (bold section size, or [titleStyle] — an option
+/// group's lighter one). It paints no background of its own (the white is
+/// the sheet's, so the first block keeps the sheet's rounded corners).
+/// Blocks are set apart by [PdpSectionDivider] hairlines, never floated as
+/// cards.
 class PdpSection extends StatelessWidget {
   const PdpSection({
     super.key,
     required this.child,
     this.title = '',
+    this.titleStyle,
     this.padded = true,
   });
 
   final Widget child;
   final String title;
+
+  /// The title's type; the bold section title when `null`.
+  final TextStyle? titleStyle;
 
   /// `false` for a child that manages its own horizontal padding (a rail).
   final bool padded;
@@ -46,7 +51,7 @@ class PdpSection extends StatelessWidget {
                   header: true,
                   child: Text(
                     title,
-                    style: AppTextStyles.sectionTitle.copyWith(
+                    style: (titleStyle ?? AppTextStyles.sectionTitle).copyWith(
                       color: AppColors.primaryText,
                     ),
                   ),

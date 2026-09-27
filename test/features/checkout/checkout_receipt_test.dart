@@ -5,26 +5,26 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_loyalty_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_reward_entity.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_offers_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_info_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_receipt.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_receipt_border.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_applied_offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_loyalty_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_progress_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
+import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_offers_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_info_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_receipt.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_receipt_border.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/cart_test_fixtures.dart';
@@ -146,7 +146,7 @@ void main() {
 
   /// The struck (was-) amounts on the receipt.
   Finder struck() => find.byWidgetPredicate(
-    (widget) => widget is JameiaMoneyText && widget.strike,
+    (widget) => widget is HeroMoneyText && widget.strike,
   );
 
   group('delivery', () {
@@ -257,7 +257,7 @@ void main() {
 
     testWidgets('Pro free delivery says it is the membership', (tester) async {
       checkoutRepository.rules = const CheckoutStoreRules(
-        storeName: 'Jm3eia',
+        storeName: 'Hero',
         proFreeDelivery: true,
       );
       await open(
@@ -284,7 +284,7 @@ void main() {
       await pump(tester, session: session);
 
       expect(find.text('Free'), findsOneWidget);
-      expect(find.text('Free delivery with Jm3eia Pro'), findsOneWidget);
+      expect(find.text('Free delivery with Hero Pro'), findsOneWidget);
     });
 
     testWidgets('short of a free-delivery offer: what is missing', (
@@ -515,7 +515,7 @@ void main() {
     final subtotal = find
         .descendant(
           of: find.byType(CheckoutReceipt),
-          matching: find.byType(JameiaMoneyText),
+          matching: find.byType(HeroMoneyText),
         )
         .first;
     final run = find.descendant(

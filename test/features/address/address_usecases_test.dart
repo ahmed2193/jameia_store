@@ -1,39 +1,39 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/jameia_address_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_book.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_draft.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_update.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/cached_address_book.dart';
-import 'package:jameia_mart/src/features/address/domain/repositories/address_repository.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/add_address_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/clear_cached_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/delete_address_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/get_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/get_cached_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/save_cached_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/update_address_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/hero_address_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_draft.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_update.dart';
+import 'package:hero_mart/src/features/address/domain/entities/cached_address_book.dart';
+import 'package:hero_mart/src/features/address/domain/repositories/address_repository.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/add_address_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/clear_cached_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/delete_address_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/get_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/get_cached_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/save_cached_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/update_address_usecase.dart';
 
 import 'address_test_fakes.dart';
 
 class _FakeRepository implements AddressRepository {
-  Either<Failure, List<JameiaAddressEntity>> list = Right([
+  Either<Failure, List<HeroAddressEntity>> list = Right([
     address(n: 1),
     address(n: 2, isDefault: true),
   ]);
-  Either<Failure, JameiaAddressEntity> saved = Right(address(n: 3));
+  Either<Failure, HeroAddressEntity> saved = Right(address(n: 3));
   Either<Failure, Unit> done = const Right(unit);
   final List<String> calls = [];
-  List<JameiaAddressEntity>? cached;
+  List<HeroAddressEntity>? cached;
   String? cachedOwner;
   AddressDraft? draft;
   AddressUpdate? update;
   String? id;
 
   @override
-  Future<Either<Failure, List<JameiaAddressEntity>>> fetchAddresses() async {
+  Future<Either<Failure, List<HeroAddressEntity>>> fetchAddresses() async {
     calls.add('fetch');
     return list;
   }
@@ -49,7 +49,7 @@ class _FakeRepository implements AddressRepository {
 
   @override
   Future<Either<Failure, Unit>> saveCachedAddresses(
-    List<JameiaAddressEntity> addresses, {
+    List<HeroAddressEntity> addresses, {
     String? ownerId,
   }) async {
     calls.add('save');
@@ -65,7 +65,7 @@ class _FakeRepository implements AddressRepository {
   }
 
   @override
-  Future<Either<Failure, JameiaAddressEntity>> addAddress(
+  Future<Either<Failure, HeroAddressEntity>> addAddress(
     AddressDraft draft,
   ) async {
     calls.add('add');
@@ -74,7 +74,7 @@ class _FakeRepository implements AddressRepository {
   }
 
   @override
-  Future<Either<Failure, JameiaAddressEntity>> updateAddress(
+  Future<Either<Failure, HeroAddressEntity>> updateAddress(
     String id,
     AddressUpdate update,
   ) async {
@@ -151,7 +151,7 @@ void main() {
     final result = await AddAddressUseCase(repository)(
       const AddAddressParams(draft: validDraft),
     );
-    expect(result, Right<Failure, JameiaAddressEntity>(address(n: 3)));
+    expect(result, Right<Failure, HeroAddressEntity>(address(n: 3)));
     expect(repository.draft, validDraft);
   });
 

@@ -5,7 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/recipe_detail.dart';
 import '../entities/recipes_feed.dart';
 
-/// Recipes of the jm3eia backend (public routes). The first page of the list
+/// Recipes of the Hero backend (public routes). The first page of the list
 /// and a recipe paint from the copy saved on the device first (offline too),
 /// then the server's.
 abstract class RecipesRepository {

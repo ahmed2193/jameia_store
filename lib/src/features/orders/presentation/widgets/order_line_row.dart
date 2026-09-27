@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/order_line_entity.dart';
-import '../../../../core/widgets/jameia_money_text.dart';
+import '../../../../core/widgets/hero_money_text.dart';
 import 'order_line_layout.dart';
 
 /// One ordered line: the quantity (`2×`), the name and variant, and the line
@@ -20,7 +20,7 @@ class OrderLineRow extends StatelessWidget {
       quantity: line.quantity,
       name: line.nameFor(lc),
       subtitle: line.variantNameFor(lc),
-      trailing: JameiaMoneyText(
+      trailing: HeroMoneyText(
         kd: line.lineTotalKd,
         style: AppTextStyles.itemTitle,
       ),

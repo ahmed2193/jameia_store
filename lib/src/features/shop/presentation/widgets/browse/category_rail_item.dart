@@ -7,7 +7,7 @@ import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 
 /// One circle of the sub-category rail: the artwork, the name below it. The
 /// open one wears an ink ring and a bold name and grows a touch while the
@@ -79,7 +79,7 @@ class CategoryRailItem extends StatelessWidget {
                             size: AppSize.s24,
                             color: AppColors.secondaryText,
                           )
-                        : JameiaImage.circle(url: image, size: _image),
+                        : HeroImage.circle(url: image, size: _image),
                   ),
                 ),
               ),

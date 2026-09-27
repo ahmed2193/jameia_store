@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/home_slide_entity.dart';
 import 'home_carousel_page.dart';
 import 'home_layout.dart';
@@ -35,7 +35,7 @@ class HomeSlideCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = this.controller;
-    final picture = JameiaImage(url: slide.imageUrl);
+    final picture = HeroImage(url: slide.imageUrl);
     // Against the swipe, which runs the other way under RTL.
     final against = Directionality.of(context) == TextDirection.rtl ? -1 : 1;
     return ClipRRect(

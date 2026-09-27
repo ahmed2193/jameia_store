@@ -14,8 +14,8 @@ typedef _Piece = ({
   double size,
 });
 
-/// The small celebration when the cart lands in its "J" slot: dots, chips
-/// and leaves in the brand's accent colours pop up out of the basket, arc
+/// The small celebration once the bag has delivered the whole name: dots,
+/// chips and leaves in the brand's accent colours pop up out of the name, arc
 /// down under gravity, spin and fade. Deterministic (fixed seed), so every
 /// launch — and every test — looks the same.
 abstract final class SplashConfettiPainting {

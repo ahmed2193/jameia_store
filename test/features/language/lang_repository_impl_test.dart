@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/language/data/datasources/lang_local_data_source.dart';
-import 'package:jameia_mart/src/features/language/data/datasources/lang_remote_data_source.dart';
-import 'package:jameia_mart/src/features/language/data/repositories/lang_repository_impl.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/language/data/datasources/lang_local_data_source.dart';
+import 'package:hero_mart/src/features/language/data/datasources/lang_remote_data_source.dart';
+import 'package:hero_mart/src/features/language/data/repositories/lang_repository_impl.dart';
 
 class _FakeLocal implements LangLocalDataSource {
   String saved = '';

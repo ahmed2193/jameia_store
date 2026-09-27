@@ -14,7 +14,7 @@ import '../routes.dart';
 final List<RouteBase> accountRoutes = <RouteBase>[
   GoRoute(
     path: Routes.profileEdit,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const ProfileEditPage(),
@@ -22,7 +22,7 @@ final List<RouteBase> accountRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.mineSettings,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const MineSettingsPage(),
@@ -30,7 +30,7 @@ final List<RouteBase> accountRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.mineAbout,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const MineAboutPage(),
@@ -38,7 +38,7 @@ final List<RouteBase> accountRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.mineDeliveryCode,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const MineDeliveryCodePage(),
@@ -46,7 +46,7 @@ final List<RouteBase> accountRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.wallet,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const WalletPage(),
@@ -54,7 +54,7 @@ final List<RouteBase> accountRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.loyalty,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const LoyaltyPage(),
@@ -62,7 +62,7 @@ final List<RouteBase> accountRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.loyaltyRewards,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const LoyaltyRewardsPage(),

@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/delivery_slot_entity.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/checkout_draft.dart';
 import '../../../domain/entities/checkout_eta.dart';
@@ -18,7 +18,7 @@ import 'checkout_sheet_frame.dart';
 import 'checkout_slot_sheet.dart';
 import 'checkout_timing_sheet.dart';
 
-/// "Expected ⚡ 15 min ›": the flat Keeta row under the destination. The
+/// "Expected ⚡ 15 min ›": the flat Hero row under the destination. The
 /// clock icon, "Expected", the express mark (only while express is on the
 /// order) and the estimate — minutes, the booked window, or why there is
 /// none (closed branch / no capacity). A tap opens the timing sheet (ASAP,
@@ -91,21 +91,21 @@ class CheckoutEtaRow extends StatelessWidget {
         onTap: isPickup ? null : () => _open(context),
         child: ConstrainedBox(
           constraints: const BoxConstraints(
-            minHeight: JameiaListRow.denseMinHeight,
+            minHeight: HeroListRow.denseMinHeight,
           ),
           child: Padding(
             padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: JameiaListRow.denseInset,
+              horizontal: HeroListRow.denseInset,
               vertical: AppSpacing.s12,
             ),
             child: Row(
               children: [
                 const Icon(
                   Icons.schedule_rounded,
-                  size: JameiaListRow.denseLeadSize,
+                  size: HeroListRow.denseLeadSize,
                   color: AppColors.primaryText,
                 ),
-                const SizedBox(width: JameiaListRow.denseGap),
+                const SizedBox(width: HeroListRow.denseGap),
                 Text(
                   !isPickup
                       ? 'checkout.eta_expected'.tr()
@@ -132,7 +132,7 @@ class CheckoutEtaRow extends StatelessWidget {
                   const SizedBox(width: AppSpacing.s4),
                   const Icon(
                     Icons.chevron_right_rounded,
-                    size: JameiaListRow.denseLeadSize,
+                    size: HeroListRow.denseLeadSize,
                     color: AppColors.primaryText,
                   ),
                 ],

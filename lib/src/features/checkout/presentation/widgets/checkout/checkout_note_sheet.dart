@@ -7,8 +7,8 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_input_decoration.dart';
-import '../../../../../core/widgets/jameia_submit_button.dart';
+import '../../../../../core/widgets/hero_input_decoration.dart';
+import '../../../../../core/widgets/hero_submit_button.dart';
 import '../../../domain/entities/checkout_draft.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_sheet_frame.dart';
@@ -66,7 +66,7 @@ class _CheckoutNoteSheetState extends State<CheckoutNoteSheet> {
       },
       child: CheckoutSheetFrame(
         title: 'checkout.notes_title'.tr(),
-        footer: JameiaSubmitButton(
+        footer: HeroSubmitButton(
           label: 'checkout.note_save'.tr(),
           sticker: true,
           height: AppSize.s48,
@@ -87,7 +87,7 @@ class _CheckoutNoteSheetState extends State<CheckoutNoteSheet> {
             textCapitalization: TextCapitalization.sentences,
             style: AppTextStyles.itemTitle,
             cursorColor: AppColors.primaryText,
-            decoration: JameiaInputDecoration.outlined(
+            decoration: HeroInputDecoration.outlined(
               hintText: 'checkout.notes_hint'.tr(),
             ),
           ),

@@ -6,13 +6,15 @@ import '../../domain/entities/phone_number.dart';
 
 enum LoginStatus { initial, sending, codeSent, error }
 
-/// Login screen state: the typed phone plus the send-OTP request status.
+/// Login screen state: the typed phone, the send-OTP request status and the
+/// store's welcome offer.
 class LoginState extends Equatable {
   const LoginState({
     this.status = LoginStatus.initial,
     this.phone = PhoneNumber.empty,
     this.challenge,
     this.failure,
+    this.welcomeBonus = 0,
   });
 
   final LoginStatus status;
@@ -25,6 +27,10 @@ class LoginState extends Equatable {
   /// Transient — cleared on every [copyWith]; the page localizes it.
   final Failure? failure;
 
+  /// Points a new account gets today (`store.loyalty`); 0 while unknown or
+  /// when the store runs no welcome bonus — the card then promises nothing.
+  final int welcomeBonus;
+
   bool get isSending => status == LoginStatus.sending;
 
   /// Gates the primary CTA.
@@ -33,19 +39,23 @@ class LoginState extends Equatable {
   /// Inline validation line: shown once the user started typing.
   bool get showPhoneError => !phone.isEmpty && !phone.isValid;
 
+  bool get hasWelcomeBonus => welcomeBonus > 0;
+
   LoginState copyWith({
     LoginStatus? status,
     PhoneNumber? phone,
     OtpChallenge? challenge,
     bool clearChallenge = false,
     Failure? failure,
+    int? welcomeBonus,
   }) => LoginState(
     status: status ?? this.status,
     phone: phone ?? this.phone,
     challenge: clearChallenge ? null : (challenge ?? this.challenge),
     failure: failure,
+    welcomeBonus: welcomeBonus ?? this.welcomeBonus,
   );
 
   @override
-  List<Object?> get props => [status, phone, challenge, failure];
+  List<Object?> get props => [status, phone, challenge, failure, welcomeBonus];
 }

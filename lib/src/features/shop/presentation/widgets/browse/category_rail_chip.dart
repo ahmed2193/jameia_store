@@ -7,7 +7,7 @@ import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 
 /// One sub-category of the folded rail: a pill with the artwork in a small
 /// circle before the name, filled in ink while it is the open one. The rail
@@ -70,7 +70,7 @@ class CategoryRailChip extends StatelessWidget {
                           size: _glyph,
                           color: AppColors.secondaryText,
                         )
-                      : JameiaImage.circle(url: image, size: _image),
+                      : HeroImage.circle(url: image, size: _image),
                 ),
               ),
             ),

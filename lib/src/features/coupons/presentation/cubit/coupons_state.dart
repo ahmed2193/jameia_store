@@ -6,8 +6,7 @@ import '../../domain/entities/coupon_buckets.dart';
 enum CouponsStatus { initial, loading, loaded, error }
 
 /// State of a coupon screen: the coupons bucketed into available / used /
-/// expired. My coupons, the history and the checkout picker each read the
-/// buckets they render. [failure] is transient: every [copyWith] clears it.
+/// expired. My coupons and the history each read the buckets they render. [failure] is transient: every [copyWith] clears it.
 class CouponsState extends Equatable {
   const CouponsState({
     this.status = CouponsStatus.initial,

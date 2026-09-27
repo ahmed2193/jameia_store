@@ -13,35 +13,35 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_coupon_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/navigation/jameia_shared_axis_page.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/core/widgets/app_loader.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_state_view.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_submit_button.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_offers_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_rail_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_state.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/pages/checkout_page.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_body.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_hint_bubble.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_order_bar.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/navigation/hero_shared_axis_page.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/core/widgets/app_loader.dart';
+import 'package:hero_mart/src/core/widgets/hero_state_view.dart';
+import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_offers_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_rail_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_state.dart';
+import 'package:hero_mart/src/features/checkout/presentation/pages/checkout_page.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_body.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_hint_bubble.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_order_bar.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_test_fakes.dart';
@@ -204,7 +204,7 @@ void main() {
         GoRoute(
           path: Routes.checkout,
           // The app's transition (a `builder:` page would not animate).
-          pageBuilder: (_, state) => JameiaSharedAxisPage<Object?>(
+          pageBuilder: (_, state) => HeroSharedAxisPage<Object?>(
             key: state.pageKey,
             name: state.uri.path,
             child: const CheckoutPage(),
@@ -283,7 +283,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.byType(CheckoutPlaceOrderBar),
-        matching: find.byType(JameiaSubmitButton),
+        matching: find.byType(HeroSubmitButton),
       ),
     );
     await tester.pump();
@@ -317,7 +317,7 @@ void main() {
 
       expect(find.byType(CustomScrollView), findsOneWidget);
       expect(find.text('Checkout'), findsOneWidget);
-      expect(find.text('Jm3eia · Salmiya'), findsOneWidget);
+      expect(find.text('Hero · Salmiya'), findsOneWidget);
     });
 
     testWidgets('a 401 on the destination shows sign-in, not a redirect', (
@@ -327,7 +327,7 @@ void main() {
       final router = await pumpPage(tester);
 
       expect(checkout?.state.requiresSignIn, isTrue);
-      expect(find.byType(JameiaStateView), findsOneWidget);
+      expect(find.byType(HeroStateView), findsOneWidget);
       expect(find.text('Sign in to place your order'), findsOneWidget);
       expect(find.byType(CheckoutBody), findsNothing);
       expect(
@@ -424,7 +424,7 @@ void main() {
       'a store without cash on delivery pays with a covering wallet',
       (tester) async {
         checkoutRepository.rules = const CheckoutStoreRules(
-          storeName: 'Jm3eia',
+          storeName: 'Hero',
           codEnabled: false,
         );
         signIn(customer(walletFils: 5000));

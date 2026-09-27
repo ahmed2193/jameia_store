@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/navigation/jameia_shared_axis_page.dart';
+import '../../../core/navigation/hero_shared_axis_page.dart';
 import '../../../features/orders/presentation/pages/order_invoice_page.dart';
 import '../../../features/orders/presentation/pages/order_review_page.dart';
 import '../../../features/orders/presentation/pages/order_tracking_page.dart';
@@ -30,12 +30,12 @@ final List<RouteBase> ordersRoutes = <RouteBase>[
   ),
 ];
 
-JameiaSharedAxisPage<Object?> _orderPage(
+HeroSharedAxisPage<Object?> _orderPage(
   GoRouterState state,
   Widget Function(String orderId) build,
 ) {
   final orderId = state.extra;
-  return JameiaSharedAxisPage<Object?>(
+  return HeroSharedAxisPage<Object?>(
     key: state.pageKey,
     name: state.uri.path,
     child: orderId is String && orderId.isNotEmpty

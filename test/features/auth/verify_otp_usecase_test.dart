@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/otp_challenge.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/phone_number.dart';
-import 'package:jameia_mart/src/features/auth/domain/repositories/auth_repository.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/verify_otp_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/otp_challenge.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
+import 'package:hero_mart/src/features/auth/domain/repositories/auth_repository.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/verify_otp_usecase.dart';
 
 import 'auth_test_fakes.dart';
 

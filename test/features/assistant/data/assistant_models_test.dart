@@ -1,20 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/network/event_stream_client.dart';
-import 'package:jameia_mart/src/features/assistant/data/mappers/assistant_block_mapper.dart';
-import 'package:jameia_mart/src/features/assistant/data/mappers/assistant_message_mapper.dart';
-import 'package:jameia_mart/src/features/assistant/data/models/assistant_block_model.dart';
-import 'package:jameia_mart/src/features/assistant/data/models/assistant_conversation_model.dart';
-import 'package:jameia_mart/src/features/assistant/data/models/assistant_reply_models.dart';
-import 'package:jameia_mart/src/features/assistant/data/models/assistant_stream_event_model.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_block.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thread.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/network/event_stream_client.dart';
+import 'package:hero_mart/src/features/assistant/data/mappers/assistant_block_mapper.dart';
+import 'package:hero_mart/src/features/assistant/data/mappers/assistant_message_mapper.dart';
+import 'package:hero_mart/src/features/assistant/data/models/assistant_block_model.dart';
+import 'package:hero_mart/src/features/assistant/data/models/assistant_conversation_model.dart';
+import 'package:hero_mart/src/features/assistant/data/models/assistant_reply_models.dart';
+import 'package:hero_mart/src/features/assistant/data/models/assistant_stream_event_model.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_block.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thread.dart';
 
 import '../assistant_fixtures.dart';
 

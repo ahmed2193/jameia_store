@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
@@ -167,7 +167,7 @@ class AddressBookCubit extends Cubit<AddressBookState>
   }
 
   /// The edit page saved [address]; the server already has it.
-  void applySaved(JameiaAddressEntity address) {
+  void applySaved(HeroAddressEntity address) {
     _revision++;
     _commit(
       state.copyWith(
@@ -226,7 +226,8 @@ class AddressBookCubit extends Cubit<AddressBookState>
         book = book.upsert(saved);
       }
       _commit(state.copyWith(book: book.withDefault(_serverDefaultId)));
-      return result.fold((failure) => failure, (_) => null);
+      final Failure? failure = result.fold((failure) => failure, (_) => null);
+      return failure;
     } finally {
       if (session == _session) _unsettledDefaults--;
     }

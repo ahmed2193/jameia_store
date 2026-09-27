@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 
-/// Title above a checkout section, Keeta-style: 18 sp bold in the 12 dp
+/// Title above a checkout section, Hero-style: 18 sp bold in the 12 dp
 /// gutter, 20 dp above and 12 dp below.
 class CheckoutSectionTitle extends StatelessWidget {
   const CheckoutSectionTitle(this.text, {super.key});

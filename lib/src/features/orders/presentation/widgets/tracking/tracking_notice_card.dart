@@ -4,7 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_surface_card.dart';
+import '../../../../../core/widgets/hero_surface_card.dart';
 
 /// A notice on the tracking page (cancelled, changed while picking): a white
 /// hairline card with a small muted icon plate, a bold title and grey detail
@@ -28,7 +28,7 @@ class TrackingNoticeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JameiaSurfaceCard(
+    return HeroSurfaceCard(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

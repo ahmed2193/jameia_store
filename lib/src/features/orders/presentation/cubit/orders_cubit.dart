@@ -51,8 +51,11 @@ class OrdersCubit extends Cubit<OrdersState>
     if (state.isRefreshing) return;
     safeEmit(state.copyWith(isRefreshing: true));
     await _readFirstPage(WatchParams.fresh);
-    // A failed refresh keeps the list; the spinner stops either way.
-    if (state.isRefreshing) safeEmit(state.copyWith(isRefreshing: false));
+    // A failed refresh keeps the list and its failure; the spinner stops
+    // either way.
+    if (state.isRefreshing) {
+      safeEmit(state.copyWith(isRefreshing: false, load: state.load));
+    }
   }
 
   Future<void> _readFirstPage(WatchParams params) => readScreen<OrdersPage>(

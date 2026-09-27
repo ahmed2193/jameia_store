@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/repositories/connectivity_repository.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/usecases/check_connectivity_usecase.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/usecases/set_connectivity_monitoring_usecase.dart';
-import 'package:jameia_mart/src/features/connectivity/domain/usecases/watch_connectivity_usecase.dart';
-import 'package:jameia_mart/src/features/connectivity/presentation/cubit/connectivity_cubit.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/connectivity/domain/entities/connectivity_status.dart';
+import 'package:hero_mart/src/features/connectivity/domain/repositories/connectivity_repository.dart';
+import 'package:hero_mart/src/features/connectivity/domain/usecases/check_connectivity_usecase.dart';
+import 'package:hero_mart/src/features/connectivity/domain/usecases/set_connectivity_monitoring_usecase.dart';
+import 'package:hero_mart/src/features/connectivity/domain/usecases/watch_connectivity_usecase.dart';
+import 'package:hero_mart/src/features/connectivity/presentation/cubit/connectivity_cubit.dart';
 
 /// Drives the cubit with raw monitor reports ([report]) and scripted checks.
 class FakeConnectivityRepository implements ConnectivityRepository {

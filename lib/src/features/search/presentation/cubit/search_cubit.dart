@@ -74,7 +74,7 @@ class SearchCubit extends Cubit<SearchState>
       onQueryChanged(state.query);
     }
     return refreshOnReconnect(
-      needed: _staleBlocks.isNotEmpty,
+      needed: () => _staleBlocks.isNotEmpty,
       refresh: () => _readDiscover(WatchParams.fresh),
     );
   }

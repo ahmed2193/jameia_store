@@ -14,7 +14,7 @@ import '../widgets/pdp_bottom_bar.dart';
 /// A product of the backend catalogue (`GET /v1/products/:slug`) with its
 /// reviews (`GET /v1/products/:slug/reviews`), loaded side by side. Catalogue
 /// text is resolved by the backend for the request language, so a language
-/// switch reloads both. Talabat-mart style: a full-bleed grey gallery under
+/// switch reloads both. Hero style: a full-bleed grey gallery under
 /// a white sheet of flat blocks; the buy bar's fly-to-cart takes off from
 /// the gallery ([_galleryKey]).
 class ProductDetailPage extends StatefulWidget {

@@ -5,16 +5,18 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
-import '../../../../core/widgets/shelf_tag_pill.dart';
 import 'pdp_brand_link.dart';
 import 'pdp_description_text.dart';
-import 'pdp_info_notes.dart';
 import 'pdp_meta_row.dart';
+import 'pdp_stock_note.dart';
+import 'pdp_tag_chips.dart';
 
-/// Top text block of the product page's sheet, talabat-mart style: the
-/// merchandising tag, the brand as an underlined link, the name in bold,
-/// the grey unit · kind · rating line, the description folded behind an
-/// inline "More", and the compact deal / stock / Pro notes.
+/// Top text block of the product page's sheet, Hero style: the
+/// merchandising tags as flat grey chips, the brand as an underlined link,
+/// the name in bold, the grey unit · kind · rating line, the description
+/// folded behind an inline "More", and how the stock stands when it matters
+/// ("Only 3 left", out of stock). The deal and the Pro price live in the buy
+/// bar, next to the price they change.
 class PdpInfoBlock extends StatelessWidget {
   const PdpInfoBlock({
     super.key,
@@ -23,9 +25,6 @@ class PdpInfoBlock extends StatelessWidget {
     this.brand,
     this.description = '',
     this.lowStockLeft,
-    this.discountPercent = 0,
-    this.proPriceApplied = false,
-    this.proPriceHintFils,
     this.onOpenReviews,
   });
 
@@ -38,9 +37,6 @@ class PdpInfoBlock extends StatelessWidget {
 
   /// Units left when they are running out, else `null`.
   final int? lowStockLeft;
-  final int discountPercent;
-  final bool proPriceApplied;
-  final int? proPriceHintFils;
   final VoidCallback? onOpenReviews;
 
   static const int _nameLines = 3;
@@ -48,12 +44,13 @@ class PdpInfoBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brand = this.brand;
+    final tags = product.merchTags;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (ShelfTagPill.wears(product)) ...[
-          ShelfTagPill(product: product),
-          const SizedBox(height: AppSpacing.s12),
+        if (tags.isNotEmpty) ...[
+          PdpTagChips(tags: tags),
+          const SizedBox(height: AppSpacing.s16),
         ],
         if (brand != null && brand.name.isNotEmpty) ...[
           PdpBrandLink(brand: brand),
@@ -76,13 +73,11 @@ class PdpInfoBlock extends StatelessWidget {
           const SizedBox(height: AppSpacing.s16),
           PdpDescriptionText(description: description),
         ],
-        PdpInfoNotes(
-          inStock: inStock,
-          lowStockLeft: lowStockLeft,
-          discountPercent: discountPercent,
-          proPriceApplied: proPriceApplied,
-          proPriceHintFils: proPriceHintFils,
-        ),
+        if (PdpStockNote.shows(inStock: inStock, lowStockLeft: lowStockLeft))
+          Padding(
+            padding: const EdgeInsetsDirectional.only(top: AppSpacing.s12),
+            child: PdpStockNote(inStock: inStock, lowStockLeft: lowStockLeft),
+          ),
       ],
     );
   }

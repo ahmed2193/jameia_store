@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../motion/motion.dart';
-import 'jameia_image_cache_manager.dart';
+import 'hero_image_cache_manager.dart';
 
 // ---------------------------------------------------------------------------
 // RetryingNetworkImage
@@ -23,7 +23,7 @@ import 'jameia_image_cache_manager.dart';
 //     cacheKey is stable so a successful retry repopulates the same slot.
 //   • Connectivity hook: every state with a pending timer is registered in
 //     _pending. On reconnect, retryAllNow() collapses every backoff into an
-//     immediate retry (see JameiaImage.retryAllPendingImages).
+//     immediate retry (see HeroImage.retryAllPendingImages).
 // ---------------------------------------------------------------------------
 class RetryingNetworkImage extends StatefulWidget {
   const RetryingNetworkImage({
@@ -187,12 +187,12 @@ class _RetryingNetworkImageState extends State<RetryingNetworkImage> {
         'attempt=${_attempt + 1} '
         'inFlight=$_inFlight/$_maxConcurrent '
         '${_onFallback ? "(raw) " : ""}url=$_activeUrl',
-        name: 'JameiaImage:retry',
+        name: 'HeroImage:retry',
       );
     }
     // Await the disk evict so the rebuild can't race the delete; disk I/O is
     // ~5-20 ms, negligible against the user-facing backoff already elapsed.
-    JameiaImageCacheManager.removeFile(widget.cacheKey)
+    HeroImageCacheManager.removeFile(widget.cacheKey)
         .then((_) {
           if (!mounted) {
             if (_holdsSlot) _releaseSlot();
@@ -244,7 +244,7 @@ class _RetryingNetworkImageState extends State<RetryingNetworkImage> {
       memCacheWidth: widget.memCacheWidth,
       memCacheHeight: widget.memCacheHeight,
       fadeInDuration: AppMotion.imageFade,
-      cacheManager: JameiaImageCacheManager.instance,
+      cacheManager: HeroImageCacheManager.instance,
       // gaplessPlayback in cached_network_image is derived from this flag — it
       // keeps the previous frame on screen during a re-resolve (no flash).
       useOldImageOnUrlChange: true,

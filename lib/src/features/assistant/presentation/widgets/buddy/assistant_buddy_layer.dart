@@ -164,13 +164,13 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
 
   Future<void> _offerHide() async {
     final buddy = context.read<AssistantBuddyCubit>();
-    final hide = await showJameiaBottomSheet<bool>(
+    final hide = await showHeroBottomSheet<bool>(
       context,
       builder: (_) => const AssistantBuddyHideSheet(),
     );
     if (hide != true || !mounted) return;
     await buddy.hideLauncher();
-    if (mounted) showJameiaSnackBar(context, 'assistant.buddy_hidden'.tr());
+    if (mounted) showHeroSnackBar(context, 'assistant.buddy_hidden'.tr());
   }
 
   @override

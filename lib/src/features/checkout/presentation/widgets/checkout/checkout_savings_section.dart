@@ -7,7 +7,7 @@ import 'checkout_section.dart';
 
 /// "Instant savings": the cream card with the coupons-and-offers row (and
 /// the tag of the nearest reward still to unlock) and, for a customer who
-/// can redeem, the points row. The card is inset 8 dp, like Keeta's.
+/// can redeem, the points row. The card is inset 8 dp, like Hero's.
 class CheckoutSavingsSection extends StatelessWidget {
   const CheckoutSavingsSection({super.key});
 

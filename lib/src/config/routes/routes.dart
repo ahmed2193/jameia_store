@@ -1,5 +1,5 @@
-/// Route-path registry for the Jameia consumer clone (GoRouter locations — every
-/// path starts with '/'). Mirrors Jameia's Mach Pro page inventory (one route
+/// Route-path registry for the Hero consumer clone (GoRouter locations — every
+/// path starts with '/'). Mirrors Hero's Mach Pro page inventory (one route
 /// per real screen). Arguments travel as GoRouter `extra`.
 class Routes {
   Routes._();
@@ -12,24 +12,15 @@ class Routes {
   static const String home = '/home';
   static const String search = '/search';
   static const String searchShop = '/search-shop';
-  static const String channelList = '/channel-list';
-  static const String mealForOne = '/meal-for-one';
-  static const String pickUp = '/pick-up';
-  static const String fixedPrice = '/fixed-price';
-  static const String kingkongLanding = '/kingkong';
 
   // Shop & ordering
-  // Legacy "open the shop" link of the still-offline screens → the store's
-  // categories (single store; the old shop-id extra is ignored).
-  static const String shop = '/shop';
   static const String shopFavorites = '/shop-favorites'; // unbuilt (wishlist)
-  static const String skuModal = '/sku-modal';
   static const String cartPreview = '/cart-preview';
   static const String checkout = '/checkout'; // order confirm
   // Coupons + offers for the open checkout; extra: String? branchId.
   static const String checkoutVouchers = '/checkout-vouchers';
 
-  // Backend catalogue (jm3eia API) — slugs travel in immutable args classes
+  // Backend catalogue (Hero API) — slugs travel in immutable args classes
   static const String categories = '/categories'; // the whole category tree
   static const String category = '/category'; // extra: CategoryArgs
   // Any product list: brand, collection, tag, offers… extra: ProductListingArgs
@@ -50,13 +41,8 @@ class Routes {
   // Order lifecycle
   static const String orders = '/orders'; // list
   static const String orderTracking = '/order-tracking'; // arg: orderId
-  static const String orderMap = '/order-map';
-  static const String orderRefund = '/order-refund';
-  static const String orderRefundDetail = '/order-refund-detail';
   static const String orderReview = '/order-review';
   static const String orderInvoice = '/order-invoice';
-  static const String punctual = '/punctual';
-  static const String punctualRule = '/punctual-rule';
 
   // Account & support
   static const String mine = '/mine';
@@ -79,13 +65,10 @@ class Routes {
   // Address & location
   static const String addressList = '/address-list';
   static const String addressEdit = '/address-edit';
-  static const String addressSelect = '/address-select';
-  static const String chooseLocation = '/choose-location';
 
   // Marketing & coupons
   static const String myCoupons = '/my-coupons';
   static const String historyCoupons = '/history-coupons';
-  static const String orderCoupons = '/order-coupons';
   static const String inviteFriends = '/invite-friends';
 
   // Auth

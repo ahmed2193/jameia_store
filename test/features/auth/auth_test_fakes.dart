@@ -1,19 +1,19 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/otp_challenge.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/phone_number.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/clear_cached_customer_usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/get_cached_customer_usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/restore_session_usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/save_cached_customer_usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/send_otp_usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/verify_otp_usecase.dart';
-import 'package:jameia_mart/src/features/auth/domain/usecases/watch_session_expiry_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/otp_challenge.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/clear_cached_customer_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/get_cached_customer_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/restore_session_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/save_cached_customer_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/send_otp_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/verify_otp_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/watch_session_expiry_usecase.dart';
 
 const PhoneNumber kPhone = PhoneNumber.kuwait('12345678');
 const AuthCustomerEntity kCustomer = AuthCustomerEntity(

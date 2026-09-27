@@ -4,7 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_line_entity.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 
 /// A cart row's unit price — deep green on a deal — and the struck "was"
 /// price after it. When the pair does not fit the row (a narrow phone, large
@@ -21,13 +21,13 @@ class CartLinePrice extends StatelessWidget {
       spacing: AppSpacing.s6,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        JameiaMoneyText(
+        HeroMoneyText(
           kd: line.unitPriceKd,
           style: AppTextStyles.label,
           color: deal ? AppColors.brandDeep : AppColors.primaryText,
         ),
         if (deal)
-          JameiaMoneyText(
+          HeroMoneyText(
             kd: line.compareAtKd,
             style: AppTextStyles.meta,
             strike: true,

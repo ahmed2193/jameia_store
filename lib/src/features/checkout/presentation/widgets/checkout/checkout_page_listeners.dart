@@ -10,7 +10,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/motion/confetti_overlay.dart';
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
@@ -117,7 +117,7 @@ class CheckoutPageListeners extends StatelessWidget {
           listenWhen: (previous, current) =>
               current.notice == CheckoutNotice.slotReset,
           listener: (context, _) =>
-              showJameiaSnackBar(context, 'checkout.slot_reset'.tr()),
+              showHeroSnackBar(context, 'checkout.slot_reset'.tr()),
         ),
       ],
       child: CheckoutAutoChangeListeners(child: child),

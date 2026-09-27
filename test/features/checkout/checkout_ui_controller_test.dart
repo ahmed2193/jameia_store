@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
 
 void main() {
   test('signalBlocked bumps the serial, even for the same reason', () {

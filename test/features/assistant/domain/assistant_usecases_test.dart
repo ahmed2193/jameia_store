@@ -1,25 +1,25 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_action_result.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_availability.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_conversations_feed.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_handoff_ticket.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_prompt.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thread.dart';
-import 'package:jameia_mart/src/features/assistant/domain/repositories/assistant_repository.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/confirm_assistant_action_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_availability_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_conversation_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_conversations_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/rate_assistant_message_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/request_assistant_handoff_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/send_assistant_message_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/watch_assistant_conversations_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_action_result.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_availability.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversations_feed.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_handoff_ticket.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_prompt.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thread.dart';
+import 'package:hero_mart/src/features/assistant/domain/repositories/assistant_repository.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/confirm_assistant_action_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_availability_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_conversation_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_conversations_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/rate_assistant_message_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/request_assistant_handoff_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/send_assistant_message_usecase.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/watch_assistant_conversations_usecase.dart';
 
 /// Records every call; answers with the scripted value.
 class _RecordingRepository implements AssistantRepository {

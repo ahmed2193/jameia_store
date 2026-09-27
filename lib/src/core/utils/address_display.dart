@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 
 import '../domain/entities/address_label.dart';
-import '../domain/entities/jameia_address_entity.dart';
+import '../domain/entities/hero_address_entity.dart';
 
 /// Localized text for a saved address, shared by every screen that shows one
 /// (address list rows, the home delivery pill).
-extension AddressDisplay on JameiaAddressEntity {
+extension AddressDisplay on HeroAddressEntity {
   /// The tag as the customer reads it: "Home", "Work", … — or the custom
   /// label another client saved.
   String get tagText =>

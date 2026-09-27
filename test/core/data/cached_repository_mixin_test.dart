@@ -11,16 +11,16 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/data/repositories/base_repository_mixin.dart';
-import 'package:jameia_mart/src/core/data/repositories/cached_repository_mixin.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/cache_key.dart';
-import 'package:jameia_mart/src/core/storage/cache_namespace.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/data/repositories/base_repository_mixin.dart';
+import 'package:hero_mart/src/core/data/repositories/cached_repository_mixin.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/cache_key.dart';
+import 'package:hero_mart/src/core/storage/cache_namespace.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
 
 import '../network/network_test_fakes.dart';
 import '../storage/cache_test_fakes.dart';

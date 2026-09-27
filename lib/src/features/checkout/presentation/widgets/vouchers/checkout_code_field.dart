@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_coupon_entity.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/shake_x.dart';
-import '../../../../../core/widgets/jameia_input_decoration.dart';
+import '../../../../../core/widgets/hero_input_decoration.dart';
 
 /// The code sheet's field: capital letters, at most
 /// [CartCouponEntity.maxCodeLength] characters, "done" applies. A refusal
@@ -45,7 +45,7 @@ class CheckoutCodeField extends StatelessWidget {
             onSubmitted: (_) => onSubmitted(),
             style: AppTextStyles.itemTitle,
             cursorColor: AppColors.primaryText,
-            decoration: JameiaInputDecoration.outlined(
+            decoration: HeroInputDecoration.outlined(
               hintText: 'checkout.code_hint'.tr(),
               counterText: '',
             ),

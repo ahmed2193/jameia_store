@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/domain/entities/address_label.dart';
 import '../../../../core/domain/entities/geo_point_entity.dart';
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import 'address_field.dart';
 
 /// The address form: every value `POST /v1/account/addresses` accepts, as the
@@ -28,7 +28,7 @@ class AddressDraft extends Equatable {
 
   /// The form for an existing address. An address saved without a pin opens
   /// on [kuwaitCity].
-  factory AddressDraft.fromAddress(JameiaAddressEntity address) => AddressDraft(
+  factory AddressDraft.fromAddress(HeroAddressEntity address) => AddressDraft(
     location: address.location ?? kuwaitCity,
     label: address.labelKind,
     city: address.city,

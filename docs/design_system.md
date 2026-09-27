@@ -1,8 +1,8 @@
-# JameiaMart design system (search, cart, checkout, orders)
+# Hero design system (search, cart, checkout, orders)
 
 The look of the **search** screens and the **cart → checkout → orders** flow. It follows
-talabat's design language (flat surfaces, type-led hierarchy, one bold action colour, pill
-actions, underlined links) with **JameiaMart's own colours** (logo green + yellow).
+Hero's design language (flat surfaces, type-led hierarchy, one bold action colour, pill
+actions, underlined links) with **Hero's own colours** (logo green + yellow).
 
 **Scope.** Only search and the cart / checkout / orders flow use this look today. The rest of
 the app keeps its current widgets until an app-wide pass is approved. That is why two
@@ -10,11 +10,11 @@ families live side by side for now:
 
 | New look (`core/widgets/`) | Older widget still used elsewhere |
 |---|---|
-| `JameiaStateView` (+ `.error`, `.signedOut`) | `EmptyStateView`, `ErrorView`, `SignedOutView` |
-| `JameiaSecondaryButton` | `AppOutlineButton` |
-| `JameiaSectionHeader`, `JameiaTextLink` | `SectionHeader` |
-| `JameiaSummaryLine` + `JameiaMoneyText` | `SummaryRow`, `PriceText` |
-| `JameiaTag` | `TagChip` |
+| `HeroStateView` (+ `.error`, `.signedOut`) | `EmptyStateView`, `ErrorView`, `SignedOutView` |
+| `HeroSecondaryButton` | `AppOutlineButton` |
+| `HeroSectionHeader`, `HeroTextLink` | `SectionHeader` |
+| `HeroSummaryLine` + `HeroMoneyText` | `SummaryRow`, `PriceText` |
+| `HeroTag` | `TagChip` |
 
 When the app-wide pass is approved, swap the older widgets for the new ones and delete them.
 Do not add new users of the older column.
@@ -57,7 +57,7 @@ Do not add new users of the older column.
 | `label` | 14 medium | links, chips, small buttons, summary values |
 | `tag` | 12 bold | tags and badges |
 
-Money, points and codes: `JameiaMoneyText` / `AppTextStyles.tabular`, one left-to-right run.
+Money, points and codes: `HeroMoneyText` / `AppTextStyles.tabular`, one left-to-right run.
 
 ## 4. Shape, spacing, elevation
 
@@ -73,19 +73,19 @@ Money, points and codes: `JameiaMoneyText` / `AppTextStyles.tabular`, one left-t
 | Component | Widget |
 |---|---|
 | Primary pill (52 dp in bottom bars) | `AppButton` |
-| Secondary pill (`compact` 44 dp for card actions) | `JameiaSecondaryButton` |
-| Underlined link (`navigates: false` for in-page actions) | `JameiaTextLink` |
-| Title bar (back only when the route can pop) | `JameiaTitleBar` |
-| Section heading + link / trailing | `JameiaSectionHeader` |
-| Row / grouped rows on a hairline card | `JameiaListRow` / `JameiaListCard` |
-| Choice row with a trailing radio | `OptionRow` + `JameiaRadioMark` |
-| Card (white hairline / muted / brand …) | `JameiaSurfaceCard` |
-| Tag | `JameiaTag` |
-| Money / breakdown line | `JameiaMoneyText` / `JameiaSummaryLine` |
-| Pinned bottom bar | `JameiaBottomBar` |
-| Sheet top (handle, title, ✕) | `JameiaSheetHeader` (+ its `shape`, white background) |
-| Field look | `JameiaInputDecoration.outlined` |
-| Empty / error / signed-out | `JameiaStateView` |
+| Secondary pill (`compact` 44 dp for card actions) | `HeroSecondaryButton` |
+| Underlined link (`navigates: false` for in-page actions) | `HeroTextLink` |
+| Title bar (back only when the route can pop) | `HeroTitleBar` |
+| Section heading + link / trailing | `HeroSectionHeader` |
+| Row / grouped rows on a hairline card | `HeroListRow` / `HeroListCard` |
+| Choice row with a trailing radio | `OptionRow` + `HeroRadioMark` |
+| Card (white hairline / muted / brand …) | `HeroSurfaceCard` |
+| Tag | `HeroTag` |
+| Money / breakdown line | `HeroMoneyText` / `HeroSummaryLine` |
+| Pinned bottom bar | `HeroBottomBar` |
+| Sheet top (handle, title, ✕) | `HeroSheetHeader` (+ its `shape`, white background) |
+| Field look | `HeroInputDecoration.outlined` |
+| Empty / error / signed-out | `HeroStateView` |
 
 ## 6. Motion
 
@@ -105,10 +105,10 @@ moment. Animated rows and totals sit in a `RepaintBoundary`.
 
 ## 7. Screen recipe
 
-1. `Scaffold(backgroundColor: AppColors.white)` + `JameiaTitleBar` (pushed pages).
-2. Content in 16 dp gutters; sections introduced by `JameiaSectionHeader`.
-3. Rows on `JameiaListCard`; facts on `JameiaSurfaceCard`.
-4. One primary action, pinned in `JameiaBottomBar` when it is the goal of the screen.
-5. States: skeleton or `AppLoader` → content → `JameiaStateView`, swapped with
+1. `Scaffold(backgroundColor: AppColors.white)` + `HeroTitleBar` (pushed pages).
+2. Content in 16 dp gutters; sections introduced by `HeroSectionHeader`.
+3. Rows on `HeroListCard`; facts on `HeroSurfaceCard`.
+4. One primary action, pinned in `HeroBottomBar` when it is the goal of the screen.
+5. States: skeleton or `AppLoader` → content → `HeroStateView`, swapped with
    `FadeThroughSwitcher` keyed by a status bucket (never by data that changes while shown).
 6. Every string `.tr()` in en + ar, money LTR, RTL mirrored, text scale 1.3 without overflow.

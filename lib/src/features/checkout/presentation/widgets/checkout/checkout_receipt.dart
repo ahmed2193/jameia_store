@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_min_order_notice.dart';
@@ -102,7 +102,7 @@ class CheckoutReceipt extends StatelessWidget {
                     visible: quoted && extras.express,
                     child: CheckoutReceiptRow(
                       label: 'checkout.summary_express'.tr(),
-                      value: JameiaMoneyText(kd: extras.expressKd),
+                      value: HeroMoneyText(kd: extras.expressKd),
                     ),
                   ),
                   CheckoutReceiptDiscountRow(

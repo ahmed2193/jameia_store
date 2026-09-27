@@ -8,8 +8,8 @@ import '../../../../../core/domain/entities/cart_loyalty_entity.dart';
 import '../../../../../core/motion/change_bump.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
-import '../../../../../core/widgets/jameia_text_link.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
+import '../../../../../core/widgets/hero_text_link.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../domain/entities/cart_snapshot.dart';
 import '../../cubit/cart_cubit.dart';
@@ -34,7 +34,7 @@ class CartLoyaltyRow extends StatelessWidget {
       (cubit) => cubit.state.busyAction == CartAction.loyalty,
     );
     final applied = loyalty.isApplied;
-    return JameiaListRow(
+    return HeroListRow(
       leading: ChangeBump(
         value: applied,
         child: Icon(
@@ -54,7 +54,7 @@ class CartLoyaltyRow extends StatelessWidget {
               style: AppTextStyles.meta,
             )
           : null,
-      trailing: JameiaTextLink(
+      trailing: HeroTextLink(
         label: applied ? 'cart.loyalty_remove'.tr() : 'cart.loyalty_apply'.tr(),
         navigates: false,
         onTap: busy

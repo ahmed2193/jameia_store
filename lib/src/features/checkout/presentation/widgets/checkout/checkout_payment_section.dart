@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/motion/change_bump.dart';
 import '../../../../../core/responsive/app_size.dart';
@@ -72,7 +72,7 @@ class CheckoutPaymentSection extends StatelessWidget {
           children: [
             OptionRow(
               leading: const CheckoutPaymentIcon(
-                asset: JameiaAssets.checkoutCash,
+                asset: HeroAssets.checkoutCash,
               ),
               title: 'checkout.pay_cod'.tr(),
               subtitle: choice.codEnabled ? null : 'checkout.pay_cod_off'.tr(),
@@ -91,7 +91,7 @@ class CheckoutPaymentSection extends StatelessWidget {
               ),
               OptionRow(
                 leading: const CheckoutPaymentIcon(
-                  asset: JameiaAssets.checkoutWallet,
+                  asset: HeroAssets.checkoutWallet,
                 ),
                 title: 'checkout.pay_wallet'.tr(),
                 subtitle:

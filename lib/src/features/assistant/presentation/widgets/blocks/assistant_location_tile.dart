@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../domain/entities/assistant_block.dart';
 
@@ -21,7 +21,7 @@ class AssistantLocationTile extends StatelessWidget {
     Haptics.selection();
     await Clipboard.setData(ClipboardData(text: phone));
     if (!context.mounted) return;
-    showJameiaSnackBar(context, 'assistant.phone_copied'.tr());
+    showHeroSnackBar(context, 'assistant.phone_copied'.tr());
   }
 
   @override

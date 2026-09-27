@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/motion/haptics.dart';
-import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
+import 'pdp_outlined_tile.dart';
 
-/// One photo of the viewer's thumbnail strip: the photo contained on a
-/// rounded light-grey tile, outlined in the brand colour while it is the
-/// one shown ([selected]). A tap reports [onTap].
+/// One photo of the viewer's thumbnail strip, Hero style: the photo
+/// contained on a white rounded tile with a hairline edge, ringed in the
+/// brand colour while it is the one shown ([selected]) — the ring eases in
+/// without moving the photo ([PdpOutlinedTile]). A tap reports [onTap].
 class PdpThumbnail extends StatelessWidget {
   const PdpThumbnail({
     super.key,
@@ -27,8 +28,10 @@ class PdpThumbnail extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  static const double size = AppSize.s72;
-  static const double ring = AppSize.s2;
+  static const double size = AppSize.s64;
+
+  /// Edge plus padding: where the photo sits in the tile.
+  static const double _inset = AppSpacing.s6;
 
   @override
   Widget build(BuildContext context) {
@@ -41,21 +44,14 @@ class PdpThumbnail extends StatelessWidget {
       child: PressScale(
         onTap: onTap,
         haptic: HapticKind.selection,
-        child: AnimatedContainer(
-          duration: MotionGuard.duration(context, AppMotion.fast),
-          curve: AppMotion.signature,
+        child: PdpOutlinedTile(
+          selected: selected,
+          selectedColor: AppColors.primary,
+          radius: AppSize.r12,
+          inset: _inset,
           width: size,
           height: size,
-          padding: const EdgeInsets.all(AppSpacing.s6),
-          decoration: BoxDecoration(
-            color: AppColors.smallBackground,
-            borderRadius: BorderRadius.circular(AppSize.r12),
-            border: Border.all(
-              color: selected ? AppColors.primary : AppColors.scrimTransparent,
-              width: ring,
-            ),
-          ),
-          child: JameiaImage(url: url, fit: BoxFit.contain),
+          child: HeroImage(url: url, fit: BoxFit.contain),
         ),
       ),
     );

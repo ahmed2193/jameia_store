@@ -67,7 +67,7 @@ class _OrdersLoadMoreRowState extends State<OrdersLoadMoreRow> {
             child: FadeThroughSwitcher(
               stateKey: loading,
               child: loading
-                  ? const AppLoader(size: AppSize.s20)
+                  ? const AppLoader.inline()
                   : Center(
                       child: TextButton(
                         // An explicit ask: also after a failed page.

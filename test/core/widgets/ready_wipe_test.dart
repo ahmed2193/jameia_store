@@ -4,9 +4,9 @@
 // motion changes the colour at once; a covered page wipes on reveal.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/widgets/light_sweep_band.dart';
-import 'package:jameia_mart/src/core/widgets/ready_wipe.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/widgets/light_sweep_band.dart';
+import 'package:hero_mart/src/core/widgets/ready_wipe.dart';
 
 const Color _green = Color(0xFF22C55E);
 const Color _grey = Color(0xFFEBEBEB);

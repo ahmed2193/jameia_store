@@ -5,7 +5,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/brand_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 
 /// One brand of the brands page: logo (or the brand's initial), name and the
 /// backend's one-line description.
@@ -46,7 +46,7 @@ class BrandTile extends StatelessWidget {
                 border: Border.all(color: AppColors.brandTileBorder),
               ),
               child: brand.hasImage
-                  ? JameiaImage.circle(url: brand.image, size: _logo)
+                  ? HeroImage.circle(url: brand.image, size: _logo)
                   : Text(
                       brand.initial,
                       style: AppTextStyles.headingLarge.copyWith(

@@ -3,17 +3,17 @@
 // same CatalogResults parsers as a reply; one entry per normalised listing
 // query; an unparseable copy throws for the cache policy to drop it.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/datasources/catalog_cache_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/brand_model.dart';
-import 'package:jameia_mart/src/core/data/models/catalog_results.dart';
-import 'package:jameia_mart/src/core/data/models/category_model.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
-import 'package:jameia_mart/src/core/data/models/product_model.dart';
-import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/datasources/catalog_cache_data_source.dart';
+import 'package:hero_mart/src/core/data/models/brand_model.dart';
+import 'package:hero_mart/src/core/data/models/catalog_results.dart';
+import 'package:hero_mart/src/core/data/models/category_model.dart';
+import 'package:hero_mart/src/core/data/models/offer_model.dart';
+import 'package:hero_mart/src/core/data/models/product_model.dart';
+import 'package:hero_mart/src/core/data/models/products_page_model.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
 
 import '../network/network_test_fakes.dart';
 import '../storage/cache_test_fakes.dart';

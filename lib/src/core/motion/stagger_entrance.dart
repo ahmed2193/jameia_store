@@ -6,12 +6,12 @@ import 'motion.dart';
 
 /// Staggered list/grid ENTRANCE — each item fades + slides up by a small
 /// [beginOffset], delayed by `index * stagger` so a freshly built feed/grid
-/// cascades in (Jameia home-feed / coupon-list / search-result reveal). Plays
+/// cascades in (Hero home-feed / coupon-list / search-result reveal). Plays
 /// once per element (guarded). Index delay is clamped by [maxIndex] so long
 /// lists aren't held back. Reduced-motion → render immediately, no delay.
 ///
-/// Default 30ms step is grounded: Jameia's `home_page_main` staggered dropdown
-/// reveal uses per-item delays of 0/30/60ms (docs/jameia_motion_reference.md §2).
+/// Default 30ms step is grounded: Hero's `home_page_main` staggered dropdown
+/// reveal uses per-item delays of 0/30/60ms (docs/hero_motion_reference.md §2).
 class StaggerEntrance extends StatefulWidget {
   const StaggerEntrance({
     super.key,

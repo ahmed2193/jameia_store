@@ -6,10 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
-import '../../../../../core/widgets/jameia_submit_button.dart';
+import '../../../../../core/widgets/hero_submit_button.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/checkout_block_reason.dart';
@@ -22,8 +22,8 @@ import 'checkout_ui_controller.dart';
 /// "Place order": the green sticker pill at the end of the bar, 140 × 48.
 /// It fires once ([CheckoutCubit.placeOrder] with the cart's facts) and only
 /// when nothing is in flight, the cart has settled and
-/// [CheckoutBlockReason.resolve] names no reason. Loading shows the loader,
-/// a placed order the check.
+/// [CheckoutBlockReason.resolve] names no reason. While the order is placed
+/// the page's busy overlay holds the screen (the loader, then the check).
 ///
 /// A tap on the disabled pill says why: a missing destination or window
 /// scrolls to its row and shakes it, a line issue opens the items sheet,
@@ -48,7 +48,7 @@ class CheckoutPlaceButton extends StatelessWidget {
         !await ConnectivityScope.confirmOnline(context)) {
       if (!context.mounted) return;
       ConnectivityScope.nudge(context);
-      showJameiaSnackBar(context, 'connectivity.action_needs_internet'.tr());
+      showHeroSnackBar(context, 'connectivity.action_needs_internet'.tr());
       return;
     }
     if (!context.mounted) return;
@@ -84,7 +84,7 @@ class CheckoutPlaceButton extends StatelessWidget {
           CheckoutBlockReason.branchClosed ||
           CheckoutBlockReason.capacity ||
           CheckoutBlockReason.payment:
-        showJameiaSnackBar(
+        showHeroSnackBar(
           context,
           CheckoutBarFactText.reasonText(
             reason,
@@ -153,15 +153,13 @@ class CheckoutPlaceButton extends StatelessWidget {
       link: context.read<CheckoutUiController>().barLink,
       child: SizedBox(
         width: width,
-        child: JameiaSubmitButton(
-          label: placing
-              ? 'checkout.placing'.tr()
-              : 'checkout.place_order'.tr(),
+        child: HeroSubmitButton(
+          label: 'checkout.place_order'.tr(),
           sticker: true,
           height: height,
-          loading: placing,
-          success: placed,
-          successLabel: 'checkout.order_placed'.tr(),
+          // The page's busy overlay is the loader and the check; the pill
+          // keeps its label under it and takes no tap.
+          holding: placing || placed,
           enabled: canPlace && settled && reason == null,
           onPressed: () => unawaited(_place(context)),
           onBlocked: () => _onBlocked(context, reason),

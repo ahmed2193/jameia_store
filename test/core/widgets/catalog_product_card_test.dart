@@ -1,5 +1,5 @@
 // The app-wide product card of the home rails and the assistant: the same
-// talabat shelf card as the listing grid — a light-grey picture tile with no
+// Hero shelf card as the listing grid — a light-grey picture tile with no
 // outline, the lime "Save" badge and the round "+", the name, the unit (or
 // what kind of product it is), the price with its marker and the struck
 // "was" price on its own line — sized by the rail from one cell height.
@@ -15,20 +15,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/config/theme/app_colors.dart';
-import 'package:jameia_mart/src/config/theme/app_spacing.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/widgets/catalog_discount_badge.dart';
-import 'package:jameia_mart/src/core/widgets/catalog_pill_stepper.dart';
-import 'package:jameia_mart/src/core/widgets/catalog_product_card.dart';
-import 'package:jameia_mart/src/core/widgets/rating_badge.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_add_button.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_card_media.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_card_price.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_marker_painter.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_product_card.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_save_badge.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_tag_pill.dart';
+import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/config/theme/app_spacing.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/widgets/catalog_discount_badge.dart';
+import 'package:hero_mart/src/core/widgets/catalog_pill_stepper.dart';
+import 'package:hero_mart/src/core/widgets/catalog_product_card.dart';
+import 'package:hero_mart/src/core/widgets/rating_badge.dart';
+import 'package:hero_mart/src/core/widgets/shelf_add_button.dart';
+import 'package:hero_mart/src/core/widgets/shelf_card_media.dart';
+import 'package:hero_mart/src/core/widgets/shelf_card_price.dart';
+import 'package:hero_mart/src/core/widgets/shelf_marker_painter.dart';
+import 'package:hero_mart/src/core/widgets/shelf_product_card.dart';
+import 'package:hero_mart/src/core/widgets/shelf_save_badge.dart';
+import 'package:hero_mart/src/core/widgets/shelf_tag_pill.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Everything a card can carry at once: a tag, a long name, a unit, a deal

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
-import '../../../../core/widgets/jameia_title_bar.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../cubit/cart_deals_cubit.dart';
 import '../widgets/cart/cart_view.dart';
 
@@ -23,7 +23,7 @@ class CartPreviewPage extends StatelessWidget {
       create: (_) => sl<CartDealsCubit>(),
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: JameiaTitleBar(title: 'cart.title'.tr()),
+        appBar: HeroTitleBar(title: 'cart.title'.tr()),
         body: CartView(onBrowse: () => context.pop()),
       ),
     );

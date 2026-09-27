@@ -6,22 +6,22 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_offer_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/responsive/app_size.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_image.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_issue_banner.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_items_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_order_summary.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumb_slot.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumb_tile.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumbs_strip.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_offer_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/responsive/app_size.dart';
+import 'package:hero_mart/src/core/widgets/hero_image.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_issue_banner.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_items_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_order_summary.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumb_slot.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumb_tile.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_thumbs_strip.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_ui_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/cart_test_fixtures.dart';
@@ -234,20 +234,20 @@ void main() {
 
     void expectAll56(Finder images) {
       expect(images, findsWidgets);
-      for (final image in tester.widgetList<JameiaImage>(images)) {
+      for (final image in tester.widgetList<HeroImage>(images)) {
         expect(image.width, AppSize.s56);
         expect(image.height, AppSize.s56);
       }
     }
 
-    expectAll56(inStrip(find.byType(JameiaImage)));
+    expectAll56(inStrip(find.byType(HeroImage)));
 
     ui.requestItems();
     await tester.pumpAndSettle();
     expectAll56(
       find.descendant(
         of: find.byType(CheckoutItemsSheet),
-        matching: find.byType(JameiaImage),
+        matching: find.byType(HeroImage),
       ),
     );
   });

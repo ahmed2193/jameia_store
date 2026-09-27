@@ -7,7 +7,7 @@ import '../models/branch_model.dart';
 import '../models/delivery_selection_model.dart';
 import '../models/delivery_slot_model.dart';
 
-/// The jm3eia delivery routes checkout needs. `results` only (the envelope
+/// The Hero delivery routes checkout needs. `results` only (the envelope
 /// is unwrapped by `DioConsumer`); throws `AppException`.
 ///
 /// Reference: https://docs.jm3eia.store/developers/ (Delivery).

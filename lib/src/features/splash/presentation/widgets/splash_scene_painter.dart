@@ -8,6 +8,7 @@ import 'splash_layout.dart';
 import 'splash_palette.dart';
 import 'splash_scene_painting.dart';
 import 'splash_touch.dart';
+import 'splash_wordmark.dart';
 
 /// Paints the splash at the [clock]'s current point of the [choreography],
 /// with the finger's reactions ([touch]) layered on. Repaints on every clock
@@ -16,24 +17,29 @@ class SplashScenePainter extends CustomPainter {
   SplashScenePainter({
     required this.clock,
     required this.choreography,
+    required this.wordmark,
     this.touch,
   }) : super(repaint: Listenable.merge([clock, touch]));
 
   /// 0 → 1 over the choreography's duration.
   final Animation<double> clock;
   final SplashChoreography choreography;
+
+  /// The name the bag delivers.
+  final SplashWordmark wordmark;
   final SplashTouch? touch;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final layout = SplashLayout(size);
+    final layout = SplashLayout(size, wordmark);
     final ms = clock.value * choreography.duration.inMilliseconds;
     final touch = this.touch;
     var frame = choreography.frameAt(ms, layout);
     if (touch != null) {
       frame = frame.withTouch(
-        lift: touch.cartLift,
-        squash: touch.cartSquash,
+        lift: touch.markLift,
+        squash: touch.markSquash,
+        wave: touch.capeFlick,
         ripples: touch.ripples,
       );
     }
@@ -83,5 +89,6 @@ class SplashScenePainter extends CustomPainter {
   bool shouldRepaint(SplashScenePainter oldDelegate) =>
       oldDelegate.clock != clock ||
       oldDelegate.choreography != choreography ||
+      oldDelegate.wordmark != wordmark ||
       oldDelegate.touch != touch;
 }

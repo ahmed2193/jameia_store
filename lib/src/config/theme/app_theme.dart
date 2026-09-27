@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 
-/// Builds the Jameia [ThemeData] for both brightnesses, carrying the [JameiaColors]
+/// Builds the Hero [ThemeData] for both brightnesses, carrying the [HeroColors]
 /// token bundle as a [ThemeExtension] and the [AppTextStyles] text theme.
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get light => _build(Brightness.light, JameiaColors.light);
-  static ThemeData get dark => _build(Brightness.dark, JameiaColors.dark);
+  static ThemeData get light => _build(Brightness.light, HeroColors.light);
+  static ThemeData get dark => _build(Brightness.dark, HeroColors.dark);
 
-  static ThemeData _build(Brightness brightness, JameiaColors c) {
+  static ThemeData _build(Brightness brightness, HeroColors c) {
     final scheme =
         ColorScheme.fromSeed(
           seedColor: AppColors.primary,

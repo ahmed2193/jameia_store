@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/branded_refresh.dart';
 import '../../../../core/widgets/empty_state_view.dart';
 
-/// "Jm3eia Pro is not available right now" — the store switched the
+/// "Hero Pro is not available right now" — the store switched the
 /// programme off or sells no plan. Pull to check again.
 class ProUnavailableView extends StatelessWidget {
   const ProUnavailableView({super.key, required this.onRefresh});

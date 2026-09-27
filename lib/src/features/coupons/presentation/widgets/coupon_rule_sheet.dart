@@ -23,7 +23,7 @@ class CouponRuleSheet extends StatelessWidget {
 
   /// Opens the sheet for [coupon] over the current screen.
   static Future<void> show(BuildContext context, CouponEntity coupon) =>
-      showJameiaBottomSheet<void>(
+      showHeroBottomSheet<void>(
         context,
         backgroundColor: AppColors.white,
         shape: const RoundedRectangleBorder(

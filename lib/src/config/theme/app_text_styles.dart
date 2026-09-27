@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Jameia typography — `system.typography` resolved to concrete [TextStyle]s.
+/// Hero typography — `system.typography` resolved to concrete [TextStyle]s.
 ///
 /// Source defines 5 families × 6 variants (large / largeMultiLine / medium /
 /// mediumMultiLine / small / smallMultiLine). We expose the single-line variant
@@ -14,10 +14,10 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
-  // Jameia's Mach screens render almost all text in the Jameia brand OTF
-  // (Jameia-Regular/Medium/Bold — confirmed by every bundle.css.json). Noto Sans
-  // + NotoSansArabicUI are fallbacks for glyphs Jameia lacks (incl. Arabic).
-  static const String fontFamily = 'Jameia';
+  // Hero's Mach screens render almost all text in the Hero brand OTF
+  // (Hero-Regular/Medium/Bold — confirmed by every bundle.css.json). Noto Sans
+  // + NotoSansArabicUI are fallbacks for glyphs Hero lacks (incl. Arabic).
+  static const String fontFamily = 'Hero';
   static const String digitFamily = 'MTDigit';
   static const List<String> _fallback = ['NotoSans', 'NotoSansArabicUI'];
 

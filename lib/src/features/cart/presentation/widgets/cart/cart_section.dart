@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/widgets/jameia_section_header.dart';
+import '../../../../../core/widgets/hero_section_header.dart';
 
 /// A titled block under the cart's lines ("Offers & options", "Payment
 /// summary"): the group title, then [card] inside the gutter, easing to its
@@ -20,7 +20,7 @@ class CartSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        JameiaSectionHeader(title: title, titleStyle: AppTextStyles.groupTitle),
+        HeroSectionHeader(title: title, titleStyle: AppTextStyles.groupTitle),
         Padding(
           padding: const EdgeInsetsDirectional.symmetric(
             horizontal: AppSpacing.gutter,

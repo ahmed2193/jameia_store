@@ -2,13 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/widgets/hero_submit_button.dart';
 import '../../cubit/otp_cubit.dart';
 import '../../cubit/otp_state.dart';
-import '../auth_submit_button.dart';
 
-/// Primary Verify CTA — enabled once the code is complete, the loader while
-/// the backend checks it, a check once it is accepted (the page moves on a
-/// beat later).
+/// Primary Verify CTA. Grey until the code is complete, then the green wipes
+/// in once; it holds that green (no taps) while the code is checked and once
+/// it is accepted — the page's busy disc is the one loader, and its check
+/// the success.
 class OtpVerifyButton extends StatelessWidget {
   const OtpVerifyButton({super.key});
 
@@ -17,14 +18,12 @@ class OtpVerifyButton extends StatelessWidget {
     return BlocBuilder<OtpCubit, OtpState>(
       buildWhen: (previous, current) =>
           previous.canVerify != current.canVerify ||
-          previous.isVerifying != current.isVerifying ||
-          previous.isVerified != current.isVerified,
-      builder: (context, state) => AuthSubmitButton(
+          previous.isLocked != current.isLocked,
+      builder: (context, state) => HeroSubmitButton(
         label: 'auth.otp_verify_btn'.tr(),
         enabled: state.canVerify,
-        loading: state.isVerifying,
-        success: state.isVerified,
-        successLabel: 'auth.otp_verified'.tr(),
+        holding: state.isLocked,
+        readyFlourish: true,
         onPressed: context.read<OtpCubit>().verify,
       ),
     );

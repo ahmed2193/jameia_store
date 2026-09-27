@@ -1,15 +1,15 @@
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/domain/entities/brand_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_products_page.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/watch_params.dart';
-import 'package:jameia_mart/src/features/shop/domain/repositories/catalog_browse_repository.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/watch_brands_usecase.dart';
-import 'package:jameia_mart/src/features/shop/domain/usecases/watch_products_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_products_page.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/watch_params.dart';
+import 'package:hero_mart/src/features/shop/domain/repositories/catalog_browse_repository.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/get_products_usecase.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/watch_brands_usecase.dart';
+import 'package:hero_mart/src/features/shop/domain/usecases/watch_products_usecase.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 

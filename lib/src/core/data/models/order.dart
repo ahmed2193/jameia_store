@@ -3,7 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'shop.dart' show localizedCatalogName;
 
 /// Order lifecycle models.
-class JameiaOrder {
+class HeroOrder {
   final String id;
   final String shopName; // English / default
   final String shopNameAr; // Arabic counterpart
@@ -17,7 +17,7 @@ class JameiaOrder {
   final List<OrderItem> items;
   final Rider? rider;
 
-  const JameiaOrder({
+  const HeroOrder({
     required this.id,
     required this.shopName,
     this.shopNameAr = '',
@@ -36,13 +36,9 @@ class JameiaOrder {
 
   int get itemCount => items.fold(0, (s, i) => s + i.qty);
 
-  /// Locale-aware shop name / date.
-  String get displayShopName => localizedCatalogName(shopName, shopNameAr);
-  String get displayDate => localizedCatalogName(date, dateAr);
-
   /// Copy with an advanced status — drives the simulated live-tracking ticks.
-  JameiaOrder copyWith({String? status, int? statusStep, Rider? rider}) =>
-      JameiaOrder(
+  HeroOrder copyWith({String? status, int? statusStep, Rider? rider}) =>
+      HeroOrder(
         id: id,
         shopName: shopName,
         shopNameAr: shopNameAr,
@@ -66,12 +62,6 @@ class JameiaOrder {
   /// 4-digit contactless delivery handoff code.
   String get deliveryCode => (1000 + _seed % 9000).toString();
 
-  /// Platform / service fee.
-  double get platformFee => const [0.250, 0.150, 0.350][_seed % 3];
-
-  /// Drop-off preference.
-  String get dropOffMethod => _seed.isEven ? 'hand_to_me' : 'leave_at_spot';
-
   /// Payment method label. Brand names + masked card stay verbatim; the generic
   /// "Cash on delivery" is localized.
   String get paymentMethod {
@@ -87,13 +77,7 @@ class JameiaOrder {
     }
   }
 
-  /// Payment / transaction id.
-  String get paymentId => 'KT${100000000 + _seed % 899999999}';
-
-  /// Rider bearing in degrees (snapped to 15°) for marker rotation.
-  int get riderHeading => (_seed % 24) * 15;
-
-  factory JameiaOrder.fromJson(Map<String, dynamic> j) => JameiaOrder(
+  factory HeroOrder.fromJson(Map<String, dynamic> j) => HeroOrder(
     id: j['id'] as String,
     shopName: j['shopName'] as String? ?? '',
     shopNameAr: j['shopNameAr'] as String? ?? '',

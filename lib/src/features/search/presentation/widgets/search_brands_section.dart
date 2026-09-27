@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/routes/routes.dart';
 import '../../../../core/domain/entities/brand_entity.dart';
-import '../../../../core/widgets/jameia_section_header.dart';
+import '../../../../core/widgets/hero_section_header.dart';
 import 'search_brand_rail.dart';
 
 /// "Brands": the store's brands as one row of logo tiles, with "View all"
@@ -20,7 +20,7 @@ class SearchBrandsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        JameiaSectionHeader(
+        HeroSectionHeader(
           title: 'search.brands'.tr(),
           onSeeAll: () => context.push(Routes.brands),
         ),

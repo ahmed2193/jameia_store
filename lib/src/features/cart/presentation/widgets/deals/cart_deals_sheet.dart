@@ -26,7 +26,7 @@ class CartDealsSheet extends StatelessWidget {
   static Future<void> show(BuildContext context) {
     final deals = context.read<CartDealsCubit>();
     deals.open(CartOffersView.of(context.read<CartCubit>().state.cart));
-    return showJameiaBottomSheet<void>(
+    return showHeroBottomSheet<void>(
       context,
       large: true,
       isScrollControlled: true,

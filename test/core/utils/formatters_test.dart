@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/core/utils/formatters.dart';
+import 'package:hero_mart/src/core/utils/formatters.dart';
 
 void main() {
   // DateFormat reads per-locale symbol tables; the app loads them through

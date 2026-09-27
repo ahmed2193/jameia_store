@@ -4,10 +4,10 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_rail_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_rail_state.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_rail_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_rail_state.dart';
 
 import 'checkout_test_harness.dart';
 import 'fake_checkout_catalog_repository.dart';

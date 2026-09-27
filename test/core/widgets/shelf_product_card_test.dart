@@ -1,4 +1,4 @@
-// The talabat-style listing card: the "Save" badge and the struck price on a
+// The Hero-style listing card: the "Save" badge and the struck price on a
 // deal, the lime marker that draws itself under the price as the card lands,
 // the merchandising tag, what a Pro member would pay, and the round "+" that
 // grows into the quantity stepper.
@@ -12,16 +12,16 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/config/theme/app_colors.dart';
-import 'package:jameia_mart/src/config/theme/app_text_styles.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/widgets/catalog_pill_stepper.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_add_button.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_card_media.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_marker_painter.dart';
-import 'package:jameia_mart/src/core/widgets/shelf_product_card.dart';
-import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_reveal.dart';
-import 'package:jameia_mart/src/features/shop/presentation/widgets/listing/listing_reveal_item.dart';
+import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/config/theme/app_text_styles.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/widgets/catalog_pill_stepper.dart';
+import 'package:hero_mart/src/core/widgets/shelf_add_button.dart';
+import 'package:hero_mart/src/core/widgets/shelf_card_media.dart';
+import 'package:hero_mart/src/core/widgets/shelf_marker_painter.dart';
+import 'package:hero_mart/src/core/widgets/shelf_product_card.dart';
+import 'package:hero_mart/src/features/shop/presentation/widgets/listing/listing_reveal.dart';
+import 'package:hero_mart/src/features/shop/presentation/widgets/listing/listing_reveal_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const CatalogProductEntity _turkey = CatalogProductEntity(

@@ -5,7 +5,7 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../cubit/account_cubit.dart';
 import 'mine_count_stat.dart';
 import 'mine_points_stat.dart';
@@ -53,7 +53,7 @@ class MineStatsCard extends StatelessWidget {
           Expanded(
             child: MineCountStat(
               count: _favourites,
-              icon: JameiaIcons.favorite,
+              icon: HeroIcons.favorite,
               tone: MineTone.rose,
               label: 'account.favourites'.tr(),
               route: Routes.shopFavorites,

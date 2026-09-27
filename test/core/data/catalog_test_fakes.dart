@@ -1,10 +1,10 @@
-import 'package:jameia_mart/src/core/data/datasources/catalog_remote_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/brand_model.dart';
-import 'package:jameia_mart/src/core/data/models/category_model.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
-import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:hero_mart/src/core/data/datasources/catalog_remote_data_source.dart';
+import 'package:hero_mart/src/core/data/models/brand_model.dart';
+import 'package:hero_mart/src/core/data/models/category_model.dart';
+import 'package:hero_mart/src/core/data/models/offer_model.dart';
+import 'package:hero_mart/src/core/data/models/products_page_model.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
 
 /// A [CatalogRemoteDataSource] for tests: a `get…` read throws
 /// [UnimplementedError] until the test overrides it, and a `fetch…` read

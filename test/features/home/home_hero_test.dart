@@ -11,14 +11,14 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_assistant_button.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_eta_pill.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_hero_deliver_to.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_hero_delegate.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_hero_search_field.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_notifications_bell.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_pro_badge.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_store_identity.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_assistant_button.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_eta_pill.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_hero_deliver_to.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_hero_delegate.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_hero_search_field.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_notifications_bell.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_pro_badge.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_store_identity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// The largest text the app lets through (`TextScalerClamp`).
@@ -61,7 +61,7 @@ void main() {
                 SliverPersistentHeader(
                   pinned: true,
                   delegate: HomeHeroDelegate(
-                    storeName: 'Jm3eia',
+                    storeName: 'Hero',
                     isPro: isPro,
                     etaMinutes: etaMinutes,
                     placeLabel: 'Apartment',
@@ -96,7 +96,7 @@ void main() {
   ) async {
     await pumpHero(tester);
 
-    expect(find.text('Jm3eia'), findsOneWidget);
+    expect(find.text('Hero'), findsOneWidget);
     expect(find.byType(HomeProBadge), findsOneWidget);
     expect(find.text('Delivering in 40 mins'), findsOneWidget);
     expect(opacityOf(tester, HomeStoreIdentity), 1.0);
@@ -122,7 +122,7 @@ void main() {
 
     expect(find.byType(HomeEtaPill), findsNothing);
     expect(find.byType(HomeProBadge), findsNothing);
-    expect(find.text('Jm3eia'), findsOneWidget);
+    expect(find.text('Hero'), findsOneWidget);
     // The header reserves the pill's line either way, so the feed does not
     // jump when the launch snapshot lands.
     expect(tester.getTopLeft(find.byType(HomeHeroSearchField)), searchWithEta);

@@ -2,8 +2,8 @@
 // checkout): who may redeem, what the points are worth on this basket and
 // how many to send.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/loyalty_program.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/loyalty_program.dart';
 
 void main() {
   /// The live programme: 1 fils a point, from 100 points.

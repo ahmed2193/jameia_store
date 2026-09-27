@@ -9,8 +9,8 @@ import 'splash_beat.dart';
 import 'splash_frame.dart';
 
 /// What the finger does to the splash while it plays: a ring of colour where
-/// it touches, the glow leaning towards it, and a happy hop when the cart
-/// itself is tapped. Its own ticker runs only while something still moves;
+/// it touches, the glow leaning towards it, and a happy hop with a flick of
+/// the cape when the bag itself is tapped. Its own ticker runs only while something still moves;
 /// listeners repaint the scene.
 class SplashTouch extends ChangeNotifier {
   SplashTouch(TickerProvider vsync) {
@@ -39,13 +39,15 @@ class SplashTouch extends ChangeNotifier {
   /// Tap ring size relative to a landing ring.
   static const double tapStrength = 0.8;
 
-  /// The cart's hop when tapped (design units) and its squash on take-off.
+  /// The bag's hop when tapped (design units), its squash on take-off and
+  /// the extra wave that flicks through its cape.
   static const double hopHeight = 12;
   static const double hopSquash = 0.08;
+  static const double hopWave = 5;
 
   /// A tap ring or a hop is over after this long.
   static final double _tapMs = AppMotion.splashTapRipple.inMicroseconds / 1000;
-  static final double _hopMs = AppMotion.splashCartHop.inMicroseconds / 1000;
+  static final double _hopMs = AppMotion.splashMarkHop.inMicroseconds / 1000;
 
   double get _nowMs => _now.inMicroseconds / 1000;
 
@@ -63,17 +65,17 @@ class SplashTouch extends ChangeNotifier {
       ),
   ];
 
-  /// Extra lift of a tapped cart (design units).
-  double get cartLift {
+  /// Extra lift of a tapped bag (design units).
+  double get markLift {
     final start = _hopAt;
     if (start == null) return 0;
     return hopHeight *
         SplashBeat.arc(_nowMs, start.inMicroseconds / 1000, _hopMs);
   }
 
-  /// Extra squash of a tapped cart: flattened as it pushes off, stretched in
+  /// Extra squash of a tapped bag: flattened as it pushes off, stretched in
   /// the air.
-  double get cartSquash {
+  double get markSquash {
     final start = _hopAt;
     if (start == null) return 0;
     final t = SplashBeat.span(_nowMs, start.inMicroseconds / 1000, _hopMs);
@@ -81,10 +83,18 @@ class SplashTouch extends ChangeNotifier {
     return hopSquash * math.cos(math.pi * 2 * t) * (1 - t);
   }
 
-  /// A finger went down at [position]; [onCart] when it hit the cart.
-  void down(Offset position, Offset center, {required bool onCart}) {
+  /// Extra cape wave of a tapped bag (design units): a flick that fades.
+  double get capeFlick {
+    final start = _hopAt;
+    if (start == null) return 0;
+    return hopWave *
+        SplashBeat.arc(_nowMs, start.inMicroseconds / 1000, _hopMs);
+  }
+
+  /// A finger went down at [position]; [onMark] when it hit the bag.
+  void down(Offset position, Offset center, {required bool onMark}) {
     _taps.add((position, _now));
-    if (onCart) _hopAt = _now;
+    if (onMark) _hopAt = _now;
     _follow(position, center);
   }
 

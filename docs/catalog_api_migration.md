@@ -1,15 +1,15 @@
-# Catalogue → jm3eia API migration (working brief)
+# Catalogue → Hero API migration (working brief)
 
 Moves the storefront (home, category browsing, product page, search, brands / collections /
-offers, recipes, CMS pages) from the offline `JameiaRepository` catalogue to the backend
-Catalog + Bootstrap routes. `CLAUDE.md` is the contract; the `jameia-api-integration` skill is
+offers, recipes, CMS pages) from the offline `HeroRepository` catalogue to the backend
+Catalog + Bootstrap routes. `CLAUDE.md` is the contract; the `hero-api-integration` skill is
 the recipe (`references/migrating-offline-feature.md` for legacy targets). This file holds what
 is specific to this migration: the verified contract, the decisions, the shared foundation and
 who owns what. Delete it when the migration ships (its facts move to `docs/api_integration.md`).
 
 ## 1. Contract — verified against the live host (2026-09-17)
 
-`node .claude/skills/jameia-api-verify/scripts/validate_live_catalog.js` calls every public
+`node .claude/skills/hero-api-verify/scripts/validate_live_catalog.js` calls every public
 catalogue / bootstrap GET (en + ar, every slug, every product filter, the 400 / 404 paths) and
 validates the envelope with the 200 schema of `https://api.jm3eia.store/docs/json`.
 Result: **249 requests, 0 spec violations, 0 undeclared fields.**
@@ -44,7 +44,7 @@ categories, then a product grid.
 1. **New API-shaped core entities beside the offline ones.** `CatalogProductEntity`,
    `CatalogVariantEntity`, `CatalogCategoryEntity` (+ `CatalogCategoryTree`), `BrandEntity`,
    `RecipeSummaryEntity`, `CatalogProductsPage`, `CatalogProductQuery`. Money is `int` fils with
-   `…Kd` getters. The offline `ProductEntity` / `ShopEntity` / `JameiaCategoryEntity` … family is
+   `…Kd` getters. The offline `ProductEntity` / `ShopEntity` / `HeroCategoryEntity` … family is
    NOT reshaped: `test/core/domain_entities_mapper_test.dart` pins it as a verbatim port of the
    offline DTOs that cart / checkout / orders still speak. It dies when those move to the API.
 2. **The app is a single store.** Marketplace concepts (shop list, shop page with
@@ -94,7 +94,7 @@ categories, then a product grid.
 | `features/shop/**`, `feature_routes/shop_routes.dart`, `test/features/shop/**`, `test/shop_page_test.dart`; i18n `shop.*` | builder: category browsing + product listing |
 | `features/product_details/**`, `feature_routes/product_details_routes.dart`, `route_args/pdp_image_viewer_args.dart`, `test/features/product_details/**`, `test/product_detail_page_test.dart`; i18n `product.*` | builder: product page |
 | `features/search/**`, `feature_routes/search_routes.dart`, `test/features/search/**`; i18n `search.*` | builder: search |
-| `features/address/**`, `jameia_address_entity.dart`, `address_label.dart`, `jameia_address_mapper.dart`, `address_routes.dart`, i18n `addr.*` | session keeta-clone-e9 (address API) — do not touch |
+| `features/address/**`, `hero_address_entity.dart`, `address_label.dart`, `hero_address_mapper.dart`, `address_routes.dart`, i18n `addr.*` | session keeta-clone-e9 (address API) — do not touch |
 | `core/network/**`, `core/storage/**`, auth / account / language / notifications, i18n `auth.*` `profile.*` `notifications.*` | session keeta-clone-7b — do not touch |
 
 Shared files (`en.json`, `ar.json`, `app_router_test.dart`, barrels) are patched with small
@@ -133,3 +133,22 @@ CategoriesPage (Routes.shop / Routes.categories)   CategoryPage (Routes.category
   listing already IS a brand), in-stock, on-sale — all server-side, all restart at page 1.
 - Card: unit line for non-`piece` products and a Pro-price tag for customers who are not Pro
   (`CatalogProductCard.textBlockHeight` is s104 — the home and PDP rails size their cells off it).
+
+## 6. Product page — what `GET /v1/products/:slug` can and cannot feed (2026-09-27)
+
+Checked live (9-product seed, en + ar, guest) while restyling the PDP to the reference shots.
+The page shows what the route sends and skips what it does not; nothing is invented.
+
+| Reference block | API data | In the app |
+|---|---|---|
+| tag chips ("Protein", "Halal") | `tags[]`: `fresh`, `best-seller` + raw 24-hex ids | `CatalogProductEntity.merchTags` (known slugs, most telling first) → grey chips; ids dropped |
+| option groups ("Preference", "Size") | `variants[].optionValues` = `{ "<24-hex option id>": "<value slug>" }` — no option names, no value labels in any public route | one "Size" group of the variants by their (localized) `name`; `optionValues` is not parsed |
+| "Stored at 20°–25°", "Ingredients" | none | skipped |
+| "Frequently bought together" | none (`related[]` = same-category products) | "Similar products" + "Shop more for less" (`related[]` split by discount) |
+| "Save N%", struck price, Pro price | `compareAt` (+ variant `compareAtExpiresAt`), `proPrice` | buy bar price block; `proPrice` came back `null` for every product as a guest |
+| cart offer tag | `GET /v1/offers` rules (category / product triggers) | red tag in the sheet (`GetProductOfferUseCase`) |
+| gallery | `galleryUrls[]` (0–1 URL per seed product; empty → the card `image`) | full-width square pager, contained (never cropped), hero into the viewer |
+| rating | `ratingAverage` / `ratingCount` on the product | meta row link; `GET …/reviews` can return `data: []` with `pagination.total: 0` while the product says `ratingCount: 22` (seeded aggregate) |
+
+Not used by the page (available): `POST /v1/account/viewed` (recently viewed) and the wishlist
+routes — no reference PDP block needs them.

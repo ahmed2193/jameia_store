@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
 
-/// **core/motion/haptics.dart** — the single TACTILE-feedback policy. Jameia fires
+/// **core/motion/haptics.dart** — the single TACTILE-feedback policy. Hero fires
 /// `performHapticFeedback` pervasively (verified in the apk: Compose
 /// `performHapticFeedback`, `android/os/Vibrator`, `isPremiumVibratorEnabled` —
-/// see docs/jameia_motion_reference.md §6). Feature code routes haptics ONLY
+/// see docs/hero_motion_reference.md §6). Feature code routes haptics ONLY
 /// through here so the whole app shares one tactile language and a global mute
 /// lives in one place.
 ///

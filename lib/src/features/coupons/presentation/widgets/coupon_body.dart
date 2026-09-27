@@ -12,7 +12,7 @@ import 'coupon_fade.dart';
 import 'coupon_info_chip.dart';
 
 /// Body of a coupon ticket: the title and subtitle with an optional
-/// [trailing] control at their end (the "Use" pill, the picker check), then
+/// [trailing] control at their end (the "Use" pill), then
 /// the conditions as chips across the full width (minimum spend when there is
 /// one, then the date).
 ///

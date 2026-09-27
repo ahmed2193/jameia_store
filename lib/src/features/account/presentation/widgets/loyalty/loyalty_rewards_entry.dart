@@ -6,7 +6,7 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
@@ -25,7 +25,7 @@ class LoyaltyRewardsEntry extends StatelessWidget {
   static final Color _border = AppColors.accent3.withValues(
     alpha: _borderAlpha,
   );
-  static const List<Color> _tile = [kJameiaPromoCream, AppColors.accent3Light];
+  static const List<Color> _tile = [kHeroPromoCream, AppColors.accent3Light];
 
   /// White on cream reads faint: a brighter band than the default.
   static const double _shineAlpha = 0.8;
@@ -101,7 +101,7 @@ class LoyaltyRewardsEntry extends StatelessWidget {
                       child: SizedBox.square(
                         dimension: _arrowDisc,
                         child: Icon(
-                          JameiaIcons.arrowRight,
+                          HeroIcons.arrowRight,
                           size: AppSize.s14,
                           color: AppColors.accent3,
                         ),

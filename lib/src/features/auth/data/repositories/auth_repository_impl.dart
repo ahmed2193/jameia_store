@@ -2,8 +2,10 @@ import 'dart:developer';
 
 import 'package:dartz/dartz.dart';
 
+import '../../../../core/data/mappers/loyalty_program_mapper.dart';
 import '../../../../core/data/repositories/base_repository_mixin.dart';
 import '../../../../core/domain/entities/auth_customer_entity.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/otp_challenge.dart';
@@ -88,4 +90,8 @@ class AuthRepositoryImpl with BaseRepositoryMixin implements AuthRepository {
     await _local.clearCustomer();
     return unit;
   });
+
+  @override
+  Future<Either<Failure, LoyaltyProgram>> getLoyaltyProgram() =>
+      execute(() async => (await _remote.getLoyaltyProgram()).toEntity());
 }

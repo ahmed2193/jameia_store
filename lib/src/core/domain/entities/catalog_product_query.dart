@@ -58,9 +58,6 @@ class CatalogProductQuery extends Equatable {
         : text;
   }
 
-  bool get hasFilters =>
-      inStockOnly || onSaleOnly || minPriceFils != null || maxPriceFils != null;
-
   CatalogProductQuery copyWith({
     String? search,
     String? categorySlug,

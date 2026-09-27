@@ -18,7 +18,7 @@ class ProfileDateOfBirthField extends StatelessWidget {
 
   Future<void> _pick(BuildContext context, DateTime? current) async {
     final cubit = context.read<ProfileCubit>();
-    final picked = await showJameiaBottomSheet<DateTime>(
+    final picked = await showHeroBottomSheet<DateTime>(
       context,
       isScrollControlled: true,
       backgroundColor: AppColors.white,

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../../../../../core/widgets/jameia_section_header.dart';
+import '../../../../../core/widgets/hero_section_header.dart';
 import '../../../../../core/widgets/thin_divider.dart';
 import 'review_comment_field.dart';
 import 'review_product_tile.dart';
@@ -58,7 +58,7 @@ class ReviewBody extends StatelessWidget {
                 ),
               ),
               SliverToBoxAdapter(
-                child: JameiaSectionHeader(
+                child: HeroSectionHeader(
                   title: 'orders.review_comment_title'.tr(),
                   titleStyle: AppTextStyles.groupTitle,
                 ),

@@ -19,8 +19,6 @@ class LedgerChange extends Equatable {
 
   bool get isEmpty => balanceDelta == 0 && newEntryIds.isEmpty;
 
-  bool get balanceRose => balanceDelta > 0;
-
   @override
   List<Object?> get props => [balanceDelta, newEntryIds];
 }

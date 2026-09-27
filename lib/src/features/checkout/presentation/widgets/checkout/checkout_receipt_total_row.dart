@@ -8,7 +8,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_receipt.dart';
@@ -83,7 +83,7 @@ class CheckoutReceiptTotalRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,
             children: [
-              JameiaMoneyText(kd: total.totalKd),
+              HeroMoneyText(kd: total.totalKd),
               if (total.saves)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(top: AppSpacing.s4),

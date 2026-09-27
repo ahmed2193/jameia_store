@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_item_request.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_ref.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/domain/repositories/cart_repository.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_item_request.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_ref.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/domain/repositories/cart_repository.dart';
 
 /// Scripted cart repository: records what the cubit asked for, lets the test
 /// push snapshots, hold one operation open and fail the next one.

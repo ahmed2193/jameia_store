@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_cart_facts.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_state.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/delivery_slot_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_block_reason.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_cart_facts.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_state.dart';
 
 import 'checkout_test_harness.dart';
 import 'fake_checkout_repository.dart';
@@ -45,7 +45,7 @@ void main() {
 
     expect(cubit.state.status, CheckoutStatus.ready);
     expect(cubit.state.branches.map((branch) => branch.id), <String>['b1']);
-    expect(cubit.state.rules.storeName, 'Jm3eia');
+    expect(cubit.state.rules.storeName, 'Hero');
     expect(cubit.state.rules.loyalty.minRedeemPoints, 100);
     // The slots route answers only once the cart has a destination.
     expect(repository.calls, isNot(contains('slots')));

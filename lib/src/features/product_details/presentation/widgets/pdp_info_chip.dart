@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 
-/// Small tinted chip among the notes under the description ("Pro price").
+/// Small tinted chip under the buy bar's price ("Pro price").
 class PdpInfoChip extends StatelessWidget {
   const PdpInfoChip({
     super.key,

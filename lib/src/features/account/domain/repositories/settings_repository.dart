@@ -3,7 +3,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 
 /// Device-level settings of the Settings screen. Nothing here is on the
-/// jm3eia backend (no preference route exists), so it all lives on the
+/// Hero backend (no preference route exists), so it all lives on the
 /// device.
 abstract class SettingsRepository {
   /// The stored push-notification choice, or `null` when the customer never

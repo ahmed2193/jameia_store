@@ -5,23 +5,23 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/core/storage/cache_key.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/core/storage/local_storage.dart';
-import 'package:jameia_mart/src/features/home/data/datasources/home_cache_data_source.dart';
-import 'package:jameia_mart/src/features/home/data/datasources/home_local_data_source.dart';
-import 'package:jameia_mart/src/features/home/data/datasources/home_remote_data_source.dart';
-import 'package:jameia_mart/src/features/home/data/models/home_feed_model.dart';
-import 'package:jameia_mart/src/features/home/data/models/home_init_model.dart';
-import 'package:jameia_mart/src/features/home/data/repositories/home_repository_impl.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_feed.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/core/storage/cache_key.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/core/storage/local_storage.dart';
+import 'package:hero_mart/src/features/home/data/datasources/home_cache_data_source.dart';
+import 'package:hero_mart/src/features/home/data/datasources/home_local_data_source.dart';
+import 'package:hero_mart/src/features/home/data/datasources/home_remote_data_source.dart';
+import 'package:hero_mart/src/features/home/data/models/home_feed_model.dart';
+import 'package:hero_mart/src/features/home/data/models/home_init_model.dart';
+import 'package:hero_mart/src/features/home/data/repositories/home_repository_impl.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_feed.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import '../../core/storage/cache_test_fakes.dart';
@@ -127,7 +127,7 @@ void main() {
       final init = (await dataSource.getInit()).model;
 
       expect(adapter.requests.single.path, EndPoints.init);
-      expect(init.storeName, 'Jm3eia');
+      expect(init.storeName, 'Hero');
       expect(init.delivery?.zoneName, 'Salmiya & Sharq');
       expect(init.proEnabled, isTrue);
     });
@@ -161,7 +161,7 @@ void main() {
       );
 
       expect(cache.feed()!.parse(liveHomeJson()).sections, hasLength(8));
-      expect(cache.init()!.parse(liveInitJson()).storeName, 'Jm3eia');
+      expect(cache.init()!.parse(liveInitJson()).storeName, 'Hero');
     });
 
     test('no slot while the identity is unknown', () {

@@ -43,9 +43,9 @@ class _RollingNumberState extends State<RollingNumber> {
   Widget build(BuildContext context) {
     final text = widget.format(widget.value);
     final glyphs = text.characters.toList(growable: false);
-    final style = DefaultTextStyle.of(
-      context,
-    ).style.merge(widget.style).copyWith(fontFeatures: _tabular);
+    final style = DefaultTextStyle.of(context).style
+        .merge(widget.style)
+        .copyWith(fontFeatures: _tabular);
     return Semantics(
       label: text,
       child: ExcludeSemantics(

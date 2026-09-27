@@ -6,21 +6,22 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_variant_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
-import 'package:jameia_mart/src/features/product_details/domain/entities/product_reviews.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_reviews_usecase.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_detail_usecase.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/watch_product_reviews_usecase.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_detail_cubit.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_detail_state.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_reviews_cubit.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_reviews_state.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_variant_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/product_details/domain/entities/product_detail.dart';
+import 'package:hero_mart/src/features/product_details/domain/entities/product_reviews.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/get_product_reviews_usecase.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/watch_product_detail_usecase.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/watch_product_reviews_usecase.dart';
+import 'package:hero_mart/src/features/product_details/presentation/cubit/product_detail_cubit.dart';
+import 'package:hero_mart/src/features/product_details/presentation/cubit/product_detail_state.dart';
+import 'package:hero_mart/src/features/product_details/presentation/cubit/product_reviews_cubit.dart';
+import 'package:hero_mart/src/features/product_details/presentation/cubit/product_reviews_state.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 
@@ -133,10 +134,10 @@ void main() {
       act: (cubit) => cubit.load(),
       expect: () => [
         isA<ProductDetailState>()
-            .having((s) => s.status, 'status', ProductDetailStatus.loading)
+            .having((s) => s.status, 'status', LoadPhase.loading)
             .having((s) => s.preview, 'preview', _milkCard),
         isA<ProductDetailState>()
-            .having((s) => s.status, 'status', ProductDetailStatus.loaded)
+            .having((s) => s.status, 'status', LoadPhase.loaded)
             .having((s) => s.selectedVariantId, 'variant', 'v1')
             .having((s) => s.canAdd, 'canAdd', isTrue)
             .having((s) => s.maxQuantity, 'max', 2),
@@ -146,9 +147,7 @@ void main() {
     blocTest<ProductDetailCubit, ProductDetailState>(
       'an unknown slug is "not found", any other failure is an error',
       build: () => ProductDetailCubit(
-        _StubGetDetail(
-          const Left(ServerFailure('Product not found', statusCode: 404)),
-        ),
+        _StubGetDetail(const Left(NotFoundFailure('Product not found'))),
         _noOffer,
         slug: 'nope',
       ),
@@ -156,7 +155,7 @@ void main() {
       skip: 1,
       expect: () => [
         isA<ProductDetailState>()
-            .having((s) => s.status, 'status', ProductDetailStatus.error)
+            .having((s) => s.status, 'status', LoadPhase.error)
             .having((s) => s.isNotFound, 'isNotFound', isTrue),
       ],
     );
@@ -243,7 +242,7 @@ void main() {
         getDetail.reply = const Left(NetworkFailure('offline'));
         await cubit.load();
 
-        expect(cubit.state.status, ProductDetailStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         expect(cubit.state.detail, _milk);
         expect(cubit.state.failure, isA<NetworkFailure>());
         await cubit.close();
@@ -271,7 +270,7 @@ void main() {
         slug: 'milk',
       );
       await failing.load();
-      expect(failing.state.status, ProductDetailStatus.loaded);
+      expect(failing.state.status, LoadPhase.loaded);
       expect(failing.state.failure, isNull, reason: 'the page never fails');
       expect(failing.state.promo, isNull);
       await failing.close();
@@ -341,14 +340,14 @@ void main() {
       final first = cubit.load();
       gate.calls[0].complete(const Left(ServerFailure('boom')));
       await first;
-      expect(cubit.state.status, ProductReviewsStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<ServerFailure>());
 
       final retry = cubit.load();
       gate.calls[1].complete(Right(_reviewsPage(1, ['a'], hasMore: false)));
       await retry;
 
-      expect(cubit.state.status, ProductReviewsStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.failure, isNull);
       await cubit.close();
     });
@@ -394,7 +393,7 @@ void main() {
 
       final loaded = states.where((s) => s.isLoaded).toList();
       expect(loaded.first.freshness.fromCache, isTrue);
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
       await cubit.close();
     });
 
@@ -407,15 +406,15 @@ void main() {
       final cubit = ProductDetailCubit(getDetail, _noOffer, slug: 'milk');
       await cubit.load();
 
-      expect(cubit.state.status, ProductDetailStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.detail, _milk);
-      expect(cubit.state.freshness.isStale, isTrue);
-      expect(cubit.state.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.freshness.isStale, isTrue);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
 
       getDetail.reply = const Right(_milk);
       await Future.wait([cubit.onReconnected(), cubit.onReconnected()]);
       expect(getDetail.reads, [false, true]);
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
       await cubit.close();
     });
 
@@ -431,13 +430,11 @@ void main() {
       await cubit.load();
       cubit.setImageIndex(1);
 
-      expect(cubit.state.status, ProductDetailStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<NetworkFailure>());
       expect(cubit.state.preview, _milkCard);
 
-      getDetail.reply = const Left(
-        ServerFailure('Product not found', statusCode: 404),
-      );
+      getDetail.reply = const Left(NotFoundFailure('Product not found'));
       await cubit.onReconnected();
       expect(cubit.state.isNotFound, isTrue);
       await cubit.onReconnected();

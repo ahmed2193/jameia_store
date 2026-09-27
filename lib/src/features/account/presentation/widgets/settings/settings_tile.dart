@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'settings_icon_badge.dart';
 import 'settings_tone.dart';
@@ -99,7 +99,7 @@ class SettingsTile extends StatelessWidget {
               ] else if (chevron && onTap != null) ...[
                 const SizedBox(width: AppSpacing.s8),
                 const Icon(
-                  JameiaIcons.arrowRight,
+                  HeroIcons.arrowRight,
                   size: AppSize.s16,
                   color: AppColors.tertiaryText,
                 ),

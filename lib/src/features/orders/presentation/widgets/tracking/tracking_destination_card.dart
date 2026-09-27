@@ -5,8 +5,8 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_section_header.dart';
-import '../../../../../core/widgets/jameia_surface_card.dart';
+import '../../../../../core/widgets/hero_section_header.dart';
+import '../../../../../core/widgets/hero_surface_card.dart';
 import 'tracking_info_row.dart';
 
 /// Where the order goes: the frozen delivery address, or the pickup branch —
@@ -44,12 +44,12 @@ class TrackingDestinationCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        JameiaSectionHeader(title: title, titleStyle: AppTextStyles.groupTitle),
+        HeroSectionHeader(title: title, titleStyle: AppTextStyles.groupTitle),
         Padding(
           padding: const EdgeInsetsDirectional.symmetric(
             horizontal: AppSpacing.gutter,
           ),
-          child: JameiaSurfaceCard(
+          child: HeroSurfaceCard(
             child: TrackingInfoRow(
               icon: address == null
                   ? Icons.storefront_outlined

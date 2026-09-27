@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/motion/fade_through_switcher.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
 import '../../../../core/widgets/failure_view.dart';
-import '../../../../core/widgets/jameia_state_view.dart';
+import '../../../../core/widgets/hero_state_view.dart';
 
 /// The state swap the order detail pages (tracking, invoice, review) share:
 /// the loaded [content] when there is one, else — when the load [failure]d —
@@ -48,14 +47,14 @@ class OrderDetailStateSwitcher extends StatelessWidget {
         ? (
             _Bucket.error,
             isSignedOut
-                ? JameiaStateView.signedOut(
+                ? HeroStateView.signedOut(
                     message: 'orders.sign_in_required'.tr(),
                   )
                 : FailureView(
                     failure: failure,
                     onRetry: onRetry,
-                    error: JameiaStateView.error(
-                      message: errorMessage ?? failure.localizedMessage,
+                    errorBuilder: (message) => HeroStateView.error(
+                      message: errorMessage ?? message,
                       onRetry: onRetry,
                     ),
                   ),

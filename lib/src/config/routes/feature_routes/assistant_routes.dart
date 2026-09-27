@@ -6,7 +6,7 @@ import '../../../features/assistant/presentation/pages/assistant_history_page.da
 import '../route_args/assistant_chat_args.dart';
 import '../routes.dart';
 
-/// The Jm3eia Assistant: the chat slides up as a full-screen presentation,
+/// The Hero Assistant: the chat slides up as a full-screen presentation,
 /// its history pushes over it (and pops a conversation id back).
 final List<RouteBase> assistantRoutes = <RouteBase>[
   // extra: AssistantChatArgs (optional) — without it, a new chat.
@@ -15,7 +15,7 @@ final List<RouteBase> assistantRoutes = <RouteBase>[
     pageBuilder: (_, state) {
       final args = state.extra;
       final chat = args is AssistantChatArgs ? args : null;
-      return JameiaSlideUpTransitionPage<Object?>(
+      return HeroSlideUpTransitionPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: AssistantChatPage(
@@ -28,7 +28,7 @@ final List<RouteBase> assistantRoutes = <RouteBase>[
   // Pops with the picked conversation id (String), or nothing.
   GoRoute(
     path: Routes.assistantHistory,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const AssistantHistoryPage(),

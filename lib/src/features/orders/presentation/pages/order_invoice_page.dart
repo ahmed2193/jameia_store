@@ -8,7 +8,7 @@ import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/screen_failure_listener.dart';
 import '../../../../core/responsive/content_clamp.dart';
-import '../../../../core/widgets/jameia_title_bar.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../../../../core/widgets/reconnect_refresh.dart';
 import '../../../../core/widgets/screen_stale_notice.dart';
 import '../cubit/order_invoice_cubit.dart';
@@ -38,7 +38,7 @@ class OrderInvoicePage extends StatelessWidget {
         onUnauthorized: _signIn,
         child: Scaffold(
           backgroundColor: AppColors.white,
-          appBar: JameiaTitleBar(title: 'orders.invoice_title'.tr()),
+          appBar: HeroTitleBar(title: 'orders.invoice_title'.tr()),
           body: ContentClamp(
             // Below the provider: the page's own context is above it.
             child: Builder(

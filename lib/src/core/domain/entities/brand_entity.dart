@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// A brand of the jm3eia backend catalogue (home brand rail, brand listing,
+/// A brand of the Hero backend catalogue (home brand rail, brand listing,
 /// the brand row of a product page). [slug] filters the product list
 /// (`brandSlug`). Text arrives already resolved for the request language.
 class BrandEntity extends Equatable {

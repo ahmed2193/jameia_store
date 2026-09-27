@@ -2,41 +2,35 @@
 // bottomNavigationBar slot, which offers the whole screen as its height
 // budget: everything in it must size itself from its content, never from the
 // room it is offered. The full-bleed grey gallery carries only the round
-// back and cart buttons, a white sheet with rounded top corners rides over
-// its bottom edge, and the blocks under it are flat, set apart by inset
-// hairlines.
-import 'dart:convert';
-
-import 'package:easy_localization/easy_localization.dart';
-// ignore: implementation_imports
-import 'package:easy_localization/src/localization.dart';
-// ignore: implementation_imports
-import 'package:easy_localization/src/translations.dart';
+// back and cart buttons, its photo runs up under the see-through status bar,
+// a white sheet with rounded top corners rides over its bottom edge, and the
+// blocks under it are flat, set apart by inset hairlines.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/theme/app_colors.dart';
-import 'package:jameia_mart/src/config/theme/app_spacing.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/widgets/round_outlined_button.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/cubit/product_detail_cubit.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_back_button.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_bottom_bar.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_cart_action.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_cart_cta.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_cta_stepper.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_dots_pill.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_gallery.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_scaffold_view.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_section.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_section_divider.dart';
-import 'package:jameia_mart/src/features/product_details/presentation/widgets/pdp_sheet.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/config/theme/app_spacing.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/widgets/hero_image.dart';
+import 'package:hero_mart/src/core/widgets/round_outlined_button.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/product_details/domain/entities/product_detail.dart';
+import 'package:hero_mart/src/features/product_details/presentation/cubit/product_detail_cubit.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_back_button.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_bottom_bar.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_cart_action.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_cart_cta.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_cta_stepper.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_dots_pill.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_gallery.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_scaffold_view.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_section.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_section_divider.dart';
+import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'pdp_test_fakes.dart';
@@ -59,14 +53,7 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
     registerFakeNetworkInfo();
     await setupServiceLocator();
-    await EasyLocalization.ensureInitialized();
-    final enRaw = await rootBundle.loadString('assets/i18n/en.json');
-    Localization.load(
-      const Locale('en'),
-      translations: Translations(
-        withNewProductKeys(json.decode(enRaw) as Map<String, dynamic>, 'en'),
-      ),
-    );
+    await speakEnglish();
   });
 
   testWidgets('the buy bar is as tall as its contents, not as the screen', (
@@ -152,6 +139,7 @@ void main() {
         child: const MaterialApp(
           home: Scaffold(
             body: PdpScaffoldView(
+              productSlug: 'milk',
               title: 'Milk 1L',
               images: ['a.jpg', 'b.jpg', 'c.jpg'],
               sections: [
@@ -234,15 +222,19 @@ void main() {
     // The first block is measured from the sheet's very edge (its own 16 dp
     // padding), not from under a blank strip.
     expect(tester.getTopLeft(find.text('body')).dy, sheet.top + AppSpacing.s16);
-    // Dark status bar icons over the light gallery.
-    expect(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is AnnotatedRegion<SystemUiOverlayStyle> &&
-            widget.value == SystemUiOverlayStyle.dark,
-      ),
-      findsWidgets,
-    );
+    // Dark status bar icons straight over the light gallery: no scrim.
+    final overlay = tester
+        .widget<AnnotatedRegion<SystemUiOverlayStyle>>(
+          find
+              .descendant(
+                of: find.byType(PdpScaffoldView),
+                matching: find.byType(AnnotatedRegion<SystemUiOverlayStyle>),
+              )
+              .first,
+        )
+        .value;
+    expect(overlay.statusBarIconBrightness, Brightness.dark);
+    expect(overlay.statusBarColor, AppColors.scrimTransparent);
     // The blocks are flat and edge to edge: no rounded card, no inset.
     final sections = find.byType(PdpSection);
     expect(sections, findsNWidgets(2));
@@ -278,6 +270,63 @@ void main() {
       tester.getSize(find.byType(PdpSectionDivider)).height,
       1 + PdpSectionDivider.gap * 2,
     );
+  });
+
+  testWidgets('the photo runs up under the status bar, the buttons below it', (
+    tester,
+  ) async {
+    // A notched phone: a 47 dp status bar.
+    const statusBar = 47.0;
+    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+    tester.view.devicePixelRatio = 3;
+    tester.view.padding = const FakeViewPadding(top: statusBar * 3);
+    addTearDown(tester.view.reset);
+    final detail = ProductDetailCubit(
+      const StubWatchDetail(_detail),
+      const StubGetOffer(),
+      slug: 'milk',
+    )..load();
+    addTearDown(detail.close);
+
+    await tester.pumpWidget(
+      MultiBlocProvider(
+        providers: [
+          BlocProvider<ProductDetailCubit>.value(value: detail),
+          BlocProvider<CartCubit>(create: (_) => sl<CartCubit>()),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(
+            body: PdpScaffoldView(
+              productSlug: 'milk',
+              title: 'Milk 1L',
+              images: ['a.jpg'],
+              sections: [PdpSection(child: Text('body'))],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final gallery = find.byType(PdpGallery);
+    final side = PdpScaffoldView.photoSide(tester.element(gallery));
+    expect(side, 390);
+    // The whole photo, full width, from the screen's top edge: its top
+    // shows through the status bar …
+    final photo = find.descendant(
+      of: gallery,
+      matching: find.byType(HeroImage),
+    );
+    expect(tester.getRect(photo), const Rect.fromLTWH(0, 0, 390, 390));
+    // … and the sheet starts right under it.
+    expect(tester.getRect(find.byType(PdpSheet)).top, side);
+    // The round buttons stay clear of the status bar.
+    for (final button in [PdpBackButton, PdpCartAction]) {
+      expect(
+        tester.getRect(find.byType(button)).top,
+        greaterThanOrEqualTo(statusBar),
+      );
+    }
   });
 
   testWidgets('the cart button wears a brand-green count badge', (

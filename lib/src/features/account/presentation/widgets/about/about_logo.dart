@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// The JameiaMart app icon on a rounded, softly lifted tile.
+/// The Hero app icon on a rounded, softly lifted tile.
 class AboutLogo extends StatelessWidget {
   const AboutLogo({super.key});
 
@@ -24,7 +24,7 @@ class AboutLogo extends StatelessWidget {
       child: ClipRRect(
         borderRadius: corners,
         child: Image.asset(
-          JameiaAssets.appLogo,
+          HeroAssets.appLogo,
           width: size,
           height: size,
           fit: BoxFit.cover,

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/domain/entities/cart_entity.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../auth/presentation/cubit/auth_session_state.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
@@ -70,7 +70,7 @@ class _CheckoutAutoChangeListenersState
     );
     if (next == null) return;
     checkout.setPaymentMethod(next);
-    showJameiaSnackBar(context, 'checkout.wallet_reverted'.tr());
+    showHeroSnackBar(context, 'checkout.wallet_reverted'.tr());
     context.read<CheckoutUiController>().bumpPayment();
   }
 
@@ -97,7 +97,7 @@ class _CheckoutAutoChangeListenersState
     if (state.changedBy == CartAction.coupon || _placed(context)) return;
     final code = CheckoutCouponDrop.droppedCode(before, state.cart);
     if (code == null) return;
-    showJameiaSnackBar(
+    showHeroSnackBar(
       context,
       'checkout.coupon_dropped'.tr(namedArgs: {'code': code}),
     );
@@ -113,7 +113,7 @@ class _CheckoutAutoChangeListenersState
     if (draft.timing != DeliveryTiming.express) return;
     checkout.setTiming(DeliveryTiming.asap);
     if (draft.isPickup) return;
-    showJameiaSnackBar(context, 'checkout.express_reset'.tr());
+    showHeroSnackBar(context, 'checkout.express_reset'.tr());
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../design/jameia_assets.dart';
+import '../design/hero_assets.dart';
 import '../responsive/app_size.dart';
 import '../utils/formatters.dart';
 
@@ -31,7 +31,7 @@ class CartDeliveryNote extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Image.asset(
-          JameiaAssets.globalRider,
+          HeroAssets.globalRider,
           width: _rider,
           height: _rider,
           cacheWidth: decode,

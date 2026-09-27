@@ -37,7 +37,7 @@ class ProfileEditListener extends StatelessWidget {
         : 'profile.saved'.tr();
     await Future<void>.delayed(AppSprings.successHold);
     if (!context.mounted) return;
-    showJameiaSnackBar(context, message);
+    showHeroSnackBar(context, message);
     context.pop();
   }
 

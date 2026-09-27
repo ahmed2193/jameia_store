@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/domain/text/ascii_digits.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../domain/usecases/get_delivery_code_usecase.dart';
@@ -18,12 +19,6 @@ class DeliveryCodeCubit extends Cubit<DeliveryCodeState>
 
   final GetDeliveryCodeUseCase _getDeliveryCode;
 
-  /// The zeros of the scripts a keyboard may type digits in: ASCII,
-  /// Arabic-Indic (٠) and Eastern Arabic-Indic (۰). The code stores ASCII.
-  static const int _asciiZero = 0x30;
-  static const List<int> _zeros = [_asciiZero, 0x0660, 0x06F0];
-  static const int _digitCount = 10;
-
   Future<void> load() async {
     safeEmit(state.copyWith(status: DeliveryCodeStatus.loading));
     final result = await _getDeliveryCode(const NoParams());
@@ -41,12 +36,12 @@ class DeliveryCodeCubit extends Cubit<DeliveryCodeState>
     );
   }
 
-  /// Keeps the digits of [value] (typed in any of [_zeros]' scripts) as
-  /// ASCII, up to [DeliveryCodeState.codeLength].
+  /// Keeps the digits of [value] (ASCII, Arabic-Indic or Persian) as ASCII,
+  /// up to [DeliveryCodeState.codeLength].
   void edit(String value) {
     final digits = StringBuffer();
     for (final rune in value.runes) {
-      final digit = _asciiDigit(rune);
+      final digit = asciiDigitUnit(rune);
       if (digit == null) continue;
       digits.writeCharCode(digit);
       if (digits.length == DeliveryCodeState.codeLength) break;
@@ -60,14 +55,5 @@ class DeliveryCodeCubit extends Cubit<DeliveryCodeState>
   void save() {
     if (!state.canSave) return;
     safeEmit(state.copyWith(savedCode: state.draft, saved: true));
-  }
-
-  static int? _asciiDigit(int rune) {
-    for (final zero in _zeros) {
-      if (rune >= zero && rune < zero + _digitCount) {
-        return _asciiZero + rune - zero;
-      }
-    }
-    return null;
   }
 }

@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 import '../../../domain/entities/assistant_block.dart';
 import 'assistant_card_frame.dart';
 
@@ -41,7 +41,7 @@ class AssistantRecipeBlockCard extends StatelessWidget {
           transparent: true,
           child: Row(
             children: [
-              JameiaImage(
+              HeroImage(
                 url: recipe.imageUrl,
                 width: AppSize.s80,
                 height: AppSize.s80,

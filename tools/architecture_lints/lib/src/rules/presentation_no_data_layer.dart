@@ -7,8 +7,8 @@ import 'directive_rule_base.dart';
 /// Rule 2 — feature presentation never reaches into data / infrastructure.
 ///
 /// Also replaces the legacy custom_lint `presentation_no_core_repo` rule:
-/// `core/data/jameia_repository.dart` is a `data/` import here, and
-/// `sl<JameiaRepository>()` is caught by `no_service_locator_outside_di`.
+/// `core/data/hero_repository.dart` is a `data/` import here, and
+/// `sl<HeroRepository>()` is caught by `no_service_locator_outside_di`.
 class PresentationNoDataLayer extends DirectiveRule {
   PresentationNoDataLayer()
     : super(

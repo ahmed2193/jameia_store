@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import 'address_row_divider.dart';
 import 'address_row_tile.dart';
@@ -18,7 +18,7 @@ class AddressRow extends StatelessWidget {
     required this.isLast,
   });
 
-  final JameiaAddressEntity address;
+  final HeroAddressEntity address;
   final int index;
   final bool isFirst;
   final bool isLast;

@@ -5,7 +5,7 @@ import 'package:flutter/painting.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// The Keeta voucher ticket: a card with [radius] corners and one
+/// The Hero voucher ticket: a card with [radius] corners and one
 /// semicircle notch of [notchRadius] cut into each side edge at its
 /// vertical centre, so the page background shows through (the ticket's
 /// perforation). Symmetric, so it needs no mirroring in RTL.

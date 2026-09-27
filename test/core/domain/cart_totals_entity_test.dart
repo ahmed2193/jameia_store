@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 
 void main() {
   group('CartTotalsEntity delivery fee', () {

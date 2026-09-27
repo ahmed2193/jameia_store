@@ -9,12 +9,15 @@ import 'splash_tagline.dart';
 import 'splash_touch.dart';
 import 'splash_touch_surface.dart';
 import 'splash_variant.dart';
+import 'splash_wordmark.dart';
 
-/// Plays one talabat-style JameiaMart intro ([SplashVariant]) from the
-/// launch-screen frame to the finished lockup, then calls [onFinished].
+/// Plays one Hero intro ([SplashVariant]) from the launch-screen frame to the
+/// finished lockup, then calls [onFinished]. The bag delivers the name in the
+/// app's language ([SplashWordmark]).
 ///
-/// The first frame repeats the native splash exactly (the same cart, centred,
-/// on the same green), so the hand-over from the OS splash cannot be seen.
+/// The first frame repeats the native splash exactly (the same bag in its
+/// cape, centred, on the same green), so the hand-over from the OS splash
+/// cannot be seen.
 /// Nothing moves until that frame is really on screen: the clock starts
 /// [AppMotion.splashHandOffHold] after the engine reports the first frame
 /// rasterized (or after [AppMotion.splashFirstFrameWait] at most), so a slow
@@ -23,8 +26,9 @@ import 'splash_variant.dart';
 /// every frame without rebuilding widgets.
 ///
 /// It also answers the finger ([SplashTouch]): a ring of colour where it
-/// touches, the glow leaning towards it, a hop (and a light haptic) when the
-/// cart is tapped. Touch never changes how long the intro plays.
+/// touches, the glow leaning towards it, a hop, a flick of the cape and a light
+/// haptic when the bag is tapped. Touch never changes how long the intro
+/// plays.
 ///
 /// [onFinished] fires EXACTLY ONCE — when the intro ends, or after a failsafe
 /// of twice its length (plus the start delay), whichever lands first. Reduced
@@ -130,6 +134,9 @@ class _SplashPlayerState extends State<SplashPlayer>
   @override
   Widget build(BuildContext context) {
     final choreography = widget.variant.choreography;
+    final wordmark = SplashWordmark.forLanguage(
+      Localizations.localeOf(context).languageCode,
+    );
     return SplashStatusBar(
       clock: _clock,
       choreography: choreography,
@@ -139,18 +146,24 @@ class _SplashPlayerState extends State<SplashPlayer>
           SplashTouchSurface(
             clock: _clock,
             choreography: choreography,
+            wordmark: wordmark,
             touch: _touch,
             child: RepaintBoundary(
               child: CustomPaint(
                 painter: SplashScenePainter(
                   clock: _clock,
                   choreography: choreography,
+                  wordmark: wordmark,
                   touch: _touch,
                 ),
               ),
             ),
           ),
-          SplashTagline(clock: _clock, choreography: choreography),
+          SplashTagline(
+            clock: _clock,
+            choreography: choreography,
+            wordmark: wordmark,
+          ),
         ],
       ),
     );

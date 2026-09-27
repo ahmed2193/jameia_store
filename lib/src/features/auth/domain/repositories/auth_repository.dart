@@ -2,10 +2,11 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/domain/entities/auth_customer_entity.dart';
+import '../../../../core/domain/entities/loyalty_program.dart';
 import '../entities/otp_challenge.dart';
 import '../entities/phone_number.dart';
 
-/// Customer authentication over the jm3eia OTP flow. Tokens never cross this
+/// Customer authentication over the Hero OTP flow. Tokens never cross this
 /// boundary: the data layer persists them in the secure session store and the
 /// network layer attaches them to every request.
 ///
@@ -45,4 +46,8 @@ abstract class AuthRepository {
 
   /// Removes the device copy (the session ended).
   Future<Either<Failure, Unit>> clearCachedCustomer();
+
+  /// `GET /v1/init` (public) → `store.loyalty`: what the store gives a new
+  /// account (the login screen's welcome offer).
+  Future<Either<Failure, LoyaltyProgram>> getLoyaltyProgram();
 }

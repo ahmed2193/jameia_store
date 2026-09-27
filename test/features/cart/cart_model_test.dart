@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/data/mappers/catalog_product_mapper.dart';
-import 'package:jameia_mart/src/features/cart/data/mappers/cart_mapper.dart';
-import 'package:jameia_mart/src/features/cart/data/models/cart_mirror_model.dart';
-import 'package:jameia_mart/src/features/cart/data/models/cart_model.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/data/mappers/catalog_product_mapper.dart';
+import 'package:hero_mart/src/features/cart/data/mappers/cart_mapper.dart';
+import 'package:hero_mart/src/features/cart/data/models/cart_mirror_model.dart';
+import 'package:hero_mart/src/features/cart/data/models/cart_model.dart';
 
 import 'cart_test_fixtures.dart';
 

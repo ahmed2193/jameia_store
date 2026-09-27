@@ -1,16 +1,16 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/auth_tokens.dart';
-import 'package:jameia_mart/src/features/auth/data/datasources/auth_local_data_source.dart';
-import 'package:jameia_mart/src/features/auth/data/datasources/auth_remote_data_source.dart';
-import 'package:jameia_mart/src/core/data/models/customer_model.dart';
-import 'package:jameia_mart/src/features/auth/data/models/auth_session_model.dart';
-import 'package:jameia_mart/src/features/auth/data/models/otp_challenge_model.dart';
-import 'package:jameia_mart/src/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:jameia_mart/src/features/auth/domain/entities/otp_challenge.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/auth_tokens.dart';
+import 'package:hero_mart/src/features/auth/data/datasources/auth_local_data_source.dart';
+import 'package:hero_mart/src/features/auth/data/datasources/auth_remote_data_source.dart';
+import 'package:hero_mart/src/core/data/models/customer_model.dart';
+import 'package:hero_mart/src/features/auth/data/models/auth_session_model.dart';
+import 'package:hero_mart/src/features/auth/data/models/otp_challenge_model.dart';
+import 'package:hero_mart/src/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:hero_mart/src/features/auth/domain/entities/otp_challenge.dart';
 
 import 'auth_test_fakes.dart';
 

@@ -4,25 +4,25 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/models/loyalty_program_model.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
-import 'package:jameia_mart/src/core/data/models/order_model.dart';
-import 'package:jameia_mart/src/core/data/models/product_model.dart';
-import 'package:jameia_mart/src/core/data/models/products_page_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_query.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/checkout/data/datasources/checkout_rail_data_source.dart';
-import 'package:jameia_mart/src/features/checkout/data/datasources/checkout_remote_data_source.dart';
-import 'package:jameia_mart/src/features/checkout/data/datasources/delivery_remote_data_source.dart';
-import 'package:jameia_mart/src/features/checkout/data/models/branch_model.dart';
-import 'package:jameia_mart/src/features/checkout/data/models/delivery_selection_model.dart';
-import 'package:jameia_mart/src/features/checkout/data/models/delivery_slot_model.dart';
-import 'package:jameia_mart/src/features/checkout/data/models/store_rules_model.dart';
-import 'package:jameia_mart/src/features/checkout/data/repositories/checkout_catalog_repository_impl.dart';
-import 'package:jameia_mart/src/features/checkout/data/repositories/checkout_repository_impl.dart';
+import 'package:hero_mart/src/core/data/models/loyalty_program_model.dart';
+import 'package:hero_mart/src/core/data/models/offer_model.dart';
+import 'package:hero_mart/src/core/data/models/order_model.dart';
+import 'package:hero_mart/src/core/data/models/product_model.dart';
+import 'package:hero_mart/src/core/data/models/products_page_model.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/checkout/data/datasources/checkout_rail_data_source.dart';
+import 'package:hero_mart/src/features/checkout/data/datasources/checkout_remote_data_source.dart';
+import 'package:hero_mart/src/features/checkout/data/datasources/delivery_remote_data_source.dart';
+import 'package:hero_mart/src/features/checkout/data/models/branch_model.dart';
+import 'package:hero_mart/src/features/checkout/data/models/delivery_selection_model.dart';
+import 'package:hero_mart/src/features/checkout/data/models/delivery_slot_model.dart';
+import 'package:hero_mart/src/features/checkout/data/models/store_rules_model.dart';
+import 'package:hero_mart/src/features/checkout/data/repositories/checkout_catalog_repository_impl.dart';
+import 'package:hero_mart/src/features/checkout/data/repositories/checkout_repository_impl.dart';
 
 import '../../core/data/catalog_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
@@ -45,7 +45,7 @@ class _Checkout implements CheckoutRemoteDataSource {
     final thrown = error;
     if (thrown != null) throw thrown;
     return const StoreRulesModel(
-      storeName: 'Jm3eia',
+      storeName: 'Hero',
       codEnabled: false,
       defaultMethod: 'wallet',
       loyalty: LoyaltyProgramModel(
@@ -163,7 +163,7 @@ void main() {
         () => throw StateError('failed'),
       );
 
-      expect(rules.storeName, 'Jm3eia');
+      expect(rules.storeName, 'Hero');
       expect(rules.codEnabled, isFalse);
       expect(rules.defaultPaymentMethod, OrderPaymentMethod.wallet);
       expect(rules.loyalty.minRedeemPoints, 100);

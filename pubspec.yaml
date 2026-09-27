@@ -1,5 +1,5 @@
-name: jameia_mart
-description: "JameiaMart — Flutter app on Clean Architecture + Cubit."
+name: hero_mart
+description: "Hero — Flutter app on Clean Architecture + Cubit."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -18,16 +18,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.9
-
-  # Index-exact scroll for the shop rank sections (jm3eia products_screen flow):
-  # ScrollablePositionedList.scrollTo(index) lands a rank flush under the rail
-  # even when far/unbuilt (no estimate/converge needed).
-  scrollable_positioned_list: ^0.3.8
-
   # State management (Cubit)
   flutter_bloc: ^9.1.1
-  bloc: ^9.2.1
 
   # Dependency injection
   get_it: ^9.2.1
@@ -52,10 +44,9 @@ dependencies:
   intl: ^0.20.3
 
   # UI/UX fidelity packages (RTL/guardrail-safe)
-  flutter_staggered_grid_view: ^0.7.0
   skeletonizer: ^3.0.0
   smooth_page_indicator: ^3.0.0
-  # Vector scan-line glyph in the jameia search bar (ported from jm3eia).
+  # Vector scan-line glyph in the Hero search bar (ported from the source app).
   flutter_svg: ^2.3.0
   cached_network_image: ^4.0.0
   # Image stack internals: shared disk cache manager + per-request timeout
@@ -64,21 +55,18 @@ dependencies:
   path_provider: ^2.1.6
   http: ^1.6.0
   visibility_detector: ^0.4.0+2
-  sliver_tools: ^0.2.12
 
-  # Lottie vector animations (real Jameia splash_lottie_default.json).
-  lottie: ^3.5.1
 
   # Live maps for order tracking / shop + address map surfaces.
   google_maps_flutter: ^2.18.1
 
   # Real reverse-geocoding (native platform Geocoder) — resolves a pinned
   # LatLng to a localized city / area / street / house, matching the app
-  # locale. Falls back to the offline JameiaGeocode when unavailable.
+  # locale. Falls back to the offline HeroGeocode when unavailable.
   geocoding: ^5.0.0
 
   # Device current location for the address map-picker initial centre
-  # (Jameia `SLLocation.getLocation` / `address_..._currentlocation`).
+  # (Hero `SLLocation.getLocation` / `address_..._currentlocation`).
   geolocator: ^14.0.3
 
   # Voice search — on-device speech-to-text + runtime microphone permission
@@ -107,43 +95,29 @@ flutter:
   assets:
     - assets/i18n/
     - assets/data/
-    - assets/data/jameia/
+    - assets/data/hero/
     - assets/images/
-    # The in-app logo tile (JameiaAssets.appLogo). The app icon art
+    # The in-app logo tile (HeroAssets.appLogo). The app icon art
     # (assets/app_icon/) and the native splash mark (assets/splash/) are
     # generator inputs only and are NOT bundled.
     - assets/launcher/
-    # Vector glyphs (jameia search scan-line, ported from jm3eia).
+    # Vector glyphs (offer + checkout glyphs, colour baked in).
     - assets/svg/
-    # Real Jameia rasters extracted from the decoded APK (Mach UI bundles),
-    # grouped by screen. Referenced by name via JameiaAssets (core/design).
-    - assets/images/jameia/
-    - assets/images/jameia/osg_home/
-    - assets/images/jameia/home/
-    - assets/images/jameia/shop/
-    - assets/images/jameia/order_status/
-    - assets/images/jameia/order_confirm/
-    - assets/images/jameia/mine/
-    - assets/images/jameia/login/
-    - assets/images/jameia/review/
-    # Marketing (invite friends + punctual) rasters from mkt_invite_main / c_punctual.
-    - assets/images/jameia/marketing/
-    # Home popup / overlay rasters (coupon pop, image-text, vertical banner,
-    # bottom overlay, newborn, popup_list) from the mkt_resources_* bundles.
-    - assets/images/jameia/popup/
-    # Real Jameia animations (brand loader GIF, onboarding slide, splash Lottie, shine).
+    # Real Hero rasters extracted from the decoded APK (Mach UI bundles),
+    # grouped by screen. Referenced by name via HeroAssets (core/design).
+    - assets/images/hero/osg_home/
+    - assets/images/hero/shop/
+    - assets/images/hero/order_confirm/
+    - assets/images/hero/mine/
+    - assets/images/hero/login/
+    # Home popup close button from the mkt_resources_* bundles.
+    - assets/images/hero/popup/
+    # Real Hero animations (brand loader GIF).
     - assets/animations/
 
-  # GLSL fragment shaders ported from Jameia's video-effects SDK (.fsh) to the
-  # Flutter runtime-effect spec. Driven by core/motion/shader_transition.dart.
-  shaders:
-    - shaders/dissolve.frag
-    - shaders/affine_reveal.frag
-    - shaders/blur.frag
-
-  # Real Jameia fonts extracted from the APK (assets/fonts/).
+  # Real Hero fonts extracted from the APK (assets/fonts/).
   # Brand body face = Noto Sans (+ NotoSansArabicUI for RTL); digits = MT Digital Display;
-  # display/brand = Jameia OTF; iconfont = JameiaIcon (wm_c_iconfont glyphs).
+  # display/brand = Hero OTF; iconfont = HeroIcon (wm_c_iconfont glyphs).
   fonts:
     - family: NotoSans
       fonts:
@@ -165,13 +139,13 @@ flutter:
           weight: 600
         - asset: assets/fonts/NotoSansArabicUI-Bold.ttf
           weight: 700
-    - family: Jameia
+    - family: Hero
       fonts:
-        - asset: assets/fonts/Jameia-Regular.otf
+        - asset: assets/fonts/Hero-Regular.otf
           weight: 400
-        - asset: assets/fonts/Jameia-Medium.otf
+        - asset: assets/fonts/Hero-Medium.otf
           weight: 500
-        - asset: assets/fonts/Jameia-Bold.otf
+        - asset: assets/fonts/Hero-Bold.otf
           weight: 700
     - family: MTDigit
       fonts:
@@ -181,19 +155,20 @@ flutter:
           weight: 500
         - asset: assets/fonts/MTDigitalDisplayKT-Bold.ttf
           weight: 700
-    - family: JameiaIcon
+    - family: HeroIcon
       fonts:
         - asset: assets/fonts/wm_c_iconfont.ttf
 
 # ─────────────────────────────────────────────────────────────────────────────
-# JameiaMart app icon (flutter_launcher_icons) — talabat-style, the same mark as
-# the splash: the white cart on brand green (AppColors.primary). The art is
-# rendered from the splash painter itself (generator inputs, not bundled):
+# Hero app icon (flutter_launcher_icons), the same mark as the splash: the
+# white bag in its yellow cape on brand green (AppColors.primary). The art is
+# rendered from the mark painter itself (generator inputs, not bundled):
 #     flutter test tool/splash/render_app_icons_test.dart
 #     dart run flutter_launcher_icons
-# Android: adaptive icon = green background + the cart inside the 66/108 dp
+# Android: adaptive icon = green background + the mark inside the 66/108 dp
 # safe zone (inset 0: the art already carries its padding), monochrome layer
 # for Android 13+ themed icons. iOS: opaque square + iOS 18 dark / tinted.
+# Web: favicon, PWA icons and the manifest's theme colour.
 # ─────────────────────────────────────────────────────────────────────────────
 flutter_launcher_icons:
   android: true
@@ -209,12 +184,17 @@ flutter_launcher_icons:
   image_path_ios_tinted_grayscale: "assets/app_icon/icon_ios_dark.png"
   desaturate_tinted_to_grayscale_ios: true
   min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/app_icon/icon_ios.png"
+    background_color: "#22C55E"
+    theme_color: "#22C55E"
 
 # ─────────────────────────────────────────────────────────────────────────────
-# JameiaMart native splash (flutter_native_splash) — talabat-style: brand green
-# (AppColors.primary) with the white cart mark centred, identical to the first
-# frame of the Flutter splash (features/splash), which then animates it into
-# the full logo. The mark is rendered from the splash painter itself:
+# Hero native splash (flutter_native_splash): brand green (AppColors.primary)
+# with the white bag in its yellow cape centred, identical to the first frame
+# of the Flutter splash (features/splash), which then flies it into the full
+# lockup. The mark is rendered from the splash painter itself:
 #     flutter test tool/splash/render_native_splash_test.dart
 #     dart run flutter_native_splash:create
 # splash_mark.png is 1152² read as 4× → a 288 dp/pt box on every platform

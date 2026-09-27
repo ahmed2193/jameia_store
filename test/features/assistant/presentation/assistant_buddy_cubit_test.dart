@@ -12,12 +12,12 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_outcome.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_buddy_cubit.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_buddy_scene.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thought.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_nudge_outcome.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_buddy_cubit.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_buddy_scene.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thought.dart';
 
 import 'assistant_nudge_fakes.dart';
 

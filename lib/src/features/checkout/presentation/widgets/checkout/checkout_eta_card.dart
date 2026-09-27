@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/second_clock_scope.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
-import '../../../../../core/widgets/jameia_surface_card.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
+import '../../../../../core/widgets/hero_surface_card.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/checkout_eta.dart';
 import '../../cubit/checkout_cart_facts_of.dart';
@@ -15,7 +15,7 @@ import 'checkout_eta_card_text.dart';
 import 'checkout_info_sheet.dart';
 import 'checkout_ui_controller.dart';
 
-/// The green card under the "Expected" row, where Keeta shows its On-Time
+/// The green card under the "Expected" row, where Hero shows its On-Time
 /// Promise — here only what the order really has: when an ASAP / express
 /// order should arrive, or the window the customer booked. Starts at the
 /// row's text column. Hidden (it folds away) for pickup, before a
@@ -41,11 +41,11 @@ class CheckoutEtaCard extends StatelessWidget {
       visible: eta.showsCard,
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
-          start: JameiaListRow.denseTextStart,
+          start: HeroListRow.denseTextStart,
           end: AppSpacing.s12,
         ),
-        child: JameiaSurfaceCard(
-          tone: JameiaSurfaceTone.brand,
+        child: HeroSurfaceCard(
+          tone: HeroSurfaceTone.brand,
           radius: AppRadius.card,
           padding: const EdgeInsets.all(AppSpacing.s8),
           onTap: () => CheckoutInfoSheet.show(

@@ -4,7 +4,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 
 /// A flat labelled link to the products of the brand or the category: the
 /// grey label over the ink name, and a chevron that follows the reading
@@ -37,7 +37,7 @@ class PdpLinkRow extends StatelessWidget {
           child: Row(
             children: [
               if (imageUrl.isNotEmpty) ...[
-                JameiaImage.circle(url: imageUrl, size: AppSize.s40),
+                HeroImage.circle(url: imageUrl, size: AppSize.s40),
                 const SizedBox(width: AppSpacing.s12),
               ],
               Expanded(

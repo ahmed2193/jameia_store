@@ -1,8 +1,8 @@
-# jameia_mart
+# hero_mart
 
-JameiaMart Flutter app (clean architecture, Cubit, GoRouter, Dio).
+Hero Flutter app (clean architecture, Cubit, GoRouter, Dio).
 
-## Running against the jm3eia API
+## Running against the Hero API
 
 The backend host is build-time config (`AppEnv.apiBaseUrl`); nothing is hardcoded.
 Default is the live host `https://api.jm3eia.store` (OpenAPI: https://api.jm3eia.store/docs).
@@ -22,14 +22,14 @@ Shared networking (headers, auth refresh, envelope, error mapping) is documented
 [docs/api_integration.md](docs/api_integration.md). Architecture rules live in `CLAUDE.md`.
 
 How-to guides for integrating an endpoint (used by AI agents, readable by humans) live in
-`.claude/skills/jameia-api-*`: build recipe + code templates, session/auth, SSE streams,
+`.claude/skills/hero-api-*`: build recipe + code templates, session/auth, SSE streams,
 testing, and on-device verification. Handy tools from there:
 
 ```sh
 # one route's params / body / results from the live OpenAPI spec
-node .claude/skills/jameia-api-integration/scripts/openapi_route.js orders
+node .claude/skills/hero-api-integration/scripts/openapi_route.js orders
 # local mock API (OTP 1234, failure knobs under /__admin/*) → run the app with API_BASE_URL=http://10.0.2.2:5055
-node .claude/skills/jameia-api-verify/scripts/mock_api/server.js
+node .claude/skills/hero-api-verify/scripts/mock_api/server.js
 ```
 
 ## Getting Started

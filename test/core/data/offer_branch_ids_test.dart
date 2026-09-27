@@ -1,9 +1,9 @@
 // `GET /v1/offers` → `branchIds`: parsed onto the core offer, and
 // `availableAt` tells which branches an offer runs at.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/mappers/offer_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/data/mappers/offer_mapper.dart';
+import 'package:hero_mart/src/core/data/models/offer_model.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
 
 Map<String, dynamic> _offer({Object? branchIds}) => <String, dynamic>{
   '_id': 'o1',

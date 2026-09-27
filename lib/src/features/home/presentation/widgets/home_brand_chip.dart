@@ -6,7 +6,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 
 /// A brand of the "Shop by brand" rail: round logo (or the brand's initial when
 /// it has no logo) over its name.
@@ -39,7 +39,7 @@ class HomeBrandChip extends StatelessWidget {
                   border: Border.all(color: AppColors.brandTileBorder),
                 ),
                 child: brand.hasImage
-                    ? JameiaImage.circle(url: brand.image, size: _logo)
+                    ? HeroImage.circle(url: brand.image, size: _logo)
                     : Text(
                         brand.initial,
                         style: AppTextStyles.headingLarge.copyWith(

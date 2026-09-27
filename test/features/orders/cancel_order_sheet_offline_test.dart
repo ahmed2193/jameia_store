@@ -6,11 +6,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/widgets/app_button.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/cancel_order_request.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/orders_list/cancel_order_sheet.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/widgets/app_button.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/cancel_order_request.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/cancel_order_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -60,7 +60,7 @@ void main() {
                 isOffline: true,
                 reconnectEpoch: 0,
                 onNudge: () => nudges++,
-                onCheckNow: () async => online,
+                checkOnline: () async => online,
                 child: child!,
               ),
             ),

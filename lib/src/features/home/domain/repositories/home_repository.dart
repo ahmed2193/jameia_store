@@ -5,7 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/home_bootstrap.dart';
 import '../entities/home_feed.dart';
 
-/// Read boundary of the home tab (jm3eia backend, public routes).
+/// Read boundary of the home tab (Hero backend, public routes).
 abstract class HomeRepository {
   /// `GET /v1/home` — the whole screen in one reply: the device copy first
   /// (when there is one), then the server's unless the copy is fresh.

@@ -7,7 +7,7 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/light_sweep.dart';
@@ -84,7 +84,7 @@ class MineInviteBanner extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s8),
                     const Icon(
-                      JameiaIcons.arrowRight,
+                      HeroIcons.arrowRight,
                       size: _chevron,
                       color: AppColors.tertiaryText,
                     ),

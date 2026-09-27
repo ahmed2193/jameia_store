@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_block.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_error_code.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_rich_text.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_block.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_error_code.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_rich_text.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_stream_event.dart';
 
 void main() {
   const product = CatalogProductEntity(id: 'p1', slug: 'milk', name: 'Milk');

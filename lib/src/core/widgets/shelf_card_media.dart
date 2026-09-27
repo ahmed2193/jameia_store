@@ -4,7 +4,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../domain/entities/catalog_product_entity.dart';
 import 'catalog_unavailable_overlay.dart';
-import 'jameia_image.dart';
+import 'hero_image.dart';
 import 'shelf_add_control.dart';
 import 'shelf_save_badge.dart';
 
@@ -57,7 +57,7 @@ class ShelfCardMedia extends StatelessWidget {
                   children: [
                     Opacity(
                       opacity: product.inStock ? 1 : _dimmed,
-                      child: JameiaImage(
+                      child: HeroImage(
                         url: product.image,
                         width: width,
                         height: width,

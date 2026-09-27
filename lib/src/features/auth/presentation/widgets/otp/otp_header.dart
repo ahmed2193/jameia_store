@@ -6,19 +6,17 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/responsive/app_size.dart';
 import '../../../domain/entities/phone_number.dart';
 import '../auth_link_button.dart';
 
-/// The SMS badge, title, "we sent a code to" line and the number itself —
-/// bold, left-to-right in either language — with the Edit link that goes
-/// back to the phone step.
+/// The code step's heading, centred like the phone step's "Welcome": the
+/// title, "we sent a code by SMS to" and the number itself — bold, left to
+/// right in either language — with the Edit link back to the phone step.
 class OtpHeader extends StatelessWidget {
   const OtpHeader({super.key, required this.phone});
 
   final PhoneNumber phone;
 
-  static const double _badge = AppSize.s48;
   static const List<FontFeature> _tabular = [FontFeature.tabularFigures()];
 
   void _editPhone(BuildContext context) =>
@@ -27,37 +25,28 @@ class OtpHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox.square(
-          dimension: _badge,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.brandLightBg,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.sms_outlined,
-              size: AppSize.s24,
-              color: AppColors.primaryDark,
+        Semantics(
+          header: true,
+          child: Text(
+            'auth.otp_title'.tr(),
+            textAlign: TextAlign.center,
+            style: AppTextStyles.displayLarge.copyWith(
+              fontWeight: AppTextStyles.bold,
+              color: AppColors.primaryText,
             ),
           ),
         ),
-        const SizedBox(height: AppSpacing.s16),
-        Text(
-          'auth.otp_title'.tr(),
-          style: AppTextStyles.displayMedium.copyWith(
-            fontWeight: AppTextStyles.bold,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.s6),
+        const SizedBox(height: AppSpacing.s4),
         Text(
           'auth.otp_sent_by_sms'.tr(),
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.secondaryText,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.subheadingLarge.copyWith(
+            color: AppColors.primaryText,
           ),
         ),
         Wrap(
+          alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
           spacing: AppSpacing.s12,
           children: [

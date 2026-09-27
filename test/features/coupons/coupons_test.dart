@@ -14,21 +14,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/feature_routes/coupons_routes.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/domain/entities/coupon_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/coupons/domain/entities/coupon_buckets.dart';
-import 'package:jameia_mart/src/features/coupons/domain/entities/coupon_dates.dart';
-import 'package:jameia_mart/src/features/coupons/domain/repositories/coupons_repository.dart';
-import 'package:jameia_mart/src/features/coupons/domain/usecases/get_coupons_usecase.dart';
-import 'package:jameia_mart/src/features/coupons/presentation/cubit/coupons_cubit.dart';
-import 'package:jameia_mart/src/features/coupons/presentation/cubit/coupons_state.dart';
-import 'package:jameia_mart/src/features/coupons/presentation/widgets/coupon_fade.dart';
-import 'package:jameia_mart/src/features/coupons/presentation/widgets/coupon_stub.dart';
-import 'package:jameia_mart/src/features/coupons/presentation/widgets/coupon_ticket_clipper.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/feature_routes/coupons_routes.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/domain/entities/coupon_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/coupons/domain/entities/coupon_buckets.dart';
+import 'package:hero_mart/src/features/coupons/domain/entities/coupon_dates.dart';
+import 'package:hero_mart/src/features/coupons/domain/repositories/coupons_repository.dart';
+import 'package:hero_mart/src/features/coupons/domain/usecases/get_coupons_usecase.dart';
+import 'package:hero_mart/src/features/coupons/presentation/cubit/coupons_cubit.dart';
+import 'package:hero_mart/src/features/coupons/presentation/cubit/coupons_state.dart';
+import 'package:hero_mart/src/features/coupons/presentation/widgets/coupon_fade.dart';
+import 'package:hero_mart/src/features/coupons/presentation/widgets/coupon_stub.dart';
+import 'package:hero_mart/src/features/coupons/presentation/widgets/coupon_ticket_clipper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const CouponEntity _kdOne = CouponEntity(
@@ -111,7 +111,7 @@ GetCouponsUseCase _useCase(CouponsRepository repository) =>
     GetCouponsUseCase(repository, now: _today);
 
 const Map<String, List<String>> _fonts = {
-  'Jameia': ['Jameia-Regular.otf', 'Jameia-Medium.otf', 'Jameia-Bold.otf'],
+  'Hero': ['Hero-Regular.otf', 'Hero-Medium.otf', 'Hero-Bold.otf'],
   'NotoSansArabicUI': [
     'NotoSansArabicUI-Regular.ttf',
     'NotoSansArabicUI-Medium.ttf',
@@ -164,13 +164,10 @@ void main() {
       expect(const CouponBuckets().savingsUpTo, 0);
     });
 
-    test('hasNoHistory and availableById', () {
+    test('hasNoHistory', () {
       const buckets = CouponBuckets(available: [_kdOne], used: [_spent]);
       expect(buckets.hasNoHistory, isFalse);
       expect(const CouponBuckets(available: [_kdOne]).hasNoHistory, isTrue);
-      expect(buckets.availableById('c1'), _kdOne);
-      expect(buckets.availableById('c4'), isNull);
-      expect(buckets.availableById(null), isNull);
     });
   });
 
@@ -388,14 +385,10 @@ void main() {
       }
     }
 
-    /// Pumps the coupon routes (plus a stand-in shell and a launcher at `/`
-    /// that pushes the checkout picker and keeps what it pops) at
-    /// [location].
+    /// Pumps the coupon routes (plus a stand-in shell) at [location].
     Future<void> pump(
       WidgetTester tester, {
       required String location,
-      ValueSetter<Object?>? onPicked,
-      Object? pickerExtra,
       bool reducedMotion = false,
       Locale locale = const Locale('en'),
       Size logicalSize = const Size(400, 900),
@@ -413,23 +406,6 @@ void main() {
           GoRoute(
             path: Routes.shell,
             builder: (_, _) => const Scaffold(body: Text('SHELL')),
-          ),
-          GoRoute(
-            path: '/',
-            builder: (context, _) => Scaffold(
-              body: Center(
-                child: TextButton(
-                  onPressed: () async {
-                    final picked = await context.push<Object?>(
-                      Routes.orderCoupons,
-                      extra: pickerExtra,
-                    );
-                    onPicked?.call(picked);
-                  },
-                  child: const Text('OPEN PICKER'),
-                ),
-              ),
-            ),
           ),
         ],
       );
@@ -604,52 +580,6 @@ void main() {
       await teardownApp(tester);
     });
 
-    testWidgets('picker: Confirm pops the tapped coupon', (tester) async {
-      Object? picked = 'nothing yet';
-      await pump(tester, location: '/', onPicked: (value) => picked = value);
-
-      await tester.tap(find.text('OPEN PICKER'));
-      await settle(tester);
-      expect(find.text('Select a coupon'), findsOneWidget);
-      expect(find.text('No coupon applied'), findsOneWidget);
-
-      await tester.tap(find.text('20% off'));
-      await settle(tester);
-      expect(find.text('You save KD 3.000'), findsOneWidget);
-
-      await tester.tap(find.text('Confirm'));
-      await settle(tester);
-
-      expect(picked, _twenty);
-      expect(find.text('OPEN PICKER'), findsOneWidget);
-
-      await teardownApp(tester);
-    });
-
-    testWidgets('picker: "Don\'t use a coupon" pops null', (tester) async {
-      Object? picked = 'nothing yet';
-      await pump(
-        tester,
-        location: '/',
-        pickerExtra: 'c1',
-        onPicked: (value) => picked = value,
-      );
-
-      await tester.tap(find.text('OPEN PICKER'));
-      await settle(tester);
-      // The coupon already on the order starts selected.
-      expect(find.text('You save KD 1.000'), findsOneWidget);
-
-      await tester.tap(find.text("Don't use a coupon"));
-      await settle(tester);
-      await tester.tap(find.text('Confirm'));
-      await settle(tester);
-
-      expect(picked, isNull);
-
-      await teardownApp(tester);
-    });
-
     testWidgets('first load fails → the error view; retry loads', (
       tester,
     ) async {
@@ -689,11 +619,7 @@ void main() {
     testWidgets('Arabic small phone at text × 1.3: every screen fits', (
       tester,
     ) async {
-      for (final location in [
-        Routes.myCoupons,
-        Routes.historyCoupons,
-        Routes.orderCoupons,
-      ]) {
+      for (final location in [Routes.myCoupons, Routes.historyCoupons]) {
         await pump(
           tester,
           location: location,

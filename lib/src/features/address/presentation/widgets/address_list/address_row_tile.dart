@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import 'address_label_glyph.dart';
 import 'address_row_actions.dart';
@@ -14,7 +14,7 @@ import 'address_row_details.dart';
 class AddressRowTile extends StatelessWidget {
   const AddressRowTile({super.key, required this.address});
 
-  final JameiaAddressEntity address;
+  final HeroAddressEntity address;
 
   @override
   Widget build(BuildContext context) {

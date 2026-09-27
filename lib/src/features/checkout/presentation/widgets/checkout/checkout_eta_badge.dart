@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/change_bump.dart';
 import '../../../../../core/responsive/app_size.dart';
 
@@ -21,7 +21,7 @@ class CheckoutEtaBadge extends StatelessWidget {
     required this.bolt,
   });
 
-  /// The ⚡ plate (the Keeta badge, 19 × 13 dp).
+  /// The ⚡ plate (the Hero badge, 19 × 13 dp).
   static const double boltWidth = AppSize.s19;
   static const double boltHeight = AppSize.s13;
 
@@ -42,7 +42,7 @@ class CheckoutEtaBadge extends StatelessWidget {
               padding: const EdgeInsetsDirectional.only(start: AppSpacing.s6),
               child: bolt
                   ? SvgPicture.asset(
-                      JameiaAssets.checkoutExpressBolt,
+                      HeroAssets.checkoutExpressBolt,
                       width: boltWidth,
                       height: boltHeight,
                       semanticsLabel: 'checkout.express_tag'.tr(),

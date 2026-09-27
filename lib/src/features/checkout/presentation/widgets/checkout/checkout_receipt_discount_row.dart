@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import 'checkout_receipt_row.dart';
 
 /// A receipt line that takes money off (offers, coupon, points): shown only
@@ -26,7 +26,7 @@ class CheckoutReceiptDiscountRow extends StatelessWidget {
       visible: visible,
       child: CheckoutReceiptRow(
         label: label,
-        value: JameiaMoneyText(
+        value: HeroMoneyText(
           kd: kd,
           negative: true,
           color: AppColors.finalPrice,

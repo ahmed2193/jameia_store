@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_freshness.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/notifications/domain/usecases/get_notifications_usecase.dart';
-import 'package:jameia_mart/src/features/notifications/presentation/cubit/notifications_cubit.dart';
-import 'package:jameia_mart/src/features/notifications/presentation/cubit/notifications_state.dart';
+import 'package:hero_mart/src/core/domain/entities/data_freshness.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/notifications/domain/entities/notifications_feed.dart';
+import 'package:hero_mart/src/features/notifications/domain/usecases/get_notifications_usecase.dart';
+import 'package:hero_mart/src/features/notifications/presentation/cubit/notifications_cubit.dart';
+import 'package:hero_mart/src/features/notifications/presentation/cubit/notifications_state.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 import 'notifications_test_fakes.dart';
@@ -29,10 +31,32 @@ void main() {
     unreadCount: 5,
   );
   final page2 = feedOf([n3], page: 2, hasMore: false, total: 3, unreadCount: 5);
+  final fresh = DataFreshness(fetchedAt: networkSnapshotAt);
   final loaded = NotificationsState(
-    status: NotificationsStatus.loaded,
+    load: ScreenLoad(phase: LoadPhase.loaded, freshness: fresh),
     feed: page1,
-    freshness: DataFreshness(fetchedAt: networkSnapshotAt),
+  );
+
+  /// The loaded inbox with its load moved on.
+  NotificationsState loadedWith({
+    NotificationsFeed? feed,
+    DataFreshness? freshness,
+    NextPageLoad nextPage = NextPageLoad.idle,
+    Failure? failure,
+    FailedCall? failedOn,
+  }) => NotificationsState(
+    load: ScreenLoad(
+      phase: LoadPhase.loaded,
+      freshness: freshness ?? fresh,
+      nextPage: nextPage,
+      failure: failure,
+      failedOn: failedOn,
+    ),
+    feed: feed ?? page1,
+  );
+
+  const loading = NotificationsState(
+    load: ScreenLoad(phase: LoadPhase.loading),
   );
 
   NotificationsCubit build() => NotificationsCubit(
@@ -61,10 +85,7 @@ void main() {
       'loading → loaded with page 1 (pageSize 20) and the live stream open',
       build: build,
       act: (cubit) => cubit.load(),
-      expect: () => [
-        const NotificationsState(status: NotificationsStatus.loading),
-        loaded,
-      ],
+      expect: () => [loading, loaded],
       verify: (_) {
         expect(getNotifications.calls, [
           const GetNotificationsParams(
@@ -85,11 +106,13 @@ void main() {
       },
       act: (cubit) => cubit.load(),
       expect: () => [
-        const NotificationsState(status: NotificationsStatus.loading),
+        loading,
         const NotificationsState(
-          status: NotificationsStatus.error,
-          failure: UnauthorizedFailure('Sign in'),
-          failedAction: NotificationsAction.load,
+          load: ScreenLoad(
+            phase: LoadPhase.error,
+            failure: UnauthorizedFailure('Sign in'),
+            failedOn: FailedCall.read,
+          ),
         ),
       ],
       verify: (cubit) {
@@ -117,10 +140,7 @@ void main() {
         markAllRead: markAllRead,
       ),
       act: (cubit) => cubit.load(),
-      expect: () => [
-        const NotificationsState(status: NotificationsStatus.loading),
-        loaded,
-      ],
+      expect: () => [loading, loaded],
       verify: (_) => expect(watchLive.listens, 0),
     );
   });
@@ -146,10 +166,10 @@ void main() {
       seed: () => loaded,
       act: (cubit) => cubit.refresh(),
       expect: () => [
-        loaded.copyWith(
-          freshness: loaded.freshness.failed(),
+        loadedWith(
+          freshness: fresh.failed(),
           failure: const NetworkFailure(),
-          failedAction: NotificationsAction.refresh,
+          failedOn: FailedCall.read,
         ),
       ],
     );
@@ -166,8 +186,8 @@ void main() {
       seed: () => loaded,
       act: (cubit) => cubit.loadMore(),
       expect: () => [
-        loaded.copyWith(isLoadingMore: true),
-        loaded.copyWith(feed: page1.merge(page2)),
+        loadedWith(nextPage: NextPageLoad.loading),
+        loadedWith(feed: page1.merge(page2)),
       ],
       verify: (cubit) {
         expect(getNotifications.calls.single.page, 2);
@@ -188,27 +208,53 @@ void main() {
     blocTest<NotificationsCubit, NotificationsState>(
       'no-op while a page is in flight',
       build: build,
-      seed: () => loaded.copyWith(isLoadingMore: true),
+      seed: () => loadedWith(nextPage: NextPageLoad.loading),
       act: (cubit) => cubit.loadMore(),
       expect: () => <NotificationsState>[],
       verify: (_) => expect(getNotifications.calls, isEmpty),
     );
 
     blocTest<NotificationsCubit, NotificationsState>(
-      'failure clears the flag and reports loadMore',
+      'failure: the footer owns it (a retry), never asked again by itself',
       build: () {
         getNotifications.result = const Left(TimeoutFailure());
         return build();
       },
       seed: () => loaded,
-      act: (cubit) => cubit.loadMore(),
+      act: (cubit) async {
+        await cubit.loadMore();
+        await cubit.loadMore(); // scrolled into view again: no re-ask
+      },
       expect: () => [
-        loaded.copyWith(isLoadingMore: true),
-        loaded.copyWith(
-          loadMoreFailed: true,
+        loadedWith(nextPage: NextPageLoad.loading),
+        loadedWith(
+          nextPage: NextPageLoad.failed,
           failure: const TimeoutFailure(),
-          failedAction: NotificationsAction.loadMore,
+          failedOn: FailedCall.nextPage,
         ),
+      ],
+      verify: (cubit) {
+        expect(getNotifications.calls, hasLength(1));
+        expect(cubit.state.load.toldFailure, isNull, reason: 'no snack bar');
+      },
+    );
+
+    blocTest<NotificationsCubit, NotificationsState>(
+      'the footer retry asks again',
+      build: () {
+        getNotifications.handler = (params) =>
+            params.page == 2 ? Right(page2) : Right(page1);
+        return build();
+      },
+      seed: () => loadedWith(
+        nextPage: NextPageLoad.failed,
+        failure: const TimeoutFailure(),
+        failedOn: FailedCall.nextPage,
+      ),
+      act: (cubit) => cubit.loadMore(retry: true),
+      expect: () => [
+        loadedWith(nextPage: NextPageLoad.loading),
+        loadedWith(feed: page1.merge(page2)),
       ],
     );
 
@@ -268,9 +314,9 @@ void main() {
       act: (cubit) => cubit.markRead('n1'),
       expect: () => [
         loaded.copyWith(feed: page1.markRead('n1')),
-        loaded.copyWith(
+        loadedWith(
           failure: const ServerFailure('Nope', statusCode: 500),
-          failedAction: NotificationsAction.markRead,
+          failedOn: FailedCall.read,
         ),
       ],
       verify: (cubit) => expect(cubit.state.feed.byId('n1')!.isRead, isFalse),
@@ -313,9 +359,9 @@ void main() {
       seed: () => loaded,
       act: (cubit) => cubit.markAllRead(),
       expect: () => [
-        loaded.copyWith(
+        loadedWith(
           failure: const NetworkFailure(),
-          failedAction: NotificationsAction.markAllRead,
+          failedOn: FailedCall.action,
         ),
       ],
     );
@@ -384,10 +430,15 @@ void main() {
       );
 
       await cubit.load();
-      expect(cubit.state.status, NotificationsStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.feed, page1);
       expect(cubit.state.freshness.isStale, isTrue);
       expect(watchLive.listens, 0, reason: 'not live on a saved copy');
+      expect(
+        cubit.state.knowsServerCount,
+        isFalse,
+        reason: 'the badge never takes a saved count',
+      );
 
       getNotifications.result = Right(page1);
       await cubit.onReconnected();
@@ -395,6 +446,7 @@ void main() {
       expect(watch.forced, [false, true]);
       expect(cubit.state.freshness.isStale, isFalse);
       expect(watchLive.listens, 1);
+      expect(cubit.state.knowsServerCount, isTrue);
       await cubit.close();
     });
 

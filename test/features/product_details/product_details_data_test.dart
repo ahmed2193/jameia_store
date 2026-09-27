@@ -5,25 +5,25 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_product_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/features/product_details/data/datasources/product_details_cache_data_source.dart';
-import 'package:jameia_mart/src/features/product_details/data/datasources/product_details_remote_data_source.dart';
-import 'package:jameia_mart/src/features/product_details/data/mappers/product_detail_mapper.dart';
-import 'package:jameia_mart/src/features/product_details/data/models/product_detail_model.dart';
-import 'package:jameia_mart/src/features/product_details/data/models/product_reviews_model.dart';
-import 'package:jameia_mart/src/features/product_details/data/repositories/product_details_repository_impl.dart';
-import 'package:jameia_mart/src/features/product_details/domain/entities/product_detail.dart';
-import 'package:jameia_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/models/offer_model.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/features/product_details/data/datasources/product_details_cache_data_source.dart';
+import 'package:hero_mart/src/features/product_details/data/datasources/product_details_remote_data_source.dart';
+import 'package:hero_mart/src/features/product_details/data/mappers/product_detail_mapper.dart';
+import 'package:hero_mart/src/features/product_details/data/models/product_detail_model.dart';
+import 'package:hero_mart/src/features/product_details/data/models/product_reviews_model.dart';
+import 'package:hero_mart/src/features/product_details/data/repositories/product_details_repository_impl.dart';
+import 'package:hero_mart/src/features/product_details/domain/entities/product_detail.dart';
+import 'package:hero_mart/src/features/product_details/domain/usecases/get_product_offer_usecase.dart';
 
 import '../../core/data/catalog_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
@@ -166,7 +166,12 @@ void main() {
       expect(detail.unitPriceFils(variant: null, pro: false), 3250);
       expect(detail.compareAtFils(variant: null, now: now), 4063);
       expect(detail.discountPercent(variant: null, now: now), 20);
-      expect(detail.lineTotalKd(variant: null, pro: false, quantity: 2), 6.5);
+      expect(
+        detail
+            .quoteFor(variant: null, pro: false, now: now, quantity: 2)
+            .amountKd,
+        6.5,
+      );
       expect(detail.proPriceFilsHint(variant: null), isNull);
     });
   });

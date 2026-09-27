@@ -51,7 +51,7 @@ class RewardCardArt extends StatelessWidget {
   static const Offset _shadowOffset = Offset(0, AppSpacing.s6);
   static final List<BoxShadow> _readyShadow = [
     BoxShadow(
-      color: kJameiaPillPin.withValues(alpha: _shadowAlpha),
+      color: kHeroPillPin.withValues(alpha: _shadowAlpha),
       offset: _shadowOffset,
       blurRadius: AppSize.s14,
       spreadRadius: -AppSpacing.s4,

@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/widgets/jameia_section_header.dart';
-import '../../../../../core/widgets/jameia_text_link.dart';
+import '../../../../../core/widgets/hero_section_header.dart';
+import '../../../../../core/widgets/hero_text_link.dart';
 import '../../cubit/cart_cubit.dart';
 import 'cart_clear_dialog.dart';
 
@@ -23,7 +23,7 @@ class CartItemsHeader extends StatelessWidget {
         cubit.state.cart.lines.isNotEmpty && !cubit.state.isBusy,
       ),
     );
-    return JameiaSectionHeader(
+    return HeroSectionHeader(
       title: 'cart.items_count'.tr(namedArgs: {'count': '$count'}),
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppSpacing.gutter,
@@ -31,7 +31,7 @@ class CartItemsHeader extends StatelessWidget {
         AppSpacing.gutter,
         AppSpacing.s8,
       ),
-      trailing: JameiaTextLink(
+      trailing: HeroTextLink(
         label: 'cart.clear'.tr(),
         navigates: false,
         onTap: canClear

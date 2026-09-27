@@ -30,7 +30,7 @@ class _RewardsContentState extends State<RewardsContent> {
   static const List<Color> _confetti = [
     AppColors.proAmber,
     AppColors.accent3,
-    kJameiaPillPin,
+    kHeroPillPin,
     AppColors.proLime,
   ];
 

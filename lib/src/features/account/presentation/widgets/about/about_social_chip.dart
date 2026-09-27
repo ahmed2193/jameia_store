@@ -27,7 +27,7 @@ class AboutSocialChip extends StatelessWidget {
     );
     await Clipboard.setData(ClipboardData(text: social.handle));
     if (!context.mounted) return;
-    showJameiaSnackBar(context, message, behavior: SnackBarBehavior.floating);
+    showHeroSnackBar(context, message, behavior: SnackBarBehavior.floating);
   }
 
   @override

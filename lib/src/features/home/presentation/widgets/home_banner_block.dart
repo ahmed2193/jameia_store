@@ -5,7 +5,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/home_section_entity.dart';
 import 'home_layout.dart';
 
@@ -40,7 +40,7 @@ class HomeBannerBlock extends StatelessWidget {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                JameiaImage(url: section.imageUrl),
+                HeroImage(url: section.imageUrl),
                 if (section.caption.isNotEmpty)
                   PositionedDirectional(
                     start: 0,

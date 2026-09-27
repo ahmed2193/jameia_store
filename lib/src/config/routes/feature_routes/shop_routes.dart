@@ -10,11 +10,11 @@ import '../route_args/category_args.dart';
 import '../route_args/product_listing_args.dart';
 import '../routes.dart';
 
-/// Category browsing + product listings (jm3eia backend catalogue).
+/// Category browsing + product listings (Hero backend catalogue).
 final List<RouteBase> shopRoutes = <RouteBase>[
   GoRoute(
     path: Routes.categories,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const CategoriesPage(),
@@ -22,21 +22,10 @@ final List<RouteBase> shopRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.brands,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const BrandsPage(),
-    ),
-  ),
-  // The app is a single store: the marketplace "open this shop" link of the
-  // screens that are still offline (orders, discovery leftovers) lands on the
-  // store's categories. Its old `extra` (an offline shop id) is ignored.
-  GoRoute(
-    path: Routes.shop,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
-      key: state.pageKey,
-      name: state.uri.path,
-      child: const CategoriesPage(),
     ),
   ),
   // extra: CategoryArgs
@@ -44,7 +33,7 @@ final List<RouteBase> shopRoutes = <RouteBase>[
     path: Routes.category,
     pageBuilder: (_, state) {
       final args = state.extra;
-      return JameiaTransitionPage<Object?>(
+      return HeroTransitionPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: args is CategoryArgs
@@ -58,7 +47,7 @@ final List<RouteBase> shopRoutes = <RouteBase>[
     path: Routes.productListing,
     pageBuilder: (_, state) {
       final args = state.extra;
-      return JameiaTransitionPage<Object?>(
+      return HeroTransitionPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: args is ProductListingArgs

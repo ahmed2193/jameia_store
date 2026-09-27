@@ -7,13 +7,22 @@ import '../responsive/app_size.dart';
 
 /// One calm line saying that something needs the connection — the search
 /// list offline, a list's "load more" footer, a product page whose details
-/// could not load. Screen readers announce it once when it appears.
+/// could not load (while the app checks the connection, [leading] is a
+/// loader instead of the no-Wi-Fi mark). Screen readers announce it once
+/// when it appears.
 class OfflineInlineNote extends StatelessWidget {
   const OfflineInlineNote({
     super.key,
     required this.message,
     this.padding = defaultPadding,
+    this.leading = _offlineMark,
   });
+
+  static const Widget _offlineMark = Icon(
+    Icons.wifi_off_rounded,
+    size: AppSize.s20,
+    color: AppColors.secondaryText,
+  );
 
   static const EdgeInsetsGeometry defaultPadding =
       EdgeInsetsDirectional.symmetric(
@@ -24,6 +33,9 @@ class OfflineInlineNote extends StatelessWidget {
   final String message;
   final EdgeInsetsGeometry padding;
 
+  /// Before the text, on the start side.
+  final Widget leading;
+
   @override
   Widget build(BuildContext context) => Semantics(
     container: true,
@@ -32,11 +44,7 @@ class OfflineInlineNote extends StatelessWidget {
       padding: padding,
       child: Row(
         children: [
-          const Icon(
-            Icons.wifi_off_rounded,
-            size: AppSize.s20,
-            color: AppColors.secondaryText,
-          ),
+          leading,
           const SizedBox(width: AppSpacing.s12),
           Expanded(
             child: Text(

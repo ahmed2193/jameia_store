@@ -1,18 +1,18 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/features/account/data/datasources/loyalty_remote_data_source.dart';
-import 'package:jameia_mart/src/features/account/data/datasources/wallet_remote_data_source.dart';
-import 'package:jameia_mart/src/features/account/data/mappers/loyalty_mapper.dart';
-import 'package:jameia_mart/src/features/account/data/mappers/wallet_mapper.dart';
-import 'package:jameia_mart/src/features/account/data/models/loyalty_entry_model.dart';
-import 'package:jameia_mart/src/core/data/mappers/loyalty_program_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/loyalty_program_model.dart';
-import 'package:jameia_mart/src/features/account/data/models/wallet_entry_model.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/loyalty_entry_entity.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/wallet_entry_entity.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/features/account/data/datasources/loyalty_remote_data_source.dart';
+import 'package:hero_mart/src/features/account/data/datasources/wallet_remote_data_source.dart';
+import 'package:hero_mart/src/features/account/data/mappers/loyalty_mapper.dart';
+import 'package:hero_mart/src/features/account/data/mappers/wallet_mapper.dart';
+import 'package:hero_mart/src/features/account/data/models/loyalty_entry_model.dart';
+import 'package:hero_mart/src/core/data/mappers/loyalty_program_mapper.dart';
+import 'package:hero_mart/src/core/data/models/loyalty_program_model.dart';
+import 'package:hero_mart/src/features/account/data/models/wallet_entry_model.dart';
+import 'package:hero_mart/src/features/account/domain/entities/loyalty_entry_entity.dart';
+import 'package:hero_mart/src/features/account/domain/entities/wallet_entry_entity.dart';
 
 import '../../core/network/network_test_fakes.dart';
 
@@ -66,7 +66,7 @@ Map<String, Object?> _loyaltyPage() => {
 
 Map<String, Object?> _init({Map<String, Object?>? loyalty}) => {
   'store': {
-    'name': 'Jm3eia',
+    'name': 'Hero',
     'loyalty':
         loyalty ??
         {
@@ -155,7 +155,7 @@ void main() {
 
     test('no loyalty block → the programme is off', () {
       final program = LoyaltyProgramModel.fromInitJson(const {
-        'store': {'name': 'Jm3eia'},
+        'store': {'name': 'Hero'},
       }).toEntity();
       expect(program.enabled, isFalse);
       expect(program.profileBonusPoints, 0);

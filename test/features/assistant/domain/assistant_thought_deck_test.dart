@@ -8,12 +8,12 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_day_part.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_starter.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thought.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thought_deck.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thought_place.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thought_topic.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_day_part.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_starter.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thought.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thought_deck.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thought_place.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thought_topic.dart';
 
 void main() {
   /// [count] lines in a row, each said before the next.

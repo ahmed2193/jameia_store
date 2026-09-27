@@ -1,13 +1,13 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/features/notifications/data/datasources/notifications_cache_data_source.dart';
-import 'package:jameia_mart/src/features/notifications/data/repositories/notifications_repository_impl.dart';
-import 'package:jameia_mart/src/features/notifications/domain/entities/notification_entity.dart';
-import 'package:jameia_mart/src/features/notifications/domain/entities/notifications_feed.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/features/notifications/data/datasources/notifications_cache_data_source.dart';
+import 'package:hero_mart/src/features/notifications/data/repositories/notifications_repository_impl.dart';
+import 'package:hero_mart/src/features/notifications/domain/entities/notification_entity.dart';
+import 'package:hero_mart/src/features/notifications/domain/entities/notifications_feed.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import '../../core/storage/cache_test_fakes.dart';

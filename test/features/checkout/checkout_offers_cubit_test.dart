@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_offers_state.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_offers_state.dart';
 
 import 'checkout_test_harness.dart';
 import 'fake_checkout_catalog_repository.dart';

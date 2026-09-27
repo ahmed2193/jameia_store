@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/branded_loader.dart';
+import '../../../../../core/widgets/branded_dot_loader.dart';
 import '../../cubit/setting_cubit.dart';
 import '../../cubit/setting_state.dart';
 import 'settings_tile.dart';
@@ -31,10 +30,7 @@ class SettingsClearCacheTile extends StatelessWidget {
         trailing: FadeThroughSwitcher(
           stateKey: clearing,
           child: clearing
-              ? const BrandedLoader.inline(
-                  size: AppSize.s20,
-                  color: AppColors.accent2Dark,
-                )
+              ? const BrandedDotLoader(size: AppSize.s24)
               : const SizedBox.shrink(),
         ),
       ),

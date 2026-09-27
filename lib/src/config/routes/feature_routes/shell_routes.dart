@@ -55,15 +55,15 @@ const ShellTabs _tabs = ShellTabs(
 final List<RouteBase> shellRoutes = <RouteBase>[
   GoRoute(
     path: Routes.shell,
-    // From the splash the app fades in over it (talabat-style hand-off);
+    // From the splash the app fades in over it (Hero-style hand-off);
     // every other entrance keeps the standard page motion.
     pageBuilder: (_, state) => state.extra == ShellEntrance.splash
-        ? JameiaFadeThroughPage<Object?>(
+        ? HeroFadeThroughPage<Object?>(
             key: state.pageKey,
             name: state.uri.path,
             child: const MainShellPage(tabs: _tabs),
           )
-        : JameiaTransitionPage<Object?>(
+        : HeroTransitionPage<Object?>(
             key: state.pageKey,
             name: state.uri.path,
             child: const MainShellPage(tabs: _tabs),
@@ -71,7 +71,7 @@ final List<RouteBase> shellRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.home,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const MainShellPage(tabs: _tabs),
@@ -79,7 +79,7 @@ final List<RouteBase> shellRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.search,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const SearchPage(),
@@ -87,7 +87,7 @@ final List<RouteBase> shellRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.orders,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const OrdersPage(),
@@ -95,7 +95,7 @@ final List<RouteBase> shellRoutes = <RouteBase>[
   ),
   GoRoute(
     path: Routes.mine,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const MinePage(),

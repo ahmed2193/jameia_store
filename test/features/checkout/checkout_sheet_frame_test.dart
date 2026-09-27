@@ -7,16 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/theme/app_colors.dart';
-import 'package:jameia_mart/src/config/theme/app_spacing.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_close_button.dart';
-import 'package:jameia_mart/src/core/widgets/sticker_text.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_info_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_ink_theme.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_sheet_frame.dart';
+import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/config/theme/app_spacing.dart';
+import 'package:hero_mart/src/core/widgets/hero_close_button.dart';
+import 'package:hero_mart/src/core/widgets/sticker_text.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_info_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_ink_theme.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_sheet_frame.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/fake_cart_repository.dart';
@@ -158,7 +158,7 @@ void main() {
 
     final frame = tester.getTopLeft(find.byType(CheckoutSheetFrame));
     // The ✕ sits in the 30 dp disc at the start of the strip.
-    final cross = tester.getCenter(find.byType(JameiaCloseButton));
+    final cross = tester.getCenter(find.byType(HeroCloseButton));
     expect(
       cross.dx - frame.dx,
       closeTo(AppSpacing.s16 + CheckoutSheetFrame.discSize / 2, 0.5),
@@ -181,7 +181,7 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byType(JameiaCloseButton));
+    await tester.tap(find.byType(HeroCloseButton));
     await tester.pumpAndSettle();
 
     expect(find.byType(CheckoutSheetFrame), findsNothing);
@@ -236,7 +236,7 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expectInkTheme(find.byType(CheckoutSheetFrame));
-    await tester.tap(find.byType(JameiaCloseButton));
+    await tester.tap(find.byType(HeroCloseButton));
     await tester.pumpAndSettle();
 
     // …and one that does not.

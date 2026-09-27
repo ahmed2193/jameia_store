@@ -9,8 +9,8 @@ import '../../cubit/account_cubit.dart';
 import 'mine_menu_group.dart';
 
 /// Feeds the Mine menu from the cubits it depends on — the inbox unread
-/// badge, the customer-service badge, whether the store runs the Jm3eia
-/// Assistant and where the customer stands with Jm3eia Pro. Only this
+/// badge, the customer-service badge, whether the store runs the Hero
+/// Assistant and where the customer stands with Hero Pro. Only this
 /// section rebuilds when one of them changes.
 class MineMenu extends StatelessWidget {
   const MineMenu({super.key, this.firstEntranceIndex = 0});

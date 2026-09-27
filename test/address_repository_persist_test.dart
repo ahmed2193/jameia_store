@@ -1,4 +1,4 @@
-// Smoke test: JameiaRepository address-book persistence (shared_preferences).
+// Smoke test: HeroRepository address-book persistence (shared_preferences).
 //
 // A user-added address must survive a fresh repository instance (it is written
 // to shared_preferences on upsert and restored on the next load()). Deleting it
@@ -7,15 +7,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:jameia_mart/src/core/data/jameia_repository.dart';
-import 'package:jameia_mart/src/core/data/models/address.dart';
-import 'package:jameia_mart/src/core/utils/jameia_geocode.dart';
+import 'package:hero_mart/src/core/data/hero_repository.dart';
+import 'package:hero_mart/src/core/data/models/address.dart';
+import 'package:hero_mart/src/core/utils/hero_geocode.dart';
 
 void main() {
   // load() reads bundled assets via rootBundle + persists via shared_preferences.
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const newAddr = JameiaAddress(
+  const newAddr = HeroAddress(
     id: 'addr_persist_test',
     label: 'Hangout',
     line: 'Block 3, Street 9, Beach Tower',
@@ -40,10 +40,10 @@ void main() {
   });
 
   test(
-    'upserted address survives a fresh JameiaRepository, delete removes it',
+    'upserted address survives a fresh HeroRepository, delete removes it',
     () async {
       // First repo: load the seed book, then add a new address (persisted).
-      final repo1 = JameiaRepository();
+      final repo1 = HeroRepository();
       await repo1.load();
       expect(repo1.addresses.any((a) => a.id == newAddr.id), isFalse);
 
@@ -54,7 +54,7 @@ void main() {
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
       // Second repo: a fresh instance must restore the persisted book.
-      final repo2 = JameiaRepository();
+      final repo2 = HeroRepository();
       await repo2.load();
       final restored = repo2.addresses.where((a) => a.id == newAddr.id);
       expect(restored, hasLength(1));
@@ -67,7 +67,7 @@ void main() {
       expect(repo2.addresses.any((a) => a.id == newAddr.id), isFalse);
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      final repo3 = JameiaRepository();
+      final repo3 = HeroRepository();
       await repo3.load();
       expect(repo3.addresses.any((a) => a.id == newAddr.id), isFalse);
     },
@@ -76,18 +76,18 @@ void main() {
   test('defaultAddress/activeAddress never throw on an empty address book', () {
     // A fresh (un-loaded) repository has no addresses yet — the getters must
     // return the benign empty placeholder instead of throwing StateError.
-    final repo = JameiaRepository();
+    final repo = HeroRepository();
     expect(repo.addresses, isEmpty);
     expect(() => repo.defaultAddress, returnsNormally);
-    expect(repo.defaultAddress, same(JameiaAddress.empty));
+    expect(repo.defaultAddress, same(HeroAddress.empty));
     expect(() => repo.activeAddress, returnsNormally);
-    expect(repo.activeAddress, same(JameiaAddress.empty));
+    expect(repo.activeAddress, same(HeroAddress.empty));
   });
 
   test(
     'deleteAddress keeps the last remaining address (book never emptied)',
     () async {
-      final repo = JameiaRepository();
+      final repo = HeroRepository();
       await repo.load();
       for (final a in [...repo.addresses]) {
         repo.deleteAddress(a.id);

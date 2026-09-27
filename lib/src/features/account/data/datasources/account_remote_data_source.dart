@@ -3,7 +3,7 @@ import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 
-/// The jm3eia account endpoints a signed-in customer owns. Receives the
+/// The Hero account endpoints a signed-in customer owns. Receives the
 /// envelope's `results` (unwrapped by `DioConsumer`) and throws `AppException`
 /// only.
 ///

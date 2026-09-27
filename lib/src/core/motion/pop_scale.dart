@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'motion.dart';
 
-/// Grow-from-zero POP with overshoot — Jameia's `scale_in` (0→1, 250ms) used by
+/// Grow-from-zero POP with overshoot — Hero's `scale_in` (0→1, 250ms) used by
 /// badges, chips, check marks and the cart-count badge. Re-pops whenever
 /// [popKey] changes (e.g. cart quantity ticks up). Reduced-motion → pinned at
 /// the rest scale (no movement). Use [PopScale.onMount] for a one-shot entrance.

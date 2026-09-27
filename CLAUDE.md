@@ -1,4 +1,4 @@
-# JameiaMart (jameia_mart) — Architecture & Code Rules
+# Hero (hero_mart) — Architecture & Code Rules
 
 This file is the **contract for every agent** working in this repo: the main session,
 subagents, workflow agents, builders and reviewers. The rules are hard rules, not
@@ -16,18 +16,18 @@ before starting, and run the review agents before reporting done (§10).
 
 **In-repo API skills** (`.claude/skills/<name>/SKILL.md` — auto-listed for Claude Code agents
 through the Skill tool; any other agent reads the file directly). **Load the matching one
-before touching anything that talks to the jm3eia backend** (§3.1, §3.2):
-- `jameia-api-integration` — the build recipe for an API-backed feature / moving a feature off
+before touching anything that talks to the Hero backend** (§3.1, §3.2):
+- `hero-api-integration` — the build recipe for an API-backed feature / moving a feature off
   the offline catalogue. `references/layer-templates.md` (copyable code per layer),
   `references/patterns.md` (pagination, partial `PATCH`, optimistic update, race guards,
   signed-out state …), `references/backend-contract.md` (envelope, codes, conventions,
   **which features are on the API**), `references/migrating-offline-feature.md` (rules for a
   legacy target: scope, entity choice, id-space trap, mutations), `scripts/openapi_route.js`
   (one route's params / body / `results` from the live spec).
-- `jameia-api-session` — tokens, automatic Bearer + refresh, expiry, guest ids, sign-in state.
-- `jameia-api-streaming` — `text/event-stream` routes through `EventStreamClient`.
-- `jameia-api-testing` — the network fakes and the per-layer test recipe.
-- `jameia-api-verify` — reading the debug API trace, the bundled mock API
+- `hero-api-session` — tokens, automatic Bearer + refresh, expiry, guest ids, sign-in state.
+- `hero-api-streaming` — `text/event-stream` routes through `EventStreamClient`.
+- `hero-api-testing` — the network fakes and the per-layer test recipe.
+- `hero-api-verify` — reading the debug API trace, the bundled mock API
   (`scripts/mock_api/server.js`), failure knobs, the on-device scenario checklist.
 Shared network design: `docs/api_integration.md`.
 
@@ -53,7 +53,7 @@ When this file and existing code disagree, **this file wins**. Never copy a lega
 pattern (see §12). The `architecture_lints` analyzer plugin (`tools/architecture_lints`)
 enforces most rules through `dart analyze` (see §9).
 
-Package: `jameia_mart`. `lib/` uses relative imports; `test/` uses `package:jameia_mart/...`.
+Package: `hero_mart`. `lib/` uses relative imports; `test/` uses `package:hero_mart/...`.
 Stack: Flutter 3.47 / Dart 3.13, flutter_bloc (Cubit), get_it, go_router, dio, dartz,
 equatable, easy_localization (`assets/i18n/{en,ar}.json`).
 
@@ -63,8 +63,8 @@ equatable, easy_localization (`assets/i18n/{en,ar}.json`).
 
 1. **Read before writing.** Read this file, then the feature you touch (all layers) and
    one comparable feature. Mirror the target patterns here, not whatever the nearest
-   file happens to do. Backend work: load the `jameia-api-integration` skill first and read
-   the route from the live spec (`node .claude/skills/jameia-api-integration/scripts/openapi_route.js <filter>`)
+   file happens to do. Backend work: load the `hero-api-integration` skill first and read
+   the route from the live spec (`node .claude/skills/hero-api-integration/scripts/openapi_route.js <filter>`)
    — never guess a field name, status code or limit.
 2. **Build bottom-up** (api-integration order):
    entity → model (DTO) → mapper → datasource → repository contract → repository impl →
@@ -106,20 +106,20 @@ lib/
     ├── core/
     │   ├── constants/            # AppConstants, AppEnv (--dart-define build config)
     │   ├── data/
-    │   │   ├── jameia_repository.dart       # offline in-memory backend (datasources only!)
-    │   │   ├── jameia/                      # catalogue loader + raw catalogue models
+    │   │   ├── hero_repository.dart         # offline in-memory backend (datasources only!)
+    │   │   ├── hero/                        # catalogue loader + raw catalogue models
     │   │   ├── datasources/                 # shared datasources: catalogue remote + cache, CacheSlots (cache_slots.dart)
     │   │   ├── models/                      # shared DTOs, RemotePayload (model + raw `results` to keep)
     │   │   ├── mappers/                     # shared DTO ⇄ entity mappers (barrel: mappers.dart)
     │   │   └── repositories/                # base_repository_mixin.dart, cached_repository_mixin.dart (cache-then-network)
-    │   ├── design/               # JameiaIcons, JameiaAssets
+    │   ├── design/               # HeroIcons, HeroAssets
     │   ├── domain/
     │   │   ├── entities/                    # shared framework-free entities (barrel: entities.dart),
     │   │   │                                #   incl. DataSnapshot / DataFreshness (where data came from, how old)
     │   │   └── localization/localized_pick.dart
     │   ├── error/                # exceptions.dart, failures.dart
     │   ├── motion/               # AppMotion, MotionGuard, motion widgets
-    │   ├── navigation/           # transition pages, showJameiaDialog / showJameiaBottomSheet, navigatorKey
+    │   ├── navigation/           # transition pages, showHeroDialog / showHeroBottomSheet, navigatorKey
     │   ├── network/              # ApiConsumer/DioConsumer, EndPoints, ApiEnvelope, ApiStatus, ApiHeaders,
     │   │                         # ApiExceptionMapper, interceptors/ (auth, headers, 429 retry,
     │   │                         # reachability signal, log), TokenRefresher, EventStreamClient (SSE),
@@ -166,13 +166,13 @@ Widget ──reads──▶ Cubit ──calls──▶ UseCase ──calls──
                                                           ▲ implements
                                               RepositoryImpl with BaseRepositoryMixin
                                                           │ calls
-                                                      DataSource ──▶ ApiConsumer (Dio) | JameiaRepository | LocalStorage | SessionStore | JsonCacheStore
+                                                      DataSource ──▶ ApiConsumer (Dio) | HeroRepository | LocalStorage | SessionStore | JsonCacheStore
 Errors:  DataSource throws AppException → BaseRepositoryMixin maps it to Failure
          → UseCase returns Left(Failure) → Cubit emits status: error + message → Widget shows the error UI
 ```
 
 - Arrows only point inward. Presentation never skips a layer (no cubit → repository, no
-  widget → datasource, no page → `JameiaRepository`).
+  widget → datasource, no page → `HeroRepository`).
 - Entities cross layers. DTOs stay in `data/`.
 
 ---
@@ -187,22 +187,23 @@ Errors:  DataSource throws AppException → BaseRepositoryMixin maps it to Failu
 | API streams (SSE) | `EventStreamClient.connect(path)` in a datasource → repository `guardStream(...)` → `StreamUseCase` → the cubit owns the subscription and cancels it in `close()`; ONE shared connection per route | a stream route through `ApiConsumer`; a retry loop / timer around the client; one connection per listener |
 | API payload shape | `ApiPayload.asMap(results, route)`; DTO `fromJson` with key constants, `is` checks, `ParsingException` on a missing identity field, a bad list row skipped | `as` casts on JSON; one malformed row failing the whole page |
 | Error text for the user | `failure.localizedMessage` (`core/utils/failure_message.dart`): backend text as sent, transport failures → `core.*` i18n keys. API-backed states hold the `Failure`, the page / widget resolves the text | showing the raw `failure.message` of a transport failure (English fallback); new error-string logic in a cubit |
-| Offline catalogue | `JameiaRepository`, **only inside a datasource** | reading it from a repo impl, cubit, page or widget |
+| Offline catalogue | `HeroRepository`, **only inside a datasource** | reading it from a repo impl, cubit, page or widget |
 | Exceptions | `AppException` → `ServerException` (`BadRequestException`, `UnauthorizedException`, `ForbiddenException`, `NotFoundException`, `RateLimitedException`; all carry `code` = backend `statusMessage`), `NetworkException` (`NoInternetConnectionException`, `RequestTimeoutException`, `RequestCancelledException`), `CacheException`, `ParsingException` | throwing strings or raw `Exception`; importing exceptions outside `data/` |
 | Failures | `ServerFailure` (`statusCode`, `code`), `NotFoundFailure` (404), `UnauthorizedFailure`, `ForbiddenFailure`, `RateLimitedFailure`, `NetworkFailure`, `TimeoutFailure`, `CacheFailure`, `ParsingFailure`, `UnexpectedFailure` | exposing exceptions to the UI; branching on `failure.message` text (branch on `code`) |
 | Repository errors | `with BaseRepositoryMixin` + `execute(() => …)` / `executeSync(() => …)` | a hand-written `try/catch → Left(...)` |
 | Use cases | `UseCase<T, P>` (async), `SyncUseCase<T, P>` (same-frame taps), `StreamUseCase<T, P>`, `NoParams` | a cubit calling a repository |
 | DI | GetIt `sl`; datasource/repo/use case → `registerLazySingleton<Interface>`, cubit → `registerFactory` | `sl` inside classes (constructor injection only) |
 | Navigation | GoRouter: `context.push / go / pushReplacement / pop` + `Routes.*` + `extra:` | `Navigator.push*`, `pushNamed`, `MaterialPageRoute` |
-| Transitions | `JameiaTransitionPage` / `JameiaSlideUpTransitionPage` in `pageBuilder:` | `GoRoute(builder:)` (go_router 18 falls back to no transition) |
-| Dialogs / sheets | `showJameiaDialog` / `showJameiaBottomSheet` | raw `showDialog` / `showModalBottomSheet` |
-| Transient messages / screen states | `showJameiaSnackBar(context, text)` (`core/navigation/jameia_snack_bar.dart`); a failure → `showFailureSnackBar(context, failure, action: …)` (same file: a read that failed in transport → no snack of its own, the connection check and the banner speak — offline it nudges the banner; a failed action for want of a connection → `connectivity.action_needs_internet` once + nudge; else `localizedMessage`); `AppLoader`, `ErrorView(message:, onRetry:)`, `EmptyStateView(...)`, `BrandedRefresh`, `FailureView(failure:, onRetry:)` (a `NetworkFailure` → `JameiaStateView.checking` + a live check while the app does not know it is offline, then a reload by itself or `JameiaStateView.offline`) from `core/widgets` | raw `ScaffoldMessenger`; hand-rolled loader / error / empty / offline views per feature; `core.no_internet` / `core.request_timeout` snack bars while the banner shows |
+| Transitions | `HeroTransitionPage` / `HeroSlideUpTransitionPage` in `pageBuilder:` | `GoRoute(builder:)` (go_router 18 falls back to no transition) |
+| Dialogs / sheets | `showHeroDialog` / `showHeroBottomSheet` | raw `showDialog` / `showModalBottomSheet` |
+| Transient messages / screen states | `showHeroSnackBar(context, text)` (`core/navigation/hero_snack_bar.dart`); a failure → `showFailureSnackBar(context, failure, action: …)` (same file: a read that failed in transport → no snack of its own, the connection check and the banner speak — offline it nudges the banner; a failed action for want of a connection → `connectivity.action_needs_internet` once + nudge; else `localizedMessage`); `AppLoader`, `ErrorView(message:, onRetry:)`, `EmptyStateView(...)`, `BrandedRefresh`, `FailureView(failure:, onRetry:)` (a `NetworkFailure` → `HeroStateView.checking` + a live check while the app does not know it is offline, then a reload by itself or `HeroStateView.offline`) from `core/widgets` | raw `ScaffoldMessenger`; hand-rolled loader / error / empty / offline views per feature; `core.no_internet` / `core.request_timeout` snack bars while the banner shows |
+| Loaders (the Hero dots: green + cape amber orbiting) | Page / block load → `AppLoader()` (white disc, waits `AppMotion.loaderDelay`); list footer / row / small spot → `AppLoader.inline(size:)`; on a light surface → `BrandedDotLoader`; on a brand fill (button) → `BrandedLoader.inline`; pull-to-refresh → `BrandedRefresh`. A submit (POST / PATCH / DELETE the customer fired: place order, save, delete, log out, cancel, subscribe…) → wrap the page's `Scaffold` in `CubitBusyOverlay<C, S>(busyOf:, doneOf:, doneLabel:)` (`core/widgets`: scrim + disc over the route, blocks taps + back, ≥ `AppMotion.busyMinVisible`, `done` → drawn check; hidden off-screen tabs show nothing); the pill keeps its label (`holding:`), never a second loader | `CircularProgressIndicator` or any other spinner (only the 2 dp hairline under the live search box stays linear); a GIF / Lottie loader; a spinner inside the pill under the overlay; a hand-rolled `AbsorbPointer` while saving |
 | Connectivity | `ConnectivityCubit` (`features/connectivity`, app-global; fed by `NetworkInfo` — probes only while the app is in the foreground — and `ReachabilitySignalInterceptor`) drives the banner — offline only after the 1.5 s debounce AND a confirming live check, so one slow probe (the first one at launch) never shows it. Everything else reads `ConnectivityScope` (`core/widgets`): `isOfflineOf(context)` / `readIsOffline`, `reconnectEpochOf`, `nudge(context)`, `confirmOnline(context)` (live check before a submit that is never queued), `recheckerOf(context)` (`FailureView`'s check; at most one automatic retry per `AppConstants.readRetryGap`). A page cubit's `onReconnected()` runs from `ReconnectRefresh`; the app-global cubits' from `app.dart`'s reconnect listener | a raw checker (`InternetConnection`, `connectivity_plus`, `NetworkInfo`) in a feature; a pre-check before every request; a retry timer / loop in a feature; a 5xx treated as "offline" |
 | Offline cache | `JsonCacheStore` (`core/storage`) only through a feature's `*_cache_data_source.dart` (`CacheSlots.of(namespace, id:, parse:)`; `CacheNamespace`: scope public / owner / customer, fresh TTL, max age, max entries, version) → repository `with CachedRepositoryMixin` (`cachedRead(cache:, fetch:, toEntity:, forceRefresh:)` → `Stream<DataSnapshot<T>>`, a `Failure` on its error channel after any copy; `keepReply(slot, raw)` for a mutation reply) → watch use case (`StreamUseCase`, `WatchParams.cached` / `.fresh`) → cubit `with SnapshotLoaderMixin` (`followSnapshots`, `refreshOnReconnect`) → state `DataFreshness freshness` → `StaleDataNotice` / `CubitStaleNotice` | SharedPreferences / `LocalStorage` for payloads; tokens, OTPs, headers, checkout data or assistant transcripts in the cache; a cache read in a repository without the mixin, a cubit or a widget; a full-screen error over cached data |
 | State | Cubit + one immutable Equatable state + `SafeCubitMixin` (`safeEmit`) | multiple state classes per screen, `emit` after close |
 | Logging | `log()` from `dart:developer` | `print`, `debugPrint` |
 
-### 3.1 API contract (jm3eia backend)
+### 3.1 API contract (Hero backend)
 
 Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/developers/.
 
@@ -226,9 +227,9 @@ Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/d
   through `EventStreamClient` (`core/network/event_stream_client.dart`, auto-reconnect), never
   through `ApiConsumer`.
 
-### 3.2 Integrating an endpoint (short form — full recipe: `jameia-api-integration` skill)
+### 3.2 Integrating an endpoint (short form — full recipe: `hero-api-integration` skill)
 
-1. **Contract first.** `node .claude/skills/jameia-api-integration/scripts/openapi_route.js <filter>`
+1. **Contract first.** `node .claude/skills/hero-api-integration/scripts/openapi_route.js <filter>`
    prints the route's query / body / `results` from https://api.jm3eia.store/docs; read the
    docs page for who may call it. Add the path to `EndPoints`, a new code to `ApiStatus`.
 2. **Mirror a shipped feature:** list + mutations + live stream → `features/notifications`;
@@ -243,7 +244,7 @@ Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/d
    copy paints it at once and, while offline or after a failed refresh, shows the stale note
    "Updated … ago" — never a full-screen error over data; with nothing saved, `FailureView`
    says "Checking your connection…" until the app knows, then reloads or shows
-   `JameiaStateView.offline` — never "No connection" straight away; a failed "load more" shows `LoadMoreOfflineNote`; a
+   `HeroStateView.offline` — never "No connection" straight away; a failed "load more" shows `LoadMoreOfflineNote`; a
    background failure goes through `showFailureSnackBar`), **reconnect refresh** (`ReconnectRefresh`
    → cubit `onReconnected()` → `refreshOnReconnect(needed: stale || error)`: at most one request
    per stale screen). Pagination guards re-entry and drops a stale page (generation counter).
@@ -259,7 +260,7 @@ Full guide: `docs/api_integration.md`. Backend docs: https://docs.jm3eia.store/d
    customer's cached data (customer-scope namespaces) is wiped by the auth local datasource on
    sign-out / expiry; reconnect catch-up of an app-global cubit is its `onReconnected()`,
    called from `app.dart`'s `ConnectivityCubit` listener.
-7. **Verify on a device** (`jameia-api-verify`): read the `api` / `auth` / `sse` trace (IDE
+7. **Verify on a device** (`hero-api-verify`): read the `api` / `auth` / `sse` trace (IDE
    Debug Console or DevTools Logging — `dart:developer` output is NOT in the `flutter run`
    terminal or logcat; `scripts/vm_log_tail.dart` tails it for agents), use the bundled mock
    API for writes, OTP and forced failures (expired token, revoked refresh, 429, live push).
@@ -270,7 +271,7 @@ On the API today: **auth**, **account profile**, **language**, **notifications**
 **addresses**, **cart**, **checkout** (delivery selection + place order), **orders**
 (list, tracking, cancel, reorder, reviews), and the whole catalogue — **home**, **shop**
 (categories / listings / brands), **product_details**, **search**, **recipes**, **marketing**
-(offers, content pages), **store_mode** (Jm3eia Pro) and the **assistant** (streamed chat on
+(offers, content pages), **store_mode** (Hero Pro) and the **assistant** (streamed chat on
 `/v1/assistant/*`: `POST` SSE replies through `EventStreamClient.send`, cart proposals confirmed
 by the customer, history, handoff, feedback). The coupon wallet, discovery, support
 and wallet / loyalty / wishlist still read the offline catalogue / local persistence (§12).
@@ -300,10 +301,10 @@ sign-in / sign-out and refetches on a locale change.
 - **Shared entities** (used by 2+ features or by `core/widgets`) live in
   `core/domain/entities/` (import through the `entities.dart` barrel or directly):
   `ProductEntity`, `ProductVariantEntity`, `MenuSectionEntity`, `PromoTagEntity`, `ShopEntity`,
-  `CartItemEntity`, `CouponEntity`, `JameiaOrderEntity`, `OrderItemEntity`, `RiderEntity`,
-  `JameiaAddressEntity`, `GeoPointEntity`, `UserProfileEntity`, `KingKongItemEntity`,
+  `CartItemEntity`, `CouponEntity`, `HeroOrderEntity`, `OrderItemEntity`, `RiderEntity`,
+  `HeroAddressEntity`, `GeoPointEntity`, `UserProfileEntity`, `KingKongItemEntity`,
   `HomeBannerEntity`, `GatheringCardEntity`, `HomeTileEntity`, `BenefitItemEntity`,
-  `HomePopupEntity`, `JameiaCategoryEntity`, `JameiaSubCategoryEntity`, `JameiaRankEntity`,
+  `HomePopupEntity`, `HeroCategoryEntity`, `HeroSubCategoryEntity`, `HeroRankEntity`,
   `FeaturedSectionEntity`, `StoreSettingsEntity`, `VipCardEntity`, `AuthCustomerEntity`
   (the signed-in customer as the API returns it: wallet in fils, loyalty, pro, language,
   gender …; DTO + mapper shared in `core/data/models/customer_model.dart` /
@@ -327,7 +328,7 @@ sign-in / sign-out and refetches on a locale change.
   They return DTOs or primitives, **throw `AppException` subclasses**, and never import
   `dartz` or return `Either`.
 - Remote datasources depend on `ApiConsumer` only (plus `EventStreamClient` for a
-  `text/event-stream` route). Local datasources depend on `JameiaRepository` /
+  `text/event-stream` route). Local datasources depend on `HeroRepository` /
   `LocalStorage` / `SessionStore`; cache datasources (`*_cache_data_source.dart`) on
   `CacheSlots` (→ `JsonCacheStore`) only. A remote datasource documents each method with its
   `METHOD /v1/path`, guards the payload with `ApiPayload.asMap`, and never sees the envelope.
@@ -358,7 +359,7 @@ sign-in / sign-out and refetches on a locale change.
   (`foundation.dart` is fine).
 - **Cross-feature imports** are allowed only for another feature's `presentation/cubit/` and
   only for app-global cubits: `CartCubit`, `ProStatusCubit` (where the customer stands with
-  Jm3eia Pro — guest / prospect / renewing / ending / lapsed, `core/domain/entities/
+  Hero Pro — guest / prospect / renewing / ending / lapsed, `core/domain/entities/
   pro_membership_entity.dart`; the app root starts / stops it with the session, the Pro page
   `apply()`s its fresher answer; the home "pro" tag + Pro banner, the Mine Pro row and the cart
   nudge read it — never an upsell to a member), `LocalizationCubit`,
@@ -386,7 +387,7 @@ abstract class CouponsLocalDataSource {
 
 class CouponsLocalDataSourceImpl implements CouponsLocalDataSource {
   const CouponsLocalDataSourceImpl(this._catalog);
-  final JameiaRepository _catalog;
+  final HeroRepository _catalog;
 
   @override
   List<Coupon> getCoupons() => _catalog.coupons; // throw CacheException on bad state
@@ -394,8 +395,8 @@ class CouponsLocalDataSourceImpl implements CouponsLocalDataSource {
 
 // A REMOTE datasource — trimmed from features/notifications/data/datasources/
 // notifications_remote_data_source.dart (the real one also takes an EventStreamClient).
-// Every layer of a paginated API feature: jameia-api-integration/references/layer-templates.md;
-// partial PATCH / optimistic update: references/patterns.md; streams: jameia-api-streaming.
+// Every layer of a paginated API feature: hero-api-integration/references/layer-templates.md;
+// partial PATCH / optimistic update: references/patterns.md; streams: hero-api-streaming.
 abstract class NotificationsRemoteDataSource {
   /// `GET /v1/notifications?page&limit`.
   Future<NotificationsPageModel> getNotifications({required int page, required int limit});
@@ -445,7 +446,7 @@ class GetCouponsUseCase implements UseCase<CouponBuckets, NoParams> {
 // (offline feature: a `String? errorMessage` is enough. An API-backed state keeps the
 //  `Failure? failure` itself — transient, cleared on every copyWith — so the page can show
 //  `failure.localizedMessage` and tell `UnauthorizedFailure` (sign-in prompt) from an error;
-//  see NotificationsState and the jameia-api-integration layer templates.)
+//  see NotificationsState and the hero-api-integration layer templates.)
 enum CouponsStatus { initial, loading, loaded, empty, error }
 
 class CouponsState extends Equatable {
@@ -508,7 +509,7 @@ Adding a screen:
      path: Routes.shop,
      pageBuilder: (_, state) {
        final shopId = state.extra;
-       return JameiaTransitionPage<Object?>(
+       return HeroTransitionPage<Object?>(
          key: state.pageKey,
          name: state.uri.path,
          child: ShopPage(shopId: shopId is String ? shopId : _fallbackShopId),
@@ -516,7 +517,7 @@ Adding a screen:
      },
    ),
    ```
-   Use `JameiaSlideUpTransitionPage` for full-screen slide-up presentations (PDP, viewers).
+   Use `HeroSlideUpTransitionPage` for full-screen slide-up presentations (PDP, viewers).
    If a page needs more than one argument, pass an immutable args class from
    `config/routes/route_args/`. Extras should be entities or primitives, never DTOs.
 3. Navigate with `context.push(Routes.x, extra: arg)`. For results use
@@ -570,7 +571,7 @@ Adding a screen:
   then provide app-global cubits (`CartCubit`, `ProStatusCubit`, …) with `BlocProvider.value`.
 - Cubits: `bloc_test` with fake/mocked use cases. Repositories: test the exception → Failure
   mapping. Mappers: test round-trips. Navigation: `test/app_router_test.dart`.
-- API layers (recipe: `jameia-api-testing` skill): no test touches the network or the real
+- API layers (recipe: `hero-api-testing` skill): no test touches the network or the real
   keychain. Remote datasources run through the real `DioConsumer` on a
   `FakeHttpClientAdapter` with `envelope(...)` / `okBody(...)` bodies
   (`test/core/network/network_test_fakes.dart`, which also has `InMemorySessionStore`,
@@ -692,7 +693,7 @@ unless their task says to fix.
 - [ ] i18n keys exist in both `en.json` and `ar.json`.
 - [ ] API work: contract read from the live spec; every new call seen once in the `api`
       trace on a running app (mock or dev host) including its failure paths
-      (`jameia-api-verify` checklist); `docs/api_integration.md` §6.1 and the skill's
+      (`hero-api-verify` checklist); `docs/api_integration.md` §6.1 and the skill's
       `references/backend-contract.md` status table updated.
 - [ ] Behavior unchanged (refactors) or matches the requirement (features); RTL and reduced motion still work.
 - [ ] Self-review against §10 done; report written in the §0.9 shape.
@@ -704,20 +705,20 @@ unless their task says to fix.
 The whole-app refactor to these rules is in progress. The code below is **legacy**:
 don't copy it, and migrate it when you own the file.
 
-- Per-feature duplicates of shared entities (`features/*/domain/entities/{shop,product,product_variant,jameia_address,jameia_order,user_profile,coupon}_entity.dart` …) → replace with `core/domain/entities/`.
+- Per-feature duplicates of shared entities (`features/*/domain/entities/{shop,product,product_variant,hero_address,hero_order,user_profile,coupon}_entity.dart` …) → replace with `core/domain/entities/`.
 - `features/*/presentation/util/*_display.dart`, `…/util/*_bridge.dart`, `home/presentation/popups/` → replace with entity `nameFor/titleFor(lc)` and move widgets into `presentation/widgets/`.
 - Cubits calling repositories directly (collapsed use cases) → add a use case per operation.
 - Repository impls with a hand-written `try/catch → Left(CacheFailure)` → `BaseRepositoryMixin.execute`.
 - `core/widgets` taking DTOs (`ShopCard`, `ProductCard`, `PromoRibbon`, `BannerCarousel`) → take core entities.
-- Route extras that are still DTOs (`Product`, `JameiaAddress`, `KingKongItem`) → entities.
+- Route extras that are still DTOs (`Product`, `HeroAddress`, `KingKongItem`) → entities.
 - `core/utils/lbs_service.dart` using `package:http` → an address remote datasource on `ApiConsumer`.
 - **Offline → API.** Auth, account profile, language, notifications, addresses, cart,
   checkout, orders and the whole catalogue (home, shop, product_details, search, recipes,
-  marketing, Jm3eia Pro) call the jm3eia backend. The coupon wallet, discovery,
-  support, wallet / loyalty / wishlist still read `JameiaRepository` or local persistence →
-  migrate with the `jameia-api-integration` skill: keep the repository contract, swap the
+  marketing, Hero Pro) call the Hero backend. The coupon wallet, discovery,
+  support, wallet / loyalty / wishlist still read `HeroRepository` or local persistence →
+  migrate with the `hero-api-integration` skill: keep the repository contract, swap the
   datasource underneath (rules for a legacy target:
-  `jameia-api-integration/references/migrating-offline-feature.md`). Open core gaps to close
+  `hero-api-integration/references/migrating-offline-feature.md`). Open core gaps to close
   on the way: `ApiStatus` lives in `core/network`, which domain and presentation may not
   import, so no cubit / use case can branch on a backend code yet (move it under `core/error/`
   and re-export from `failures.dart`); `LocalizationCubit` still takes a `BuildContext`
@@ -730,8 +731,8 @@ don't copy it, and migrate it when you own the file.
 - **Review-found legacy** (details + file:line in `docs/architecture_review.md`; lints can't see these):
   - Datasources that translate text, use motion tokens, compute business rules or invent demo data, and return domain aggregates (`product_details_dummy_data_source`; `orders_local_data_source` is gone) → datasources return DTOs; rules move to use cases/entities; strings resolve in widgets.
   - Pricing/VAT/fee/line-total maths in widgets or cubit state → one domain price-breakdown value object. (Orders / cart / checkout are done: every total is the server’s, in fils, on the entity.)
-  - Pages with no cubit that read repositories through `sl` and reshape DTOs in `State` (`ShopPage`, `ShopMapPage`) and god `State`s calling infrastructure (`AddressEditPage` → `JameiaLbs` / `JameiaLocation` / `JameiaGeocode`) → cubit + use cases + datasources.
-  - `core/utils/jameia_geocode.dart` (541 lines: enums, form schema, DTO, geometry, `LatLng`) → split into address domain entities, a data geometry service and presentation helpers.
+  - Pages with no cubit that read repositories through `sl` and reshape DTOs in `State` (`ShopPage`, `ShopMapPage`) and god `State`s calling infrastructure (`AddressEditPage` → `HeroLbs` / `HeroLocation` / `HeroGeocode`) → cubit + use cases + datasources.
+  - `core/utils/hero_geocode.dart` (541 lines: enums, form schema, DTO, geometry, `LatLng`) → split into address domain entities, a data geometry service and presentation helpers.
   - Mutations whose `Either` is ignored with success UI shown anyway, and form input never submitted → cubit emits error/success; page listens. (The old orders review / refund offenders are gone.)
   - Validation / label / pricing rules duplicated across cubit, state and widgets (address has 5 disagreeing validity checks; SKU/variant pricing in both `ShopSkuCubit` and `ProductDetailCubit`) → single use case or entity method.
   - Cross-feature widget reuse (`shop/…/product_sku_sheet.dart` used by product_details; PDP card copies home rail add/stepper controls) → `core/widgets` (+ shared cubit/use case).

@@ -6,7 +6,7 @@ import 'loyalty_reward.dart';
 /// The Rewards screen: the customer's points [balance] and the redemption
 /// tiers the loyalty [program] allows.
 ///
-/// The tiers are an APP choice, not backend data: jm3eia has no rewards
+/// The tiers are an APP choice, not backend data: Hero has no rewards
 /// catalogue. The server redeems any number of points at or above
 /// [LoyaltyProgram.minRedeemPoints] as a discount on the current basket
 /// (`POST /v1/cart/loyalty {points}`), each point worth

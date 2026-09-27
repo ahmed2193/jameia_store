@@ -41,7 +41,7 @@ class LedgerLoadMoreRow<T extends LedgerEntry> extends StatelessWidget {
             stateKey: failed,
             child: failed
                 ? LedgerRetryPill(onTap: () => cubit.loadMore(retry: true))
-                : const AppLoader(size: AppSize.s20),
+                : const AppLoader.inline(),
           ),
         ),
       ),

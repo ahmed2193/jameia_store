@@ -6,11 +6,11 @@ import '../../../features/recipes/presentation/pages/recipes_page.dart';
 import '../placeholder_page.dart';
 import '../routes.dart';
 
-/// Recipe list and recipe page (jm3eia backend).
+/// Recipe list and recipe page (Hero backend).
 final List<RouteBase> recipesRoutes = <RouteBase>[
   GoRoute(
     path: Routes.recipes,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const RecipesPage(),
@@ -21,7 +21,7 @@ final List<RouteBase> recipesRoutes = <RouteBase>[
     path: Routes.recipe,
     pageBuilder: (_, state) {
       final slug = state.extra;
-      return JameiaTransitionPage<Object?>(
+      return HeroTransitionPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: slug is String && slug.isNotEmpty

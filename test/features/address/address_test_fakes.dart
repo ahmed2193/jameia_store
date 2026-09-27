@@ -1,25 +1,25 @@
 import 'dart:async';
 
 import 'package:dartz/dartz.dart';
-import 'package:jameia_mart/src/core/domain/entities/geo_point_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/jameia_address_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/local_storage.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_book.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/cached_address_book.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/add_address_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/clear_cached_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/delete_address_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/get_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/get_cached_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/save_cached_addresses_usecase.dart';
-import 'package:jameia_mart/src/features/address/domain/usecases/update_address_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/hero_address_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/local_storage.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
+import 'package:hero_mart/src/features/address/domain/entities/cached_address_book.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/add_address_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/clear_cached_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/delete_address_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/get_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/get_cached_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/save_cached_addresses_usecase.dart';
+import 'package:hero_mart/src/features/address/domain/usecases/update_address_usecase.dart';
 
 /// A 24-hex Mongo id ending in [n].
 String addressId(int n) => n.toString().padLeft(24, 'a');
 
-JameiaAddressEntity address({
+HeroAddressEntity address({
   int n = 1,
   String label = 'Home',
   String city = 'Salmiya',
@@ -32,7 +32,7 @@ JameiaAddressEntity address({
   String notes = '',
   GeoPointEntity? location = const GeoPointEntity(lat: 29.33, lng: 48.07),
   bool isDefault = false,
-}) => JameiaAddressEntity(
+}) => HeroAddressEntity(
   id: addressId(n),
   label: label,
   city: city,
@@ -183,11 +183,11 @@ class FakeClearCachedAddressesUseCase implements ClearCachedAddressesUseCase {
 class FakeAddAddressUseCase with _Gated implements AddAddressUseCase {
   FakeAddAddressUseCase(this.result);
 
-  Either<Failure, JameiaAddressEntity> result;
+  Either<Failure, HeroAddressEntity> result;
   final List<AddAddressParams> calls = [];
 
   @override
-  Future<Either<Failure, JameiaAddressEntity>> call(
+  Future<Either<Failure, HeroAddressEntity>> call(
     AddAddressParams params,
   ) async {
     calls.add(params);
@@ -199,11 +199,11 @@ class FakeAddAddressUseCase with _Gated implements AddAddressUseCase {
 class FakeUpdateAddressUseCase with _Gated implements UpdateAddressUseCase {
   FakeUpdateAddressUseCase(this.result);
 
-  Either<Failure, JameiaAddressEntity> result;
+  Either<Failure, HeroAddressEntity> result;
   final List<UpdateAddressParams> calls = [];
 
   @override
-  Future<Either<Failure, JameiaAddressEntity>> call(
+  Future<Either<Failure, HeroAddressEntity>> call(
     UpdateAddressParams params,
   ) async {
     calls.add(params);

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_item_request.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_item_request.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
 
 import 'fake_cart_repository.dart';
 

@@ -1,13 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
 
 import 'fake_orders_repository.dart';
 
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_state.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_tracking_state.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 
 void main() {
   late FakeOrdersRepository repository;
@@ -32,7 +33,7 @@ void main() {
 
     await cubit.load('o1');
 
-    expect(cubit.state.status, OrderTrackingStatus.loaded);
+    expect(cubit.state.status, LoadPhase.loaded);
     expect(cubit.state.order?.id, 'o1');
     expect(cubit.isPolling, isTrue);
 
@@ -90,7 +91,7 @@ void main() {
 
     await cubit.load('o1');
 
-    expect(cubit.state.status, OrderTrackingStatus.error);
+    expect(cubit.state.status, LoadPhase.error);
     expect(cubit.state.isNotFound, isTrue);
     expect(cubit.isPolling, isFalse);
     await cubit.close();
@@ -103,9 +104,9 @@ void main() {
 
     await cubit.refresh();
 
-    expect(cubit.state.status, OrderTrackingStatus.loaded);
+    expect(cubit.state.status, LoadPhase.loaded);
     expect(cubit.state.order, isNotNull);
-    expect(cubit.state.failure, isA<NetworkFailure>());
+    expect(cubit.state.load.failure, isA<NetworkFailure>());
     await cubit.close();
   });
 
@@ -132,7 +133,7 @@ void main() {
     expect(cancelled, isFalse);
     expect(cubit.state.isCancelling, isFalse);
     expect(cubit.state.canCancel, isTrue);
-    expect(cubit.state.failedAction, OrderTrackingAction.cancel);
+    expect(cubit.state.load.failedOn, FailedCall.action);
     await cubit.close();
   });
 
@@ -149,10 +150,10 @@ void main() {
     }
     await Future<void>.delayed(Duration.zero);
 
-    expect(cubit.state.status, OrderTrackingStatus.loaded);
+    expect(cubit.state.status, LoadPhase.loaded);
     expect(cubit.state.order, before.order);
     expect(
-      cubit.state.failure,
+      cubit.state.load.failure,
       isNull,
       reason: 'nobody asked for it: no toast every interval',
     );

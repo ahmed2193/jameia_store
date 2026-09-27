@@ -6,7 +6,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import 'pro_lockup_block.dart';
 
-/// "Jm3eia | Pro" wordmark: the brand name on Jm3eia green beside the Pro
+/// "Hero | Pro" wordmark: the brand name on Hero green beside the Pro
 /// badge on the Pro gradient (mirrored in RTL, so it still reads
 /// brand-first). Pops in once when the page opens.
 class ProBrandLockup extends StatelessWidget {

@@ -1,4 +1,4 @@
-// The talabat basket-bar kit: the "View cart" card (basket + count, amount,
+// The Hero basket-bar kit: the "View cart" card (basket + count, amount,
 // delivery line), the sticker label (one Text, painted rim) and the sticker
 // button (disabled / loading do not react).
 import 'dart:convert';
@@ -9,12 +9,12 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/widgets/cart_basket_badge.dart';
-import 'package:jameia_mart/src/core/widgets/cart_bar_summary.dart';
-import 'package:jameia_mart/src/core/widgets/sticker_button.dart';
-import 'package:jameia_mart/src/core/widgets/sticker_rim_painter.dart';
-import 'package:jameia_mart/src/core/widgets/sticker_text.dart';
-import 'package:jameia_mart/src/core/widgets/view_cart_pill.dart';
+import 'package:hero_mart/src/core/widgets/cart_basket_badge.dart';
+import 'package:hero_mart/src/core/widgets/cart_bar_summary.dart';
+import 'package:hero_mart/src/core/widgets/sticker_button.dart';
+import 'package:hero_mart/src/core/widgets/sticker_rim_painter.dart';
+import 'package:hero_mart/src/core/widgets/sticker_text.dart';
+import 'package:hero_mart/src/core/widgets/view_cart_pill.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

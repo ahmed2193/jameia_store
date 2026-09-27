@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// A category of the jm3eia backend catalogue. The backend sends the tree
+/// A category of the Hero backend catalogue. The backend sends the tree
 /// flat, linked by [parentId] (three levels today: `Fresh Food` →
 /// `Fruits & Vegetables` → `Apples`); [CatalogCategoryTree] rebuilds it.
 ///

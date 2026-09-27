@@ -11,39 +11,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/models/order_model.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_freshness.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/core/storage/cache_namespace.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/features/orders/data/datasources/orders_cache_data_source.dart';
-import 'package:jameia_mart/src/features/orders/data/datasources/orders_remote_data_source.dart';
-import 'package:jameia_mart/src/features/orders/data/models/orders_page_model.dart';
-import 'package:jameia_mart/src/features/orders/data/repositories/orders_repository_impl.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/cancel_order_request.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/orders_page.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_invoice_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_invoice_state.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_review_state.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/order_tracking_state.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_state.dart';
-import 'package:jameia_mart/src/features/orders/presentation/widgets/tracking/tracking_last_known_note.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/models/order_model.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/domain/entities/data_freshness.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/core/storage/cache_namespace.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/features/orders/data/datasources/orders_cache_data_source.dart';
+import 'package:hero_mart/src/features/orders/data/datasources/orders_remote_data_source.dart';
+import 'package:hero_mart/src/features/orders/data/models/orders_page_model.dart';
+import 'package:hero_mart/src/features/orders/data/repositories/orders_repository_impl.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/cancel_order_request.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/orders_page.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_invoice_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_invoice_state.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_state.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/order_tracking_state.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/orders_state.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_last_known_note.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/network_test_fakes.dart';
@@ -237,11 +238,11 @@ void main() {
 
       await cubit.load();
 
-      expect(cubit.state.status, OrdersStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.feed.orders.single.id, 'saved');
-      expect(cubit.state.freshness.fromCache, isTrue);
-      expect(cubit.state.freshness.refreshFailed, isTrue);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(cubit.state.load.freshness.fromCache, isTrue);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.failure, isA<NetworkFailure>());
       await cubit.close();
     });
 
@@ -255,13 +256,13 @@ void main() {
         ..savedFirstPage = saved()
         ..listFailure = const NetworkFailure();
       await cubit.load();
-      expect(cubit.state.freshness.isStale, isTrue);
+      expect(cubit.state.load.freshness.isStale, isTrue);
 
       await Future.wait([cubit.onReconnected(), cubit.onReconnected()]);
 
       expect(repository.forcedReads, [false, false, true]);
       expect(cubit.state.feed.orders.single.id, 'o1');
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
       await cubit.close();
     });
 
@@ -293,7 +294,7 @@ void main() {
       repository.listFailure = const NetworkFailure();
       final cubit = build();
       await cubit.load();
-      expect(cubit.state.status, OrdersStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.loadFailure, isA<NetworkFailure>());
 
       final retry = cubit.refresh(); // flags the refresh first
@@ -301,7 +302,7 @@ void main() {
       expect(cubit.state.loadFailure, isA<NetworkFailure>());
       await retry;
 
-      expect(cubit.state.status, OrdersStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       await cubit.close();
     });
   });
@@ -355,7 +356,7 @@ void main() {
         states.firstWhere((state) => state.order != null).freshness.fromCache,
         isTrue,
       );
-      expect(cubit.state.freshness.fromCache, isFalse);
+      expect(cubit.state.load.freshness.fromCache, isFalse);
 
       repository.detailFailure = const NetworkFailure();
       while (reads() < 2) {
@@ -363,8 +364,8 @@ void main() {
       }
       await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.freshness.refreshFailed, isTrue);
-      expect(cubit.state.failure, isNull, reason: 'a poll stays silent');
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.failure, isNull, reason: 'a poll stays silent');
       await subscription.cancel();
       await cubit.close();
     });
@@ -377,7 +378,7 @@ void main() {
 
       await cubit.onReconnected();
 
-      expect(cubit.state.status, OrderTrackingStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       await cubit.close();
     });
 
@@ -405,12 +406,12 @@ void main() {
       );
 
       await cubit.load('o1');
-      expect(cubit.state.status, OrderInvoiceStatus.loaded);
-      expect(cubit.state.freshness.isStale, isTrue);
-      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(cubit.state.load.phase, LoadPhase.loaded);
+      expect(cubit.state.load.freshness.isStale, isTrue);
+      expect(cubit.state.load.failure, isA<NetworkFailure>());
 
       await cubit.onReconnected();
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
       expect(repository.forcedReads, [false, true]);
       await cubit.close();
     });
@@ -429,12 +430,12 @@ void main() {
         );
 
         await cubit.load('o1');
-        expect(cubit.state.status, OrderReviewStatus.loaded);
+        expect(cubit.state.status, LoadPhase.loaded);
         cubit.rate('p1', 4);
 
         expect(await cubit.submit(), isFalse);
-        expect(cubit.state.failedAction, OrderReviewAction.submit);
-        expect(cubit.state.failure, isA<NetworkFailure>());
+        expect(cubit.state.load.failedOn, FailedCall.action);
+        expect(cubit.state.load.failure, isA<NetworkFailure>());
         expect(cubit.state.canSubmit, isTrue, reason: 'the draft is kept');
         await cubit.close();
       },
@@ -463,9 +464,8 @@ void main() {
         cubit,
         const Stream<OrderTrackingState>.empty(),
         initialState: OrderTrackingState(
-          status: OrderTrackingStatus.loaded,
+          load: ScreenLoad(phase: LoadPhase.loaded, freshness: freshness),
           order: order,
-          freshness: freshness,
         ),
       );
       return tester

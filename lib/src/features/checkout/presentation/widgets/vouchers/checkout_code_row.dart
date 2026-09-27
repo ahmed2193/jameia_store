@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_assets.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../checkout/checkout_sheet_frame.dart';
 import 'checkout_coupon_sheet.dart';
@@ -53,7 +53,7 @@ class CheckoutCodeRow extends StatelessWidget {
               child: Row(
                 children: [
                   SvgPicture.asset(
-                    JameiaAssets.checkoutCodeTag,
+                    HeroAssets.checkoutCodeTag,
                     width: _iconSize,
                     height: _iconSize,
                     excludeFromSemantics: true,

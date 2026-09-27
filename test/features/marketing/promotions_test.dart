@@ -4,31 +4,32 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/datasources/catalog_cache_data_source.dart';
-import 'package:jameia_mart/src/core/data/mappers/offer_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/catalog_results.dart';
-import 'package:jameia_mart/src/core/data/models/offer_model.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/offer_entity.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/features/marketing/data/datasources/promotions_cache_data_source.dart';
-import 'package:jameia_mart/src/features/marketing/data/datasources/promotions_remote_data_source.dart';
-import 'package:jameia_mart/src/features/marketing/data/models/content_page_model.dart';
-import 'package:jameia_mart/src/features/marketing/data/repositories/promotions_repository_impl.dart';
-import 'package:jameia_mart/src/features/marketing/domain/entities/content_page_entity.dart';
-import 'package:jameia_mart/src/features/marketing/domain/repositories/promotions_repository.dart';
-import 'package:jameia_mart/src/features/marketing/domain/usecases/watch_content_page_usecase.dart';
-import 'package:jameia_mart/src/features/marketing/domain/usecases/watch_offers_usecase.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/cubit/content_page_cubit.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/cubit/content_page_state.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/cubit/offers_cubit.dart';
-import 'package:jameia_mart/src/features/marketing/presentation/cubit/offers_state.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/datasources/catalog_cache_data_source.dart';
+import 'package:hero_mart/src/core/data/mappers/offer_mapper.dart';
+import 'package:hero_mart/src/core/data/models/catalog_results.dart';
+import 'package:hero_mart/src/core/data/models/offer_model.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/features/marketing/data/datasources/promotions_cache_data_source.dart';
+import 'package:hero_mart/src/features/marketing/data/datasources/promotions_remote_data_source.dart';
+import 'package:hero_mart/src/features/marketing/data/models/content_page_model.dart';
+import 'package:hero_mart/src/features/marketing/data/repositories/promotions_repository_impl.dart';
+import 'package:hero_mart/src/features/marketing/domain/entities/content_page_entity.dart';
+import 'package:hero_mart/src/features/marketing/domain/repositories/promotions_repository.dart';
+import 'package:hero_mart/src/features/marketing/domain/usecases/watch_content_page_usecase.dart';
+import 'package:hero_mart/src/features/marketing/domain/usecases/watch_offers_usecase.dart';
+import 'package:hero_mart/src/features/marketing/presentation/cubit/content_page_cubit.dart';
+import 'package:hero_mart/src/features/marketing/presentation/cubit/content_page_state.dart';
+import 'package:hero_mart/src/features/marketing/presentation/cubit/offers_cubit.dart';
+import 'package:hero_mart/src/features/marketing/presentation/cubit/offers_state.dart';
 
 import '../../core/data/catalog_test_fakes.dart';
 import '../../core/data/snapshot_test_fakes.dart';
@@ -121,7 +122,7 @@ class _ScriptedRemote implements PromotionsRemoteDataSource {
     if (current != null) throw current;
     final raw = <String, dynamic>{
       'slug': slug,
-      'title': 'About Jm3eia',
+      'title': 'About Hero',
       'body': 'Text',
     };
     return RemotePayload(ContentPageModel.fromJson(raw), raw);
@@ -286,8 +287,8 @@ void main() {
       final adapter = FakeHttpClientAdapter(
         (_, _) => okBody({
           'slug': 'about',
-          'title': 'About Jm3eia',
-          'body': 'Jm3eia is your neighborhood grocery.',
+          'title': 'About Hero',
+          'body': 'Hero is your neighborhood grocery.',
         }),
       );
       final dataSource = PromotionsRemoteDataSourceImpl(
@@ -297,7 +298,7 @@ void main() {
       final page = await dataSource.getPage('about');
 
       expect(adapter.requests.single.path, EndPoints.page('about'));
-      expect(page.model.title, 'About Jm3eia');
+      expect(page.model.title, 'About Hero');
       expect((page.raw as Map)['slug'], 'about');
     });
   });
@@ -314,7 +315,7 @@ void main() {
           .last;
       expect(offers.data, hasLength(2));
       expect(page.data.kind, ContentPageKind.about);
-      expect(page.data.title, 'About Jm3eia');
+      expect(page.data.title, 'About Hero');
 
       catalog.error = const RequestTimeoutException();
       remote.error = const NotFoundException('Page not found');
@@ -366,7 +367,7 @@ void main() {
       final cubit = _offersCubit(repository);
 
       await cubit.load();
-      expect(cubit.state.status, OffersStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<NetworkFailure>());
 
       repository.offers = const Right([OfferEntity(id: 'a', name: 'A')]);
@@ -376,10 +377,10 @@ void main() {
 
       repository.offers = const Left(ServerFailure('down'));
       await cubit.refresh();
-      expect(cubit.state.status, OffersStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.offers.single.id, 'a');
       expect(cubit.state.failure, isA<ServerFailure>());
-      expect(cubit.state.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
       expect(repository.offerReads, [false, false, true]);
       await cubit.close();
     });
@@ -392,11 +393,11 @@ void main() {
 
       await cubit.load();
 
-      expect(cubit.state.status, OffersStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.offers.single.id, 'a');
-      expect(cubit.state.freshness.fetchedAt, savedSnapshotAt);
-      expect(cubit.state.freshness.fromCache, isTrue);
-      expect(cubit.state.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.freshness.fetchedAt, savedSnapshotAt);
+      expect(cubit.state.load.freshness.fromCache, isTrue);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
       expect(cubit.state.failure, isA<NetworkFailure>());
       await cubit.close();
     });
@@ -414,7 +415,7 @@ void main() {
         ..savedOffers = const [OfferEntity(id: 'a', name: 'A')]
         ..offers = const Left(NetworkFailure());
       await cubit.load();
-      expect(cubit.state.freshness.isStale, isTrue);
+      expect(cubit.state.load.freshness.isStale, isTrue);
 
       repository
         ..savedOffers = null
@@ -423,7 +424,7 @@ void main() {
 
       expect(repository.offerReads, [false, false, true]);
       expect(cubit.state.offers.single.id, 'b');
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
       await cubit.close();
     });
 
@@ -432,12 +433,12 @@ void main() {
         ..offers = const Left(NetworkFailure());
       final cubit = _offersCubit(repository);
       await cubit.load();
-      expect(cubit.state.status, OffersStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
 
       repository.offers = const Right([OfferEntity(id: 'a', name: 'A')]);
       await cubit.onReconnected();
 
-      expect(cubit.state.status, OffersStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.offers.single.id, 'a');
       expect(repository.offerReads, [false, true]);
       await cubit.close();
@@ -453,7 +454,7 @@ void main() {
       final cubit = _pageCubit(repository);
 
       await cubit.load();
-      expect(cubit.state.status, ContentPageStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<ServerFailure>());
 
       repository.page = const Right(
@@ -473,10 +474,10 @@ void main() {
 
       await cubit.load();
 
-      expect(cubit.state.status, ContentPageStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.page, _about);
-      expect(cubit.state.freshness.fromCache, isTrue);
-      expect(cubit.state.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.freshness.fromCache, isTrue);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
       await cubit.close();
     });
 
@@ -484,7 +485,7 @@ void main() {
       final repository = _FakeRepository()..page = const Left(NetworkFailure());
       final cubit = _pageCubit(repository);
       await cubit.load();
-      expect(cubit.state.status, ContentPageStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
 
       repository.page = const Right(_about);
       await cubit.onReconnected();

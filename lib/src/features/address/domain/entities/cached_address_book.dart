@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import 'address_book.dart';
 
 /// The address book saved on this device and the customer it was saved for
@@ -12,7 +12,7 @@ class CachedAddressBook extends Equatable {
   static const CachedAddressBook none = CachedAddressBook();
 
   final String? ownerId;
-  final List<JameiaAddressEntity> addresses;
+  final List<HeroAddressEntity> addresses;
 
   AddressBook get book => AddressBook.of(addresses);
 

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_rich_text.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_rich_text.dart';
 
 void main() {
   AssistantRichText parse(String text) => AssistantRichText.parse(text);

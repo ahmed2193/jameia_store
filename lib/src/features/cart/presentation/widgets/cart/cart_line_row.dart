@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/domain/entities/cart_line_entity.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/widgets/jameia_text_link.dart';
+import '../../../../../core/widgets/hero_text_link.dart';
 import 'cart_line_frame.dart';
 import 'cart_line_info.dart';
 import 'cart_qty_stepper.dart';
@@ -51,7 +51,7 @@ class CartLineRow extends StatelessWidget {
           stateKey: blocked,
           alignment: AlignmentDirectional.centerEnd,
           child: blocked
-              ? JameiaTextLink(
+              ? HeroTextLink(
                   label: 'cart.remove'.tr(),
                   navigates: false,
                   onTap: onRemoveLine,

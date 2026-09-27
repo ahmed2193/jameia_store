@@ -8,30 +8,31 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/data/models/remote_payload.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_snapshot.dart';
-import 'package:jameia_mart/src/core/domain/entities/recipe_summary_entity.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/end_points.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/core/usecase/watch_params.dart';
-import 'package:jameia_mart/src/features/recipes/data/datasources/recipes_cache_data_source.dart';
-import 'package:jameia_mart/src/features/recipes/data/datasources/recipes_remote_data_source.dart';
-import 'package:jameia_mart/src/features/recipes/data/mappers/recipes_mapper.dart';
-import 'package:jameia_mart/src/features/recipes/data/models/recipe_models.dart';
-import 'package:jameia_mart/src/features/recipes/data/repositories/recipes_repository_impl.dart';
-import 'package:jameia_mart/src/features/recipes/domain/entities/recipe_detail.dart';
-import 'package:jameia_mart/src/features/recipes/domain/entities/recipes_feed.dart';
-import 'package:jameia_mart/src/features/recipes/domain/usecases/get_recipes_usecase.dart';
-import 'package:jameia_mart/src/features/recipes/domain/usecases/watch_recipe_detail_usecase.dart';
-import 'package:jameia_mart/src/features/recipes/domain/usecases/watch_recipes_usecase.dart';
-import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipe_detail_cubit.dart';
-import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipe_detail_state.dart';
-import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipes_cubit.dart';
-import 'package:jameia_mart/src/features/recipes/presentation/cubit/recipes_state.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/data/models/remote_payload.dart';
+import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/recipe_summary_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/end_points.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/core/usecase/watch_params.dart';
+import 'package:hero_mart/src/features/recipes/data/datasources/recipes_cache_data_source.dart';
+import 'package:hero_mart/src/features/recipes/data/datasources/recipes_remote_data_source.dart';
+import 'package:hero_mart/src/features/recipes/data/mappers/recipes_mapper.dart';
+import 'package:hero_mart/src/features/recipes/data/models/recipe_models.dart';
+import 'package:hero_mart/src/features/recipes/data/repositories/recipes_repository_impl.dart';
+import 'package:hero_mart/src/features/recipes/domain/entities/recipe_detail.dart';
+import 'package:hero_mart/src/features/recipes/domain/entities/recipes_feed.dart';
+import 'package:hero_mart/src/features/recipes/domain/usecases/get_recipes_usecase.dart';
+import 'package:hero_mart/src/features/recipes/domain/usecases/watch_recipe_detail_usecase.dart';
+import 'package:hero_mart/src/features/recipes/domain/usecases/watch_recipes_usecase.dart';
+import 'package:hero_mart/src/features/recipes/presentation/cubit/recipe_detail_cubit.dart';
+import 'package:hero_mart/src/features/recipes/presentation/cubit/recipe_detail_state.dart';
+import 'package:hero_mart/src/features/recipes/presentation/cubit/recipes_cubit.dart';
+import 'package:hero_mart/src/features/recipes/presentation/cubit/recipes_state.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
@@ -349,15 +350,13 @@ void main() {
 
       expect([for (final r in cubit.state.feed.recipes) r.id], ['x']);
       expect(cubit.state.isLoadingMore, isFalse);
-      expect(cubit.state.status, RecipesStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       await cubit.close();
     });
 
     test('RecipeDetailCubit: an unknown slug is "not found"', () async {
       final cubit = RecipeDetailCubit(
-        _StubWatchRecipe(
-          const Left(ServerFailure('Recipe not found', statusCode: 404)),
-        ),
+        _StubWatchRecipe(const Left(NotFoundFailure('Recipe not found'))),
         slug: 'nope',
       );
 
@@ -380,17 +379,17 @@ void main() {
       final first = cubit.load();
       await pumpEventQueue();
       expect(cubit.state.feed.recipes.single.id, 'saved');
-      expect(cubit.state.freshness.fromCache, isTrue);
+      expect(cubit.state.load.freshness.fromCache, isTrue);
       gate.calls[0].complete(const Left(NetworkFailure()));
       await first;
-      expect(cubit.state.status, RecipesStatus.loaded);
-      expect(cubit.state.freshness.isStale, isTrue);
+      expect(cubit.state.status, LoadPhase.loaded);
+      expect(cubit.state.load.freshness.isStale, isTrue);
 
       final reconnected = cubit.onReconnected();
       gate.calls[1].complete(Right(_feed(1, ['a'], hasMore: true)));
       await reconnected;
       expect(cubit.state.feed.recipes.single.id, 'a');
-      expect(cubit.state.freshness.isStale, isFalse);
+      expect(cubit.state.load.freshness.isStale, isFalse);
 
       final more = cubit.loadMore();
       gate.calls[2].complete(const Left(NetworkFailure()));
@@ -410,7 +409,7 @@ void main() {
       final cubit = RecipeDetailCubit(watch, slug: 'machboos');
 
       await cubit.load();
-      expect(cubit.state.status, RecipeDetailStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<NetworkFailure>());
 
       watch.reply = Right(
@@ -419,7 +418,7 @@ void main() {
       );
       await cubit.onReconnected();
 
-      expect(cubit.state.status, RecipeDetailStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(watch.reads, [false, true]);
       await cubit.close();
     });

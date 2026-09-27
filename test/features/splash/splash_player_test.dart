@@ -3,16 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/routes/feature_routes/shell_routes.dart';
-import 'package:jameia_mart/src/config/routes/feature_routes/splash_routes.dart';
-import 'package:jameia_mart/src/config/routes/route_args/shell_entrance.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/navigation/navigation.dart';
-import 'package:jameia_mart/src/features/splash/presentation/pages/splash_page.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_player.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_scene_painter.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_variant.dart';
+import 'package:hero_mart/src/config/routes/feature_routes/shell_routes.dart';
+import 'package:hero_mart/src/config/routes/feature_routes/splash_routes.dart';
+import 'package:hero_mart/src/config/routes/route_args/shell_entrance.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/navigation/navigation.dart';
+import 'package:hero_mart/src/features/splash/presentation/pages/splash_page.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_player.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_scene_painter.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_variant.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_wordmark.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Shows the splash inside EasyLocalization (the tagline is translated).
@@ -153,7 +154,7 @@ void main() {
     expect(finished, 1);
   });
 
-  testWidgets('tapping the cart makes it hop; reduced motion ignores touch', (
+  testWidgets('tapping the bag makes it hop; reduced motion ignores touch', (
     tester,
   ) async {
     SplashScenePainter painter() =>
@@ -175,8 +176,9 @@ void main() {
     );
     await tester.tapAt(tester.getCenter(find.byType(SplashPlayer)));
     await tester.pump(); // the touch clock's first tick
-    await tester.pump(AppMotion.splashCartHop ~/ 2);
-    expect(painter().touch!.cartLift, greaterThan(0));
+    await tester.pump(AppMotion.splashMarkHop ~/ 2);
+    expect(painter().touch!.markLift, greaterThan(0));
+    expect(painter().touch!.capeFlick, greaterThan(0));
     expect(painter().touch!.ripples, isNotEmpty);
 
     await tester.pumpWidget(const SizedBox());
@@ -189,12 +191,12 @@ void main() {
     expect(painter().touch, isNull);
   });
 
-  for (final (locale, tagline) in const [
-    (Locale('en'), 'Fresh choices, better living'),
-    (Locale('ar'), 'خيارات طازجة، حياة أفضل'),
+  for (final (locale, tagline, wordmark) in const [
+    (Locale('en'), 'Your everyday grocery hero', SplashWordmark.latin),
+    (Locale('ar'), 'بطلك اليومي لكل مشترياتك', SplashWordmark.arabic),
   ]) {
     testWidgets(
-      'the tagline is live ${locale.languageCode} text, not baked into art',
+      'the ${locale.languageCode} splash delivers its own name and live tagline',
       (tester) async {
         // Wired like the app: the MaterialApp waits for the translations.
         await tester.pumpWidget(
@@ -231,6 +233,18 @@ void main() {
         await tester.pump(SplashVariant.wordmark.choreography.duration);
 
         expect(find.text(tagline), findsOneWidget);
+        final painter =
+            tester
+                    .widget<CustomPaint>(
+                      find.byWidgetPredicate(
+                        (widget) =>
+                            widget is CustomPaint &&
+                            widget.painter is SplashScenePainter,
+                      ),
+                    )
+                    .painter!
+                as SplashScenePainter;
+        expect(painter.wordmark, wordmark);
       },
     );
   }
@@ -307,11 +321,11 @@ void main() {
 
     expect(
       shell.pageBuilder!(context, state(ShellEntrance.splash)),
-      isA<JameiaFadeThroughPage<Object?>>(),
+      isA<HeroFadeThroughPage<Object?>>(),
     );
     expect(
       shell.pageBuilder!(context, state(null)),
-      isA<JameiaTransitionPage<Object?>>(),
+      isA<HeroTransitionPage<Object?>>(),
     );
   });
 }

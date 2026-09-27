@@ -2,9 +2,9 @@
 // once; with none owed the cart is read again. Silent either way — a failed
 // catch-up adds no failure of its own (the snapshot reports a failed sync).
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 
 import 'cart_page_harness.dart';
 import 'fake_cart_repository.dart';

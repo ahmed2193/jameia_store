@@ -1,5 +1,3 @@
-import 'dart:ui' show lerpDouble;
-
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -13,8 +11,7 @@ import 'coupon_ticket_shadow_painter.dart';
 
 /// The coupon ticket shape: a white card on a soft shadow, the warm [stub]
 /// on the start side, a punched perforation with two notches on the seam, and
-/// the [body] beside it. [highlight] (0 → 1) blends in the picked look: an
-/// accent ring and a deeper, warmer shadow. [faded] paints the card, outline
+/// the [body] beside it. [faded] paints the card, outline
 /// and shadow in the spent-coupon greys ([CouponFade]; the stub and body take
 /// their own flag). Mirrors under RTL.
 class CouponTicket extends StatelessWidget {
@@ -22,13 +19,11 @@ class CouponTicket extends StatelessWidget {
     super.key,
     required this.stub,
     required this.body,
-    this.highlight = 0,
     this.faded = false,
   });
 
   final Widget stub;
   final Widget body;
-  final double highlight;
   final bool faded;
 
   static const double stubWidth = AppSize.s96;
@@ -38,26 +33,15 @@ class CouponTicket extends StatelessWidget {
   static const double _holeRadius = AppSize.s2_5;
   static const double _holeGap = AppSize.s5;
   static const double _perforationWidth = AppSize.s8;
-  static const double _restStroke = AppSize.s1;
-  static const double _liftedStroke = AppSize.s2;
-  static const double _restBlur = AppSize.s6;
-  static const double _liftedBlur = AppSize.s12;
-  static const double _restDrop = AppSize.s3;
-  static const double _liftedDrop = AppSize.s8;
-  static const double _restShadowAlpha = 0.08;
-  static const double _liftedShadowAlpha = 0.28;
-  static final Color _restShadow = AppColors.black.withValues(
-    alpha: _restShadowAlpha,
-  );
-  static final Color _liftedShadow = kJameiaPillPin.withValues(
-    alpha: _liftedShadowAlpha,
-  );
-  static const Color _ringColor = kJameiaPillPin;
+  static const double _stroke = AppSize.s1;
+  static const double _blur = AppSize.s6;
+  static const double _drop = AppSize.s3;
+  static const double _shadowAlpha = 0.08;
+  static final Color _shadow = AppColors.black.withValues(alpha: _shadowAlpha);
 
   @override
   Widget build(BuildContext context) {
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final t = highlight.clamp(0.0, 1.0);
     final paper = CouponFade.of(AppColors.white, faded: faded);
     final clipper = CouponTicketClipper(
       stubWidth: stubWidth,
@@ -68,23 +52,17 @@ class CouponTicket extends StatelessWidget {
     return CustomPaint(
       painter: CouponTicketShadowPainter(
         cornerRadius: _cornerRadius,
-        color: CouponFade.of(
-          Color.lerp(_restShadow, _liftedShadow, t)!,
-          faded: faded,
-        ),
-        blurSigma: lerpDouble(_restBlur, _liftedBlur, t)!,
-        offsetY: lerpDouble(_restDrop, _liftedDrop, t)!,
+        color: CouponFade.of(_shadow, faded: faded),
+        blurSigma: _blur,
+        offsetY: _drop,
       ),
       foregroundPainter: CouponTicketOutlinePainter(
         stubWidth: stubWidth,
         notchRadius: _notchRadius,
         cornerRadius: _cornerRadius,
         rtl: rtl,
-        color: CouponFade.of(
-          Color.lerp(AppColors.divider, _ringColor, t)!,
-          faded: faded,
-        ),
-        strokeWidth: lerpDouble(_restStroke, _liftedStroke, t)!,
+        color: CouponFade.of(AppColors.divider, faded: faded),
+        strokeWidth: _stroke,
       ),
       child: ClipPath(
         clipper: clipper,

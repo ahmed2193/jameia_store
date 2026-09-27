@@ -6,7 +6,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import 'home_popup_frame.dart';
 
@@ -41,7 +41,7 @@ class HomeMarketingPopupView extends StatelessWidget {
               if (popup.hasImage)
                 SizedBox(
                   height: _imageHeight,
-                  child: JameiaImage(url: popup.imageUrl),
+                  child: HeroImage(url: popup.imageUrl),
                 ),
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.s16),

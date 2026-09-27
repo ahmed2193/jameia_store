@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
+import '../../../../core/widgets/cubit_busy_overlay.dart';
 import '../cubit/address_book_cubit.dart';
 import '../cubit/address_book_state.dart';
 import '../widgets/address_list/address_add_bar.dart';
@@ -43,7 +44,7 @@ class _AddressListPageState extends State<AddressListPage> {
 
   void _onState(BuildContext context, AddressBookState state) {
     if (state.deleted) {
-      showJameiaSnackBar(context, 'addr.deleted'.tr());
+      showHeroSnackBar(context, 'addr.deleted'.tr());
       return;
     }
     final failure = state.failure;
@@ -62,14 +63,18 @@ class _AddressListPageState extends State<AddressListPage> {
     return BlocListener<AddressBookCubit, AddressBookState>(
       listenWhen: _listenWhen,
       listener: _onState,
-      child: const Scaffold(
-        backgroundColor: AppColors.mediumBackground,
-        appBar: AddressListAppBar(),
-        body: SafeArea(
-          top: false,
-          child: ContentClamp(child: AddressListBody()),
+      // A confirmed delete holds the screen until the server answers.
+      child: CubitBusyOverlay<AddressBookCubit, AddressBookState>(
+        busyOf: (state) => state.deletingIds.isNotEmpty,
+        child: const Scaffold(
+          backgroundColor: AppColors.mediumBackground,
+          appBar: AddressListAppBar(),
+          body: SafeArea(
+            top: false,
+            child: ContentClamp(child: AddressListBody()),
+          ),
+          bottomNavigationBar: AddressAddBar(),
         ),
-        bottomNavigationBar: AddressAddBar(),
       ),
     );
   }

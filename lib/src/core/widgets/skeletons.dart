@@ -6,6 +6,5 @@ export 'home_skeleton.dart';
 export 'list_skeleton.dart';
 export 'orders_skeleton.dart';
 export 'product_row_skeleton.dart';
-export 'shop_menu_skeleton.dart';
 export 'skeleton_bone.dart';
 export 'skeletonized.dart';

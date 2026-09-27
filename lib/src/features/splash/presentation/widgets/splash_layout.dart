@@ -1,28 +1,43 @@
-import 'dart:math' as math;
 import 'dart:ui';
 
-import '../../../../core/design/jameia_cart_mark.dart';
-import 'splash_wordmark_geometry.dart';
+import '../../../../core/design/hero_glyphs.dart';
+import '../../../../core/design/hero_mark.dart';
+import 'splash_wordmark.dart';
 
-/// Screen geometry of the splash for one screen [size]: where the cart
-/// sits on the launch screen (the native frame) and where the finished
-/// lockup — cart "J", name, swoosh — and the tagline end up.
+/// Screen geometry of the splash for one screen [size] and name: where the
+/// mark sits on the launch screen (the native frame), and where the finished
+/// lockup — the bag over the name — and the tagline end up.
 class SplashLayout {
-  factory SplashLayout(Size size) {
+  factory SplashLayout(Size size, SplashWordmark wordmark) {
     final center = size.center(Offset.zero);
-    final lockup = SplashWordmarkGeometry.bounds;
-    final width = math.min(size.width * lockupWidthFraction, lockupMaxWidth);
-    final scale = width / lockup.width;
-    final lockupCenter = center.translate(0, -lockupLift);
-    final textOrigin = lockupCenter - lockup.center * scale;
+    final latinHeight = (size.width * wordHeightFraction).clamp(
+      minWordHeight,
+      maxWordHeight,
+    );
+    final wordScale =
+        latinHeight / HeroGlyphs.latinInk.height * wordmark.unitScale;
+    final ink = wordmark.ink;
+    final wordHeight = ink.height * wordScale;
+    final markUnit = latinHeight * markToWord / HeroMark.bounds.height;
+    final markHeight = HeroMark.bounds.height * markUnit;
+    final gap = latinHeight * gapToWord;
+    final top =
+        center.dy - lockupLift - (markHeight + gap + wordHeight) / 2;
+    final wordTop = top + markHeight + gap;
+    // The bag itself — not the cape flowing off it — stands over the name.
+    final bagShift = (HeroMark.bagCenter.dx - HeroMark.bounds.center.dx) * markUnit;
     return SplashLayout._(
       size: size,
+      wordmark: wordmark,
       center: center,
-      scale: scale,
-      textOrigin: textOrigin,
-      lockupCartCenter: textOrigin + SplashWordmarkGeometry.cartCenter * scale,
-      lockupCartUnit: scale * SplashWordmarkGeometry.cartUnit,
-      taglineTop: textOrigin.dy + lockup.bottom * scale + taglineGap,
+      markCenter: Offset(center.dx - bagShift, top + markHeight / 2),
+      markUnit: markUnit,
+      wordScale: wordScale,
+      wordOrigin: Offset(
+        center.dx - ink.center.dx * wordScale,
+        wordTop - ink.top * wordScale,
+      ),
+      wordBottom: wordTop + wordHeight,
       // The centre's distance from the top-left corner = half the diagonal.
       burstRadius: center.distance,
     );
@@ -30,12 +45,13 @@ class SplashLayout {
 
   const SplashLayout._({
     required this.size,
+    required this.wordmark,
     required this.center,
-    required this.scale,
-    required this.textOrigin,
-    required this.lockupCartCenter,
-    required this.lockupCartUnit,
-    required this.taglineTop,
+    required this.markCenter,
+    required this.markUnit,
+    required this.wordScale,
+    required this.wordOrigin,
+    required this.wordBottom,
     required this.burstRadius,
   });
 
@@ -47,12 +63,19 @@ class SplashLayout {
   /// Radius of the circle Android 12+ keeps of that box (768 px at 4×).
   static const double nativeSafeRadius = 96;
 
-  /// dp per cart design unit on the launch screen: the cart is about 130 dp
-  /// wide and keeps clear of [nativeSafeRadius].
-  static const double nativeUnit = 1.4;
+  /// dp per mark design unit on the launch screen: the mark is about 150 dp
+  /// wide and its farthest point stays clear of [nativeSafeRadius].
+  static const double nativeUnit = 1.7;
 
-  static const double lockupWidthFraction = 0.8;
-  static const double lockupMaxWidth = 340;
+  /// Height of the Latin name's ink as a share of the screen width, kept
+  /// between [minWordHeight] and [maxWordHeight] dp.
+  static const double wordHeightFraction = 0.14;
+  static const double minWordHeight = 40;
+  static const double maxWordHeight = 56;
+
+  /// The mark stands this many times the name's height, this far above it.
+  static const double markToWord = 2;
+  static const double gapToWord = 0.3;
 
   /// The lockup sits this far above the centre so it and the tagline under
   /// it read as one centred group.
@@ -60,41 +83,72 @@ class SplashLayout {
   static const double taglineGap = 22;
 
   final Size size;
+  final SplashWordmark wordmark;
   final Offset center;
 
-  /// dp per font unit of the lockup.
-  final double scale;
+  /// Where the mark's bounds centre and size (dp per design unit) end up in
+  /// the lockup.
+  final Offset markCenter;
+  final double markUnit;
 
-  /// Screen position of the lockup's font-unit origin (first pen, baseline).
-  final Offset textOrigin;
+  /// dp per font unit of the name, and the screen position of its font
+  /// origin (first pen, baseline).
+  final double wordScale;
+  final Offset wordOrigin;
 
-  /// Top of the tagline, under the swoosh.
-  final double taglineTop;
-
-  /// Where the cart's centre and size (dp per design unit) end up once it is
-  /// the "J" of the name.
-  final Offset lockupCartCenter;
-  final double lockupCartUnit;
+  /// Bottom of the name's ink.
+  final double wordBottom;
 
   /// Distance from [center] to a screen corner: the burst disc covers the
   /// whole screen at this radius.
   final double burstRadius;
 
-  /// Where the cart sits on the launch screen: centred, [nativeUnit] big.
-  Offset get nativeCartCenter => center;
+  /// Where the mark sits on the launch screen: centred, [nativeUnit] big.
+  Offset get nativeMarkCenter => center;
 
-  /// Centre of the finished lockup (it sits [lockupLift] above the screen
-  /// centre).
-  Offset get lockupCenter => center.translate(0, -lockupLift);
+  /// Top of the tagline, under the name.
+  double get taglineTop => wordBottom + taglineGap;
 
-  /// Where the wheels of the launch-screen cart / the lockup cart touch the
-  /// ground (landing rings spread from here).
-  Offset get nativeCartGround => groundOf(nativeCartCenter, nativeUnit);
-  Offset get lockupCartGround => groundOf(lockupCartCenter, lockupCartUnit);
+  /// Where the mark's bottom middle is on the launch screen / in the lockup.
+  Offset get nativeGround => groundOf(nativeMarkCenter, nativeUnit);
+  Offset get lockupGround => groundOf(markCenter, markUnit);
 
-  static Offset groundOf(Offset cartCenter, double unit) =>
-      cartCenter.translate(0, JameiaCartMark.bounds.height / 2 * unit);
+  /// Screen centre of piece [index] of the name once delivered.
+  Offset pieceCenter(int index) =>
+      wordOrigin + wordmark.pieceBounds[index].center * wordScale;
 
-  /// Largest distance from the centre the launch-screen cart paints to.
-  static double get nativeReach => JameiaCartMark.reach * nativeUnit;
+  /// Middle of the delivered name.
+  Offset get wordCenter => wordOrigin + wordmark.ink.center * wordScale;
+
+  /// Everything the finished lockup paints: the mark and the name.
+  Rect get lockupBounds {
+    final b = HeroMark.bounds;
+    final mark = Rect.fromCenter(
+      center: markCenter,
+      width: b.width * markUnit,
+      height: b.height * markUnit,
+    );
+    final ink = wordmark.ink;
+    final word = Rect.fromLTRB(
+      wordOrigin.dx + ink.left * wordScale,
+      wordOrigin.dy + ink.top * wordScale,
+      wordOrigin.dx + ink.right * wordScale,
+      wordBottom,
+    );
+    return mark.expandToInclude(word);
+  }
+
+  /// Screen point of the mark's [point] (design units) for a mark centred at
+  /// [markCenter] at [unit] dp per unit.
+  static Offset pointOf(Offset point, Offset markCenter, double unit) =>
+      markCenter + (point - HeroMark.bounds.center) * unit;
+
+  static Offset groundOf(Offset markCenter, double unit) =>
+      pointOf(HeroMark.ground, markCenter, unit);
+
+  static Offset openingOf(Offset markCenter, double unit) =>
+      pointOf(HeroMark.opening, markCenter, unit);
+
+  /// Largest distance from the centre the launch-screen mark paints to.
+  static double get nativeReach => HeroMark.reach * nativeUnit;
 }

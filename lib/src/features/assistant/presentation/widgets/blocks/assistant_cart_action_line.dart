@@ -5,7 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 import '../../../domain/entities/assistant_block.dart';
 
 /// One line of a cart proposal: thumbnail, name and "× 2". A line the
@@ -22,7 +22,7 @@ class AssistantCartActionLine extends StatelessWidget {
       padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s8),
       child: Row(
         children: [
-          JameiaImage(
+          HeroImage(
             url: product?.image ?? '',
             width: AppSize.s40,
             height: AppSize.s40,

@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../domain/entities/connection_recheck.dart';
+
 /// The part of [ConnectivityScope] a widget depends on.
 enum ConnectivityAspect { offline, reconnect }
 
@@ -9,16 +11,17 @@ enum ConnectivityAspect { offline, reconnect }
 /// everything reads as online.
 ///
 /// Dependents name their aspect, so a widget that only cares about "offline"
-/// is not rebuilt by a reconnect, and nobody is rebuilt when [onNudge]
-/// changes identity.
+/// is not rebuilt by a reconnect, and nobody is rebuilt when a callback
+/// changes identity. The policies behind [checkOnline] and [recheckForRetry]
+/// live in the `ConnectivityCubit`; the scope only carries them.
 class ConnectivityScope extends InheritedModel<ConnectivityAspect> {
   const ConnectivityScope({
     super.key,
     required this.isOffline,
     required this.reconnectEpoch,
     required this.onNudge,
-    this.onCheckNow,
-    this.onRecheck,
+    this.checkOnline,
+    this.recheckForRetry,
     required super.child,
   });
 
@@ -30,15 +33,14 @@ class ConnectivityScope extends InheritedModel<ConnectivityAspect> {
   /// Shakes the banner once (with a light haptic).
   final VoidCallback onNudge;
 
-  /// A live check of the connection (the banner shows "Reconnecting…" while
-  /// it runs), `true` when the app can reach the backend. `null` outside the
-  /// app's banner host.
-  final Future<bool> Function()? onCheckNow;
+  /// A live check before a submit: `true` unless it found no connection.
+  /// `null` outside the app's banner host.
+  final Future<bool> Function()? checkOnline;
 
-  /// A read failed in transport while the app did not read as offline: a
-  /// live check, answering whether the read should go again now. `null`
-  /// outside the app's banner host.
-  final Future<bool> Function()? onRecheck;
+  /// A load failed in transport while the app did not read as offline: a
+  /// live check, answering whether the load goes again now. `null` outside
+  /// the app's banner host.
+  final Future<ConnectionRecheck> Function()? recheckForRetry;
 
   /// Offline now; rebuilds the caller when that changes.
   static bool isOfflineOf(BuildContext context) =>
@@ -73,18 +75,20 @@ class ConnectivityScope extends InheritedModel<ConnectivityAspect> {
   static Future<bool> confirmOnline(BuildContext context) async {
     final scope = context.getInheritedWidgetOfExactType<ConnectivityScope>();
     if (scope == null || !scope.isOffline) return true;
-    final check = scope.onCheckNow;
+    final check = scope.checkOnline;
     return check != null && await check();
   }
 
   /// For a screen whose first load failed for want of a connection while the
   /// app did not read as offline — maybe one slow request, maybe the
   /// connection is gone: the live check to run before the screen says
-  /// anything. It completes with `true` when the load should go again now
-  /// (the check reached the server, and no other automatic retry went out
-  /// lately). `null` outside the app's banner host: nothing can check.
-  static Future<bool> Function()? recheckerOf(BuildContext context) =>
-      context.getInheritedWidgetOfExactType<ConnectivityScope>()?.onRecheck;
+  /// anything ([ConnectionRecheck]). `null` outside the app's banner host:
+  /// nothing can check.
+  static Future<ConnectionRecheck> Function()? recheckerOf(
+    BuildContext context,
+  ) => context
+      .getInheritedWidgetOfExactType<ConnectivityScope>()
+      ?.recheckForRetry;
 
   @override
   bool updateShouldNotify(ConnectivityScope oldWidget) =>

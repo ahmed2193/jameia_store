@@ -3,14 +3,14 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/storage/local_storage.dart';
-import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_nudge_local_data_source.dart';
-import 'package:jameia_mart/src/features/assistant/data/mappers/assistant_nudge_log_mapper.dart';
-import 'package:jameia_mart/src/features/assistant/data/models/assistant_nudge_log_model.dart';
-import 'package:jameia_mart/src/features/assistant/data/repositories/assistant_nudge_repository_impl.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/storage/local_storage.dart';
+import 'package:hero_mart/src/features/assistant/data/datasources/assistant_nudge_local_data_source.dart';
+import 'package:hero_mart/src/features/assistant/data/mappers/assistant_nudge_log_mapper.dart';
+import 'package:hero_mart/src/features/assistant/data/models/assistant_nudge_log_model.dart';
+import 'package:hero_mart/src/features/assistant/data/repositories/assistant_nudge_repository_impl.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_nudge_log.dart';
 
 class _MapStorage implements LocalStorage {
   final Map<String, Object> values = {};

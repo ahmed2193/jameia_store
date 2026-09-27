@@ -2,13 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/widgets/hero_submit_button.dart';
 import '../../cubit/login_cubit.dart';
 import '../../cubit/login_state.dart';
-import '../auth_submit_button.dart';
 
-/// Primary Continue CTA — enabled once the phone is valid, the loader while
-/// the code is being sent. A tap while it is disabled reports [onBlocked] so
-/// the page can point at the number.
+/// Primary Continue CTA. Grey until the number is valid, then the green
+/// wipes in once; it holds that green (no taps) while the code is on its
+/// way — the page's busy disc is the one loader on screen. A tap while it is
+/// disabled reports [onBlocked] so the page can point at the number.
 class LoginContinueButton extends StatelessWidget {
   const LoginContinueButton({super.key, required this.onBlocked});
 
@@ -20,10 +21,11 @@ class LoginContinueButton extends StatelessWidget {
       buildWhen: (previous, current) =>
           previous.canContinue != current.canContinue ||
           previous.isSending != current.isSending,
-      builder: (context, state) => AuthSubmitButton(
+      builder: (context, state) => HeroSubmitButton(
         label: 'auth.continue_btn'.tr(),
         enabled: state.canContinue,
-        loading: state.isSending,
+        holding: state.isSending,
+        readyFlourish: true,
         onPressed: context.read<LoginCubit>().submit,
         onBlocked: onBlocked,
       ),

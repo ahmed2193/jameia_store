@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/constants/app_env.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/network/api_headers.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/constants/app_env.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/network/api_headers.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
 
 import 'network_test_fakes.dart';
 

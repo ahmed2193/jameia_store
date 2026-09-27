@@ -10,7 +10,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/light_sweep.dart';
 import '../../domain/entities/pro_membership.dart';
 
-/// A member's Pro card: the Pro gradient with a crown, "Jm3eia Pro", the
+/// A member's Pro card: the Pro gradient with a crown, "Hero Pro", the
 /// plan, when it renews (or until when its benefits run after a
 /// cancellation), a hint and the card "number" — a slow holographic sheen
 /// sweeps across it now and then.

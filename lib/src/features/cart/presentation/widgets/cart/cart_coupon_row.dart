@@ -9,8 +9,8 @@ import '../../../../../core/motion/change_bump.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_list_row.dart';
-import '../../../../../core/widgets/jameia_sheet_header.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
+import '../../../../../core/widgets/hero_sheet_header.dart';
 import '../../../domain/entities/cart_snapshot.dart';
 import '../../cubit/cart_cubit.dart';
 import 'cart_coupon_sheet.dart';
@@ -31,11 +31,11 @@ class _CartCouponRowState extends State<CartCouponRow> {
   // subtree when a coupon lands; this key carries the ticket's bump across.
   final GlobalKey _ticket = GlobalKey(debugLabel: 'coupon ticket');
 
-  void _open(BuildContext context) => showJameiaBottomSheet<void>(
+  void _open(BuildContext context) => showHeroBottomSheet<void>(
     context,
     isScrollControlled: true,
     backgroundColor: AppColors.white,
-    shape: JameiaSheetHeader.shape,
+    shape: HeroSheetHeader.shape,
     builder: (_) => const CartCouponSheet(),
   );
 
@@ -47,7 +47,7 @@ class _CartCouponRowState extends State<CartCouponRow> {
     final busy = context.select<CartCubit, bool>(
       (cubit) => cubit.state.busyAction == CartAction.coupon,
     );
-    return JameiaListRow(
+    return HeroListRow(
       // No coupon glyph in wm_c_iconfont — its 0xe014 is the WORD 賞 — so this
       // is the same Material ticket the Mine menu and the coupon notification
       // already use.

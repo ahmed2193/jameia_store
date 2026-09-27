@@ -74,7 +74,7 @@ class HomeHeroDeliverTo extends StatelessWidget {
               ),
               const Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: kJameiaPillChevron,
+                color: kHeroPillChevron,
                 size: _chevronSize,
               ),
             ],

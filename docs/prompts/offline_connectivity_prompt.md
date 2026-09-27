@@ -1,15 +1,15 @@
 # FEATURE NAME
 
-Offline-first JameiaMart. The app knows when the connection drops, tells the customer calmly,
+Offline-first Hero. The app knows when the connection drops, tells the customer calmly,
 keeps showing what they last saw, and recovers by itself when the connection returns.
 
 ---
 
 ## CONTEXT
 
-JameiaMart is fully on the jm3eia API (catalogue, cart, checkout, orders, account, notifications,
+Hero is fully on the Hero API (catalogue, cart, checkout, orders, account, notifications,
 assistant). Today the app has **no connection awareness and no response cache**. Every screen
-behaves as if the network is always there. Popular delivery apps (talabat, Keeta, Instacart,
+behaves as if the network is always there. Popular delivery apps (Instacart,
 Instagram, YouTube) handle this in one consistent way:
 
 1. A calm, app-wide "You're offline" signal. It is not an error.
@@ -50,8 +50,8 @@ This task brings the whole app to that standard.
 - In-memory TTL caches only (lost on restart): categories and offers (5 min per language) in
   `core/data/datasources/catalog_remote_data_source.dart`, checkout branches (5 min), checkout rail
   (2 min), and `/v1/init` memoized separately by **four** datasources (home, loyalty, assistant, checkout).
-- Images: `core/widgets/jameia_image_cache_manager.dart` keeps a 365-day disk cache (10 000 objects),
-  so images seen before already work offline. `retryAllPendingImages()` (`core/widgets/jameia_image.dart:72`)
+- Images: `core/widgets/hero_image_cache_manager.dart` keeps a 365-day disk cache (10 000 objects),
+  so images seen before already work offline. `retryAllPendingImages()` (`core/widgets/hero_image.dart:72`)
   is documented as "wire into the reconnect path", but nothing calls it.
 
 **Automatic retries today**
@@ -64,7 +64,7 @@ This task brings the whole app to that standard.
 
 ```
 main.dart ─ EasyLocalization.ensureInitialized → setupServiceLocator (offline catalogue from assets,
-            SharedPreferences, session, Dio chain, 19 feature ICs) → runApp(JameiaApp)
+            SharedPreferences, session, Dio chain, 19 feature ICs) → runApp(HeroApp)
 app.dart  ─ app-global cubits: Cart, Localization, Setting, AuthSession(..restore), UnreadNotifications,
             AddressBook, AssistantAvailability(..ensureLoaded)
           ─ session listeners: address book / cart owner / unread badge / expiry → login / language sync
@@ -115,9 +115,9 @@ pushed    ─ /categories /category /products /brands /offers /recipes /recipe /
 ### Read before writing (CLAUDE.md §0.1)
 
 - `CLAUDE.md`. It wins over this prompt when they disagree. Also `docs/api_integration.md`.
-- Skills: `jameia-api-integration` (+ `references/patterns.md`, `layer-templates.md`,
-  `backend-contract.md`), `jameia-api-session`, `jameia-api-streaming`, `jameia-api-testing`,
-  `jameia-api-verify`.
+- Skills: `hero-api-integration` (+ `references/patterns.md`, `layer-templates.md`,
+  `backend-contract.md`), `hero-api-session`, `hero-api-streaming`, `hero-api-testing`,
+  `hero-api-verify`.
 - Reference features to mirror:
   - `features/address` + `address_local_data_source.dart`: device copy painted first, then sync,
     owner check, wipe on sign-out. This is the closest existing pattern to what every cached
@@ -128,7 +128,7 @@ pushed    ─ /categories /category /products /brands /offers /recipes /recipe /
   - `features/home/presentation/cubit/home_cubit.dart`: keeps the old feed on a refresh failure.
 - `core/motion/*` (`SizeFadeSwitcher`, `CollapseReveal`, `TintFlash`, `ShakeX`, `BlockedTapShake`,
   `RotatingLine`, `Haptics`, `MotionGuard`, `SecondClockScope`) and `core/widgets/*`
-  (`JameiaStateView`, `StateIconPlate`, `ErrorView`, `BrandedRefresh`, skeletons) before writing
+  (`HeroStateView`, `StateIconPlate`, `ErrorView`, `BrandedRefresh`, skeletons) before writing
   any widget.
 - The two review agents that gate this work, **before you design**, because their checklists are
   design constraints here:
@@ -150,13 +150,13 @@ pushed    ─ /categories /category /products /brands /offers /recipes /recipe /
 
 ## FIGMA
 
-None. Build from the existing design system only: `AppColors`, `JameiaColors`, `AppSpacing`,
+None. Build from the existing design system only: `AppColors`, `HeroColors`, `AppSpacing`,
 `AppSize`, `AppRadius`, `AppTextStyles`, `AppShadows`, `AppMotion`, and the `core/motion` kit.
 Tone: calm, reassuring, never alarming. Offline is a **neutral** state (dark neutral surface), not
 an error (no red). "Back online" uses the brand green `primary`. Illustrations reuse `StateIconPlate`
-(or the painted Jameia mark if it reads better), never new raster assets. Add at most two colour
+(or the painted Hero mark if it reads better), never new raster assets. Add at most two colour
 tokens if nothing fits (e.g. `offlineSurface`, `onOfflineSurface`) in both `AppColors` and
-`JameiaColors`, and say why in the report.
+`HeroColors`, and say why in the report.
 
 ---
 
@@ -280,7 +280,7 @@ Only read routes. The first page only for paginated lists. Keys include the lang
    - Offline: **no snack bar** (the banner covers it). The stale note shows.
    - Online (server error, timeout): today's snack + the stale note.
 4. **Network fails with no data.**
-   - `NetworkFailure`: the friendly offline state (`JameiaStateView.offline`), with auto-retry on
+   - `NetworkFailure`: the friendly offline state (`HeroStateView.offline`), with auto-retry on
      reconnect and a manual "Try again".
    - Other failures: today's error view.
    - `UnauthorizedFailure`: today's sign-in view (`context.go(Routes.login)`).
@@ -302,7 +302,7 @@ Only read routes. The first page only for paginated lists. Keys include the lang
 
 | Screen | Target behaviour |
 |---|---|
-| **Home** (tab 0) | Owner-scoped cache for feed + init. Cold start offline with a cache: full home + stale note, no error. Without a cache: `JameiaStateView.offline` inside the real header. Popups are never shown from a cached bootstrap (they are time-boxed) |
+| **Home** (tab 0) | Owner-scoped cache for feed + init. Cold start offline with a cache: full home + stale note, no error. Without a cache: `HeroStateView.offline` inside the real header. Popups are never shown from a cached bootstrap (they are time-boxed) |
 | **Search** (tab 1) | Discover blocks from the cached categories / brands. Typing offline: show recents + `connectivity.search_offline`. No spinner and no silent empty list. Results page = the listing rules below |
 | **Categories / category / listing / brands** | Cache per rule C. **Fix `ProductListingCubit.load()`** so it never drops loaded data (loading only when empty). `ListingTabsCubit` keeps the previous tabs on failure. Filter / sort changes offline: cached page 1 for that query if present, otherwise the offline state inside the listing |
 | **Product detail** | Cache per slug. **Never discard the preview**: on failure with no detail, keep the preview card + an inline offline notice + auto-retry on reconnect. Stale price / stock: show the stale note. Add-to-cart stays allowed (the cart syncs, and the server is the authority) |
@@ -433,9 +433,9 @@ The app must never show a full-screen generic error anywhere offline when a cach
 - `core/widgets/reconnect_refresh.dart`: calls `onReconnected` when the scope's epoch changes, with jitter.
 - `core/widgets/stale_data_notice.dart`: a small pill with a clock icon and the relative age. It
   ticks at most once per minute through the existing clock scope, never per second.
-- `JameiaStateView.offline({onRetry})`: a new named constructor that reuses `StateIconPlate`
+- `HeroStateView.offline({onRetry})`: a new named constructor that reuses `StateIconPlate`
   (`wifi_off_rounded`), `connectivity.offline_state_title` / `_message`, and "Try again".
-- `core/navigation/jameia_snack_bar.dart`: add `showFailureSnackBar(context, failure)`. It
+- `core/navigation/hero_snack_bar.dart`: add `showFailureSnackBar(context, failure)`. It
   suppresses `NetworkFailure` / `TimeoutFailure` while `ConnectivityScope` says offline (and
   nudges the banner instead); otherwise it shows `failure.localizedMessage`. **Every page listener
   that snacks `failure.localizedMessage` moves to it**. Find them with
@@ -505,7 +505,7 @@ For every row in the "What gets cached" table:
    touch that still has `String? error` moves to `Failure?` (CLAUDE.md §5).
 5. **Cubit.** Implement contract C through `SnapshotLoaderMixin`, plus `onReconnected()`.
 6. **Page.** Wrap the body in `ReconnectRefresh`. Show `StaleDataNotice` when
-   `isStale && (offline || failure != null)`. Use `JameiaStateView.offline` for the no-data
+   `isStale && (offline || failure != null)`. Use `HeroStateView.offline` for the no-data
    `NetworkFailure` case. Snack bars go through `showFailureSnackBar`.
 7. **DI.** Register the new datasource, use case and repository changes in the feature IC.
 
@@ -532,7 +532,7 @@ For every row in the "What gets cached" table:
 Use easy_localization `plural()` with all six Arabic forms (zero / one / two / few / many / other).
 Check the Arabic on a device.
 
-### 7. Tests (recipe: `jameia-api-testing`; no test touches the network or real disk outside a temp dir)
+### 7. Tests (recipe: `hero-api-testing`; no test touches the network or real disk outside a temp dir)
 
 - **Test isolation.** Add `FakeNetworkInfo` (a controllable stream + last status) to
   `test/core/network/network_test_fakes.dart`, and an in-memory `JsonCacheStore` fake.
@@ -606,11 +606,11 @@ Check the Arabic on a device.
 - `docs/api_integration.md`: a new "Offline & caching" section (policy table, key anatomy, wipe
   rules, observed cache headers).
 - **Skills:**
-  - `jameia-api-integration/references/patterns.md`: the cache-then-network pattern and the
+  - `hero-api-integration/references/patterns.md`: the cache-then-network pattern and the
     screen contract.
   - `references/backend-contract.md`: the cache-header facts from API SPEC.
-  - `jameia-api-testing`: the fakes.
-  - `jameia-api-verify`: the offline device checklist below.
+  - `hero-api-testing`: the fakes.
+  - `hero-api-verify`: the offline device checklist below.
 
 ---
 
@@ -622,7 +622,7 @@ Check the Arabic on a device.
 - **One widget per file**, including private ones. No `Widget _buildX()`. Banner pieces: host, bar,
   icon slot, label block, back-online variant. Each file stays under about 120–150 lines.
 - **Reuse before you create.**
-  - `JameiaStateView` (the new `.offline`), `StateIconPlate`, `BrandedRefresh`, and the existing
+  - `HeroStateView` (the new `.offline`), `StateIconPlate`, `BrandedRefresh`, and the existing
     skeletons.
   - The existing `ListingLoadMoreFooter` / load-more rows get an offline variant; do not build new
     footers.
@@ -680,7 +680,7 @@ Check the Arabic on a device.
 | `JsonCacheStore` | `core/storage` | `path_provider`, `dart:io`, `dart:isolate` |
 | `DataSnapshot` | `core/domain/entities` | pure Dart, equatable |
 | `RemotePayload`, `CachedRepositoryMixin`, `CatalogCacheDataSource` | `core/data` | core storage / error / domain |
-| `ConnectivityScope`, `ReconnectRefresh`, `StaleDataNotice`, `JameiaStateView.offline` | `core/widgets` | theme, motion, i18n. **No feature imports** |
+| `ConnectivityScope`, `ReconnectRefresh`, `StaleDataNotice`, `HeroStateView.offline` | `core/widgets` | theme, motion, i18n. **No feature imports** |
 | `showFailureSnackBar` | `core/navigation` | `core/widgets/connectivity_scope.dart`, `core/utils/failure_message.dart` |
 | `SnapshotLoaderMixin` | `core/utils/performance` | bloc, `core/domain`, `core/error/failures.dart` |
 | `features/connectivity/**` | its own data / domain / presentation | `core/network/network_info.dart` in data only |
@@ -705,7 +705,7 @@ Check the Arabic on a device.
    `ConnectivityScope` + banner host in `app.dart` + i18n + tests. Verify the banner on an
    emulator in airplane mode.
 2. **Cache core.** `JsonCacheStore`, `DataSnapshot`, `RemotePayload`, `CachedRepositoryMixin`,
-   `SnapshotLoaderMixin`, `StaleDataNotice`, `JameiaStateView.offline`, `ReconnectRefresh`,
+   `SnapshotLoaderMixin`, `StaleDataNotice`, `HeroStateView.offline`, `ReconnectRefresh`,
    `showFailureSnackBar`, relative-age formatter + exhaustive tests.
 3. **Home**, then the **Search discover** blocks (catalogue cache datasource). This is the
    cold-start-offline path, the highest-value screen.
@@ -723,15 +723,15 @@ Check the Arabic on a device.
 
 ---
 
-## VERIFICATION (device / emulator; `jameia-api-verify` checklist + these)
+## VERIFICATION (device / emulator; `hero-api-verify` checklist + these)
 
 **Tools**
 - Airplane mode: `adb shell cmd connectivity airplane-mode enable` / `disable`, or
   `adb shell svc wifi disable` + `adb shell svc data disable`.
 - Bad network: the emulator console `network delay gprs` / `network speed gsm`.
 - Server failures without going offline: the bundled mock API
-  (`.claude/skills/jameia-api-verify/scripts/mock_api/server.js`) failure knobs (5xx, 429).
-- Read the `api` trace through `.claude/skills/jameia-api-verify/scripts/vm_log_tail.dart` or the
+  (`.claude/skills/hero-api-verify/scripts/mock_api/server.js`) failure knobs (5xx, 429).
+- Read the `api` trace through `.claude/skills/hero-api-verify/scripts/vm_log_tail.dart` or the
   DevTools Logging view. It is not in the `flutter run` terminal.
 
 **Scenarios** (record the result of each in the report)

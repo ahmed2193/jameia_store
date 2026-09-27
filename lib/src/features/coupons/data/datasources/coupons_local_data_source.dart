@@ -1,8 +1,8 @@
-import '../../../../core/data/jameia_repository.dart';
+import '../../../../core/data/hero_repository.dart';
 import '../../../../core/data/models/models.dart';
 
-/// Offline source for the user's coupons: the jm3eia API has no coupon wallet,
-/// so the set is served from the in-memory [JameiaRepository] catalogue.
+/// Offline source for the user's coupons: the Hero API has no coupon wallet,
+/// so the set is served from the in-memory [HeroRepository] catalogue.
 abstract class CouponsLocalDataSource {
   List<Coupon> coupons();
 }
@@ -10,7 +10,7 @@ abstract class CouponsLocalDataSource {
 class CouponsLocalDataSourceImpl implements CouponsLocalDataSource {
   const CouponsLocalDataSourceImpl(this._catalog);
 
-  final JameiaRepository _catalog;
+  final HeroRepository _catalog;
 
   @override
   List<Coupon> coupons() => _catalog.coupons;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/widgets/jameia_line_thumb.dart';
+import '../../../../../core/widgets/hero_line_thumb.dart';
 
 /// The frame every row of the cart list shares — the picture, the text
 /// [body], then the [trailing] control — so paid lines and gifts line up in
@@ -28,7 +28,7 @@ class CartLineFrame extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          JameiaLineThumb(url: imageUrl),
+          HeroLineThumb(url: imageUrl),
           const SizedBox(width: AppSpacing.s12),
           Expanded(child: body),
           const SizedBox(width: AppSpacing.s8),

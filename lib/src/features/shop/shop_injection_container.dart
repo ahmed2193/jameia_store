@@ -14,7 +14,7 @@ import 'presentation/cubit/category_browse_cubit.dart';
 import 'presentation/cubit/listing_tabs_cubit.dart';
 import 'presentation/cubit/product_listing_cubit.dart';
 
-/// Shop feature DI — category browsing + product listings on the jm3eia
+/// Shop feature DI — category browsing + product listings on the Hero
 /// backend (`GET /v1/categories`, `/v1/products`, `/v1/brands`), their
 /// device copies in the shared `CatalogCacheDataSource`.
 /// Called from `setupServiceLocator`.

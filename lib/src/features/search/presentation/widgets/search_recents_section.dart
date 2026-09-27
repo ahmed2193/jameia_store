@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
-import '../../../../core/widgets/jameia_section_header.dart';
+import '../../../../core/widgets/hero_section_header.dart';
 import 'search_term_chip.dart';
 
 /// "Recent searches" with its "Clear" link, then the terms as outlined pill
@@ -25,7 +25,7 @@ class SearchRecentsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        JameiaSectionHeader(
+        HeroSectionHeader(
           title: 'search.recent'.tr(),
           onSeeAll: onClear,
           seeAllLabel: 'search.clear_recent'.tr(),

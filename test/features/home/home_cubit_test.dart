@@ -9,15 +9,16 @@ import 'dart:async';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_bootstrap.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/mark_home_popups_shown_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/select_due_home_popups_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_bootstrap_usecase.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
-import 'package:jameia_mart/src/features/home/presentation/cubit/home_cubit.dart';
-import 'package:jameia_mart/src/features/home/presentation/cubit/home_state.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/mark_home_popups_shown_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/select_due_home_popups_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/watch_home_bootstrap_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
+import 'package:hero_mart/src/features/home/presentation/cubit/home_cubit.dart';
+import 'package:hero_mart/src/features/home/presentation/cubit/home_state.dart';
 
 import 'home_test_fakes.dart';
 
@@ -53,15 +54,15 @@ void main() {
   group('load', () {
     test('no copy: the skeleton stays until the server answers', () async {
       repository.bootstrap = const Right(
-        HomeBootstrap(storeName: 'Jm3eia', popups: [sessionPopup]),
+        HomeBootstrap(storeName: 'Hero', popups: [sessionPopup]),
       );
       final cubit = buildCubit();
       final states = await record(cubit, cubit.load);
 
-      expect(states.first.status, isNot(HomeStatus.loading));
-      expect(cubit.state.status, HomeStatus.loaded);
+      expect(states.first.status, LoadPhase.loading, reason: 'the skeleton');
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.feed.slides.single.id, 's1');
-      expect(cubit.state.bootstrap.storeName, 'Jm3eia');
+      expect(cubit.state.bootstrap.storeName, 'Hero');
       expect(cubit.state.duePopups, [sessionPopup]);
       expect(cubit.state.freshness.fromCache, isFalse);
       expect(cubit.state.freshness.fetchedAt, fetchedAtTime);
@@ -93,7 +94,7 @@ void main() {
         final cubit = buildCubit();
         final states = await record(cubit, cubit.load);
 
-        expect(states.every((s) => s.status != HomeStatus.error), isTrue);
+        expect(states.every((s) => s.status != LoadPhase.error), isTrue);
         expect(cubit.state.feed.slides.single.id, 'saved');
         expect(cubit.state.freshness.isStale, isTrue);
         expect(cubit.state.freshness.refreshFailed, isTrue);
@@ -110,18 +111,18 @@ void main() {
         'while the bootstrap lands; retry recovers', () async {
       repository
         ..feed = const Left(NetworkFailure())
-        ..bootstrap = const Right(HomeBootstrap(storeName: 'Jm3eia'));
+        ..bootstrap = const Right(HomeBootstrap(storeName: 'Hero'));
       final cubit = buildCubit();
       await record(cubit, cubit.load);
 
-      expect(cubit.state.status, HomeStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<NetworkFailure>());
-      expect(cubit.state.bootstrap.storeName, 'Jm3eia');
+      expect(cubit.state.bootstrap.storeName, 'Hero');
 
       repository.feed = Right(feedOf('s2'));
       final retry = await record(cubit, cubit.load);
-      expect(retry.first.status, HomeStatus.loading);
-      expect(cubit.state.status, HomeStatus.loaded);
+      expect(retry.first.status, LoadPhase.loading);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.failure, isNull);
       await cubit.close();
     });
@@ -131,7 +132,7 @@ void main() {
       final cubit = buildCubit();
       await record(cubit, cubit.load);
 
-      expect(cubit.state.status, HomeStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.bootstrap, HomeBootstrap.empty);
       await cubit.close();
     });

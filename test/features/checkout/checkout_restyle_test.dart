@@ -1,4 +1,4 @@
-// The Keeta-style checkout as a whole page: where and when on top, then the
+// The Hero-style checkout as a whole page: where and when on top, then the
 // order summary, instant savings and the scalloped order totals, payment,
 // additional options and "good to know" on white blocks over grey bands, and
 // the pinned bar whose total stays hidden until the server priced the
@@ -9,33 +9,33 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_totals_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/delivery_slot_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_close_button.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_money_text.dart';
-import 'package:jameia_mart/src/core/widgets/option_row.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_draft.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_body.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_branch_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_card_text.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_row.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_mode_toggle.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_payment_icon.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_order_bar.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_receipt.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_chip.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_sheet.dart';
-import 'package:jameia_mart/src/features/checkout/presentation/widgets/checkout/checkout_timing_sheet.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/delivery_slot_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/widgets/hero_close_button.dart';
+import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
+import 'package:hero_mart/src/core/widgets/option_row.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_draft.dart';
+import 'package:hero_mart/src/features/checkout/presentation/cubit/checkout_cubit.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_body.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_branch_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_card_text.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_eta_row.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_mode_toggle.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_payment_icon.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_place_order_bar.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_receipt.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_chip.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_slot_sheet.dart';
+import 'package:hero_mart/src/features/checkout/presentation/widgets/checkout/checkout_timing_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../cart/cart_test_fixtures.dart';
@@ -221,7 +221,7 @@ void main() {
     final subtotal = find
         .descendant(
           of: find.byType(CheckoutReceipt),
-          matching: find.byType(JameiaMoneyText),
+          matching: find.byType(HeroMoneyText),
         )
         .first;
     final run = find.descendant(
@@ -428,7 +428,7 @@ void main() {
     expect(tester.takeException(), isNull);
     // ✕ in the floating disc closes it the way a barrier tap does: nothing
     // booked.
-    await tester.tap(find.byType(JameiaCloseButton));
+    await tester.tap(find.byType(HeroCloseButton));
     await tester.pumpAndSettle();
     expect(find.byType(CheckoutSlotSheet), findsNothing);
     expect(checkoutCubit.state.draft.timing, DeliveryTiming.asap);

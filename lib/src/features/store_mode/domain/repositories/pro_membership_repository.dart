@@ -5,7 +5,7 @@ import '../../../../core/domain/entities/data_snapshot.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/pro_membership.dart';
 
-/// Pro membership boundary (jm3eia backend).
+/// Pro membership boundary (Hero backend).
 abstract class ProMembershipRepository {
   /// `GET /v1/subscription-plans` — public; the server's answer.
   Future<Either<Failure, ProProgram>> getProgram();

@@ -4,12 +4,12 @@ import '../motion/motion.dart';
 
 // Route-level page transitions live next to the modal presenters below: the
 // GoRouter config (`config/routes`) builds every page through these, and
-// features present sheets/dialogs through [showJameiaBottomSheet] /
-// [showJameiaDialog] — one motion language for all navigation.
-export 'jameia_fade_through_page.dart';
-export 'jameia_slide_up_transition_page.dart';
-export 'jameia_snack_bar.dart';
-export 'jameia_transition_page.dart';
+// features present sheets/dialogs through [showHeroBottomSheet] /
+// [showHeroDialog] — one motion language for all navigation.
+export 'hero_fade_through_page.dart';
+export 'hero_slide_up_transition_page.dart';
+export 'hero_snack_bar.dart';
+export 'hero_transition_page.dart';
 export 'route_observer.dart';
 
 /// 1Day `bottom_slide_in` / `slide_in_bottom`: 300ms ease-out slide-from-bottom
@@ -18,7 +18,7 @@ export 'route_observer.dart';
 /// [MotionGuard] collapses motion when reduced. MOTION_AND_NAVIGATION.md §6.
 /// [elevation] lets a transparent sheet (one that draws its own card) drop
 /// the Material shadow.
-Future<T?> showJameiaBottomSheet<T>(
+Future<T?> showHeroBottomSheet<T>(
   BuildContext context, {
   required WidgetBuilder builder,
   bool large = false,
@@ -47,7 +47,7 @@ Future<T?> showJameiaBottomSheet<T>(
 /// 1Day `dialog_anim_appear`: 250ms settle-in — scale 1.1 -> 1.0 + fade,
 /// ease-out. Central presenter so centered modal dialogs share one enter.
 /// MOTION_AND_NAVIGATION.md §6 (dialog_anim_appear, 250ms).
-Future<T?> showJameiaDialog<T>(
+Future<T?> showHeroDialog<T>(
   BuildContext context, {
   required WidgetBuilder pageBuilder,
   required String barrierLabel,

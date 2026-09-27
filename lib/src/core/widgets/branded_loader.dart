@@ -1,54 +1,30 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-import '../design/jameia_assets.dart';
-import '../motion/motion.dart';
 import '../../config/theme/app_colors.dart';
+import '../responsive/app_size.dart';
 import 'branded_dot_loader.dart';
 
-/// Branded loading indicator. Replaces bare [CircularProgressIndicator] so every
-/// loader in the app shares Jameia's look.
-///
-/// * Default ([BrandedLoader.new]) shows the real Jameia brand loading GIF
-///   ([JameiaAssets.brandLoadingGif], ~2.2 MB) — use for full-screen / block
-///   loads only.
-/// * [BrandedLoader.inline] paints a lightweight three-dot pulse (no GIF decode)
-///   for buttons and tight inline spots. Loop length = [AppMotion.lottieDotLoader].
-///
-/// Reduced-motion → a static dot row (inline) / static first frame (GIF host
-/// pauses naturally), so nothing animates.
+/// The Hero loader dots on a brand fill — a button, a green pill: white and
+/// the cape's light yellow by default, the pair that reads on the green.
+/// Pass [color] (and [trailColor]) for another fill. On a light surface use
+/// [BrandedDotLoader]; for a block load, `AppLoader`.
 class BrandedLoader extends StatelessWidget {
-  const BrandedLoader({super.key, this.size = 48})
-    : _inline = false,
-      color = null;
-
-  const BrandedLoader.inline({super.key, this.size = 22, this.color})
-    : _inline = true;
+  const BrandedLoader.inline({
+    super.key,
+    this.size = AppSize.s22,
+    this.color = AppColors.brandForeground,
+    this.trailColor = AppColors.accent4,
+  });
 
   final double size;
-  final bool _inline;
 
-  /// Inline dot color (defaults to the brand foreground / on-button color).
-  final Color? color;
+  /// The lead dot.
+  final Color color;
+
+  /// The dot circling it.
+  final Color trailColor;
 
   @override
-  Widget build(BuildContext context) {
-    if (_inline) {
-      return BrandedDotLoader(
-        size: size,
-        color: color ?? AppColors.brandForeground,
-      );
-    }
-    return Center(
-      child: Image.asset(
-        JameiaAssets.brandLoadingGif,
-        width: size,
-        height: size,
-        gaplessPlayback: true,
-        // If the GIF asset is ever missing, fall back to the dot loader rather
-        // than throwing a broken-image box on a loading screen.
-        errorBuilder: (_, _, _) =>
-            BrandedDotLoader(size: size * 0.5, color: AppColors.primary),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      BrandedDotLoader(size: size, color: color, trailColor: trailColor);
 }

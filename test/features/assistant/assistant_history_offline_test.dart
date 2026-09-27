@@ -6,16 +6,17 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/datasources/cache_slots.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/network/dio_consumer.dart';
-import 'package:jameia_mart/src/core/network/event_stream_client.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_history_cache_data_source.dart';
-import 'package:jameia_mart/src/features/assistant/data/datasources/assistant_remote_data_source.dart';
-import 'package:jameia_mart/src/features/assistant/data/repositories/assistant_repository_impl.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_history_state.dart';
+import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/network/dio_consumer.dart';
+import 'package:hero_mart/src/core/network/event_stream_client.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/features/assistant/data/datasources/assistant_history_cache_data_source.dart';
+import 'package:hero_mart/src/features/assistant/data/datasources/assistant_remote_data_source.dart';
+import 'package:hero_mart/src/features/assistant/data/repositories/assistant_repository_impl.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_history_state.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import '../../core/storage/cache_test_fakes.dart';
@@ -117,7 +118,7 @@ void main() {
       final loading = cubit.load();
       await settle();
 
-      expect(cubit.state.status, AssistantHistoryStatus.loaded);
+      expect(cubit.state.status, LoadPhase.loaded);
       expect(cubit.state.freshness.isStale, isTrue);
 
       repository.lists.single.open(const Left(NetworkFailure()));
@@ -136,7 +137,7 @@ void main() {
       repository.lists.single.open(const Left(NetworkFailure()));
       await loading;
 
-      expect(cubit.state.status, AssistantHistoryStatus.error);
+      expect(cubit.state.status, LoadPhase.error);
       expect(cubit.state.failure, isA<NetworkFailure>());
       expect(cubit.state.isSignedOut, isFalse);
     });

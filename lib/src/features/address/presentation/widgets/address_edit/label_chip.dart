@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/responsive/app_size.dart';
 
-/// Label tag chip with a Jameia glyph (Home | Work | Hangout | Other).
+/// Label tag chip with a Hero glyph (Home | Work | Hangout | Other).
 class LabelChip extends StatelessWidget {
   const LabelChip({
     super.key,
@@ -32,7 +33,7 @@ class LabelChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: MotionGuard.duration(context, AppMotion.fast),
           curve: MotionGuard.curve(context, AppMotion.standard),
-          height: 40,
+          height: AppSize.s40,
           padding: const EdgeInsetsDirectional.symmetric(
             horizontal: AppSpacing.s14,
           ),
@@ -52,10 +53,10 @@ class LabelChip extends StatelessWidget {
             children: [
               Image.asset(
                 iconAsset,
-                width: 16,
-                height: 16,
+                width: AppSize.s16,
+                height: AppSize.s16,
                 errorBuilder: (context, error, stackTrace) =>
-                    Icon(JameiaIcons.location, size: 15, color: fg),
+                    Icon(HeroIcons.location, size: AppSize.s15, color: fg),
               ),
               const SizedBox(width: AppSpacing.s6),
               Text(

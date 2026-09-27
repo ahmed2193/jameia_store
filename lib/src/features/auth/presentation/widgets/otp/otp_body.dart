@@ -6,12 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../domain/entities/otp_challenge.dart';
 import '../../../domain/entities/phone_number.dart';
 import '../../cubit/otp_cubit.dart';
 import '../../cubit/otp_state.dart';
+import '../auth_cascade_item.dart';
 import 'otp_code_error.dart';
 import 'otp_code_field.dart';
 import 'otp_code_slots.dart';
@@ -119,7 +119,7 @@ class _OtpBodyState extends State<OtpBody> {
 
   void _onResent(BuildContext context, OtpState state) {
     _code.clear();
-    showJameiaSnackBar(context, 'auth.otp_resent'.tr());
+    showHeroSnackBar(context, 'auth.otp_resent'.tr());
   }
 
   @override
@@ -149,35 +149,38 @@ class _OtpBodyState extends State<OtpBody> {
           listener: _onRefused,
         ),
       ],
-      child: SingleChildScrollView(
-        padding: const EdgeInsetsDirectional.fromSTEB(
-          AppSpacing.s24,
-          AppSpacing.s8,
-          AppSpacing.s24,
-          AppSpacing.s24,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            StaggerEntrance(index: 0, child: OtpHeader(phone: widget.phone)),
-            const SizedBox(height: AppSpacing.s32),
-            StaggerEntrance(
-              index: 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  OtpCodeField(controller: _code, focusNode: _codeFocus),
-                  const OtpCodeError(),
-                  const SizedBox(height: AppSpacing.s4),
-                  OtpDevCodeHint(onUseCode: _useCode),
-                ],
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpacing.s24,
+            AppSpacing.s28,
+            AppSpacing.s24,
+            AppSpacing.s24,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AuthCascadeItem(index: 0, child: OtpHeader(phone: widget.phone)),
+              const SizedBox(height: AppSpacing.s28),
+              AuthCascadeItem(
+                index: 1,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    OtpCodeField(controller: _code, focusNode: _codeFocus),
+                    const OtpCodeError(),
+                    const SizedBox(height: AppSpacing.s4),
+                    OtpDevCodeHint(onUseCode: _useCode),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.s24),
-            const StaggerEntrance(index: 2, child: OtpVerifyButton()),
-            const SizedBox(height: AppSpacing.s8),
-            const StaggerEntrance(index: 3, child: OtpResendRow()),
-          ],
+              const SizedBox(height: AppSpacing.s20),
+              const AuthCascadeItem(index: 2, child: OtpVerifyButton()),
+              const SizedBox(height: AppSpacing.s8),
+              const AuthCascadeItem(index: 3, child: OtpResendRow()),
+            ],
+          ),
         ),
       ),
     );

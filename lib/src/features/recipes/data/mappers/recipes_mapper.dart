@@ -26,7 +26,6 @@ extension RecipeDetailMapper on RecipeDetailModel {
             purchaseQuantity: ingredient.purchaseQty < 1
                 ? 1
                 : ingredient.purchaseQty.ceil(),
-            useQuantity: ingredient.useQty,
             note: ingredient.note,
           ),
       ],

@@ -19,7 +19,7 @@ import 'checkout_savings_section.dart';
 import 'checkout_ui_controller.dart';
 import 'checkout_where_when_block.dart';
 
-/// The loaded checkout, in Keeta's order: where and when (Block A), the
+/// The loaded checkout, in Hero's order: where and when (Block A), the
 /// deals rail, then order summary + instant savings + order totals in one
 /// block, payment, additional options and "good to know" — white blocks on
 /// grey bands in ONE scroll view — over the pinned place-order bar, with

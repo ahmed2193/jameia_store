@@ -14,14 +14,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/config/theme/app_theme.dart';
-import 'package:jameia_mart/src/core/domain/entities/jameia_address_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_book.dart';
-import 'package:jameia_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
-import 'package:jameia_mart/src/features/address/presentation/pages/address_list_page.dart';
-import 'package:jameia_mart/src/features/address/presentation/widgets/address_list/address_row_tile.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/domain/entities/hero_address_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
+import 'package:hero_mart/src/features/address/presentation/pages/address_list_page.dart';
+import 'package:hero_mart/src/features/address/presentation/widgets/address_list/address_row_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'address_test_fakes.dart';
@@ -256,8 +256,8 @@ void main() {
     );
     await settle(tester);
 
-    expect(picked.single, isA<JameiaAddressEntity>());
-    expect((picked.single! as JameiaAddressEntity).id, work.id);
+    expect(picked.single, isA<HeroAddressEntity>());
+    expect((picked.single! as HeroAddressEntity).id, work.id);
     expect(find.byType(AddressListPage), findsNothing);
 
     await teardownApp(tester);

@@ -2,13 +2,13 @@
 // that advertises a rail is folded into it, an expired strip is dropped and
 // the category block is filled from the whole tree.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
-import 'package:jameia_mart/src/features/home/data/mappers/home_feed_mapper.dart';
-import 'package:jameia_mart/src/features/home/data/models/home_feed_model.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_feed.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_link.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_section_entity.dart';
-import 'package:jameia_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:hero_mart/src/features/home/data/mappers/home_feed_mapper.dart';
+import 'package:hero_mart/src/features/home/data/models/home_feed_model.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_feed.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_link.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_section_entity.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
 
 import 'home_test_fakes.dart';
 

@@ -1,4 +1,4 @@
-/// Header names + media types the jm3eia API contract uses. Every interceptor
+/// Header names + media types the Hero API contract uses. Every interceptor
 /// and datasource references these — never a raw header string.
 ///
 /// Reference: https://docs.jm3eia.store/developers/conventions.html
@@ -6,7 +6,6 @@ abstract final class ApiHeaders {
   static const String authorization = 'Authorization';
   static const String acceptLanguage = 'Accept-Language';
   static const String accept = 'Accept';
-  static const String contentType = 'Content-Type';
   static const String retryAfter = 'Retry-After';
 
   /// Guest cart identity (`results.cartToken` from `/v1/init` or a cart call).

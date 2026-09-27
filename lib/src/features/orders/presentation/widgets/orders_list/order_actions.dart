@@ -8,7 +8,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_secondary_button.dart';
+import '../../../../../core/widgets/hero_secondary_button.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_state.dart';
 import '../../cubit/orders_cubit.dart';
@@ -35,7 +35,7 @@ class OrderActions extends StatelessWidget {
   Future<void> _reorder(BuildContext context) async {
     final added = await context.read<CartCubit>().addItems(order.reorderItems);
     if (added && context.mounted) {
-      showJameiaSnackBar(context, 'orders.reorder_done'.tr());
+      showHeroSnackBar(context, 'orders.reorder_done'.tr());
     }
   }
 
@@ -49,21 +49,21 @@ class OrderActions extends StatelessWidget {
     );
     final buttons = <Widget>[
       if (order.canCancel)
-        JameiaSecondaryButton(
+        HeroSecondaryButton(
           label: 'orders.cancel_order'.tr(),
           compact: true,
           height: _actionHeight,
           onPressed: cancelling ? null : () => _cancel(context),
         ),
       if (order.canReview)
-        JameiaSecondaryButton(
+        HeroSecondaryButton(
           label: 'orders.review'.tr(),
           compact: true,
           height: _actionHeight,
           onPressed: () => context.push(Routes.orderReview, extra: order.id),
         ),
       if (order.isTerminal)
-        JameiaSecondaryButton(
+        HeroSecondaryButton(
           label: 'orders.reorder'.tr(),
           compact: true,
           height: _actionHeight,

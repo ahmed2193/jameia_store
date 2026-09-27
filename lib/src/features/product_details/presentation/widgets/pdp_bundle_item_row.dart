@@ -6,7 +6,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/product_detail.dart';
 
 /// One product inside a bundle, as a flat row: the photo on a light-grey
@@ -39,7 +39,7 @@ class PdpBundleItemRow extends StatelessWidget {
                   color: AppColors.smallBackground,
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.s4),
-                    child: JameiaImage(
+                    child: HeroImage(
                       url: item.product.image,
                       width: _thumb - AppSpacing.s8,
                       height: _thumb - AppSpacing.s8,

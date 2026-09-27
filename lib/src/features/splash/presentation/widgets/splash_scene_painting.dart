@@ -1,29 +1,39 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
-import '../../../../core/design/jameia_cart_mark.dart';
+import '../../../../core/design/hero_mark.dart';
+import '../../../../core/design/hero_mark_painting.dart';
 import 'splash_ambient_painting.dart';
-import 'splash_cart_painting.dart';
 import 'splash_confetti_painting.dart';
 import 'splash_frame.dart';
+import 'splash_grocery_painting.dart';
 import 'splash_layout.dart';
 import 'splash_palette.dart';
 import 'splash_ripple_painting.dart';
 import 'splash_wordmark_painting.dart';
 
 /// Paints one whole splash frame in one palette, back to front: background,
-/// living colour, rings, speed lines, the cart, the name and the confetti.
+/// living colour, rings, speed streaks, the name on its way, the mark (with
+/// any groceries in its bag) and the confetti. While the light sweeps, the
+/// name and the mark share a layer so the band lights only them.
 abstract final class SplashScenePainting {
-  /// Vertical place (share of the cart height from its centre) and length
-  /// (share of the cart width) of each streak behind the moving cart.
+  /// Streaks trailing behind and under the flying bag, which swoops up and
+  /// forward: across (share of the bag's width from its middle) and length
+  /// (share of the mark's height).
   static const List<(double, double)> speedLines = [
-    (-0.2, 0.8),
-    (0.06, 1),
-    (0.3, 0.6),
+    (-0.28, 0.55),
+    (0, 0.8),
+    (0.28, 0.45),
   ];
 
-  /// Gap between the cart and its streaks, and streak width, in design units.
+  /// Gap under the bag before the streaks start, their width (design units)
+  /// and their slant back from straight down (radians).
   static const double speedLineGap = 8;
-  static const double speedLineWidth = 5;
+  static const double speedLineWidth = 3.5;
+  static const double speedLineSlant = 0.35;
+
+  static final double _bagWidth =
+      HeroMark.bagBottomRight.dx - HeroMark.bagBottomLeft.dx;
 
   static void paint(
     Canvas canvas,
@@ -43,16 +53,51 @@ abstract final class SplashScenePainting {
     );
     SplashRipplePainting.paint(canvas, frame.ripples, palette.ripple);
     if (frame.speedLines > 0) _speedLines(canvas, frame, palette);
-    SplashCartPainting.paint(
+    final shining = frame.shine > 0 && frame.shine < 1;
+    final lockup = layout.lockupBounds;
+    if (shining) {
+      canvas.saveLayer(
+        lockup.inflate(SplashWordmarkPainting.shineMargin),
+        Paint(),
+      );
+    }
+    final pose = frame.pose;
+    if (frame.deliveries.isNotEmpty) {
+      // The bag is solid: a piece passing behind it is hidden, even where
+      // the "h" is cut out of it.
+      final bag = HeroMark.bag.transform(
+        HeroMarkPainting.matrixFor(
+          center: frame.markCenter,
+          unit: frame.markUnit,
+          pose: pose,
+        ),
+      );
+      canvas
+        ..save()
+        ..clipPath(
+          Path()
+            ..fillType = PathFillType.evenOdd
+            ..addRect(Offset.zero & size)
+            ..addPath(bag, Offset.zero),
+        );
+      SplashWordmarkPainting.paintDeliveries(canvas, layout, frame, palette);
+      canvas.restore();
+    }
+    final groceries = frame.groceries;
+    HeroMarkPainting.paint(
       canvas,
-      center: frame.cartCenter,
-      unit: frame.cartUnit,
-      palette: palette,
-      squash: frame.squash,
-      lift: frame.lift,
-      groceries: frame.groceries,
+      center: frame.markCenter,
+      unit: frame.markUnit,
+      colors: palette.mark,
+      pose: pose,
+      inside: groceries.isEmpty
+          ? null
+          : (canvas) => SplashGroceryPainting.paint(canvas, palette, groceries),
     );
-    SplashWordmarkPainting.paint(canvas, layout, frame, palette);
+    if (shining) {
+      SplashWordmarkPainting.paintShine(canvas, lockup, frame.shine, palette);
+      canvas.restore();
+    }
     SplashConfettiPainting.paint(canvas, frame, palette);
   }
 
@@ -61,20 +106,31 @@ abstract final class SplashScenePainting {
     SplashFrame frame,
     SplashPalette palette,
   ) {
-    final bounds = JameiaCartMark.bounds;
-    final unit = frame.cartUnit;
-    final startX =
-        frame.cartCenter.dx + (bounds.width / 2 + speedLineGap) * unit;
-    final paint = Paint()
-      ..color = palette.speedLine
-      ..strokeWidth = speedLineWidth * unit
-      ..strokeCap = StrokeCap.round;
-    for (final (place, length) in speedLines) {
-      final y = frame.cartCenter.dy + place * bounds.height * unit;
+    final unit = frame.markUnit;
+    final ground =
+        SplashLayout.groundOf(frame.markCenter, unit) -
+        Offset(0, frame.lift * unit);
+    final back = Offset(-math.sin(speedLineSlant), math.cos(speedLineSlant));
+    final color = palette.speedLine;
+    for (final (across, length) in speedLines) {
+      final start = Offset(
+        ground.dx + across * _bagWidth * unit,
+        ground.dy + speedLineGap * unit,
+      );
+      final reach = frame.speedLines * length * HeroMark.bounds.height * unit;
+      if (reach < 1) continue;
+      final end = start + back * reach;
+      // Solid at the bag, fading away behind it.
       canvas.drawLine(
-        Offset(startX, y),
-        Offset(startX + frame.speedLines * length * bounds.width * unit, y),
-        paint,
+        start,
+        end,
+        Paint()
+          ..strokeWidth = speedLineWidth * unit
+          ..strokeCap = StrokeCap.round
+          ..shader = Gradient.linear(start, end, [
+            color,
+            color.withValues(alpha: 0),
+          ]),
       );
     }
   }

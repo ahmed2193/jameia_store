@@ -8,7 +8,7 @@ import '../../../language/presentation/cubit/localization_state.dart';
 import '../widgets/shell_basket_tab.dart';
 import '../widgets/shell_bottom_nav.dart';
 
-/// Jameia MainTabActivity equivalent — 4 tabs (Home / Search / Cart / Mine)
+/// Hero MainTabActivity equivalent — 4 tabs (Home / Search / Cart / Mine)
 /// over an [IndexedStack] so each tab keeps its scroll + state.
 ///
 /// The router hands over the tab pages ([tabs]); the shell only places them.

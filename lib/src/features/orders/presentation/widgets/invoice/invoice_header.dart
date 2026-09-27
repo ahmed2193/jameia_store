@@ -5,7 +5,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_summary_line.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 import 'invoice_payment_status.dart';
 import 'invoice_section.dart';
 
@@ -32,24 +32,24 @@ class InvoiceHeader extends StatelessWidget {
       title: 'orders.info_title'.tr(),
       headerPadding: InvoiceSection.pageTop,
       children: [
-        JameiaSummaryLine(
+        HeroSummaryLine(
           label: 'orders.invoice_number'.tr(),
           value: Directionality(
             textDirection: TextDirection.ltr,
             child: Text(order.orderNumber, style: _numberStyle),
           ),
         ),
-        JameiaSummaryLine(
+        HeroSummaryLine(
           label: 'orders.invoice_date'.tr(),
           value: Text(
             Formatters.dateTime(context.locale.languageCode, order.createdAt),
           ),
         ),
-        JameiaSummaryLine(
+        HeroSummaryLine(
           label: 'orders.invoice_payment'.tr(),
           value: Text(_method),
         ),
-        JameiaSummaryLine(
+        HeroSummaryLine(
           label: 'orders.invoice_status'.tr(),
           value: InvoicePaymentStatus(paid: order.payment.isPaid),
         ),

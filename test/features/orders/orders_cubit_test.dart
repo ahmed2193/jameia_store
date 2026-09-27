@@ -1,18 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/cancel_order_request.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/cancel_order_request.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
 
 import 'fake_orders_repository.dart';
 
-import 'package:jameia_mart/src/features/orders/presentation/cubit/orders_state.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
-import 'package:jameia_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/orders_state.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
+import 'package:hero_mart/src/features/orders/domain/usecases/get_order_usecase.dart';
 
 void main() {
   late FakeOrdersRepository repository;
@@ -32,7 +33,7 @@ void main() {
 
     await cubit.load();
 
-    expect(cubit.state.status, OrdersStatus.loaded);
+    expect(cubit.state.status, LoadPhase.loaded);
     expect(cubit.state.feed.orders, hasLength(1));
     expect(cubit.state.feed.orders.single.group, OrderStatusGroup.inProgress);
     await cubit.close();
@@ -44,7 +45,7 @@ void main() {
 
     await cubit.load();
 
-    expect(cubit.state.status, OrdersStatus.error);
+    expect(cubit.state.status, LoadPhase.error);
     expect(cubit.state.loadFailure, isA<NetworkFailure>());
     await cubit.close();
   });
@@ -56,9 +57,9 @@ void main() {
 
     await cubit.refresh();
 
-    expect(cubit.state.status, OrdersStatus.loaded);
+    expect(cubit.state.status, LoadPhase.loaded);
     expect(cubit.state.feed.orders, hasLength(1));
-    expect(cubit.state.failure, isA<TimeoutFailure>());
+    expect(cubit.state.load.failure, isA<TimeoutFailure>());
     await cubit.close();
   });
 
@@ -149,7 +150,7 @@ void main() {
     );
 
     expect(cancelled, isFalse);
-    expect(cubit.state.failedAction, OrdersAction.cancel);
+    expect(cubit.state.load.failedOn, FailedCall.action);
     expect(cubit.state.feed.orders.single.group, OrderStatusGroup.inProgress);
     await cubit.close();
   });
@@ -184,7 +185,7 @@ void main() {
 
     expect(cancelled, isFalse);
     expect(repository.calls, isEmpty);
-    expect(cubit.state.failure, isA<ValidationFailure>());
+    expect(cubit.state.load.failure, isA<ValidationFailure>());
     await cubit.close();
   });
 }

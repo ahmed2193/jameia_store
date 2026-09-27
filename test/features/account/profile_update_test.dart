@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/features/account/data/mappers/profile_update_mapper.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/profile_completion.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/profile_field.dart';
-import 'package:jameia_mart/src/features/account/domain/entities/profile_update.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/features/account/data/mappers/profile_update_mapper.dart';
+import 'package:hero_mart/src/features/account/domain/entities/profile_completion.dart';
+import 'package:hero_mart/src/features/account/domain/entities/profile_field.dart';
+import 'package:hero_mart/src/features/account/domain/entities/profile_update.dart';
 
 final AuthCustomerEntity _customer = AuthCustomerEntity(
   id: 'x',

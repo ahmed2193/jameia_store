@@ -12,15 +12,15 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/catalog_category_entity.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_section_entity.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_category_aurora_painter.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_category_entrance.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_category_grid.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_category_tile.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_reveal.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_tile_backdrop.dart';
+import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_section_entity.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_category_aurora_painter.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_category_entrance.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_category_grid.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_category_tile.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_reveal.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_tile_backdrop.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Two rows of 15 columns: wider than the 800-wide test screen.

@@ -13,7 +13,7 @@ import 'checkout_offer_terms.dart';
 import 'checkout_ticket_card.dart';
 import 'checkout_ticket_headline.dart';
 
-/// One offer as a Keeta ticket: the reward ("10% off", "KD 1.000 off",
+/// One offer as a Hero ticket: the reward ("10% off", "KD 1.000 off",
 /// "Free delivery", "Free {product}"), its terms, the offer's own name and
 /// when it ends, then "✓ Applied" (beside the name) or the progress still
 /// to make (under it). The ribbon says whether it combines with other

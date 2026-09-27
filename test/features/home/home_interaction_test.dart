@@ -12,11 +12,11 @@ import 'package:flutter/gestures.dart' show kTouchSlop;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/features/home/domain/entities/home_slide_entity.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_add_burst.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_pressable.dart';
-import 'package:jameia_mart/src/features/home/presentation/widgets/home_slides_carousel.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/features/home/domain/entities/home_slide_entity.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_add_burst.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_pressable.dart';
+import 'package:hero_mart/src/features/home/presentation/widgets/home_slides_carousel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const double _card = 120;

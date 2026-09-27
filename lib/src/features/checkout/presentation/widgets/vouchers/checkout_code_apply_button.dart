@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/domain/entities/cart_coupon_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_submit_button.dart';
+import '../../../../../core/widgets/hero_submit_button.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_state.dart';
 
@@ -39,7 +39,7 @@ class CheckoutCodeApplyButton extends StatelessWidget {
       selector: (state) => state.isBusy,
       builder: (context, busy) => ValueListenableBuilder<TextEditingValue>(
         valueListenable: controller,
-        builder: (context, value, _) => JameiaSubmitButton(
+        builder: (context, value, _) => HeroSubmitButton(
           label: 'checkout.code_apply'.tr(),
           sticker: true,
           height: AppSize.s48,

@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/data/mappers/order_mapper.dart';
-import 'package:jameia_mart/src/core/data/models/order_model.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_entity.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/orders_feed.dart';
-import 'package:jameia_mart/src/features/orders/domain/entities/orders_page.dart';
+import 'package:hero_mart/src/core/data/mappers/order_mapper.dart';
+import 'package:hero_mart/src/core/data/models/order_model.dart';
+import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/orders_feed.dart';
+import 'package:hero_mart/src/features/orders/domain/entities/orders_page.dart';
 
 import 'order_test_fixtures.dart';
 

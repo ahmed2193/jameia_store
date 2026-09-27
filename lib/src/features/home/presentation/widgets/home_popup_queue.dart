@@ -20,7 +20,7 @@ abstract final class HomePopupQueue {
   ) async {
     for (final popup in popups) {
       if (!context.mounted) return;
-      final followed = await showJameiaDialog<bool>(
+      final followed = await showHeroDialog<bool>(
         context,
         barrierLabel: 'home.popup_barrier_label'.tr(),
         barrierColor: AppColors.popupScrim,

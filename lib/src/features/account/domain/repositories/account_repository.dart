@@ -8,7 +8,7 @@ import '../entities/profile_update.dart';
 /// Read/write boundary for the account ("Mine") surfaces.
 ///
 /// The overview + delivery code still resolve from the seeded offline
-/// catalogue; the profile lives on the jm3eia backend (customer Bearer):
+/// catalogue; the profile lives on the Hero backend (customer Bearer):
 /// https://docs.jm3eia.store/developers/account.html
 abstract class AccountRepository {
   /// Profile + quick-stat counts + unread badge for the Mine tab (offline).

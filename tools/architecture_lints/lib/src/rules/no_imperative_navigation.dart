@@ -25,7 +25,7 @@ class NoImperativeNavigation extends AnalysisRule {
     "Imperative navigation '{0}.{1}' bypasses GoRouter.",
     correctionMessage:
         'Use context.push/go/pop with Routes.* paths and extra: arguments; '
-        'dialogs/sheets use showJameiaDialog/showJameiaBottomSheet '
+        'dialogs/sheets use showHeroDialog/showHeroBottomSheet '
         '(CLAUDE.md §2 Navigation).',
     severity: DiagnosticSeverity.WARNING,
   );

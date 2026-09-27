@@ -13,8 +13,3 @@ extension UserProfileMapper on UserProfile {
     deliveryCode: deliveryCode,
   );
 }
-
-/// Convenience for mapping a whole list.
-extension UserProfileListMapper on List<UserProfile> {
-  List<UserProfileEntity> toEntities() => map((u) => u.toEntity()).toList();
-}

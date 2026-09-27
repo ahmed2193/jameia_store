@@ -1,7 +1,8 @@
-// NetworkInfoImpl: the probe list, the poll schedule (fast while
-// unreachable, slow while reachable, none while paused or unobserved), the
-// immediate re-check on a transport failure, the instant recovery on an API
-// response, and single-flight probes. The probe runs through the package's
+// NetworkInfoImpl: the probe list, the poll schedule (no probe at launch,
+// fast while unreachable, slow while reachable and pushed out by live
+// traffic, none while paused or unobserved), the immediate re-check on a
+// transport failure, the instant recovery on an API response, and
+// single-flight probes. The probe runs through the package's
 // `customConnectivityCheck`, so nothing here touches the network.
 
 import 'dart:async';
@@ -9,7 +10,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:jameia_mart/src/core/network/network_info.dart';
+import 'package:hero_mart/src/core/network/network_info.dart';
 
 /// Answers every probe option from [reachable]; a [gate] holds the answer.
 class _ScriptedProbe {
@@ -84,38 +85,47 @@ void main() {
       expect(monitor.isReachable, isNull);
     });
 
-    test('the first listener starts an immediate probe', () async {
+    test('the first listener starts the poll, not a probe: the launch '
+        'requests answer first', () async {
       final probe = _ScriptedProbe();
-      final monitor = _monitor(probe);
+      final monitor = _monitor(probe, onlinePoll: _fastPoll * 3);
       final seen = <bool>[];
       final sub = monitor.onReachabilityChanged.listen(seen.add);
       await _wait();
-      expect(probe.rounds, 1);
+      expect(probe.rounds, 0, reason: 'no probe racing the startup requests');
+      expect(monitor.isReachable, isNull);
+
+      await _wait(_fastPoll * 4);
+      expect(probe.rounds, 1, reason: 'a silent app is still checked');
       expect(seen, [true]);
-      expect(monitor.isReachable, isTrue);
       await sub.cancel();
     });
 
-    test('the fallback keeps the app online when only our host fails', () async {
-      final asked = <String>[];
-      final monitor = NetworkInfoImpl(
-        InternetConnection.createInstance(
-          customCheckOptions: NetworkInfoImpl.probeOptions('https://api.test'),
-          useDefaultOptions: false,
-          customConnectivityCheck: (option) async {
-            asked.add(option.uri.host);
-            return InternetCheckResult(
-              option: option,
-              isSuccess: option.uri.host != 'api.test',
-            );
-          },
-        ),
-        onlinePoll: _slowPoll,
-        offlinePoll: _fastPoll,
-      );
-      expect(await monitor.checkNow(), isTrue);
-      expect(asked, containsAll(['api.test', 'one.one.one.one']));
-    });
+    test(
+      'the fallback keeps the app online when only our host fails',
+      () async {
+        final asked = <String>[];
+        final monitor = NetworkInfoImpl(
+          InternetConnection.createInstance(
+            customCheckOptions: NetworkInfoImpl.probeOptions(
+              'https://api.test',
+            ),
+            useDefaultOptions: false,
+            customConnectivityCheck: (option) async {
+              asked.add(option.uri.host);
+              return InternetCheckResult(
+                option: option,
+                isSuccess: option.uri.host != 'api.test',
+              );
+            },
+          ),
+          onlinePoll: _slowPoll,
+          offlinePoll: _fastPoll,
+        );
+        expect(await monitor.checkNow(), isTrue);
+        expect(asked, containsAll(['api.test', 'one.one.one.one']));
+      },
+    );
 
     test('no host answers → unreachable', () async {
       final probe = _ScriptedProbe()..reachable = false;
@@ -145,6 +155,7 @@ void main() {
       final probe = _ScriptedProbe()..reachable = false;
       final monitor = _monitor(probe);
       final sub = monitor.onReachabilityChanged.listen((_) {});
+      monitor.reportTransportFailure(); // a launch request failed
       await _wait(_fastPoll * 5);
       final offlineRounds = probe.rounds;
       expect(offlineRounds, greaterThanOrEqualTo(3));
@@ -163,9 +174,11 @@ void main() {
       final probe = _ScriptedProbe()..reachable = false;
       final monitor = _monitor(probe);
       final sub = monitor.onReachabilityChanged.listen((_) {});
-      await _wait();
+      monitor.reportTransportFailure();
+      await _wait(_fastPoll * 2);
       await sub.cancel();
       final rounds = probe.rounds;
+      expect(rounds, greaterThanOrEqualTo(2), reason: 'it was polling');
       await _wait(_fastPoll * 4);
       expect(probe.rounds, rounds);
     });
@@ -204,10 +217,10 @@ void main() {
       final monitor = _monitor(probe);
       final sub = monitor.onReachabilityChanged.listen((_) {});
       await _wait();
-      expect(probe.rounds, 1);
+      expect(probe.rounds, 0);
       monitor.reportTransportFailure();
       await _wait();
-      expect(probe.rounds, 2);
+      expect(probe.rounds, 1);
       await sub.cancel();
     });
 
@@ -227,6 +240,7 @@ void main() {
       final monitor = _monitor(probe, offlinePoll: _slowPoll);
       final seen = <bool>[];
       final sub = monitor.onReachabilityChanged.listen(seen.add);
+      monitor.reportTransportFailure();
       await _wait();
       final rounds = probe.rounds;
       monitor.reportReachable();
@@ -237,20 +251,38 @@ void main() {
       await sub.cancel();
     });
 
-    test('a probe that failed before the response landed cannot undo it', () async {
-      final probe = _ScriptedProbe()..reachable = false;
-      final monitor = _monitor(probe, offlinePoll: _slowPoll);
+    test('live traffic pushes the idle poll out', () async {
+      final probe = _ScriptedProbe();
+      final monitor = _monitor(probe, onlinePoll: _fastPoll * 3);
       final sub = monitor.onReachabilityChanged.listen((_) {});
-      await _wait();
-      probe.gate = Completer<void>();
-      final pending = monitor.checkNow();
-      await _wait();
-      monitor.reportReachable();
-      probe.gate!.complete();
-      expect(await pending, isTrue);
-      expect(monitor.isReachable, isTrue);
+      for (var i = 0; i < 6; i++) {
+        monitor.reportReachable(); // an API response
+        await _wait(_fastPoll);
+      }
+      expect(probe.rounds, 0, reason: 'the responses answered for it');
+
+      await _wait(_fastPoll * 4);
+      expect(probe.rounds, 1, reason: 'silence: the idle poll runs');
       await sub.cancel();
     });
+
+    test(
+      'a probe that failed before the response landed cannot undo it',
+      () async {
+        final probe = _ScriptedProbe()..reachable = false;
+        final monitor = _monitor(probe, offlinePoll: _slowPoll);
+        final sub = monitor.onReachabilityChanged.listen((_) {});
+        await _wait();
+        probe.gate = Completer<void>();
+        final pending = monitor.checkNow();
+        await _wait();
+        monitor.reportReachable();
+        probe.gate!.complete();
+        expect(await pending, isTrue);
+        expect(monitor.isReachable, isTrue);
+        await sub.cancel();
+      },
+    );
   });
 
   test('probes are single-flight', () async {

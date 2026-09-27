@@ -33,7 +33,7 @@ class CouponsSummaryBadge extends StatelessWidget {
                   child: Icon(
                     Icons.confirmation_number_rounded,
                     size: AppSize.s28,
-                    color: kJameiaPillPin,
+                    color: kHeroPillPin,
                   ),
                 ),
               ),

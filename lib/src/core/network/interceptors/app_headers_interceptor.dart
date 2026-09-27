@@ -4,7 +4,7 @@ import '../../storage/session_store.dart';
 import '../api_headers.dart';
 import '../locale_provider.dart';
 
-/// Attaches the cross-cutting request headers every jm3eia call needs:
+/// Attaches the cross-cutting request headers every Hero call needs:
 ///
 ///   * `Accept-Language` — from [LocaleProvider] (backend localizes strings).
 ///   * `X-Cart-Token` + `X-Assistant-Guest` — ONLY while signed out. Signed-in

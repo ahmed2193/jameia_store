@@ -27,20 +27,6 @@ int? asciiDigitUnit(int unit) {
   return null;
 }
 
-/// [raw] with every Arabic-Indic / Persian digit replaced by its ASCII twin;
-/// every other character is kept as it is.
-String toAsciiDigits(String raw) {
-  final units = raw.codeUnits;
-  if (!units.any(_isNonAsciiDigit)) return raw;
-  return String.fromCharCodes(units.map((u) => asciiDigitUnit(u) ?? u));
-}
-
 /// Only the ASCII digits of [raw] (after mapping the other digit sets).
-String asciiDigitsOnly(String raw) => String.fromCharCodes(
-  raw.codeUnits.map(asciiDigitUnit).whereType<int>(),
-);
-
-bool _isNonAsciiDigit(int unit) {
-  final ascii = asciiDigitUnit(unit);
-  return ascii != null && ascii != unit;
-}
+String asciiDigitsOnly(String raw) =>
+    String.fromCharCodes(raw.codeUnits.map(asciiDigitUnit).whereType<int>());

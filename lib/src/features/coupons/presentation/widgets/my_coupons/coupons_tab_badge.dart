@@ -21,7 +21,7 @@ class CouponsTabBadge extends StatelessWidget {
         constraints: const BoxConstraints(minWidth: AppSize.s18),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: kJameiaPillPin,
+            color: kHeroPillPin,
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           child: Padding(

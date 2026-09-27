@@ -10,7 +10,7 @@ import '../../../../../core/responsive/app_size.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 import 'assistant_avatar.dart';
 
-/// Avatar, "Jm3eia Assistant" and a status line that flips between "Products,
+/// Avatar, "Hero Assistant" and a status line that flips between "Products,
 /// offers…" and "Typing…" while a reply streams. (Screen readers hear the
 /// reply through the page's announcements, not through this title.)
 class AssistantChatTitle extends StatelessWidget {

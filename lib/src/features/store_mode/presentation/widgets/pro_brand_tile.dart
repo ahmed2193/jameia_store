@@ -9,7 +9,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 
 /// A brand's logo square in the paywall's logo rows (its initial when the
 /// brand has no logo); opens the brand's products.
@@ -46,7 +46,7 @@ class ProBrandTile extends StatelessWidget {
             border: Border.all(color: AppColors.brandTileBorder),
           ),
           child: brand.hasImage
-              ? JameiaImage(
+              ? HeroImage(
                   url: brand.image,
                   width: side,
                   height: side,

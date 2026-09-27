@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
-import '../../../../../core/widgets/jameia_summary_line.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 import '../../../../../core/widgets/thin_divider.dart';
 import 'invoice_discount_line.dart';
 import 'invoice_loyalty_note.dart';
@@ -32,9 +32,9 @@ class InvoiceTotals extends StatelessWidget {
         InvoiceSection(
           title: 'orders.summary_title'.tr(),
           children: [
-            JameiaSummaryLine(
+            HeroSummaryLine(
               label: 'orders.subtotal'.tr(),
-              value: JameiaMoneyText(kd: order.subtotalKd),
+              value: HeroMoneyText(kd: order.subtotalKd),
             ),
             if (order.offerDiscountFils > 0)
               InvoiceDiscountLine(
@@ -58,20 +58,20 @@ class InvoiceTotals extends StatelessWidget {
                 label: 'orders.loyalty_discount'.tr(),
                 kd: loyalty.discountKd,
               ),
-            JameiaSummaryLine(
+            HeroSummaryLine(
               label: 'orders.delivery_fee'.tr(),
               value: order.deliveryFeeFils <= 0
                   ? Text('orders.free'.tr(), style: _freeStyle)
-                  : JameiaMoneyText(kd: order.deliveryFeeKd),
+                  : HeroMoneyText(kd: order.deliveryFeeKd),
             ),
             const Padding(
               padding: EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
               child: ThinDivider(),
             ),
-            JameiaSummaryLine(
+            HeroSummaryLine(
               label: 'orders.total'.tr(),
               emphasized: true,
-              value: JameiaMoneyText(kd: order.totalKd),
+              value: HeroMoneyText(kd: order.totalKd),
             ),
           ],
         ),

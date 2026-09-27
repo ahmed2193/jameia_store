@@ -3,16 +3,16 @@ import 'splash_burst_choreography.dart';
 import 'splash_choreography.dart';
 import 'splash_wordmark_choreography.dart';
 
-/// The talabat-style intros the splash can play. All start on the launch
-/// screen's frame and end on the JameiaMart lockup.
+/// The intros the splash can play. All start on the launch screen's frame
+/// and end on the Hero lockup: the bag in its cape over the name.
 ///
 /// Pick one at build time: `flutter run --dart-define=SPLASH_VARIANT=basket`
 /// (`wordmark` when absent or unknown).
 enum SplashVariant {
-  /// White logo on green: the cart hops and becomes the "J" of the name.
+  /// White on green: the bag takes off and delivers the name.
   wordmark(SplashWordmarkChoreography()),
 
-  /// Groceries drop into the cart first — the "mart" take.
+  /// Groceries drop into the bag first — the grocery run.
   basket(SplashBasketChoreography()),
 
   /// A white burst turns the screen into the full-colour logo on white.

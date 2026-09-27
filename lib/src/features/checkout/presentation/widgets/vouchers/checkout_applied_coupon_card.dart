@@ -10,7 +10,7 @@ import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/pop_switcher.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/jameia_text_link.dart';
+import '../../../../../core/widgets/hero_text_link.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import 'checkout_applied_mark.dart';
 import 'checkout_ticket_card.dart';
@@ -75,7 +75,7 @@ class CheckoutAppliedCouponCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          JameiaTextLink(
+                          HeroTextLink(
                             label: 'checkout.remove'.tr(),
                             navigates: false,
                             onTap: busy

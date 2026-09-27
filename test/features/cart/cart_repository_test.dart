@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_item_request.dart';
-import 'package:jameia_mart/src/core/domain/entities/cart_line_ref.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/features/cart/data/models/cart_mirror_model.dart';
-import 'package:jameia_mart/src/features/cart/data/models/cart_model.dart';
-import 'package:jameia_mart/src/features/cart/data/repositories/cart_repository_impl.dart';
-import 'package:jameia_mart/src/features/cart/domain/entities/cart_snapshot.dart';
-import 'package:jameia_mart/src/features/cart/domain/repositories/cart_repository.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_item_request.dart';
+import 'package:hero_mart/src/core/domain/entities/cart_line_ref.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/features/cart/data/models/cart_mirror_model.dart';
+import 'package:hero_mart/src/features/cart/data/models/cart_model.dart';
+import 'package:hero_mart/src/features/cart/data/repositories/cart_repository_impl.dart';
+import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
+import 'package:hero_mart/src/features/cart/domain/repositories/cart_repository.dart';
 
 import 'cart_test_fakes.dart';
 import 'cart_test_fixtures.dart';

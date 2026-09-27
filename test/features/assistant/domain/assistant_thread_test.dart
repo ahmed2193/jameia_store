@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_block.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_cart_snapshot.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_thread.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_block.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_cart_snapshot.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_live_turn.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_message_entity.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_thread.dart';
 
 void main() {
   const conversation = AssistantConversationEntity(id: 'c1', title: 'milk');

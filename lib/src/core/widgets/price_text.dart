@@ -7,7 +7,7 @@ import '../../config/theme/app_text_styles.dart';
 import '../utils/formatters.dart';
 
 /// Price display using the MT Digital Display digit font, with optional struck
-/// original price — the Jameia campaign-price look (final price in red on discount).
+/// original price — the Hero campaign-price look (final price in red on discount).
 ///
 /// Set [animate] to flip the amount when [price] changes (VIP-mode toggle,
 /// free-delivery threshold, cart recalculation). Defaults OFF so list scrolling

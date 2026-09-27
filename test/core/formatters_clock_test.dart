@@ -4,7 +4,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'package:jameia_mart/src/core/utils/formatters.dart';
+import 'package:hero_mart/src/core/utils/formatters.dart';
 
 /// U+202F NARROW NO-BREAK SPACE, written by its code point.
 final String _narrowSpace = String.fromCharCode(0x202F);

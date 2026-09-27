@@ -13,29 +13,29 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:jameia_mart/src/config/di/service_locator.dart';
-import 'package:jameia_mart/src/config/routes/routes.dart';
-import 'package:jameia_mart/src/config/theme/app_theme.dart';
-import 'package:jameia_mart/src/core/domain/entities/auth_customer_entity.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/motion/rolling_number.dart';
-import 'package:jameia_mart/src/core/usecase/usecase.dart';
-import 'package:jameia_mart/src/core/widgets/light_sweep_band.dart';
-import 'package:jameia_mart/src/features/account/presentation/pages/mine_page.dart';
-import 'package:jameia_mart/src/features/account/presentation/widgets/mine/mine_header_compact_title.dart';
-import 'package:jameia_mart/src/features/account/presentation/widgets/mine/mine_invite_banner.dart';
-import 'package:jameia_mart/src/features/account/presentation/widgets/mine/mine_points_stat.dart';
-import 'package:jameia_mart/src/features/account/presentation/widgets/mine/mine_pro_badge.dart';
-import 'package:jameia_mart/src/features/account/presentation/widgets/mine/mine_scan_action.dart';
-import 'package:jameia_mart/src/features/account/presentation/widgets/mine/mine_stats_card.dart';
-import 'package:jameia_mart/src/features/account/presentation/widgets/mine/mine_unread_badge.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_availability.dart';
-import 'package:jameia_mart/src/features/assistant/domain/usecases/get_assistant_availability_usecase.dart';
-import 'package:jameia_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
-import 'package:jameia_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
-import 'package:jameia_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
-import 'package:jameia_mart/src/features/store_mode/domain/entities/pro_membership.dart';
-import 'package:jameia_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
+import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/config/routes/routes.dart';
+import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/rolling_number.dart';
+import 'package:hero_mart/src/core/usecase/usecase.dart';
+import 'package:hero_mart/src/core/widgets/light_sweep_band.dart';
+import 'package:hero_mart/src/features/account/presentation/pages/mine_page.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_header_compact_title.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_invite_banner.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_points_stat.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_pro_badge.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_scan_action.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_stats_card.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_unread_badge.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_availability.dart';
+import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_availability_usecase.dart';
+import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
+import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
+import 'package:hero_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
+import 'package:hero_mart/src/features/store_mode/domain/entities/pro_membership.dart';
+import 'package:hero_mart/src/features/store_mode/presentation/cubit/pro_status_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../auth/auth_test_fakes.dart';
@@ -243,7 +243,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Sign in'), findsOneWidget);
-    expect(find.text('Jm3eia Assistant'), findsNothing);
+    expect(find.text('Hero Assistant'), findsNothing);
     expect(find.text('PRO'), findsNothing);
     expect(find.text('Active'), findsNothing);
     // Pro is on offer: the Pro row invites the guest in.
@@ -286,7 +286,7 @@ void main() {
     // No renewal date on this subscription: the plain "Active".
     expect(find.text('Active'), findsOneWidget);
     expect(find.text('Join'), findsNothing);
-    expect(find.text('Jm3eia Assistant'), findsOneWidget);
+    expect(find.text('Hero Assistant'), findsOneWidget);
     expect(
       tester.widget<RollingNumber>(find.byType(RollingNumber)).value,
       12.5,
@@ -342,10 +342,10 @@ void main() {
       'My orders': Routes.orders,
       'Addresses': Routes.addressList,
       'Loyalty points': Routes.loyalty,
-      'Jm3eia Pro': Routes.proMembership,
+      'Hero Pro': Routes.proMembership,
       'Invite friends': Routes.inviteFriends,
       'Notifications': Routes.notifications,
-      'Jm3eia Assistant': Routes.assistant,
+      'Hero Assistant': Routes.assistant,
       'Customer service': Routes.customerService,
       'Settings': Routes.mineSettings,
       'About': Routes.mineAbout,

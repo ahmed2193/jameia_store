@@ -6,7 +6,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/product_detail.dart';
 import '../entities/product_reviews.dart';
 
-/// Read boundary of the product page (jm3eia backend, public routes). The
+/// Read boundary of the product page (Hero backend, public routes). The
 /// product and the first page of its reviews paint from the copy saved on
 /// the device first (offline too), then the server's.
 abstract class ProductDetailsRepository {

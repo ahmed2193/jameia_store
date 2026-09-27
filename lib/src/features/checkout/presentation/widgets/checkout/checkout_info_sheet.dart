@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/jameia_submit_button.dart';
+import '../../../../../core/widgets/hero_submit_button.dart';
 import 'checkout_sheet_frame.dart';
 
 /// A short explanation in the checkout sheet shell ("What's in the
@@ -31,7 +31,7 @@ class CheckoutInfoSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return CheckoutSheetFrame(
       title: title,
-      footer: JameiaSubmitButton(
+      footer: HeroSubmitButton(
         label: 'checkout.got_it'.tr(),
         sticker: true,
         height: AppSize.s48,

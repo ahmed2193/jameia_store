@@ -8,9 +8,9 @@ import '../../../../config/theme/app_colors.dart';
 import '../widgets/splash_player.dart';
 import '../widgets/splash_variant.dart';
 
-/// talabat-style brand splash: the launch screen's cart comes alive on the
-/// brand green and assembles the JameiaMart logo, then the app fades in
-/// ([ShellEntrance.splash]). The intro is [variant] — by default the one this
+/// The Hero brand splash: the bag on the launch screen comes alive on the
+/// brand green, takes off in its cape and delivers the name, then the app
+/// fades in ([ShellEntrance.splash]). The intro is [variant] — by default the one this
 /// build was made with ([SplashVariant.configured]).
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key, this.variant});

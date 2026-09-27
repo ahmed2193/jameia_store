@@ -1,4 +1,4 @@
-/// The JSON envelope every non-streaming jm3eia response is wrapped in:
+/// The JSON envelope every non-streaming Hero response is wrapped in:
 ///
 /// ```json
 /// { "success": true, "statusCode": 200, "statusMessage": "SUCCESS",
@@ -39,7 +39,7 @@ class ApiEnvelope {
   final ApiError? error;
 
   /// Parses [body] when it has the envelope shape. Returns `null` for anything
-  /// else (SSE frames, plain strings, bodies from a non-jm3eia host) so callers
+  /// else (SSE frames, plain strings, bodies from a non-Hero host) so callers
   /// can pass those through untouched.
   static ApiEnvelope? tryParse(Object? body) {
     if (body is! Map) return null;

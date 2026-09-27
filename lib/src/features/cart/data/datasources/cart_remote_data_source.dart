@@ -3,7 +3,7 @@ import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../models/cart_model.dart';
 
-/// The jm3eia cart routes. Every call answers with the whole cart
+/// The Hero cart routes. Every call answers with the whole cart
 /// (`results`, unwrapped by `DioConsumer`). While signed out the guest
 /// `X-Cart-Token` header goes out automatically (`AppHeadersInterceptor`);
 /// signed in, the Bearer names the customer's cart. Throws `AppException`

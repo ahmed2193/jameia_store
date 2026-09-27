@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
-import '../../../../core/widgets/jameia_title_bar.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../../../../core/widgets/round_back_button.dart';
 import 'search_field.dart';
 
@@ -41,7 +41,7 @@ class SearchEntryBar extends StatelessWidget {
         child: SafeArea(
           bottom: false,
           child: SizedBox(
-            height: JameiaTitleBar.height,
+            height: HeroTitleBar.height,
             child: Padding(
               padding: EdgeInsetsDirectional.only(
                 start: canPop ? AppSpacing.s12 : AppSpacing.gutter,

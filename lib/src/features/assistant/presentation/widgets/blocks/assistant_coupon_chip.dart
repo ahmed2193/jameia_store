@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// A coupon code to copy: label, the code in a tinted pill and a copy icon.
@@ -20,7 +20,7 @@ class AssistantCouponChip extends StatelessWidget {
     Haptics.selection();
     await Clipboard.setData(ClipboardData(text: code));
     if (!context.mounted) return;
-    showJameiaSnackBar(context, 'assistant.coupon_copied'.tr());
+    showHeroSnackBar(context, 'assistant.coupon_copied'.tr());
   }
 
   @override

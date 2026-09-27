@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/motion/second_clock_scope.dart';
-import '../../../../core/widgets/jameia_title_bar.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../cubit/checkout_offers_cubit.dart';
 import '../widgets/vouchers/checkout_vouchers_body.dart';
 
@@ -27,7 +27,7 @@ class CheckoutVouchersPage extends StatelessWidget {
       create: (_) => sl<CheckoutOffersCubit>()..load(),
       child: Scaffold(
         backgroundColor: AppColors.smallBackground,
-        appBar: JameiaTitleBar(title: 'checkout.savings_coupons'.tr()),
+        appBar: HeroTitleBar(title: 'checkout.savings_coupons'.tr()),
         body: SecondClockScope(child: CheckoutVouchersBody(branchId: branchId)),
       ),
     );

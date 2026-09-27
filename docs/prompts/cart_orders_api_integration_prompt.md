@@ -1,22 +1,22 @@
 # FEATURE NAME
 
-Cart + Delivery + Orders on the jm3eia API — single-store cart with an offline-first local mirror
+Cart + Delivery + Orders on the Hero API — single-store cart with an offline-first local mirror
 
 ---
 
 ## CONTEXT
 
-JameiaMart is ONE store (Jm3eia), but the cart, checkout and orders features still carry the
-multi-shop model inherited from the Keeta clone (`shopId` on the cart and cart lines, a synthetic
-`jameia` shop resolved through `resolveCheckoutShopId()`, checkout started with a `shopId`, shop
+Hero is ONE store (Hero), but the cart, checkout and orders features still carry the
+multi-shop model inherited from the original clone (`shopId` on the cart and cart lines, a synthetic
+`hero` shop resolved through `resolveCheckoutShopId()`, checkout started with a `shopId`, shop
 header/logo in checkout, "go to shop" on order cards, per-shop cart cards in the orders tab).
-Cart, coupons, checkout and orders still read `JameiaRepository` / `LocalStorage`
+Cart, coupons, checkout and orders still read `HeroRepository` / `LocalStorage`
 (CLAUDE.md §3.1 "On the API today" and §12).
 
 This task:
 1. Moves **cart** to `/v1/cart*`, **delivery selection** to `/v1/delivery/*`, **place order** to
    `POST /v1/orders`, and **orders list / detail / cancel** to `/v1/orders*`.
-2. Rebuilds the cart as an **offline-first local mirror of the server cart** (the way Talabat /
+2. Rebuilds the cart as an **offline-first local mirror of the server cart** (the way
    Instacart / Amazon behave): instant taps, persisted across restarts, synced to the server,
    and always reconciled to what the server says. The server is the single source of truth for
    prices, totals, fees, offers, stock and line keys.
@@ -24,10 +24,10 @@ This task:
 4. Holds every change to the performance and architecture bars below; the review agents gate
    completion.
 
-Read before writing (CLAUDE.md §0.1): `CLAUDE.md`, the `jameia-api-integration` skill (all four
+Read before writing (CLAUDE.md §0.1): `CLAUDE.md`, the `hero-api-integration` skill (all four
 references — `migrating-offline-feature.md` is mandatory: this is a legacy target),
-`jameia-api-session` (guest `X-Cart-Token`, merge on login), `jameia-api-testing`,
-`jameia-api-verify`, then every layer of `features/cart`, `features/checkout`, `features/orders`,
+`hero-api-session` (guest `X-Cart-Token`, merge on login), `hero-api-testing`,
+`hero-api-verify`, then every layer of `features/cart`, `features/checkout`, `features/orders`,
 `features/coupons`, and the comparable shipped features `features/address` (single-writer device
 cache wiped on sign-out, app-global cubit) and `features/notifications` (pagination, optimistic
 update, race guards).
@@ -44,7 +44,7 @@ listed under BEHAVIOR, built from existing `core/widgets` and design tokens.
 ## API SPEC
 
 Source of truth = the live spec. Re-read each route before building its layer:
-`node .claude/skills/jameia-api-integration/scripts/openapi_route.js /v1/cart` (also `/v1/delivery`,
+`node .claude/skills/hero-api-integration/scripts/openapi_route.js /v1/cart` (also `/v1/delivery`,
 `/v1/orders`, `/v1/reviews`). On Git Bash set `MSYS_NO_PATHCONV=1` first, otherwise the leading
 `/` becomes a Windows path and the script reports "no route matches". Docs:
 https://docs.jm3eia.store/developers/cart-delivery.html · https://docs.jm3eia.store/developers/orders.html
@@ -123,7 +123,7 @@ invoice route exists.
   lose "go to shop"; "reorder" re-adds the lines (see below) and opens the cart.
 - Delete the multi-store leftovers that become dead: `checkout/presentation/util/shop_display.dart`,
   `checkout/domain/entities/shop_entity.dart` + `shop_mapper.dart` if unused, the synthetic
-  `jameia` supplier id path. Features other than cart / checkout / orders / coupons that still pass a
+  `hero` supplier id path. Features other than cart / checkout / orders / coupons that still pass a
   shop id (discovery `shop_model_bridge`, home, shop, recipes, product_details call sites of
   `CartCubit`) only get the **call-site signature change** — no other edits there.
 
@@ -152,7 +152,7 @@ invoice route exists.
   returns its `key`; keep that mapping so the product tile's stepper resolves to the right `key`.
 - **Offline / failure:** mutations made offline stay in the persisted queue and replay in order when
   the network is back or on next launch. A 4xx on a mutation drops that op, restores the server
-  truth and shows a snackbar (`showJameiaSnackBar` + `failure.localizedMessage`): `OUT_OF_STOCK` →
+  truth and shows a snackbar (`showHeroSnackBar` + `failure.localizedMessage`): `OUT_OF_STOCK` →
   line marked out of stock, quantity rolled back. A transport failure keeps the op queued and
   shows a small "not synced" indicator, never an error page over the cart.
 - **Server reconciliation wins:** `issue` on a line renders a line-level notice
@@ -247,9 +247,9 @@ invoice route exists.
   cart names come already localized (refetch on locale change).
 - Theme / tokens only (`AppColors`, `AppSpacing`, `AppSize`, `AppTextStyles`, `AppMotion`);
   RTL-safe directional widgets; reduced motion respected.
-- Reuse: `AppLoader`, `ErrorView`, `EmptyStateView`, `BrandedRefresh`, `showJameiaSnackBar`,
-  `showJameiaBottomSheet`, existing stepper / price widgets, `CatalogProductCard`.
-- Mock API: `.claude/skills/jameia-api-verify/scripts/mock_api/server.js` has no cart / delivery /
+- Reuse: `AppLoader`, `ErrorView`, `EmptyStateView`, `BrandedRefresh`, `showHeroSnackBar`,
+  `showHeroBottomSheet`, existing stepper / price widgets, `CatalogProductCard`.
+- Mock API: `.claude/skills/hero-api-verify/scripts/mock_api/server.js` has no cart / delivery /
   orders routes — add them (whole-cart replies, `cartToken`, `OUT_OF_STOCK` knob, `CART_EMPTY`,
   guest vs Bearer, slots, place → `placed`, cancel allowed only for `placed|confirmed|picking`, status
   advance knob) so every flow and failure path can be seen in the `api` trace.
@@ -287,9 +287,9 @@ invoice route exists.
   sub-folder per page (`widgets/cart/`, `widgets/checkout/`, `widgets/orders_list/`, `widgets/tracking/`).
 - Pages compose, provide cubits, switch on state and navigate; no pricing, grouping, filtering or
   sorting in widgets.
-- Navigation via `Routes` + GoRouter with `JameiaTransitionPage`; route extras are entities or
+- Navigation via `Routes` + GoRouter with `HeroTransitionPage`; route extras are entities or
   primitives (order id `String`), never DTOs.
-- Dialogs / sheets via `showJameiaDialog` / `showJameiaBottomSheet`; messages via `showJameiaSnackBar`.
+- Dialogs / sheets via `showHeroDialog` / `showHeroBottomSheet`; messages via `showHeroSnackBar`.
 - Responsive: `Expanded` / `Flexible`; text scaling clamped by the app builder; test at small width
   and in Arabic.
 
@@ -312,7 +312,7 @@ invoice route exists.
   repositories, use cases lazy singletons; page cubits factories; `CartCubit` stays built by
   `AppGlobalCubits` with constructor injection (remove its `sl` factory constructor).
 - Remove from the touched features the §12 legacy they contain: per-feature duplicate entities
-  (`checkout/domain/entities/{coupon,jameia_address,jameia_order,shop}_entity.dart`),
+  (`checkout/domain/entities/{coupon,hero_address,hero_order,shop}_entity.dart`),
   `presentation/util/*_display.dart`, cubits calling repositories, hand-written `try/catch → Left`.
 - No `// ignore:` for `architecture_lints`, no new excludes, no deleted tests.
 
@@ -335,7 +335,7 @@ phase ends green (`dart analyze` + `flutter test`) before the next starts.
 4. **Orders** — list pagination, detail + polling, cancel, reorder, review, invoice from order
    totals, hide no-API entry points, tests (stale page, cancel race, polling stops on terminal
    status / close).
-5. **Mock API + on-device verification** (`jameia-api-verify` checklist), docs + contract status.
+5. **Mock API + on-device verification** (`hero-api-verify` checklist), docs + contract status.
 6. **Reviews** — run, in order, and fix every High/Medium finding before reporting:
    `F:\_jam3eia_apps\workflow\workflow\agents\flutter-performance-reviewer.md`,
    `F:\_jam3eia_apps\workflow\workflow\agents\flutter-architecture-auditor.md`, then the

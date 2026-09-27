@@ -7,7 +7,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
-import '../../../../../core/widgets/jameia_secondary_button.dart';
+import '../../../../../core/widgets/hero_secondary_button.dart';
 import '../mascot/assistant_mascot.dart';
 import '../mascot/assistant_mascot_mood.dart';
 
@@ -54,7 +54,7 @@ class AssistantBuddyHideSheet extends StatelessWidget {
               onPressed: () => context.pop(true),
             ),
             const SizedBox(height: AppSpacing.s8),
-            JameiaSecondaryButton(
+            HeroSecondaryButton(
               label: 'assistant.buddy_keep'.tr(),
               expanded: true,
               onPressed: () => context.pop(false),

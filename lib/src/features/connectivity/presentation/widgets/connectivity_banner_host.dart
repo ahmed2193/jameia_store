@@ -1,10 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/widgets/connectivity_scope.dart';
-import '../../domain/entities/connectivity_status.dart';
 import '../cubit/connectivity_banner_mode.dart';
 import '../cubit/connectivity_cubit.dart';
 import '../cubit/connectivity_state.dart';
@@ -20,9 +18,9 @@ import 'connectivity_banner_frame.dart';
 ///   * keeps the banner off the splash ([isOnSplash], re-read on every
 ///     [routeChanges] notification);
 ///   * turns a scope nudge into one shake of the banner + a light haptic;
-///   * answers a screen whose load failed in transport while the app did
-///     not read as offline ([ConnectivityScope.recheckerOf]): a live check, and
-///     at most one automatic retry per [AppConstants.readRetryGap].
+///   * hands the cubit's live checks to the scope (a submit's
+///     [ConnectivityCubit.confirmOnline], a failed load's
+///     [ConnectivityCubit.recheckForRetry]) — the policies are the cubit's.
 ///
 /// [child] (the router's navigator) is passed through untouched: a status
 /// change rebuilds the bar and the scope's dependents, never the routes.
@@ -49,7 +47,6 @@ class _ConnectivityBannerHostState extends State<ConnectivityBannerHost> {
   late final AppLifecycleListener _lifecycle;
   final ValueNotifier<int> _nudges = ValueNotifier<int>(0);
   late bool _allowed = !widget.isOnSplash();
-  DateTime? _lastAutoRetry;
 
   @override
   void initState() {
@@ -93,24 +90,6 @@ class _ConnectivityBannerHostState extends State<ConnectivityBannerHost> {
     }
   }
 
-  /// A submit that needs the network asks for a live check; anything but a
-  /// confirmed "offline" lets it try (the probe can be wrong).
-  Future<bool> _checkNow() async =>
-      await context.read<ConnectivityCubit>().checkNow() !=
-      ConnectivityStatus.offline;
-
-  Future<bool> _recheck() async {
-    final found = await context.read<ConnectivityCubit>().checkNow();
-    if (found == ConnectivityStatus.offline) return false;
-    final now = DateTime.now();
-    final last = _lastAutoRetry;
-    if (last != null && now.difference(last) < AppConstants.readRetryGap) {
-      return false;
-    }
-    _lastAutoRetry = now;
-    return true;
-  }
-
   void _nudge() {
     if (!_allowed || !context.read<ConnectivityCubit>().state.isOffline) {
       return;
@@ -127,8 +106,8 @@ class _ConnectivityBannerHostState extends State<ConnectivityBannerHost> {
         isOffline: scope.$1,
         reconnectEpoch: scope.$2,
         onNudge: _nudge,
-        onCheckNow: _checkNow,
-        onRecheck: _recheck,
+        checkOnline: context.read<ConnectivityCubit>().confirmOnline,
+        recheckForRetry: context.read<ConnectivityCubit>().recheckForRetry,
         child:
             BlocSelector<
               ConnectivityCubit,

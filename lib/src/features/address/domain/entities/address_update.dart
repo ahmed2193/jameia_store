@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/domain/entities/address_label.dart';
 import '../../../../core/domain/entities/geo_point_entity.dart';
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 import 'address_draft.dart';
 
 /// A `PATCH /v1/account/addresses/:addressId` in domain terms: `null` means
@@ -26,7 +26,7 @@ class AddressUpdate extends Equatable {
 
   /// The fields of [draft] (trimmed) that differ from [original].
   factory AddressUpdate.diff({
-    required JameiaAddressEntity original,
+    required HeroAddressEntity original,
     required AddressDraft draft,
   }) {
     String? changed(String current, String edited) {

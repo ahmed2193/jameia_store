@@ -10,7 +10,6 @@ class RecipeIngredient extends Equatable {
     required this.id,
     required this.product,
     this.purchaseQuantity = 1,
-    this.useQuantity = 0,
     this.note = '',
   });
 
@@ -20,15 +19,13 @@ class RecipeIngredient extends Equatable {
   /// Whole units to put in the cart (at least one).
   final int purchaseQuantity;
 
-  /// What the dish actually uses, in the product's unit of sale.
-  final double useQuantity;
   final String note;
 
   /// Can go into the cart in one tap (in stock, not a variant product).
   bool get canAddToCart => product.canQuickAdd;
 
   @override
-  List<Object?> get props => [id, product, purchaseQuantity, useQuantity, note];
+  List<Object?> get props => [id, product, purchaseQuantity, note];
 }
 
 class RecipeStep extends Equatable {

@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../cubit/address_edit_cubit.dart';
 import '../../cubit/address_edit_state.dart';
@@ -30,7 +30,7 @@ class DeliveryAddressCard extends StatelessWidget {
       child: Row(
         children: [
           const Icon(
-            JameiaIcons.location,
+            HeroIcons.location,
             size: AppSize.s20,
             color: AppColors.primaryText,
           ),

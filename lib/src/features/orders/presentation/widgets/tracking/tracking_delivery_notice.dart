@@ -5,7 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_progress_entities.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
-import '../../../../../core/widgets/jameia_surface_card.dart';
+import '../../../../../core/widgets/hero_surface_card.dart';
 import 'tracking_info_row.dart';
 
 /// Driver / picker names once assigned and the last failed attempt, one icon
@@ -57,7 +57,7 @@ class TrackingDeliveryNotice extends StatelessWidget {
                 AppSpacing.gutter,
                 0,
               ),
-              child: JameiaSurfaceCard(
+              child: HeroSurfaceCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,

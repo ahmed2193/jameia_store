@@ -13,7 +13,7 @@ import 'domain/usecases/watch_offers_usecase.dart';
 import 'presentation/cubit/content_page_cubit.dart';
 import 'presentation/cubit/offers_cubit.dart';
 
-/// Marketing feature DI — the jm3eia backend's offers (`GET /v1/offers`,
+/// Marketing feature DI — the Hero backend's offers (`GET /v1/offers`,
 /// through the shared catalogue datasource and its device copy) and CMS
 /// pages (`GET /v1/pages/:slug`, kept on the device). Called from
 /// `setupServiceLocator`.

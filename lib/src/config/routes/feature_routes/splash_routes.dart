@@ -8,7 +8,7 @@ import '../routes.dart';
 final List<RouteBase> splashRoutes = <RouteBase>[
   GoRoute(
     path: Routes.splash,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const SplashPage(),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../core/widgets/jameia_money_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 
 /// A saving as the cart shows it everywhere — "- KD 0.500" in deep green —
 /// under the coupon and the points, and in the payment summary. [style]
@@ -14,7 +14,7 @@ class CartDiscountAmount extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return JameiaMoneyText(
+    return HeroMoneyText(
       kd: kd,
       negative: true,
       color: AppColors.brandDeep,

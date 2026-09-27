@@ -25,7 +25,7 @@ Future<void> main() async {
       // CLDR plural rules: Arabic needs its few (3–10) and many (11–99)
       // forms, which every Arabic plural in the i18n files spells out.
       ignorePluralRules: false,
-      child: const JameiaApp(),
+      child: const HeroApp(),
     ),
   );
 }

@@ -74,10 +74,6 @@ class CategoryBrowse extends Equatable {
 
   bool get isStoreWide => baseSlug == null;
 
-  /// The deepest pick — what the product list below is filtered by.
-  CatalogCategoryEntity? get activeCategory =>
-      path.isNotEmpty ? path.last : base;
-
   /// `null` only while browsing the whole store with nothing picked yet.
   String? get activeSlug => path.isNotEmpty ? path.last.slug : baseSlug;
 

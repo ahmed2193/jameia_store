@@ -5,15 +5,15 @@
 // changes only, and the shared-axis page cuts instantly under reduced motion.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/fade_through_switcher.dart';
-import 'package:jameia_mart/src/core/motion/locale_swap_veil.dart';
-import 'package:jameia_mart/src/core/motion/locale_swap_veil_view.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/motion/rolling_glyph.dart';
-import 'package:jameia_mart/src/core/motion/rolling_number.dart';
-import 'package:jameia_mart/src/core/motion/spring_curve.dart';
-import 'package:jameia_mart/src/core/navigation/jameia_shared_axis_transition.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_segmented_control.dart';
+import 'package:hero_mart/src/core/motion/fade_through_switcher.dart';
+import 'package:hero_mart/src/core/motion/locale_swap_veil.dart';
+import 'package:hero_mart/src/core/motion/locale_swap_veil_view.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/rolling_glyph.dart';
+import 'package:hero_mart/src/core/motion/rolling_number.dart';
+import 'package:hero_mart/src/core/motion/spring_curve.dart';
+import 'package:hero_mart/src/core/navigation/hero_shared_axis_transition.dart';
+import 'package:hero_mart/src/core/widgets/hero_segmented_control.dart';
 
 Widget _host(Widget child, {bool reduced = false}) => MaterialApp(
   home: Builder(
@@ -186,7 +186,7 @@ void main() {
     });
   });
 
-  group('JameiaSegmentedControl', () {
+  group('HeroSegmentedControl', () {
     testWidgets('reports a change once; tapping the selected one is inert', (
       tester,
     ) async {
@@ -195,7 +195,7 @@ void main() {
         _host(
           SizedBox(
             width: 300,
-            child: JameiaSegmentedControl<String>(
+            child: HeroSegmentedControl<String>(
               values: const ['en', 'ar'],
               selected: 'en',
               labelOf: (v) => v.toUpperCase(),
@@ -226,11 +226,11 @@ void main() {
     });
   });
 
-  group('JameiaSharedAxisTransition', () {
+  group('HeroSharedAxisTransition', () {
     testWidgets('reduced motion is an instant cut', (tester) async {
       await tester.pumpWidget(
         _host(
-          const JameiaSharedAxisTransition(
+          const HeroSharedAxisTransition(
             animation: AlwaysStoppedAnimation<double>(0.5),
             secondaryAnimation: AlwaysStoppedAnimation<double>(0),
             child: Text('page'),
@@ -240,7 +240,7 @@ void main() {
       );
       expect(
         find.descendant(
-          of: find.byType(JameiaSharedAxisTransition),
+          of: find.byType(HeroSharedAxisTransition),
           matching: find.byType(FadeTransition),
         ),
         findsNothing,
@@ -252,7 +252,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _host(
-          const JameiaSharedAxisTransition(
+          const HeroSharedAxisTransition(
             animation: AlwaysStoppedAnimation<double>(0.5),
             secondaryAnimation: AlwaysStoppedAnimation<double>(0),
             child: Text('page'),

@@ -10,7 +10,7 @@ import 'branded_loader.dart';
 
 export 'app_outline_button.dart';
 
-/// Jameia primary CTA — brand-yellow pill with black foreground (the signature
+/// Hero primary CTA — brand-yellow pill with black foreground (the signature
 /// "Place order" / "Add" button look).
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -37,7 +37,7 @@ class AppButton extends StatelessWidget {
   final Color? foreground;
   final Widget? trailing;
 
-  /// Corner radius (defaults to [AppRadius.r1] = 32dp). Jameia CTAs vary per
+  /// Corner radius (defaults to [AppRadius.r1] = 32dp). Hero CTAs vary per
   /// surface — checkout place-order is a 25dp pill, address/settings/save use
   /// 16dp, order-list/help use 24dp — so callers override per the bundle.
   final double? radius;

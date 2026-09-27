@@ -12,7 +12,7 @@ import 'domain/usecases/watch_search_brands_usecase.dart';
 import 'domain/usecases/watch_search_categories_usecase.dart';
 import 'presentation/cubit/search_cubit.dart';
 
-/// Search feature DI — product matches, categories and brands from the jm3eia
+/// Search feature DI — product matches, categories and brands from the Hero
 /// backend (the shared `CatalogRemoteDataSource`; the discover blocks keep
 /// their copy in the shared `CatalogCacheDataSource`), recent terms on the
 /// device.

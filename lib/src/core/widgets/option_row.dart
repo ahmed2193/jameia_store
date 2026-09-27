@@ -6,20 +6,20 @@ import '../../config/theme/app_text_styles.dart';
 import '../motion/haptics.dart';
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
-import 'jameia_list_row.dart';
-import 'jameia_radio_mark.dart';
+import 'hero_list_row.dart';
+import 'hero_radio_mark.dart';
 
 /// How an [OptionRow] sits in its list.
 enum OptionRowLook {
   /// The 16 dp gutter, a 24 dp icon and a 16 dp gap (the cancel sheet).
   plain,
 
-  /// Keeta's flat choice row: the 12 dp gutter of a dense `JameiaListRow`,
+  /// Hero's flat choice row: the 12 dp gutter of a dense `HeroListRow`,
   /// the art in a 20 dp slot and the text at
-  /// `JameiaListRow.denseTextStart`, a quiet 12 sp grey sub-line.
+  /// `HeroListRow.denseTextStart`, a quiet 12 sp grey sub-line.
   dense,
 
-  /// The dense row inside Keeta's choice card: white with a hairline, mint
+  /// The dense row inside Hero's choice card: white with a hairline, mint
   /// with a green hairline and a stronger title once chosen.
   card,
 }
@@ -74,7 +74,7 @@ class OptionRow extends StatelessWidget {
     final plain = look == OptionRowLook.plain;
     final card = look == OptionRowLook.card;
     final muted = !enabled && !plain;
-    final iconSize = plain ? AppSize.s24 : JameiaListRow.denseLeadSize;
+    final iconSize = plain ? AppSize.s24 : HeroListRow.denseLeadSize;
     final art =
         leading ??
         (icon == null
@@ -96,7 +96,7 @@ class OptionRow extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: AppSize.s56),
       child: Padding(
         padding: EdgeInsetsDirectional.symmetric(
-          horizontal: plain ? AppSpacing.gutter : JameiaListRow.denseInset,
+          horizontal: plain ? AppSpacing.gutter : HeroListRow.denseInset,
           vertical: AppSpacing.s12,
         ),
         child: Row(
@@ -106,12 +106,12 @@ class OptionRow extends StatelessWidget {
                 art
               else
                 SizedBox.square(
-                  dimension: JameiaListRow.denseLeadSize,
+                  dimension: HeroListRow.denseLeadSize,
                   child: Center(
                     child: FittedBox(fit: BoxFit.scaleDown, child: art),
                   ),
                 ),
-              SizedBox(width: plain ? AppSpacing.s16 : JameiaListRow.denseGap),
+              SizedBox(width: plain ? AppSpacing.s16 : HeroListRow.denseGap),
             ],
             Expanded(
               child: Column(
@@ -143,7 +143,7 @@ class OptionRow extends StatelessWidget {
               trailing!,
             ],
             const SizedBox(width: AppSpacing.s12),
-            JameiaRadioMark(selected: selected),
+            HeroRadioMark(selected: selected),
           ],
         ),
       ),

@@ -14,7 +14,7 @@ class RewardOffPill extends StatelessWidget {
   final String label;
 
   /// orange.c12 — the white 12 px bold label reads at 4.9:1 on it (the
-  /// brighter `kJameiaPillPin` gave 3:1).
+  /// brighter `kHeroPillPin` gave 3:1).
   static const int _fillShade = 11;
   static final Color _fill = AppColors.orange[_fillShade];
 

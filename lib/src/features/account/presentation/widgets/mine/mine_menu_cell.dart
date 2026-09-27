@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'mine_icon_tile.dart';
 import 'mine_tone.dart';
@@ -75,7 +75,7 @@ class MineMenuCell extends StatelessWidget {
               if (end != null) ...[const SizedBox(width: AppSpacing.s8), end],
               const SizedBox(width: AppSpacing.s8),
               const Icon(
-                JameiaIcons.arrowRight,
+                HeroIcons.arrowRight,
                 size: _chevron,
                 color: AppColors.tertiaryText,
               ),

@@ -8,7 +8,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/recent_searches.dart';
 
 /// Search boundary: product matches, the category tree and the brands come
-/// from the jm3eia backend; the recent terms live on the device. The
+/// from the Hero backend; the recent terms live on the device. The
 /// discover blocks paint the device copy first (offline too); suggestions
 /// are typed live and never kept.
 abstract class SearchRepository {

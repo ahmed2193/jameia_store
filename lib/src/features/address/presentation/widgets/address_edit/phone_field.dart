@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/design/jameia_icons.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/responsive/app_size.dart';
 
 /// Phone input with a leading "+965 ▾" country-code chip + inline error.
 class PhoneField extends StatelessWidget {
@@ -26,7 +27,7 @@ class PhoneField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: 52,
+          height: AppSize.s52,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.card),
             border: Border.all(
@@ -51,14 +52,18 @@ class PhoneField extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s2),
                     const Icon(
-                      JameiaIcons.arrowDown,
-                      size: 14,
+                      HeroIcons.arrowDown,
+                      size: AppSize.s14,
                       color: AppColors.secondaryText,
                     ),
                   ],
                 ),
               ),
-              Container(width: 1, height: 24, color: AppColors.divider),
+              Container(
+                width: AppSize.s1,
+                height: AppSize.s24,
+                color: AppColors.divider,
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(

@@ -1,11 +1,11 @@
 {
-    "name": "JameiaMart",
-    "short_name": "JameiaMart",
+    "name": "Hero",
+    "short_name": "Hero",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "JameiaMart — fresh groceries, delivered.",
+    "background_color": "#22C55E",
+    "theme_color": "#22C55E",
+    "description": "Hero — your everyday grocery hero.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

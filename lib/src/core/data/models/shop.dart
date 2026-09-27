@@ -95,55 +95,11 @@ class Shop {
     this.isOpen = true,
   });
 
-  bool get isRestaurant => kind == 'restaurant';
-
   /// Locale-aware shop name (Arabic when the locale is `ar` and available).
   String get displayName => localizedCatalogName(name, nameAr);
 
   List<Product> get allProducts =>
       sections.expand((s) => s.products).toList(growable: false);
-
-  int get _maxDiscountPercent {
-    var m = 0;
-    for (final p in allProducts) {
-      if (p.discountPercent > m) m = p.discountPercent;
-    }
-    return m;
-  }
-
-  /// Promo tags to render on the golden feed card / shop meta — explicit seeded
-  /// [promoTags] when present, otherwise synthesized from shop state so every
-  /// shop (including jm3eia-sourced ones) gets reference-style ribbons.
-  List<PromoTag> get displayTags {
-    if (promoTags.isNotEmpty) return promoTags;
-    final out = <PromoTag>[];
-    final maxOff = _maxDiscountPercent;
-    if (maxOff >= 5) {
-      out.add(
-        PromoTag(
-          text: 'catalog.up_to_off'.tr(namedArgs: {'percent': '$maxOff'}),
-        ),
-      );
-    } else if (promo.isNotEmpty) {
-      out.add(PromoTag(text: promo));
-    }
-    if (freeDelivery) {
-      out.add(
-        PromoTag(
-          text: 'catalog.free_delivery'.tr(),
-          bg: '#E2F6F0',
-          fg: '#008C65',
-          style: 'coupon',
-        ),
-      );
-    }
-    return out;
-  }
-
-  /// Feature labels — explicit [featureLabels] when present, else first tags.
-  List<String> get displayFeatures => featureLabels.isNotEmpty
-      ? featureLabels
-      : tags.take(2).toList(growable: false);
 
   factory Shop.fromJson(Map<String, dynamic> j) => Shop(
     id: j['id'] as String,
@@ -235,7 +191,7 @@ class ProductVariant {
 }
 
 class Product {
-  final String id; // == sku for jameia-sourced products (cart key)
+  final String id; // == sku for hero-sourced products (cart key)
   final String name;
   final String image;
   final double price; // Mart price
@@ -247,7 +203,7 @@ class Product {
   final bool bestSelling;
   final List<ProductVariant> variants;
 
-  // ── Jameia extras (tolerant of older data; default = simple Mart product) ───
+  // ── Hero extras (tolerant of older data; default = simple Mart product) ───
   final String nameAr;
   final double vipPrice; // 0 == no distinct VIP price
   final bool available; // false → "Not available" overlay, can't add
@@ -294,18 +250,6 @@ class Product {
   });
 
   bool get hasDiscount => originalPrice > price && originalPrice > 0;
-
-  /// Images for the product-detail gallery — explicit [gallery] when provided,
-  /// else the product image plus any distinct variant images (falls back to the
-  /// single [image] so the pager always has at least one page).
-  List<String> get resolvedGallery {
-    if (gallery.isNotEmpty) return gallery;
-    final out = <String>[];
-    for (final url in [image, ...variants.map((v) => v.image)]) {
-      if (url.isNotEmpty && !out.contains(url)) out.add(url);
-    }
-    return out.isEmpty ? [image] : out;
-  }
 
   /// Returns a copy with the given fields replaced — used by the product-details
   /// dummy data source to seed a hero with a discount / gallery / storage / etc.
@@ -357,8 +301,6 @@ class Product {
     );
   }
 
-  bool get hasVariants => variants.isNotEmpty;
-
   /// Locale-aware product name (Arabic when the locale is `ar` and available).
   String get displayName => localizedCatalogName(name, nameAr);
 
@@ -366,14 +308,11 @@ class Product {
       ? (((originalPrice - price) / originalPrice) * 100).round()
       : 0;
 
-  /// SKU alias — the cart/lookup key for jameia products.
+  /// SKU alias — the cart/lookup key for Hero products.
   String get sku => id;
 
   /// VIP price exists and actually differs from the Mart price.
   bool get hasVipPrice => vipPrice > 0 && vipPrice != price;
-
-  /// Price to charge/display for the active store mode (Mart vs VIP).
-  double priceFor(bool vip) => (vip && vipPrice > 0) ? vipPrice : price;
 
   /// Whether this product should surface in the Promos collection.
   bool get hasPromo => showDiscount && (firstUnitsQty > 0 || hasDiscount);

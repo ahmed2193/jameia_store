@@ -9,11 +9,11 @@ import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/catalog_recipe_tag.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../../../core/widgets/screen_stale_notice.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
@@ -43,7 +43,7 @@ class RecipeDetailView extends StatelessWidget {
         quantity: ingredient.purchaseQuantity,
       );
     }
-    showJameiaSnackBar(
+    showHeroSnackBar(
       context,
       'recipes.added_all'.tr(namedArgs: {'count': '${purchasable.length}'}),
     );
@@ -65,7 +65,7 @@ class RecipeDetailView extends StatelessWidget {
           elevation: 0,
           expandedHeight: AppSize.s240,
           flexibleSpace: FlexibleSpaceBar(
-            background: JameiaImage(url: recipe.imageUrl),
+            background: HeroImage(url: recipe.imageUrl),
           ),
         ),
         SliverList.list(

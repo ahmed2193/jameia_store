@@ -8,7 +8,7 @@ import '../routes.dart';
 final List<RouteBase> storeModeRoutes = <RouteBase>[
   GoRoute(
     path: Routes.proMembership,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const ProMembershipPage(),

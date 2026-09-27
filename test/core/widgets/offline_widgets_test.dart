@@ -1,7 +1,7 @@
 // The core offline kit: RelativeAge plurals (English + the Arabic forms for
 // 1, 2, 3–10, 11+), StaleDataNotice (fades in once, re-reads the age once a
 // minute), ReconnectRefresh (once per reconnect epoch, after the jitter),
-// JameiaStateView.offline, and showFailureSnackBar (offline read failures
+// HeroStateView.offline, and showFailureSnackBar (offline read failures
 // only nudge the banner; an offline action says the input is kept).
 
 import 'dart:async';
@@ -16,17 +16,18 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/constants/app_constants.dart';
-import 'package:jameia_mart/src/core/error/failures.dart';
-import 'package:jameia_mart/src/core/navigation/jameia_snack_bar.dart';
-import 'package:jameia_mart/src/core/utils/relative_age.dart';
-import 'package:jameia_mart/src/core/widgets/connectivity_scope.dart';
-import 'package:jameia_mart/src/core/widgets/failure_view.dart';
-import 'package:jameia_mart/src/core/widgets/jameia_state_view.dart';
-import 'package:jameia_mart/src/core/widgets/reconnect_refresh.dart';
-import 'package:jameia_mart/src/core/widgets/stale_age_pill.dart';
-import 'package:jameia_mart/src/core/widgets/stale_data_notice.dart';
-import 'package:jameia_mart/src/core/domain/entities/data_freshness.dart';
+import 'package:hero_mart/src/core/constants/app_constants.dart';
+import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/navigation/hero_snack_bar.dart';
+import 'package:hero_mart/src/core/utils/relative_age.dart';
+import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
+import 'package:hero_mart/src/core/widgets/failure_view.dart';
+import 'package:hero_mart/src/core/widgets/hero_state_view.dart';
+import 'package:hero_mart/src/core/widgets/reconnect_refresh.dart';
+import 'package:hero_mart/src/core/widgets/stale_age_pill.dart';
+import 'package:hero_mart/src/core/widgets/stale_data_notice.dart';
+import 'package:hero_mart/src/core/domain/entities/data_freshness.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late Map<String, dynamic> _en;
@@ -156,7 +157,7 @@ void main() {
           isOffline: offline,
           reconnectEpoch: 0,
           onNudge: () {},
-          onCheckNow: check,
+          checkOnline: check,
           child: Builder(
             builder: (context) {
               inside = context;
@@ -318,11 +319,11 @@ void main() {
     });
   });
 
-  testWidgets('JameiaStateView.offline: calm copy + try again', (tester) async {
+  testWidgets('HeroStateView.offline: calm copy + try again', (tester) async {
     var retries = 0;
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(body: JameiaStateView.offline(onRetry: () => retries++)),
+        home: Scaffold(body: HeroStateView.offline(onRetry: () => retries++)),
       ),
     );
     await tester.pumpAndSettle();
@@ -431,7 +432,7 @@ void main() {
       WidgetTester tester, {
       required Failure failure,
       required bool offline,
-      Future<bool> Function()? recheck,
+      Future<ConnectionRecheck> Function()? recheck,
       VoidCallback? onRetry,
     }) => tester.pumpWidget(
       MaterialApp(
@@ -439,7 +440,7 @@ void main() {
           isOffline: offline,
           reconnectEpoch: 0,
           onNudge: () {},
-          onRecheck: recheck,
+          recheckForRetry: recheck,
           child: Scaffold(
             body: FailureView(failure: failure, onRetry: onRetry ?? () {}),
           ),
@@ -457,7 +458,7 @@ void main() {
         offline: true,
         recheck: () async {
           checks++;
-          return true;
+          return ConnectionRecheck.retry;
         },
       );
       await tester.pump();
@@ -478,7 +479,7 @@ void main() {
         offline: false,
         recheck: () async {
           checks++;
-          return false;
+          return ConnectionRecheck.offline;
         },
         onRetry: () => retries++,
       );
@@ -507,7 +508,7 @@ void main() {
         tester,
         failure: const NetworkFailure(),
         offline: false,
-        recheck: () async => true,
+        recheck: () async => ConnectionRecheck.retry,
         onRetry: () => retries++,
       );
       await tester.pump();
@@ -516,9 +517,56 @@ void main() {
       expect(retries, 1);
     });
 
+    testWidgets('the connection is there but the store failed again: the '
+        'error + retry, never "No connection"', (tester) async {
+      var retries = 0;
+      await pump(
+        tester,
+        failure: const NetworkFailure(),
+        offline: false,
+        recheck: () async => ConnectionRecheck.reachable,
+        onRetry: () => retries++,
+      );
+      await tester.pump();
+      await tester.pump(AppConstants.offlineDebounce);
+
+      expect(find.text(noConnection), findsNothing);
+      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(retries, 0, reason: 'no loop: the customer retries');
+    });
+
+    testWidgets('a timeout: "No connection" once the app knows it is '
+        'offline, else the error — no check either way', (tester) async {
+      var checks = 0;
+      Future<ConnectionRecheck> recheck() async {
+        checks++;
+        return ConnectionRecheck.retry;
+      }
+
+      await pump(
+        tester,
+        failure: const TimeoutFailure(),
+        offline: true,
+        recheck: recheck,
+      );
+      await tester.pump();
+      expect(find.text(noConnection), findsOneWidget);
+
+      await pump(
+        tester,
+        failure: const TimeoutFailure(),
+        offline: false,
+        recheck: recheck,
+      );
+      await tester.pump();
+      expect(find.text(noConnection), findsNothing);
+      expect(find.text(checking), findsNothing);
+      expect(checks, 0);
+    });
+
     testWidgets('the app turning offline during the check shows "No '
         'connection" at once', (tester) async {
-      final never = Completer<bool>();
+      final never = Completer<ConnectionRecheck>();
       await pump(
         tester,
         failure: const NetworkFailure(),
@@ -556,7 +604,7 @@ void main() {
         offline: false,
         recheck: () async {
           checks++;
-          return true;
+          return ConnectionRecheck.retry;
         },
       );
       await tester.pump();

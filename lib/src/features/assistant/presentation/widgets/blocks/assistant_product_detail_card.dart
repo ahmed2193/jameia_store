@@ -8,7 +8,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/catalog_unavailable_overlay.dart';
-import '../../../../../core/widgets/jameia_image.dart';
+import '../../../../../core/widgets/hero_image.dart';
 import '../../../../../core/widgets/price_text.dart';
 import '../../../../../core/widgets/rating_badge.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
@@ -47,7 +47,7 @@ class AssistantProductDetailCard extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    JameiaImage(
+                    HeroImage(
                       url: product.image,
                       width: AppSize.s80,
                       height: AppSize.s80,

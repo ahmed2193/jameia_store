@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/domain/entities/cart_loyalty_entity.dart';
-import '../../../../../core/widgets/jameia_list_card.dart';
+import '../../../../../core/widgets/hero_list_card.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../cubit/cart_cubit.dart';
 import 'cart_coupon_row.dart';
@@ -35,7 +35,7 @@ class CartOptionsSection extends StatelessWidget {
         );
     return CartSection(
       title: 'cart.section_options'.tr(),
-      card: JameiaListCard(
+      card: HeroListCard(
         children: [
           const CartCouponRow(),
           if (_offersLoyalty(available, loyalty)) const CartLoyaltyRow(),

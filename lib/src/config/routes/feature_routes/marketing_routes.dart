@@ -11,7 +11,7 @@ import '../routes.dart';
 final List<RouteBase> marketingRoutes = <RouteBase>[
   GoRoute(
     path: Routes.offers,
-    pageBuilder: (_, state) => JameiaTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const OffersPage(),
@@ -24,7 +24,7 @@ final List<RouteBase> marketingRoutes = <RouteBase>[
     pageBuilder: (_, state) {
       final slug = state.extra;
       final kind = slug is String ? ContentPageKind.ofSlug(slug) : null;
-      return JameiaTransitionPage<Object?>(
+      return HeroTransitionPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
         child: kind != null

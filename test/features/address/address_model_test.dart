@@ -1,14 +1,14 @@
 // Address DTO (`/v1/account/addresses` rows), the entity mappers and the
 // POST / PATCH body mappers.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/address_label.dart';
-import 'package:jameia_mart/src/core/domain/entities/geo_point_entity.dart';
-import 'package:jameia_mart/src/core/error/exceptions.dart';
-import 'package:jameia_mart/src/features/address/data/mappers/address_body_mapper.dart';
-import 'package:jameia_mart/src/features/address/data/mappers/address_mapper.dart';
-import 'package:jameia_mart/src/features/address/data/models/address_model.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_draft.dart';
-import 'package:jameia_mart/src/features/address/domain/entities/address_update.dart';
+import 'package:hero_mart/src/core/domain/entities/address_label.dart';
+import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
+import 'package:hero_mart/src/features/address/data/mappers/address_body_mapper.dart';
+import 'package:hero_mart/src/features/address/data/mappers/address_mapper.dart';
+import 'package:hero_mart/src/features/address/data/models/address_model.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_draft.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_update.dart';
 
 import 'address_test_fakes.dart';
 

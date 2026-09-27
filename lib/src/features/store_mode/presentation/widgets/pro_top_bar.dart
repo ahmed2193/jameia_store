@@ -8,7 +8,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/responsive/app_size.dart';
 import 'pro_brand_lockup.dart';
 
-/// The paywall's top bar: close on the start side, the "Jm3eia | Pro" lockup
+/// The paywall's top bar: close on the start side, the "Hero | Pro" lockup
 /// centred (a box as wide as the close button balances it on the end side).
 /// Closing returns to where the customer came from, or home when the page
 /// was opened directly.

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
-import '../../../../core/design/jameia_icons.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
 import 'shell_basket_segment.dart';
@@ -65,7 +65,7 @@ class ShellBasketSwitch extends StatelessWidget {
               children: [
                 Expanded(
                   child: ShellBasketSegment(
-                    icon: JameiaIcons.cart,
+                    icon: HeroIcons.cart,
                     label: 'cart.title'.tr(),
                     count: cartCount,
                     selected: onCart,

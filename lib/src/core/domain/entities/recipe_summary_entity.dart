@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// A recipe card of the jm3eia backend (home recipe rail, the "recipes using
+/// A recipe card of the Hero backend (home recipe rail, the "recipes using
 /// this product" rail of a product page, the recipe list). [slug] opens it
 /// (`GET /v1/recipes/:slug`). Text arrives already resolved for the request
 /// language.

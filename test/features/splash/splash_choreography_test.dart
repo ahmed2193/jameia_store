@@ -1,121 +1,175 @@
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/design/jameia_cart_mark.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_assembly.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_basket_choreography.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_beat.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_burst_choreography.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_layout.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_variant.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_wordmark_choreography.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_wordmark_geometry.dart';
-import 'package:jameia_mart/src/features/splash/presentation/widgets/splash_wordmark_glyphs.dart';
+import 'package:hero_mart/src/core/design/hero_mark.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_assembly.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_basket_choreography.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_beat.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_burst_choreography.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_choreography.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_layout.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_variant.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_wordmark.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_wordmark_choreography.dart';
 
 const Size _phone = Size(390, 844);
 const double _tolerance = 1e-9;
 
+/// The assembly each choreography ends with.
+SplashAssembly _assemblyOf(SplashChoreography choreography) =>
+    switch (choreography) {
+      SplashBasketChoreography() => SplashBasketChoreography.assembly,
+      SplashBurstChoreography() => SplashBurstChoreography.assembly,
+      _ => SplashWordmarkChoreography.assembly,
+    };
+
 void main() {
-  final layout = SplashLayout(_phone);
+  for (final wordmark in SplashWordmark.values) {
+    final layout = SplashLayout(_phone, wordmark);
 
-  group('every variant', () {
-    for (final variant in SplashVariant.values) {
-      final choreography = variant.choreography;
-      final total = choreography.duration.inMilliseconds.toDouble();
+    group('every variant (${wordmark.name})', () {
+      for (final variant in SplashVariant.values) {
+        final choreography = variant.choreography;
+        final total = choreography.duration.inMilliseconds.toDouble();
 
-      test('${variant.name} starts on the launch-screen frame', () {
-        final frame = choreography.frameAt(0, layout);
+        test('${variant.name} starts on the launch-screen frame', () {
+          final frame = choreography.frameAt(0, layout);
 
-        expect(frame.cartCenter, layout.center);
-        expect(frame.cartUnit, closeTo(SplashLayout.nativeUnit, _tolerance));
-        expect(frame.squash, 0);
-        expect(frame.lift, 0);
-        expect(frame.speedLines, 0);
-        expect(frame.burst, 0);
-        expect(frame.swoosh, 0);
-        expect(frame.leaf, 0);
-        expect(frame.letters, everyElement(0));
-        expect(frame.groceries, everyElement(0));
-        // Flat like the native splash: no glow, rings, confetti or shine.
-        expect(frame.ambient, 0);
-        expect(frame.ripples, isEmpty);
-        expect(frame.confetti, 0);
-        expect(frame.shine, 0);
-      });
+          expect(frame.markCenter, layout.nativeMarkCenter);
+          expect(frame.markUnit, closeTo(SplashLayout.nativeUnit, _tolerance));
+          expect(frame.squash, 0);
+          expect(frame.lift, 0);
+          expect(frame.lean, 0);
+          // The cape rests exactly as on the launch image.
+          expect(frame.capeWave, HeroMark.restWave);
+          expect(frame.capePhase, HeroMark.restPhase);
+          expect(frame.capeFold, 0);
+          expect(frame.speedLines, 0);
+          expect(frame.burst, 0);
+          expect(frame.deliveries, isEmpty);
+          expect(frame.groceries, everyElement(0));
+          // Flat like the native splash: no glow, rings, confetti or shine.
+          expect(frame.ambient, 0);
+          expect(frame.glowPulse, 0);
+          expect(frame.ripples, isEmpty);
+          expect(frame.confetti, 0);
+          expect(frame.shine, 0);
+        });
 
-      test('${variant.name} ends on the finished lockup', () {
-        final frame = choreography.frameAt(total, layout);
+        test('${variant.name} ends on the finished lockup', () {
+          final frame = choreography.frameAt(total, layout);
 
-        expect(frame.cartCenter.dx, closeTo(layout.lockupCartCenter.dx, 1e-6));
-        expect(frame.cartCenter.dy, closeTo(layout.lockupCartCenter.dy, 1e-6));
-        expect(frame.cartUnit, closeTo(layout.lockupCartUnit, _tolerance));
-        expect(frame.squash, closeTo(0, _tolerance));
-        expect(frame.speedLines, 0);
-        expect(frame.letters, hasLength(SplashWordmarkGlyphs.letters.length));
-        expect(frame.letters, everyElement(closeTo(1, _tolerance)));
-        expect(frame.swoosh, closeTo(1, _tolerance));
-        expect(frame.stripes, closeTo(1, _tolerance));
-        expect(frame.leaf, closeTo(1, _tolerance));
-        expect(frame.groceries, everyElement(closeTo(1, _tolerance)));
-      });
+          expect(frame.markCenter.dx, closeTo(layout.markCenter.dx, 1e-6));
+          expect(frame.markCenter.dy, closeTo(layout.markCenter.dy, 1e-6));
+          expect(frame.markUnit, closeTo(layout.markUnit, _tolerance));
+          expect(frame.squash, closeTo(0, _tolerance));
+          expect(frame.lean, closeTo(0, _tolerance));
+          expect(frame.capeWave, closeTo(HeroMark.restWave, _tolerance));
+          expect(frame.capeFold, closeTo(0, _tolerance));
+          expect(frame.speedLines, 0);
+          expect(frame.deliveries, hasLength(wordmark.pieces.length));
+          for (final delivery in frame.deliveries) {
+            expect(delivery.flight, 1);
+            expect(delivery.squash, 0);
+          }
+          expect(frame.groceries, everyElement(closeTo(1, _tolerance)));
+          expect(frame.shine, closeTo(1, 1e-6));
+        });
 
-      test('${variant.name} brings the colour glow in as it starts', () {
-        expect(
-          choreography.frameAt(SplashAssembly.ambientLength, layout).ambient,
-          closeTo(1, _tolerance),
-        );
-        expect(choreography.frameAt(total, layout).shine, closeTo(1, 1e-6));
-      });
+        test('${variant.name} settles before its hand-off', () {
+          expect(_assemblyOf(choreography).end(wordmark), lessThan(total));
+        });
 
-      test('${variant.name} fades the tagline in before the hand-off', () {
-        expect(choreography.tagline.begin, greaterThan(0));
-        expect(choreography.tagline.end, lessThanOrEqualTo(1));
-      });
-    }
+        test('${variant.name} fades the tagline in before the hand-off', () {
+          final tagline = choreography.tagline(wordmark);
+          expect(tagline.begin, greaterThan(0));
+          expect(tagline.end, lessThanOrEqualTo(1));
+        });
+
+        test('${variant.name} brings the colour glow in as it starts', () {
+          expect(
+            choreography.frameAt(SplashAssembly.ambientLength, layout).ambient,
+            closeTo(1, _tolerance),
+          );
+        });
+      }
+    });
+  }
+
+  final layout = SplashLayout(_phone, SplashWordmark.latin);
+  const hero = SplashWordmarkChoreography();
+
+  test('the bag takes off, swoops up and tips back in flight', () {
+    const midFlight = SplashAssembly.takeOff + SplashAssembly.flightLength / 2;
+    final frame = hero.frameAt(midFlight, layout);
+
+    expect(frame.markCenter.dy, lessThan(layout.markCenter.dy));
+    expect(frame.markCenter.dy, lessThan(layout.nativeMarkCenter.dy));
+    expect(frame.lean, lessThan(0));
+    expect(frame.capeWave, greaterThan(HeroMark.restWave));
+    expect(frame.capeFold, greaterThan(0));
+    expect(frame.speedLines, greaterThan(0));
   });
 
-  test('every assembly settles before its hand-off', () {
-    final runs = <(double, double)>[
-      (
-        SplashWordmarkChoreography.assembly.end,
-        AppMotion.splashWordmark.inMilliseconds.toDouble(),
-      ),
-      (
-        SplashBasketChoreography.assembly.end,
-        AppMotion.splashBasket.inMilliseconds.toDouble(),
-      ),
-      (
-        SplashBurstChoreography.assembly.end,
-        AppMotion.splashBurst.inMilliseconds.toDouble(),
-      ),
-    ];
-    for (final (end, total) in runs) {
-      expect(end, lessThanOrEqualTo(total));
-    }
+  test('it crouches before it leaves the ground', () {
+    final crouched = hero.frameAt(SplashAssembly.crouchLength, layout);
+    expect(crouched.squash, greaterThan(0));
+    expect(crouched.markCenter, layout.nativeMarkCenter);
   });
 
-  test('landings send a ring and the cart lands with confetti', () {
-    const wordmark = SplashWordmarkChoreography();
-    final hopRing = wordmark.frameAt(
-      SplashWordmarkChoreography.hopStart +
-          SplashWordmarkChoreography.hopLength +
-          SplashAssembly.rippleLength / 2,
+  test('take-off and arrival each send a ring', () {
+    final takeOff = hero.frameAt(
+      SplashAssembly.takeOff + SplashAssembly.rippleLength / 4,
       layout,
     );
-    expect(hopRing.ripples, hasLength(1));
-    expect(hopRing.ripples.single.center, layout.nativeCartGround);
-
-    final landed =
-        SplashWordmarkChoreography.assembly.start +
-        SplashAssembly.landingStart +
-        SplashAssembly.rippleLength / 2;
-    final frame = wordmark.frameAt(landed, layout);
     expect(
-      frame.ripples.map((ring) => ring.center),
-      contains(layout.lockupCartGround),
+      takeOff.ripples.where((ring) => ring.ground).map((ring) => ring.center),
+      contains(layout.nativeGround),
     );
-    expect(frame.confetti, inExclusiveRange(0, 1));
-    expect(frame.confettiOrigin, layout.lockupCartCenter);
+
+    final arrived = hero.frameAt(
+      SplashAssembly.arrival + SplashAssembly.rippleLength / 2,
+      layout,
+    );
+    final air = arrived.ripples.where((ring) => !ring.ground);
+    expect(air.map((ring) => ring.center), contains(layout.markCenter));
+    expect(arrived.glowPulse, greaterThan(0));
+  });
+
+  test('the bag delivers the name piece by piece, then celebrates', () {
+    final wordmark = layout.wordmark;
+    final second = SplashAssembly.launchOf(wordmark, 1);
+    final early = hero.frameAt(second, layout);
+    expect(early.deliveries, hasLength(2));
+    expect(early.deliveries.first.flight, inExclusiveRange(0, 1));
+    expect(early.deliveries.last.flight, 0);
+    expect(early.confetti, 0);
+
+    final landed = SplashAssembly.lastLanding(wordmark);
+    final done = hero.frameAt(
+      landed + SplashAssembly.confettiDelay + SplashAssembly.confettiLength / 2,
+      layout,
+    );
+    expect(done.deliveries.map((d) => d.flight), everyElement(1));
+    expect(done.confetti, inExclusiveRange(0, 1));
+    expect(done.confettiOrigin, layout.wordCenter);
+  });
+
+  test('a piece squashes as it lands', () {
+    final landing =
+        SplashAssembly.launchOf(layout.wordmark, 0) +
+        SplashAssembly.deliveryLength +
+        SplashAssembly.landingLength / 2;
+    final frame = hero.frameAt(landing, layout);
+    expect(frame.deliveries.first.flight, 1);
+    expect(frame.deliveries.first.squash, greaterThan(0));
+  });
+
+  test('the arrived bag floats and its cape keeps rippling', () {
+    final end = hero.duration.inMilliseconds.toDouble();
+    final a = hero.frameAt(end - 400, layout);
+    final b = hero.frameAt(end, layout);
+    expect(a.lift, isNot(closeTo(b.lift, 1e-3)));
+    expect(a.capePhase, isNot(closeTo(b.capePhase, 1e-3)));
   });
 
   test('only the burst turns the screen white', () {
@@ -137,31 +191,20 @@ void main() {
 
   test('the basket drops three groceries, one after another', () {
     const basket = SplashBasketChoreography();
-    final firstLanding =
+    const firstLanding =
         SplashBasketChoreography.firstDrop +
         SplashBasketChoreography.fallLength;
     final frame = basket.frameAt(firstLanding, layout);
 
     expect(frame.groceries, hasLength(SplashBasketChoreography.groceryCount));
     expect(frame.groceries.first, closeTo(1, _tolerance));
-    expect(frame.groceries.last, 0);
-  });
-
-  test('the wordmark cart hops before gliding into the "J"', () {
-    const wordmark = SplashWordmarkChoreography();
-    final midHop =
-        SplashWordmarkChoreography.hopStart +
-        SplashWordmarkChoreography.hopLength / 2;
-
-    expect(
-      wordmark.frameAt(midHop, layout).lift,
-      closeTo(SplashWordmarkChoreography.hopHeight, _tolerance),
-    );
-    expect(wordmark.frameAt(midHop, layout).cartCenter, layout.center);
+    expect(frame.groceries[1], lessThan(1));
+    expect(frame.groceries.last, lessThan(frame.groceries[1]));
+    expect(frame.markCenter, layout.nativeMarkCenter);
   });
 
   group('SplashVariant', () {
-    test('defaults to the wordmark intro', () {
+    test('defaults to the hero intro', () {
       expect(SplashVariant.byName(''), SplashVariant.wordmark);
       expect(SplashVariant.byName('nope'), SplashVariant.wordmark);
       expect(SplashVariant.configured, SplashVariant.wordmark);
@@ -173,42 +216,61 @@ void main() {
     });
   });
 
+  group('SplashWordmark', () {
+    test('follows the app language', () {
+      expect(SplashWordmark.forLanguage('ar'), SplashWordmark.arabic);
+      expect(SplashWordmark.forLanguage('en'), SplashWordmark.latin);
+    });
+
+    test('"hero" comes letter by letter, "هيرو" run by run', () {
+      expect(SplashWordmark.latin.pieces, hasLength(4));
+      expect(SplashWordmark.arabic.pieces, hasLength(2));
+      for (final wordmark in SplashWordmark.values) {
+        final ink = wordmark.ink.inflate(30);
+        for (final box in wordmark.pieceBounds) {
+          expect(ink.contains(box.topLeft), isTrue);
+          expect(ink.contains(box.bottomRight), isTrue);
+        }
+      }
+    });
+
+    test('Arabic reads right to left: the first run is on the right', () {
+      final bounds = SplashWordmark.arabic.pieceBounds;
+      expect(bounds.first.center.dx, greaterThan(bounds.last.center.dx));
+    });
+  });
+
   group('geometry', () {
-    test('the launch-screen cart fits the circle Android 12+ keeps', () {
+    test('the launch-screen mark fits the circle Android 12+ keeps', () {
       expect(SplashLayout.nativeReach, lessThan(SplashLayout.nativeSafeRadius));
     });
 
-    test('the cart is roughly square, so it reads at icon size', () {
-      final bounds = JameiaCartMark.bounds;
-      expect(bounds.width / bounds.height, inInclusiveRange(0.9, 1.1));
-    });
+    for (final wordmark in SplashWordmark.values) {
+      for (final width in [320.0, 390.0, 430.0, 800.0]) {
+        test(
+          'the ${wordmark.name} lockup fits a ${width.toInt()} dp wide screen',
+          () {
+            final wide = SplashLayout(Size(width, _phone.height), wordmark);
+            final lockup = wide.lockupBounds;
 
-    for (final width in [320.0, 390.0, 430.0, 800.0]) {
-      test('the lockup stays inside a ${width.toInt()} dp wide screen', () {
-        final wide = SplashLayout(Size(width, _phone.height));
-        final left =
-            wide.textOrigin.dx +
-            SplashWordmarkGeometry.bounds.left * wide.scale;
-        final right =
-            wide.textOrigin.dx +
-            SplashWordmarkGeometry.bounds.right * wide.scale;
-
-        expect(left, greaterThan(0));
-        expect(right, lessThan(width));
-        expect(right - left, lessThanOrEqualTo(SplashLayout.lockupMaxWidth));
-        expect(wide.taglineTop, greaterThan(wide.center.dy));
-      });
+            expect(lockup.left, greaterThan(0));
+            expect(lockup.right, lessThan(width));
+            expect(wide.taglineTop, greaterThan(lockup.bottom));
+            expect(wide.taglineTop, greaterThan(wide.center.dy));
+          },
+        );
+      }
     }
 
-    test('the leaf sits on the dotless "ı"', () {
-      expect(SplashWordmarkGlyphs.letters, hasLength(9));
-      final stem = SplashWordmarkGlyphs.letters[SplashWordmarkGlyphs.leafLetter]
-          .getBounds();
-      expect(
-        SplashWordmarkGeometry.leafBase.dx,
-        inInclusiveRange(stem.left, stem.right),
+    test('the bag, not its cape, stands centred over the name', () {
+      final bag = SplashLayout.pointOf(
+        HeroMark.bagCenter,
+        layout.markCenter,
+        layout.markUnit,
       );
-      expect(SplashWordmarkGeometry.leafBase.dy, lessThan(stem.top));
+      expect(bag.dx, closeTo(layout.center.dx, 1e-6));
+      expect(layout.wordCenter.dx, closeTo(layout.center.dx, 1e-6));
+      expect(layout.markCenter.dy, lessThan(layout.wordCenter.dy));
     });
   });
 

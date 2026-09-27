@@ -4,7 +4,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 
-/// Small rating pill: ★ 4.8 in Jameia's bold digit style.
+/// Small rating pill: ★ 4.8 in Hero's bold digit style.
 class RatingBadge extends StatelessWidget {
   const RatingBadge({
     super.key,

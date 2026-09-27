@@ -8,7 +8,7 @@ import '../../../../../core/domain/entities/pro_membership_entity.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/utils/formatters.dart';
 
-/// Where the customer stands with Pro, on the Jm3eia Pro row: "Renews
+/// Where the customer stands with Pro, on the Hero Pro row: "Renews
 /// 17 Oct" (violet) for a member, "Ends 17 Oct" (amber) once cancelled,
 /// and a filled violet "Join" / "Rejoin" while Pro is on offer. Pops to
 /// the new chip when the standing changes (a subscribe, a cancel).

@@ -21,5 +21,5 @@ abstract final class HomeLayout {
 
   /// The storefront accent: the delivery pill, the address pin, the tile
   /// hills and the minimum-order progress.
-  static const Color accent = kJameiaPillPin;
+  static const Color accent = kHeroPillPin;
 }

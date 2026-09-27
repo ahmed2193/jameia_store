@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/domain/entities/order_status.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_cart_facts.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_payment_choice.dart';
-import 'package:jameia_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
+import 'package:hero_mart/src/core/domain/entities/order_status.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_cart_facts.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_payment_choice.dart';
+import 'package:hero_mart/src/features/checkout/domain/entities/checkout_store_rules.dart';
 
 void main() {
   const covers = CheckoutCartFacts(walletFils: 5000, totalFils: 2600);

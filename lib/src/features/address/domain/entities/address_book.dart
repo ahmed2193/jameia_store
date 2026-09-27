@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/domain/entities/jameia_address_entity.dart';
+import '../../../../core/domain/entities/hero_address_entity.dart';
 
 /// The customer's saved addresses as the app shows them: the default address
 /// first, the rest in server order. Every change returns a new book.
@@ -8,29 +8,29 @@ class AddressBook extends Equatable {
   const AddressBook._(this.addresses);
 
   /// Orders [addresses] (e.g. a server list): the default one moves to the top.
-  factory AddressBook.of(List<JameiaAddressEntity> addresses) =>
+  factory AddressBook.of(List<HeroAddressEntity> addresses) =>
       AddressBook._(_defaultFirst(addresses));
 
-  static const AddressBook empty = AddressBook._(<JameiaAddressEntity>[]);
+  static const AddressBook empty = AddressBook._(<HeroAddressEntity>[]);
 
-  final List<JameiaAddressEntity> addresses;
+  final List<HeroAddressEntity> addresses;
 
   bool get isEmpty => addresses.isEmpty;
 
   /// Where to deliver when nothing else was picked: the default address, else
   /// the first one.
-  JameiaAddressEntity? get defaultAddress =>
+  HeroAddressEntity? get defaultAddress =>
       flaggedDefault ?? (addresses.isEmpty ? null : addresses.first);
 
   /// The address flagged `isDefault`, without the first-address fallback.
-  JameiaAddressEntity? get flaggedDefault {
+  HeroAddressEntity? get flaggedDefault {
     for (final address in addresses) {
       if (address.isDefault) return address;
     }
     return null;
   }
 
-  JameiaAddressEntity? byId(String id) {
+  HeroAddressEntity? byId(String id) {
     for (final address in addresses) {
       if (address.id == id) return address;
     }
@@ -39,7 +39,7 @@ class AddressBook extends Equatable {
 
   /// Adds [address] or replaces the one with its id. A customer has one
   /// default address, so a default [address] clears the flag on the others.
-  AddressBook upsert(JameiaAddressEntity address) {
+  AddressBook upsert(HeroAddressEntity address) {
     final exists = byId(address.id) != null;
     return AddressBook.of([
       for (final current in addresses)
@@ -74,8 +74,8 @@ class AddressBook extends Equatable {
     );
   }
 
-  static List<JameiaAddressEntity> _defaultFirst(
-    List<JameiaAddressEntity> addresses,
+  static List<HeroAddressEntity> _defaultFirst(
+    List<HeroAddressEntity> addresses,
   ) {
     final index = addresses.indexWhere((address) => address.isDefault);
     if (index <= 0) return List.unmodifiable(addresses);

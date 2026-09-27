@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/features/assistant/domain/entities/assistant_text_direction.dart';
+import 'package:hero_mart/src/features/assistant/domain/entities/assistant_text_direction.dart';
 
 void main() {
   bool? isRtl(String text) => AssistantTextDirection.isRtl(text);

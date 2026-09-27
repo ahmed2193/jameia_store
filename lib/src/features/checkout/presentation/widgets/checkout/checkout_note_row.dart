@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/widgets/jameia_list_row.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_note_sheet.dart';
 import 'checkout_sheet_frame.dart';
@@ -19,7 +19,7 @@ class CheckoutNoteRow extends StatelessWidget {
     final notes = context.select<CheckoutCubit, String>(
       (cubit) => cubit.state.draft.notes,
     );
-    return JameiaListRow(
+    return HeroListRow(
       dense: true,
       icon: Icons.edit_note_rounded,
       title: 'checkout.notes_title'.tr(),

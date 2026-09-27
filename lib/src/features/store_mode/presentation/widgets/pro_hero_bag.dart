@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
-import '../../../../core/design/jameia_assets.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import 'pro_hero_parallax.dart';
 
-/// The Jameia bag standing in the hero's dome: it rises and fades in once,
+/// The Hero bag standing in the hero's dome: it rises and fades in once,
 /// then floats gently and lags a little behind the page while it scrolls.
 /// [height] is the dome's height (caps the decoded image size).
 class ProHeroBag extends StatelessWidget {
@@ -35,7 +35,7 @@ class ProHeroBag extends StatelessWidget {
             duration: MotionGuard.duration(context, AppMotion.drawOn),
             curve: AppMotion.emphasizedDecelerate,
             child: Image.asset(
-              JameiaAssets.jameiaBag,
+              HeroAssets.heroBag,
               fit: BoxFit.contain,
               alignment: Alignment.bottomCenter,
               cacheWidth: context.cacheCapFor(height),

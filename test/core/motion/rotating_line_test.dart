@@ -3,8 +3,8 @@
 // re-orders, and stays out of the semantics tree.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/motion/motion.dart';
-import 'package:jameia_mart/src/core/motion/rotating_line.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/rotating_line.dart';
 
 RotatingLineItem _item(String id) =>
     RotatingLineItem(id: id, child: Text('fact $id'));

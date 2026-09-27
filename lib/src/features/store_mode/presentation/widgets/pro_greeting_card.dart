@@ -53,7 +53,7 @@ class ProGreetingCard extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(AppSpacing.s20),
         decoration: BoxDecoration(
-          color: kJameiaPromoCream,
+          color: kHeroPromoCream,
           borderRadius: BorderRadius.circular(AppRadius.r2),
         ),
         child: Column(

@@ -2,10 +2,11 @@ import '../../../../core/network/api_consumer.dart';
 import '../../../../core/network/api_payload.dart';
 import '../../../../core/network/end_points.dart';
 import '../../../../core/data/models/customer_model.dart';
+import '../../../../core/data/models/loyalty_program_model.dart';
 import '../models/auth_session_model.dart';
 import '../models/otp_challenge_model.dart';
 
-/// The jm3eia customer-auth endpoints. Receives the envelope's `results`
+/// The Hero customer-auth endpoints. Receives the envelope's `results`
 /// (already unwrapped by `DioConsumer`) and throws `AppException` only.
 ///
 /// Reference: https://docs.jm3eia.store/developers/auth.html
@@ -24,6 +25,10 @@ abstract class AuthRemoteDataSource {
 
   /// `GET /v1/account/me` (Bearer) — validates the stored session at launch.
   Future<CustomerModel> me();
+
+  /// `GET /v1/init` (public) → `store.loyalty`: the welcome bonus the login
+  /// screen offers new customers.
+  Future<LoyaltyProgramModel> getLoyaltyProgram();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -63,5 +68,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<CustomerModel> me() async {
     final results = await _api.get(EndPoints.accountMe);
     return CustomerModel.fromJson(ApiPayload.asMap(results, 'account/me'));
+  }
+
+  @override
+  Future<LoyaltyProgramModel> getLoyaltyProgram() async {
+    final results = await _api.get(EndPoints.init);
+    return LoyaltyProgramModel.fromInitJson(
+      ApiPayload.asMap(results, EndPoints.init),
+    );
   }
 }

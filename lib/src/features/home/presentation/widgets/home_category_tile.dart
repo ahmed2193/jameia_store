@@ -7,7 +7,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/catalog_category_entity.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/jameia_image.dart';
+import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/home_icon.dart';
 import 'home_accent_palette.dart';
 import 'home_category_aurora_painter.dart';
@@ -113,7 +113,7 @@ class HomeCategoryTile extends StatelessWidget {
                         boxShadow: AppShadows.low,
                       ),
                       child: category.hasImage
-                          ? JameiaImage.circle(
+                          ? HeroImage.circle(
                               url: category.image,
                               size: _photo,
                             )

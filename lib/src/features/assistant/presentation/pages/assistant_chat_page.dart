@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/motion/haptics.dart';
-import '../../../../core/navigation/jameia_snack_bar.dart';
+import '../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../core/utils/failure_message.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../language/presentation/cubit/localization_cubit.dart';
@@ -21,7 +21,7 @@ import '../widgets/chat/assistant_chat_app_bar.dart';
 import '../widgets/chat/assistant_celebration.dart';
 import '../widgets/chat/assistant_chat_body.dart';
 
-/// The Jm3eia Assistant chat (`/v1/assistant/*`). Opens a conversation from
+/// The Hero Assistant chat (`/v1/assistant/*`). Opens a conversation from
 /// history ([conversationId]), starts one with [initialPrompt], or shows the
 /// welcome. Composes the app bar + body and turns the cubit's one-shot
 /// outcomes into feedback: a confirmed proposal refetches the app cart,
@@ -55,7 +55,7 @@ class AssistantChatPage extends StatelessWidget {
     };
     if (state.notice == AssistantChatNotice.turnFailed) Haptics.warning();
     if (state.notice == AssistantChatNotice.handedOff) Haptics.success();
-    if (text != null && text.isNotEmpty) showJameiaSnackBar(context, text);
+    if (text != null && text.isNotEmpty) showHeroSnackBar(context, text);
   }
 
   /// Tells a screen reader that a reply started, then how it ended — the

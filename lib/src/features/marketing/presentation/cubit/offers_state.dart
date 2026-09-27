@@ -1,49 +1,36 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../../core/domain/entities/data_freshness.dart';
 import '../../../../core/domain/entities/offer_entity.dart';
+import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/utils/performance/screen_loader_mixin.dart';
 
-enum OffersStatus { initial, loading, loaded, error }
-
-class OffersState extends Equatable {
+class OffersState extends Equatable implements ScreenLoadState<OffersState> {
   const OffersState({
-    this.status = OffersStatus.initial,
+    this.load = const ScreenLoad(),
     this.offers = const <OfferEntity>[],
-    this.freshness = DataFreshness.none,
-    this.failure,
   });
 
-  final OffersStatus status;
+  /// The list's read, its freshness (the device copy, a failed refresh …)
+  /// and the failure that goes with them. The page localizes it.
+  @override
+  final ScreenLoad load;
   final List<OfferEntity> offers;
 
-  /// How fresh [offers] is (the device copy, a failed refresh …).
-  final DataFreshness freshness;
-
-  /// Transient with [OffersStatus.loaded] (cleared on the next [copyWith]);
-  /// with [OffersStatus.error] the reason for the full-screen state, kept
-  /// while the status stays `error`. The page localizes it.
-  final Failure? failure;
-
-  bool get isLoaded => status == OffersStatus.loaded;
+  LoadPhase get status => load.phase;
+  Failure? get failure => load.failure;
+  bool get isLoaded => load.isLoaded;
   bool get isEmpty => isLoaded && offers.isEmpty;
 
-  OffersState copyWith({
-    OffersStatus? status,
-    List<OfferEntity>? offers,
-    DataFreshness? freshness,
-    Failure? failure,
-  }) {
-    final nextStatus = status ?? this.status;
-    return OffersState(
-      status: nextStatus,
-      offers: offers ?? this.offers,
-      freshness: freshness ?? this.freshness,
-      failure:
-          failure ?? (nextStatus == OffersStatus.error ? this.failure : null),
-    );
-  }
+  @override
+  OffersState withLoad(ScreenLoad load) => copyWith(load: load);
+
+  OffersState copyWith({ScreenLoad? load, List<OfferEntity>? offers}) =>
+      OffersState(
+        load: load ?? this.load.settled(),
+        offers: offers ?? this.offers,
+      );
 
   @override
-  List<Object?> get props => [status, offers, freshness, failure];
+  List<Object?> get props => [load, offers];
 }

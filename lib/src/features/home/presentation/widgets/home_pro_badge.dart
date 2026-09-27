@@ -8,7 +8,7 @@ import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 
 /// The small violet "pro" tag in front of the store name: the customer is a
-/// Jm3eia Pro member (talabat's "pro" lockup).
+/// Hero Pro member (the "pro" lockup).
 class HomeProBadge extends StatelessWidget {
   const HomeProBadge({super.key});
 

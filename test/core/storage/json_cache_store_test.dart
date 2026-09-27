@@ -9,10 +9,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jameia_mart/src/core/storage/cache_key.dart';
-import 'package:jameia_mart/src/core/storage/cache_namespace.dart';
-import 'package:jameia_mart/src/core/storage/cache_owner.dart';
-import 'package:jameia_mart/src/core/storage/json_cache_store.dart';
+import 'package:hero_mart/src/core/storage/cache_key.dart';
+import 'package:hero_mart/src/core/storage/cache_namespace.dart';
+import 'package:hero_mart/src/core/storage/cache_owner.dart';
+import 'package:hero_mart/src/core/storage/json_cache_store.dart';
 
 const CacheNamespace _items = CacheNamespace(
   'test.items',
