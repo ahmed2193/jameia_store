@@ -21,6 +21,7 @@ import 'package:hero_mart/src/config/routes/route_args/login_args.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
 import 'package:hero_mart/src/features/account/presentation/cubit/setting_cubit.dart';
 import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
@@ -73,7 +74,7 @@ void main() {
     // Swap the page cubits' network for the fakes; DI shape stays real.
     sl
       ..unregister<LoginCubit>()
-      ..registerFactory(() => LoginCubit(sendOtp))
+      ..registerFactory(() => LoginCubit(sendOtp, FakeGetWelcomeBonusUseCase()))
       ..unregister<OtpCubit>()
       ..registerFactoryParam<OtpCubit, PhoneNumber, String?>(
         (phone, debugCode) => OtpCubit(
@@ -152,7 +153,7 @@ void main() {
     final router = await pumpApp(tester);
     await tester.enterText(find.byType(TextField), '12345678');
     await tester.pump();
-    await tester.tap(find.text('Continue'));
+    await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
     expect(router.state.uri.path, Routes.otpVerify);
     expect(find.byType(OtpVerifyPage), findsOneWidget);
@@ -175,7 +176,7 @@ void main() {
     final router = await pumpApp(tester);
     await tester.enterText(find.byType(TextField), '12345678');
     await tester.pump();
-    await tester.tap(find.text('Continue'));
+    await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
     expect(router.state.uri.path, Routes.login);
     expect(find.textContaining('The request timed out'), findsOneWidget);
@@ -189,7 +190,7 @@ void main() {
     final router = await pumpApp(tester);
     await tester.enterText(find.byType(TextField), '12345678');
     await tester.pump();
-    await tester.tap(find.text('Continue'));
+    await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
     expect(router.state.uri.path, Routes.login);
     expect(
@@ -208,7 +209,7 @@ void main() {
     final router = await reachOtpPage(tester);
     await tester.enterText(find.byType(TextField), '1234');
     await tester.pump();
-    await tester.tap(find.text('Verify'));
+    await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
     expect(verifyOtp.calls.single.code, '1234');
     expect(session.state.isSignedIn, isTrue);
@@ -229,13 +230,13 @@ void main() {
     await settle(tester);
     await tester.enterText(find.byType(TextField), '12345678');
     await tester.pump();
-    await tester.tap(find.text('Continue'));
+    await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
     expect(router.state.uri.path, Routes.otpVerify);
 
     await tester.enterText(find.byType(TextField), '1234');
     await tester.pump();
-    await tester.tap(find.text('Verify'));
+    await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
 
     expect(session.state.isSignedIn, isTrue);
@@ -257,7 +258,7 @@ void main() {
     final router = await reachOtpPage(tester);
     await tester.enterText(find.byType(TextField), '0000');
     await tester.pump();
-    await tester.tap(find.text('Verify'));
+    await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
     expect(find.text('Wrong code'), findsOneWidget);
     expect(router.state.uri.path, Routes.otpVerify);

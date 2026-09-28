@@ -15,6 +15,5 @@ class BrandSheetScope extends InheritedWidget {
       kAlwaysDismissedAnimation;
 
   @override
-  bool updateShouldNotify(BrandSheetScope oldWidget) =>
-      oldWidget.fold != fold;
+  bool updateShouldNotify(BrandSheetScope oldWidget) => oldWidget.fold != fold;
 }

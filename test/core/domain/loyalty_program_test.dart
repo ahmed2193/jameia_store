@@ -149,4 +149,24 @@ void main() {
     expect(program.worthKd(500, totals), 0.5);
     expect(program.worthKd(5000, totals), 1.6);
   });
+
+  group('welcomeBonusOnOffer (the sign-in offer)', () {
+    test('a running programme with a bonus offers it', () {
+      const running = LoyaltyProgram(enabled: true, welcomeBonusPoints: 100);
+      expect(running.welcomeBonusOnOffer, 100);
+    });
+
+    test('a programme that is off offers nothing, bonus or not', () {
+      const off = LoyaltyProgram(welcomeBonusPoints: 100);
+      expect(off.welcomeBonusOnOffer, 0);
+      expect(LoyaltyProgram.none.welcomeBonusOnOffer, 0);
+    });
+
+    test('no bonus (or a nonsense negative one) offers nothing', () {
+      const none = LoyaltyProgram(enabled: true);
+      const negative = LoyaltyProgram(enabled: true, welcomeBonusPoints: -5);
+      expect(none.welcomeBonusOnOffer, 0);
+      expect(negative.welcomeBonusOnOffer, 0);
+    });
+  });
 }

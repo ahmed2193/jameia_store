@@ -67,10 +67,13 @@ class BrandBackdropRing {
     }
 
     const kinds = GroceryDoodle.values;
-    final placed = <({Offset at, GroceryDoodle kind, double turn, double side})>[];
-    for (var attempt = 0;
-        attempt < _attempts && placed.length < _maxItems;
-        attempt++) {
+    final placed =
+        <({Offset at, GroceryDoodle kind, double turn, double side})>[];
+    for (
+      var attempt = 0;
+      attempt < _attempts && placed.length < _maxItems;
+      attempt++
+    ) {
       final angle = next() * 2 * math.pi;
       final radius = math.sqrt(
         inner * inner + next() * (outer * outer - inner * inner),

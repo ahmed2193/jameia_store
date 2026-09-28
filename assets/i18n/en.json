@@ -1563,4 +1563,16 @@
     "order_status_as_of": "Last known status · {time}",
     "updated_just_now": "Updated just now",
     "updated_minutes": {
-      "one": "Updated 1 
+      "one": "Updated 1 minute ago",
+      "other": "Updated {} minutes ago"
+    },
+    "updated_hours": {
+      "one": "Updated 1 hour ago",
+      "other": "Updated {} hours ago"
+    },
+    "updated_days": {
+      "one": "Updated 1 day ago",
+      "other": "Updated {} days ago"
+    }
+  }
+}

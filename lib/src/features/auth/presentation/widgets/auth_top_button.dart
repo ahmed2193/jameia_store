@@ -25,9 +25,7 @@ class AuthTopButton extends StatelessWidget {
     return PressScale(
       pressedScale: _pressedScale,
       child: IconButton(
-        tooltip: canPop
-            ? labels.backButtonTooltip
-            : labels.closeButtonTooltip,
+        tooltip: canPop ? labels.backButtonTooltip : labels.closeButtonTooltip,
         onPressed: () => canPop ? context.pop() : context.go(Routes.shell),
         style: IconButton.styleFrom(
           fixedSize: const Size.square(diameter),

@@ -128,4 +128,53 @@ void main() {
 
     expect(adapter.requests.single.path, EndPoints.authLogout);
   });
+
+  group('getLoyaltyProgram', () {
+    test('GETs /v1/init and reads store.loyalty', () async {
+      dataSource = build(
+        FakeHttpClientAdapter(
+          (_, _) => okBody({
+            'store': {
+              'name': 'Hero',
+              'loyalty': {
+                'enabled': true,
+                'pointsPerKwd': 10,
+                'welcomeBonusPoints': 100,
+                'profileBonusPoints': 50,
+              },
+            },
+            'user': null,
+          }),
+        ),
+      );
+
+      final program = await dataSource.getLoyaltyProgram();
+
+      expect(adapter.requests.single.path, EndPoints.init);
+      expect(adapter.requests.single.method, 'GET');
+      expect(program.enabled, isTrue);
+      expect(program.welcomeBonusPoints, 100);
+      expect(program.profileBonusPoints, 50);
+    });
+
+    test('no loyalty block → the programme is off', () async {
+      dataSource = build(
+        FakeHttpClientAdapter((_, _) => okBody({'store': <String, Object>{}})),
+      );
+
+      final program = await dataSource.getLoyaltyProgram();
+
+      expect(program.enabled, isFalse);
+      expect(program.welcomeBonusPoints, 0);
+    });
+
+    test('a non-object payload → ParsingException', () async {
+      dataSource = build(FakeHttpClientAdapter((_, _) => okBody('nope')));
+
+      await expectLater(
+        dataSource.getLoyaltyProgram(),
+        throwsA(isA<ParsingException>()),
+      );
+    });
+  });
 }

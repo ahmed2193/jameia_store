@@ -55,10 +55,7 @@ class _LoginSocialSectionState extends State<LoginSocialSection> {
         AuthCascadeItem(
           index: first + 1,
           child: Center(
-            child: LoginOtherMethodsToggle(
-              expanded: _expanded,
-              onTap: _toggle,
-            ),
+            child: LoginOtherMethodsToggle(expanded: _expanded, onTap: _toggle),
           ),
         ),
         CollapseReveal(

@@ -7,6 +7,8 @@ import 'package:hero_mart/src/core/storage/auth_tokens.dart';
 import 'package:hero_mart/src/features/auth/data/datasources/auth_local_data_source.dart';
 import 'package:hero_mart/src/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:hero_mart/src/core/data/models/customer_model.dart';
+import 'package:hero_mart/src/core/data/models/loyalty_program_model.dart';
+import 'package:hero_mart/src/core/domain/entities/loyalty_program.dart';
 import 'package:hero_mart/src/features/auth/data/models/auth_session_model.dart';
 import 'package:hero_mart/src/features/auth/data/models/otp_challenge_model.dart';
 import 'package:hero_mart/src/features/auth/data/repositories/auth_repository_impl.dart';
@@ -66,6 +68,19 @@ class _FakeRemote implements AuthRemoteDataSource {
       phone: '+96512345678',
       nameEn: 'Ahmed',
       nameAr: 'أحمد',
+    );
+  }
+
+  Object? programError;
+
+  @override
+  Future<LoyaltyProgramModel> getLoyaltyProgram() async {
+    if (programError != null) throw programError!;
+    return const LoyaltyProgramModel(
+      enabled: true,
+      pointsPerKwd: 10,
+      welcomeBonusPoints: 100,
+      profileBonusPoints: 50,
     );
   }
 }
@@ -313,6 +328,35 @@ void main() {
         const Right<Failure, Unit>(unit),
       );
       expect(local.clearCustomerCalls, 1);
+    });
+  });
+
+  group('loyalty programme (welcome offer)', () {
+    test('maps the init block to the entity', () async {
+      final result = await repository.getLoyaltyProgram();
+
+      expect(
+        result,
+        const Right<Failure, LoyaltyProgram>(
+          LoyaltyProgram(
+            enabled: true,
+            pointsPerKwd: 10,
+            welcomeBonusPoints: 100,
+            profileBonusPoints: 50,
+          ),
+        ),
+      );
+    });
+
+    test('offline → NetworkFailure', () async {
+      remote.programError = const NoInternetConnectionException();
+      final result = await repository.getLoyaltyProgram();
+
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(failure, isA<NetworkFailure>()),
+        (_) => fail('expected a failure'),
+      );
     });
   });
 }

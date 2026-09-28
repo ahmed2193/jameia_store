@@ -39,9 +39,7 @@ class LoginOfferWords extends StatelessWidget {
         const SizedBox(height: AppSpacing.s4),
         Text(
           subtitle,
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.primaryText,
-          ),
+          style: AppTextStyles.bodyLarge.copyWith(color: AppColors.primaryText),
         ),
       ],
     );

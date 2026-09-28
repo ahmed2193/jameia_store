@@ -8,6 +8,7 @@ import 'package:hero_mart/src/features/auth/domain/entities/otp_challenge.dart';
 import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
 import 'package:hero_mart/src/features/auth/domain/usecases/clear_cached_customer_usecase.dart';
 import 'package:hero_mart/src/features/auth/domain/usecases/get_cached_customer_usecase.dart';
+import 'package:hero_mart/src/features/auth/domain/usecases/get_welcome_bonus_usecase.dart';
 import 'package:hero_mart/src/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:hero_mart/src/features/auth/domain/usecases/restore_session_usecase.dart';
 import 'package:hero_mart/src/features/auth/domain/usecases/save_cached_customer_usecase.dart';
@@ -117,6 +118,21 @@ class FakeClearCachedCustomerUseCase implements ClearCachedCustomerUseCase {
   Future<Either<Failure, Unit>> call(NoParams params) async {
     calls++;
     return const Right(unit);
+  }
+}
+
+/// The store's welcome bonus; none by default (the offer card's generic
+/// words).
+class FakeGetWelcomeBonusUseCase implements GetWelcomeBonusUseCase {
+  FakeGetWelcomeBonusUseCase([this.result = const Right(0)]);
+
+  Either<Failure, int> result;
+  int calls = 0;
+
+  @override
+  Future<Either<Failure, int>> call(NoParams params) async {
+    calls++;
+    return result;
   }
 }
 

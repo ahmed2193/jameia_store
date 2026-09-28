@@ -80,10 +80,7 @@ abstract final class GroceryDoodlePainting {
   );
   static final Paint _icing = _fill(AppColors.magenta[3]);
   static final Paint _crema = _stroke(AppColors.orange[12], 3);
-  static final Paint _foam = _stroke(
-    kHeroPromoCream.withValues(alpha: 0.8),
-    3,
-  );
+  static final Paint _foam = _stroke(kHeroPromoCream.withValues(alpha: 0.8), 3);
   static final Paint _crust = _stroke(AppColors.accent3, 3);
   static final Paint _ridge = _stroke(AppColors.accent3Dark, 3);
   static final Paint _stem = _stroke(AppColors.brandDeep, 4);
@@ -430,15 +427,42 @@ abstract final class GroceryDoodlePainting {
 
   /// A pear-shaped outline from [top] to [bottom] on the centre line [x]:
   /// [waist] half-width near the top, [belly] half-width low down.
-  static Path _egg(double x, double top, double bottom, double belly, double waist) {
+  static Path _egg(
+    double x,
+    double top,
+    double bottom,
+    double belly,
+    double waist,
+  ) {
     final height = bottom - top;
     final waistY = top + height * 0.27;
     final bellyY = top + height * 0.5;
     return Path()
       ..moveTo(x, top)
-      ..cubicTo(x + waist * 0.8, top, x + waist * 1.2, waistY, x + belly, bellyY)
-      ..cubicTo(x + belly * 1.25, top + height * 0.8, x + belly * 0.7, bottom, x, bottom)
-      ..cubicTo(x - belly * 0.7, bottom, x - belly * 1.25, top + height * 0.8, x - belly, bellyY)
+      ..cubicTo(
+        x + waist * 0.8,
+        top,
+        x + waist * 1.2,
+        waistY,
+        x + belly,
+        bellyY,
+      )
+      ..cubicTo(
+        x + belly * 1.25,
+        top + height * 0.8,
+        x + belly * 0.7,
+        bottom,
+        x,
+        bottom,
+      )
+      ..cubicTo(
+        x - belly * 0.7,
+        bottom,
+        x - belly * 1.25,
+        top + height * 0.8,
+        x - belly,
+        bellyY,
+      )
       ..cubicTo(x - waist * 1.2, waistY, x - waist * 0.8, top, x, top)
       ..close();
   }
@@ -450,18 +474,17 @@ abstract final class GroceryDoodlePainting {
     final turn = degrees * math.pi / 180;
     final c = math.cos(turn);
     final s = math.sin(turn);
-    return (Path()
-          ..addRRect(
-            RRect.fromRectXY(
-              Rect.fromCenter(
-                center: Offset.zero,
-                width: length,
-                height: thickness,
-              ),
-              thickness / 2,
-              thickness / 2,
+    return (Path()..addRRect(
+          RRect.fromRectXY(
+            Rect.fromCenter(
+              center: Offset.zero,
+              width: length,
+              height: thickness,
             ),
-          ))
+            thickness / 2,
+            thickness / 2,
+          ),
+        ))
         .transform(
           Float64List.fromList([
             c, s, 0, 0, //
@@ -472,8 +495,10 @@ abstract final class GroceryDoodlePainting {
         );
   }
 
-  static Path _union(List<Path> paths) => paths.skip(1).fold(
-    paths.first,
-    (union, path) => Path.combine(PathOperation.union, union, path),
-  );
+  static Path _union(List<Path> paths) => paths
+      .skip(1)
+      .fold(
+        paths.first,
+        (union, path) => Path.combine(PathOperation.union, union, path),
+      );
 }

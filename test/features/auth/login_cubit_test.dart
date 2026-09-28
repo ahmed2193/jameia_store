@@ -10,13 +10,17 @@ import 'auth_test_fakes.dart';
 
 void main() {
   late FakeSendOtpUseCase sendOtp;
+  late FakeGetWelcomeBonusUseCase welcomeBonus;
 
-  setUp(() => sendOtp = FakeSendOtpUseCase(const Right(kChallenge)));
+  setUp(() {
+    sendOtp = FakeSendOtpUseCase(const Right(kChallenge));
+    welcomeBonus = FakeGetWelcomeBonusUseCase();
+  });
 
   test(
     'phoneChanged parses pasted input (prefix, separators) and caps at 8',
     () {
-      final cubit = LoginCubit(sendOtp);
+      final cubit = LoginCubit(sendOtp, welcomeBonus);
       cubit.phoneChanged('+965 1234-5678 99');
       expect(cubit.state.phone, const PhoneNumber.kuwait('12345678'));
       expect(cubit.state.canContinue, isTrue);
@@ -29,7 +33,7 @@ void main() {
 
   blocTest<LoginCubit, LoginState>(
     'submit is a no-op while the phone is invalid',
-    build: () => LoginCubit(sendOtp),
+    build: () => LoginCubit(sendOtp, welcomeBonus),
     act: (cubit) => cubit
       ..phoneChanged('123')
       ..submit(),
@@ -39,7 +43,7 @@ void main() {
 
   blocTest<LoginCubit, LoginState>(
     'submit → sending → codeSent with the challenge',
-    build: () => LoginCubit(sendOtp),
+    build: () => LoginCubit(sendOtp, welcomeBonus),
     seed: () => const LoginState(phone: kPhone),
     act: (cubit) => cubit.submit(),
     expect: () => [
@@ -63,7 +67,7 @@ void main() {
           code: 'RATE_LIMITED',
         ),
       );
-      return LoginCubit(sendOtp);
+      return LoginCubit(sendOtp, welcomeBonus);
     },
     seed: () => const LoginState(phone: kPhone),
     act: (cubit) => cubit.submit(),
@@ -83,7 +87,7 @@ void main() {
 
   blocTest<LoginCubit, LoginState>(
     'editing the phone after codeSent resets the status and drops the challenge',
-    build: () => LoginCubit(sendOtp),
+    build: () => LoginCubit(sendOtp, welcomeBonus),
     seed: () => const LoginState(
       phone: kPhone,
       status: LoginStatus.codeSent,
@@ -97,4 +101,48 @@ void main() {
       ),
     ],
   );
+
+  group('welcome bonus', () {
+    blocTest<LoginCubit, LoginState>(
+      'the welcome points of the store land in the state for the offer card',
+      build: () {
+        welcomeBonus.result = const Right(100);
+        return LoginCubit(sendOtp, welcomeBonus);
+      },
+      act: (cubit) => cubit.loadWelcomeBonus(),
+      expect: () => [const LoginState(welcomeBonus: 100)],
+      verify: (cubit) {
+        expect(welcomeBonus.calls, 1);
+        expect(cubit.state.hasWelcomeBonus, isTrue);
+      },
+    );
+
+    blocTest<LoginCubit, LoginState>(
+      'a failed read says nothing: the card keeps its generic words',
+      build: () {
+        welcomeBonus.result = const Left(NetworkFailure());
+        return LoginCubit(sendOtp, welcomeBonus);
+      },
+      act: (cubit) => cubit.loadWelcomeBonus(),
+      expect: () => <LoginState>[],
+      verify: (cubit) => expect(cubit.state.hasWelcomeBonus, isFalse),
+    );
+
+    blocTest<LoginCubit, LoginState>(
+      'the bonus arriving mid-send keeps the typed phone and the status',
+      build: () {
+        welcomeBonus.result = const Right(50);
+        return LoginCubit(sendOtp, welcomeBonus);
+      },
+      seed: () => const LoginState(phone: kPhone, status: LoginStatus.sending),
+      act: (cubit) => cubit.loadWelcomeBonus(),
+      expect: () => [
+        const LoginState(
+          phone: kPhone,
+          status: LoginStatus.sending,
+          welcomeBonus: 50,
+        ),
+      ],
+    );
+  });
 }
