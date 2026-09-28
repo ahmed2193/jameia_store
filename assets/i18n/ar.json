@@ -930,6 +930,7 @@
     "continue_btn": "متابعة",
     "or_with": "أو عبر",
     "other_methods": "طرق أخرى",
+    "continue_as_guest": "المتابعة كضيف",
     "continue_with": "المتابعة عبر {provider}",
     "social_coming_soon": "تسجيل الدخول عبر الشبكات الاجتماعية قريبًا",
     "offer_bonus_title": "انضم إلى هيرو واحصل على {points} نقطة!",

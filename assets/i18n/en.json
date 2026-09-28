@@ -906,6 +906,7 @@
     "continue_btn": "Continue",
     "or_with": "or with",
     "other_methods": "Other methods",
+    "continue_as_guest": "Continue as guest",
     "continue_with": "Continue with {provider}",
     "social_coming_soon": "Social sign-in is coming soon",
     "offer_bonus_title": "Join Hero and get {points} points!",

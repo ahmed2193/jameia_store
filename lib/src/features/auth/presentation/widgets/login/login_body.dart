@@ -8,6 +8,7 @@ import '../../cubit/login_cubit.dart';
 import '../auth_cascade_item.dart';
 import 'login_continue_button.dart';
 import 'login_expired_banner.dart';
+import 'login_guest_button.dart';
 import 'login_offer_card.dart';
 import 'login_or_divider.dart';
 import 'login_phone_row.dart';
@@ -18,9 +19,9 @@ import 'login_welcome_heading.dart';
 /// What the sign-in sheet holds, top to bottom: the offer card (or, after
 /// an expired session, why the customer is here) — it folds away with the
 /// header while the keyboard is up — "Welcome", the phone unit with
-/// Continue right under it (so it sits just above the keyboard), then "or
-/// with" the other ways in, and the fine print at the foot. Everything
-/// cascades in as the sheet rises.
+/// Continue right under it (so it sits just above the keyboard) and a plain
+/// "Continue as guest" link, then "or with" the other ways in, and the fine
+/// print at the foot. Everything cascades in as the sheet rises.
 ///
 /// Owns the phone controller and focus, forwards edits to [LoginCubit], and
 /// decides when an invalid number is pointed out.
@@ -133,6 +134,8 @@ class _LoginBodyState extends State<LoginBody> {
                   index: 3,
                   child: LoginContinueButton(onBlocked: _nudge),
                 ),
+                const SizedBox(height: AppSpacing.s4),
+                const AuthCascadeItem(index: 4, child: LoginGuestButton()),
               ],
             ),
           ),
@@ -141,19 +144,19 @@ class _LoginBodyState extends State<LoginBody> {
             child: Padding(
               padding: EdgeInsetsDirectional.fromSTEB(
                 AppSpacing.s24,
-                AppSpacing.s28,
+                AppSpacing.s12,
                 AppSpacing.s24,
                 AppSpacing.s16,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  AuthCascadeItem(index: 4, child: LoginOrDivider()),
+                  AuthCascadeItem(index: 5, child: LoginOrDivider()),
                   SizedBox(height: AppSpacing.s16),
-                  LoginSocialSection(firstCascadeIndex: 5),
+                  LoginSocialSection(firstCascadeIndex: 6),
                   Spacer(),
                   SizedBox(height: AppSpacing.s24),
-                  AuthCascadeItem(index: 7, child: LoginTermsText()),
+                  AuthCascadeItem(index: 8, child: LoginTermsText()),
                 ],
               ),
             ),

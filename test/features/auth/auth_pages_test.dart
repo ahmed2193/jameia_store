@@ -28,6 +28,7 @@ import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/login_cubit.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/otp_cubit.dart';
+import 'package:hero_mart/src/features/auth/presentation/widgets/login/login_guest_button.dart';
 import 'package:hero_mart/src/features/auth/presentation/pages/otp_verify_page.dart';
 import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
@@ -166,6 +167,20 @@ void main() {
     await reachOtpPage(tester);
     expect(sendOtp.calls.single.phone, kPhone);
     expect(find.textContaining('+965 12345678'), findsOneWidget);
+    await teardownApp(tester);
+  });
+
+  testWidgets('Continue as guest opens the shell without signing in', (
+    tester,
+  ) async {
+    final router = await pumpApp(tester);
+    final guest = find.byType(LoginGuestButton);
+    await tester.ensureVisible(guest);
+    await tester.pump();
+    await tester.tap(guest);
+    await settle(tester);
+    expect(router.state.uri.path, Routes.shell);
+    expect(sendOtp.calls, isEmpty);
     await teardownApp(tester);
   });
 
