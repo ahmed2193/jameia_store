@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/domain/entities/pro_membership_entity.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/hero_svg_glyph.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import 'home_layout.dart';
 import 'home_pro_perk_chip.dart';
@@ -63,10 +65,9 @@ class HomeProMemberBanner extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.workspace_premium_rounded,
+                  const HeroSvgGlyph.art(
+                    HeroAssets.proCrown,
                     size: AppSize.s20,
-                    color: AppColors.proAmber,
                   ),
                   const SizedBox(width: AppSpacing.s6),
                   Expanded(

@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/delivery_slot_entity.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/checkout_draft.dart';
 import '../../../domain/entities/checkout_eta.dart';
@@ -100,8 +102,8 @@ class CheckoutEtaRow extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(
-                  Icons.schedule_rounded,
+                const HeroSvgGlyph.mono(
+                  HeroAssets.sharedClock,
                   size: HeroListRow.denseLeadSize,
                   color: AppColors.primaryText,
                 ),

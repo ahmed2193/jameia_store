@@ -30,30 +30,32 @@ class MineContent extends StatelessWidget {
       (account) => account.state.isResolved,
     );
     if (!resolved) return const SizedBox.shrink();
-    return const CustomScrollView(
-      slivers: [
-        MineHeaderSliver(),
-        SliverToBoxAdapter(
-          child: ContentClamp(
-            child: Column(
-              children: [
-                SizedBox(height: AppSpacing.s16),
-                StaggerEntrance(index: 0, child: MineStatsCard()),
-                SizedBox(height: AppSpacing.s12),
-                StaggerEntrance(index: 1, child: MineInviteBanner()),
-                SizedBox(height: AppSpacing.s24),
-                MineMenu(firstEntranceIndex: _menuEntrance),
-                SizedBox(height: AppSpacing.s20),
-                StaggerEntrance(
-                  index: _codeEntrance,
-                  child: MineDeliveryCodeCell(),
-                ),
-                SizedBox(height: AppSpacing.s32),
-              ],
+    return const EntranceCascade(
+      child: CustomScrollView(
+        slivers: [
+          MineHeaderSliver(),
+          SliverToBoxAdapter(
+            child: ContentClamp(
+              child: Column(
+                children: [
+                  SizedBox(height: AppSpacing.s16),
+                  EntranceCascadeItem(index: 0, child: MineStatsCard()),
+                  SizedBox(height: AppSpacing.s12),
+                  EntranceCascadeItem(index: 1, child: MineInviteBanner()),
+                  SizedBox(height: AppSpacing.s24),
+                  MineMenu(firstEntranceIndex: _menuEntrance),
+                  SizedBox(height: AppSpacing.s20),
+                  EntranceCascadeItem(
+                    index: _codeEntrance,
+                    child: MineDeliveryCodeCell(),
+                  ),
+                  SizedBox(height: AppSpacing.s32),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

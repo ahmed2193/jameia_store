@@ -81,7 +81,7 @@ class CheckoutAppliedCouponCard extends StatelessWidget {
                             onTap: busy
                                 ? null
                                 : () {
-                                    Haptics.selection();
+                                    Haptics.cartRemove();
                                     context.read<CartCubit>().removeCoupon();
                                   },
                           ),

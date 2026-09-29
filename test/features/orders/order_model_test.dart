@@ -137,6 +137,14 @@ void main() {
       expect(items.last.productId, 'p2');
       expect(items.last.variantId, 'v1');
       expect(items.last.quantity, 1);
+      // The reorder flight carries the first paid line's photo.
+      expect(order.reorderImage, order.lines.first.image);
+      expect(
+        OrderModel.fromJson(orderJson(lines: const <Map<String, dynamic>>[]))
+            .toEntity()
+            .reorderImage,
+        isEmpty,
+      );
     });
 
     test('the status decides cancel, review and the tracking step', () {

@@ -17,19 +17,28 @@ import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
 import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/pop_scale.dart';
 import 'package:hero_mart/src/core/storage/local_storage.dart';
 import 'package:hero_mart/src/core/usecase/usecase.dart';
 import 'package:hero_mart/src/features/account/data/datasources/settings_local_data_source.dart';
 import 'package:hero_mart/src/features/account/data/repositories/settings_repository_impl.dart';
 import 'package:hero_mart/src/features/account/domain/usecases/clear_app_cache_usecase.dart';
 import 'package:hero_mart/src/features/account/domain/usecases/get_delivery_code_usecase.dart';
+import 'package:hero_mart/src/features/account/domain/usecases/get_haptics_enabled_usecase.dart';
 import 'package:hero_mart/src/features/account/domain/usecases/get_notifications_enabled_usecase.dart';
+import 'package:hero_mart/src/features/account/domain/usecases/set_haptics_enabled_usecase.dart';
 import 'package:hero_mart/src/features/account/domain/usecases/set_notifications_enabled_usecase.dart';
 import 'package:hero_mart/src/features/account/presentation/cubit/delivery_code_cubit.dart';
 import 'package:hero_mart/src/features/account/presentation/cubit/setting_cubit.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/mine_about_page.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/mine_delivery_code_page.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/mine_settings_page.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/about/about_header.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/about/about_logo.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/delivery_code/delivery_code_cells.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/delivery_code/delivery_code_digits.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/settings/settings_haptics_tile.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/settings/settings_notifications_tile.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -89,6 +98,8 @@ class _SettingsStack {
     );
     getEnabled = GetNotificationsEnabledUseCase(repository);
     setEnabled = SetNotificationsEnabledUseCase(repository);
+    getHaptics = GetHapticsEnabledUseCase(repository);
+    setHaptics = SetHapticsEnabledUseCase(repository);
     clearCache = ClearAppCacheUseCase(repository);
   }
 
@@ -96,12 +107,16 @@ class _SettingsStack {
   int cacheClears = 0;
   late final GetNotificationsEnabledUseCase getEnabled;
   late final SetNotificationsEnabledUseCase setEnabled;
+  late final GetHapticsEnabledUseCase getHaptics;
+  late final SetHapticsEnabledUseCase setHaptics;
   late final ClearAppCacheUseCase clearCache;
 
   SettingCubit cubit() => SettingCubit(
     getNotificationsEnabled: getEnabled,
     setNotificationsEnabled: setEnabled,
     clearAppCache: clearCache,
+    getHapticsEnabled: getHaptics,
+    setHapticsEnabled: setHaptics,
   );
 }
 
@@ -127,6 +142,26 @@ void main() {
       );
       expect(
         stack.getEnabled(const NoParams()),
+        const Right<Failure, bool>(false),
+      );
+    });
+
+    test('vibration starts on until the customer turns it off', () async {
+      final stack = _SettingsStack(_MemoryStorage());
+
+      expect(
+        stack.getHaptics(const NoParams()),
+        const Right<Failure, bool>(true),
+      );
+
+      await stack.setHaptics(const SetHapticsEnabledParams(enabled: false));
+
+      expect(
+        stack.storage.values[SettingsLocalDataSourceImpl.hapticsKey],
+        false,
+      );
+      expect(
+        stack.getHaptics(const NoParams()),
         const Right<Failure, bool>(false),
       );
     });
@@ -180,6 +215,34 @@ void main() {
       expect(cubit.state.failure, isA<CacheFailure>());
       await cubit.close();
     });
+
+    test(
+      'loads the stored vibration choice; a failed write rolls back',
+      () async {
+        final stack = _SettingsStack(
+          _MemoryStorage()
+            ..values[SettingsLocalDataSourceImpl.hapticsKey] = false,
+        );
+        final cubit = stack.cubit()..loadPreferences();
+        expect(cubit.state.hapticsEnabled, isFalse);
+
+        final write = cubit.setHapticsEnabled(true);
+        // Optimistic: the switch moves before the write lands.
+        expect(cubit.state.hapticsEnabled, isTrue);
+        await write;
+        expect(
+          stack.storage.values[SettingsLocalDataSourceImpl.hapticsKey],
+          true,
+        );
+
+        stack.storage.failWrites = true;
+        await cubit.setHapticsEnabled(false);
+
+        expect(cubit.state.hapticsEnabled, isTrue);
+        expect(cubit.state.failure, isA<CacheFailure>());
+        await cubit.close();
+      },
+    );
 
     test('clearing the cache ignores a second tap while it runs', () async {
       final stack = _SettingsStack(_MemoryStorage());
@@ -300,6 +363,11 @@ void main() {
       Widget page, {
       Locale locale = const Locale('en'),
     }) async {
+      // Every mount loads its translations for real (below, in runAsync): an
+      // asset read an earlier test started under its fake clock and left
+      // unfinished would stay cached as a future that never completes, and
+      // the app would wait on it forever (the Arabic page stayed blank).
+      rootBundle.clear();
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2;
       addTearDown(tester.view.reset);
@@ -401,7 +469,12 @@ void main() {
         stack.storage.values[SettingsLocalDataSourceImpl.notificationsKey],
         false,
       );
-      final toggle = tester.widget<Switch>(find.byType(Switch));
+      final toggle = tester.widget<Switch>(
+        find.descendant(
+          of: find.byType(SettingsNotificationsTile),
+          matching: find.byType(Switch),
+        ),
+      );
       expect(toggle.value, isFalse);
 
       await tester.tap(find.text('Clear cache'));
@@ -409,6 +482,30 @@ void main() {
 
       expect(stack.cacheClears, 1);
       expect(find.text('Cache cleared'), findsOneWidget);
+
+      await teardown(tester);
+    });
+
+    testWidgets('settings: vibration flips and persists', (tester) async {
+      await pump(tester, const MineSettingsPage());
+
+      expect(find.text('Vibration'), findsOneWidget);
+      expect(settings.state.hapticsEnabled, isTrue);
+      await tester.tap(find.text('Vibration'));
+      await frames(tester, 3);
+
+      expect(settings.state.hapticsEnabled, isFalse);
+      expect(
+        stack.storage.values[SettingsLocalDataSourceImpl.hapticsKey],
+        false,
+      );
+      final toggle = tester.widget<Switch>(
+        find.descendant(
+          of: find.byType(SettingsHapticsTile),
+          matching: find.byType(Switch),
+        ),
+      );
+      expect(toggle.value, isFalse);
 
       await teardown(tester);
     });
@@ -504,12 +601,46 @@ void main() {
         (call) => call.method == 'Clipboard.setData',
       );
       expect((copy.arguments as Map)['text'], 'facebook.com/Jameia');
-      expect(find.text('facebook.com/Jameia copied'), findsOneWidget);
+      // B1-19: said in place, like the delivery code's pill — no snack.
+      expect(find.text('Copied'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(
+        find.bySemanticsLabel('facebook.com/Jameia copied'),
+        findsOneWidget,
+      );
+      await frames(tester, 20);
+      expect(find.text('Copied'), findsNothing);
+      expect(find.text('Facebook'), findsOneWidget);
 
       await tester.tap(find.text('Terms of service'));
       await frames(tester, 5);
       expect(find.text('content terms'), findsOneWidget);
       router.pop();
+
+      await teardown(tester);
+    });
+
+    testWidgets('about (B1-19): the logo stands still; "Rate us" promises '
+        'nothing', (tester) async {
+      await pump(tester, const MineAboutPage());
+
+      expect(
+        find.descendant(
+          of: find.byType(AboutHeader),
+          matching: find.byType(PopScale),
+        ),
+        findsNothing,
+      );
+      expect(find.byType(AboutLogo), findsOneWidget);
+
+      expect(
+        find.text('Coming soon — ratings open once Hero is in the app stores'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Rate us'));
+      await frames(tester, 3);
+      expect(find.byType(SnackBar), findsNothing);
+      expect(find.textContaining('Thanks'), findsNothing);
 
       await teardown(tester);
     });
@@ -538,8 +669,26 @@ void main() {
       // An Arabic keyboard's digits are stored as ASCII.
       await tester.enterText(find.byType(TextField), '١٢٣٤');
       await frames(tester, 3);
-      expect(find.text('1'), findsNWidgets(2));
-      expect(find.text('4'), findsNWidgets(1));
+      // The editor's slots show them as ASCII digits…
+      final editor = find.byType(DeliveryCodeCells);
+      for (final digit in ['1', '2', '3', '4']) {
+        expect(
+          find.descendant(of: editor, matching: find.text(digit)),
+          findsOneWidget,
+        );
+      }
+      expect(
+        find.descendant(of: editor, matching: find.text('١')),
+        findsNothing,
+      );
+      // …while the big code keeps the saved one until Save.
+      final bigCode = find.byType(DeliveryCodeDigits);
+      for (final digit in ['4', '8', '2', '1']) {
+        expect(
+          find.descendant(of: bigCode, matching: find.text(digit)),
+          findsOneWidget,
+        );
+      }
 
       await tester.tap(find.text('Save'));
       await frames(tester, 6);

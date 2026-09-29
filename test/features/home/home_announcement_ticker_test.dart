@@ -20,10 +20,15 @@ void main() {
     List<HomeAnnouncementItem> items, {
     bool reducedMotion = false,
   }) => tester.pumpWidget(
-    MediaQuery(
-      data: MediaQueryData(disableAnimations: reducedMotion),
-      child: MaterialApp(
-        home: Scaffold(body: HomeAnnouncementTicker(items: items)),
+    // The app's own MediaQuery (the screen's size): the ticker measures
+    // itself against it to know it is on screen.
+    MaterialApp(
+      home: Builder(
+        builder: (context) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(disableAnimations: reducedMotion),
+          child: Scaffold(body: HomeAnnouncementTicker(items: items)),
+        ),
       ),
     ),
   );

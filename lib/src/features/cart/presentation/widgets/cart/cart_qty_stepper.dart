@@ -47,6 +47,7 @@ class CartQtyStepper extends StatelessWidget {
               icon: last ? Icons.delete_outline_rounded : Icons.remove_rounded,
               tooltip: (last ? 'cart.remove' : 'home.decrease_quantity').tr(),
               onTap: onDecrement,
+              removes: true,
             ),
             ConstrainedBox(
               constraints: const BoxConstraints(minWidth: AppSize.s24),

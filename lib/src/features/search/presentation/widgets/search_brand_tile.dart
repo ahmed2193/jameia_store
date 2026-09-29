@@ -16,7 +16,6 @@ class SearchBrandTile extends StatelessWidget {
   const SearchBrandTile({super.key, required this.brand});
 
   static const double size = AppSize.s80;
-  static const double _pressedScale = 0.97;
 
   final BrandEntity brand;
 
@@ -27,7 +26,6 @@ class SearchBrandTile extends StatelessWidget {
       label: brand.name,
       excludeSemantics: true,
       child: PressScale(
-        pressedScale: _pressedScale,
         onTap: () => context.push(
           Routes.productListing,
           extra: ProductListingArgs.brand(slug: brand.slug, title: brand.name),

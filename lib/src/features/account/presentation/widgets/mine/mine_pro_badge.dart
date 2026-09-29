@@ -23,7 +23,7 @@ class MineProBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final white = AppColors.white.withValues(alpha: opacity);
     return LightSweep(
-      active: opacity == 1 && Visibility.of(context),
+      active: opacity == 1,
       borderRadius: _radius,
       child: DecoratedBox(
         decoration: BoxDecoration(

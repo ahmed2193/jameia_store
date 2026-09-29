@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/entrance_cascade.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/content_clamp.dart';
 import '../../../../../core/widgets/branded_refresh.dart';
@@ -22,10 +23,10 @@ import 'ledger_load_more_row.dart';
 /// day under pinned day titles (or [empty]), then the load-more sentinel
 /// while the server has more.
 ///
-/// Motion, all from two controllers owned here: the first rows cascade in
-/// once when the list first appears (never on a refresh, a later page or a
-/// row scrolled back into view), and the lines a pull-to-refresh brings in
-/// flash a soft green once.
+/// Motion: the first rows cascade in once when the list first appears
+/// ([EntranceCascade]; never on a refresh, a later page or a row scrolled
+/// back into view), and the lines a pull-to-refresh brings in flash a soft
+/// green once (one controller owned here).
 class LedgerList<T extends LedgerEntry> extends StatefulWidget {
   const LedgerList({
     super.key,
@@ -53,34 +54,9 @@ class LedgerList<T extends LedgerEntry> extends StatefulWidget {
 }
 
 class _LedgerListState<T extends LedgerEntry> extends State<LedgerList<T>>
-    with TickerProviderStateMixin {
-  /// Day titles + rows that cascade in on the first load; the rest just
-  /// sit there (the playbook's cap of 6–8).
-  static const int _staggered = 8;
-  static final Duration _step = AppMotion.fast ~/ 5; // 30ms
-  static const Duration _lead = AppMotion.microPop; // after the fade-through
-  static const Duration _rowIn = AppMotion.slow;
-  static final Duration _entranceLength =
-      _lead + _step * (_staggered - 1) + _rowIn;
-
+    with SingleTickerProviderStateMixin {
   static final Duration _flashLength = AppMotion.slow * 2.5; // 1s
   static final Color _flashClear = AppColors.brandLightBg.withValues(alpha: 0);
-
-  late final AnimationController _entrance = AnimationController(
-    vsync: this,
-    duration: _entranceLength,
-  );
-  late final List<CurvedAnimation> _slots = [
-    for (var slot = 0; slot < _staggered; slot++)
-      CurvedAnimation(
-        parent: _entrance,
-        curve: Interval(
-          _share(_lead + _step * slot),
-          _share(_lead + _step * slot + _rowIn),
-          curve: AppMotion.emphasizedDecelerate,
-        ),
-      ),
-  ];
 
   late final AnimationController _flash = AnimationController(
     vsync: this,
@@ -92,10 +68,6 @@ class _LedgerListState<T extends LedgerEntry> extends State<LedgerList<T>>
   ).animate(CurvedAnimation(parent: _flash, curve: AppMotion.exit));
 
   Set<String> _fresh = const <String>{};
-  bool _entered = false;
-
-  static double _share(Duration at) =>
-      at.inMicroseconds / _entranceLength.inMicroseconds;
 
   @override
   void initState() {
@@ -108,29 +80,10 @@ class _LedgerListState<T extends LedgerEntry> extends State<LedgerList<T>>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_entered) return;
-    _entered = true;
-    if (MotionGuard.reduced(context)) {
-      _entrance.value = 1;
-    } else {
-      _entrance.forward();
-    }
-  }
-
-  @override
   void dispose() {
-    for (final slot in _slots) {
-      slot.dispose();
-    }
-    _entrance.dispose();
     _flash.dispose();
     super.dispose();
   }
-
-  Animation<double>? _entranceOf(int slot) =>
-      slot < _slots.length ? _slots[slot] : null;
 
   void _onChange(LedgerChange change) {
     if (change.newEntryIds.isEmpty) return;
@@ -161,42 +114,47 @@ class _LedgerListState<T extends LedgerEntry> extends State<LedgerList<T>>
       child: BrandedRefresh(
         onRefresh: () => context.read<LedgerCubit<T>>().refresh(),
         child: ContentClamp(
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(
-                child: ScreenStaleNotice<LedgerCubit<T>, LedgerState<T>>(),
-              ),
-              SliverToBoxAdapter(child: widget.header),
-              if (days.isEmpty)
-                SliverFillRemaining(hasScrollBody: false, child: widget.empty),
-              for (var index = 0; index < days.length; index++)
-                LedgerDaySliver<T>(
-                  key: ValueKey<DateTime>(days[index].date),
-                  title: LedgerDates.dayTitle(
-                    languageCode: languageCode,
-                    day: days[index],
-                    now: now,
-                    today: widget.todayLabel,
-                    yesterday: widget.yesterdayLabel,
+          child: EntranceCascade(
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: ScreenStaleNotice<LedgerCubit<T>, LedgerState<T>>(),
+                ),
+                SliverToBoxAdapter(child: widget.header),
+                if (days.isEmpty)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: widget.empty,
                   ),
-                  entries: days[index].entries,
-                  entryBuilder: widget.entryBuilder,
-                  firstSlot: firstSlots[index],
-                  entranceOf: _entranceOf,
-                  freshIds: _fresh,
-                  flash: _flashColor,
+                for (var index = 0; index < days.length; index++)
+                  LedgerDaySliver<T>(
+                    key: ValueKey<DateTime>(days[index].date),
+                    title: LedgerDates.dayTitle(
+                      languageCode: languageCode,
+                      day: days[index],
+                      now: now,
+                      today: widget.todayLabel,
+                      yesterday: widget.yesterdayLabel,
+                    ),
+                    entries: days[index].entries,
+                    entryBuilder: widget.entryBuilder,
+                    firstSlot: firstSlots[index],
+                    freshIds: _fresh,
+                    flash: _flashColor,
+                  ),
+                // A lazy sliver: the sentinel is built — and asks for the
+                // next page — only once it scrolls into reach.
+                if (ledger.hasMore && !ledger.isEmpty)
+                  SliverList.list(children: [LedgerLoadMoreRow<T>()]),
+                SliverPadding(
+                  padding: EdgeInsetsDirectional.only(
+                    bottom:
+                        MediaQuery.paddingOf(context).bottom + AppSpacing.s16,
+                  ),
                 ),
-              // A lazy sliver: the sentinel is built — and asks for the
-              // next page — only once it scrolls into reach.
-              if (ledger.hasMore && !ledger.isEmpty)
-                SliverList.list(children: [LedgerLoadMoreRow<T>()]),
-              SliverPadding(
-                padding: EdgeInsetsDirectional.only(
-                  bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.s16,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

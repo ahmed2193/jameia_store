@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:hero_mart/src/core/design/hero_assets.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
@@ -138,8 +139,14 @@ void main() {
 
     expect(inRow(find.text('Expected')), findsOneWidget);
     expect(inRow(find.text('45 min')), findsOneWidget);
-    // ASAP: no express mark, a chevron to the timing sheet.
-    expect(inRow(find.byType(SvgPicture)), findsNothing);
+    // ASAP: the Hero clock, no express mark, a chevron to the timing sheet.
+    Finder svg(String asset) => find.byWidgetPredicate(
+      (widget) =>
+          widget is SvgPicture &&
+          (widget.bytesLoader as SvgAssetLoader).assetName == asset,
+    );
+    expect(inRow(svg(HeroAssets.sharedClock)), findsOneWidget);
+    expect(inRow(svg(HeroAssets.checkoutExpressBolt)), findsNothing);
     expect(inRow(find.text('Express')), findsNothing);
     expect(inRow(find.byIcon(Icons.chevron_right_rounded)), findsOneWidget);
     // The destination row is the flat one: the chosen address, no prompt.

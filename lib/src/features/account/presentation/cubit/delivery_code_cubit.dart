@@ -54,6 +54,12 @@ class DeliveryCodeCubit extends Cubit<DeliveryCodeState>
   /// Stores the new code locally and raises [DeliveryCodeState.saved].
   void save() {
     if (!state.canSave) return;
-    safeEmit(state.copyWith(savedCode: state.draft, saved: true));
+    safeEmit(
+      state.copyWith(
+        savedCode: state.draft,
+        saved: true,
+        savedRevision: state.savedRevision + 1,
+      ),
+    );
   }
 }

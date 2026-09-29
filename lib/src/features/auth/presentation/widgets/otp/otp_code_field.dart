@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,16 +12,21 @@ import 'otp_code_slots.dart';
 /// The code input: ONE real text field (invisible, so SMS autofill, paste,
 /// the keyboard and screen readers all work on a single value) laid over the
 /// painted slots, always left-to-right. A refused code shakes the row
-/// ([OtpState.rejections]).
+/// ([OtpState.rejections]), and so does every tap on the grey Verify
+/// ([nudges]).
 class OtpCodeField extends StatelessWidget {
   const OtpCodeField({
     super.key,
     required this.controller,
     required this.focusNode,
+    required this.nudges,
   });
 
   final TextEditingController controller;
   final FocusNode focusNode;
+
+  /// Taps on the disabled Verify so far; each one shakes the row.
+  final ValueListenable<int> nudges;
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +46,14 @@ class OtpCodeField extends StatelessWidget {
     );
     return BlocSelector<OtpCubit, OtpState, int>(
       selector: (state) => state.rejections,
-      builder: (context, rejections) => ShakeX(
-        shakeKey: rejections,
-        amplitude: AppSize.s8,
-        cycles: 3,
+      builder: (context, rejections) => ValueListenableBuilder<int>(
+        valueListenable: nudges,
+        builder: (context, nudged, child) => ShakeX(
+          shakeKey: (rejections, nudged),
+          amplitude: AppSize.s8,
+          cycles: 3,
+          child: child!,
+        ),
         child: field,
       ),
     );

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/routes/route_args/shell_tabs.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/widgets/hero_mark_icon.dart';
 import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
@@ -240,7 +241,7 @@ void main() {
       tester.widget<HeroMarkIcon>(find.byType(HeroMarkIcon)).active,
       isFalse,
     );
-    expect(find.byIcon(Icons.search_rounded), findsOneWidget);
+    expect(find.byIcon(HeroIcons.search), findsOneWidget);
 
     await tester.tap(find.byType(HeroMarkIcon));
     expect(taps, [ShellBottomNav.homeTab]);

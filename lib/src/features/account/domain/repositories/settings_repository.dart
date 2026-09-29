@@ -15,6 +15,13 @@ abstract class SettingsRepository {
     required bool enabled,
   });
 
+  /// The stored vibration (haptics) choice, or `null` when the customer
+  /// never changed it.
+  Either<Failure, bool?> hapticsEnabled();
+
+  /// Stores the vibration (haptics) choice.
+  Future<Either<Failure, Unit>> setHapticsEnabled({required bool enabled});
+
   /// Empties the on-disk image cache.
   Future<Either<Failure, Unit>> clearCache();
 }

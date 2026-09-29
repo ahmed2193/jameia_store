@@ -1,21 +1,18 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
-import '../../../../core/motion/fly_to_cart.dart';
 import '../../../../core/motion/haptics.dart';
-import '../../../../core/responsive/app_size.dart';
+import '../../../../core/motion/motion_beat.dart';
+import '../../../../core/motion/press_scale.dart';
+import '../../../../core/widgets/catalog_cart_gestures.dart';
 import '../../../../core/widgets/catalog_product_card.dart';
-import '../../../../core/widgets/hero_card_image.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import 'home_add_burst.dart';
 import 'home_confetti.dart';
-import 'home_pressable.dart';
 import 'home_quick_look_sheet.dart';
 
 /// One product of a home rail wired to the app-global cart: only THIS tile
@@ -24,7 +21,9 @@ import 'home_quick_look_sheet.dart';
 /// card sinks a touch when pressed, and an add sends the picture flying to
 /// the basket while a +1 rises from the add button ([HomeAddBurst]) — and
 /// the very first thing into an empty basket gets a burst of confetti
-/// ([HomeConfetti]). A long press opens a quick look ([HomeQuickLookSheet]).
+/// ([HomeConfetti]) instead of the +1, once the picture has landed
+/// (backlog B2-03: one motion at a time — the add and its flight, then the
+/// party, then the minimum-order bar folding away). A long press opens a quick look ([HomeQuickLookSheet]).
 class HomeProductTile extends StatefulWidget {
   const HomeProductTile({
     super.key,
@@ -57,7 +56,8 @@ class _HomeProductTileState extends State<HomeProductTile> {
   }
 
   void _quickLook() {
-    Haptics.tap();
+    // A long press is a pick, not navigation (§9.5).
+    Haptics.pick();
     HomeQuickLookSheet.show(
       context,
       product: widget.product,
@@ -83,7 +83,7 @@ class _HomeProductTileState extends State<HomeProductTile> {
             child: HomeAddBurst(
               trigger: _adds,
               width: widget.width,
-              child: HomePressable(
+              child: PressScale(
                 child: CatalogProductCard(
                   product: product,
                   qty: qty,
@@ -93,29 +93,25 @@ class _HomeProductTileState extends State<HomeProductTile> {
                   onTap: () => widget.onOpen(product),
                   onAdd: () {
                     final cart = context.read<CartCubit>();
-                    if (cart.state.isEmpty) {
-                      // The first thing into the basket: a little party.
-                      Haptics.success();
-                      HomeConfetti.burstFrom(context);
+                    final first = cart.state.isEmpty;
+                    // The first thing into the basket: a little party, once
+                    // the flight has landed; any later add: the +1.
+                    if (first) {
+                      HomeConfetti.burstFrom(context, after: MotionBeat.third);
                     } else {
-                      HapticFeedback.selectionClick();
+                      _adds.value++;
                     }
-                    FlyToCart.flyFrom(
+                    CatalogCartGestures.add(
                       context,
-                      thumbnail: HeroCardImage(
-                        url: product.image,
-                        width: AppSize.s56,
-                        height: AppSize.s56,
-                        radius: AppRadius.r4,
-                      ),
+                      image: product.image,
+                      first: first,
+                      commit: () => cart.addCatalogProduct(product),
                     );
-                    _adds.value++;
-                    cart.addCatalogProduct(product);
                   },
-                  onRemove: () {
-                    HapticFeedback.lightImpact();
-                    context.read<CartCubit>().removeProduct(product.id);
-                  },
+                  onRemove: () => CatalogCartGestures.remove(
+                    commit: () =>
+                        context.read<CartCubit>().removeProduct(product.id),
+                  ),
                 ),
               ),
             ),

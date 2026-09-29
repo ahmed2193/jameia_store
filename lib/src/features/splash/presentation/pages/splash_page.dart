@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../config/routes/route_args/shell_entrance.dart';
+import '../../../../config/routes/route_args/shell_arrival.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../widgets/splash_player.dart';
@@ -10,12 +10,18 @@ import '../widgets/splash_variant.dart';
 
 /// The Hero brand splash: the bag on the launch screen comes alive on the
 /// brand green, takes off in its cape and delivers the name, then the app
-/// fades in ([ShellEntrance.splash]). The intro is [variant] — by default the one this
+/// fades through ([ShellArrival]). The intro is [variant] — by default the one this
 /// build was made with ([SplashVariant.configured]).
+///
+/// [onLaunchFrame] starts the first screen's data while the intro plays
+/// (B1-14: the route passes the home prefetch); the hand-off is unchanged.
 class SplashPage extends StatefulWidget {
-  const SplashPage({super.key, this.variant});
+  const SplashPage({super.key, this.variant, this.onLaunchFrame});
 
   final SplashVariant? variant;
+
+  /// See [SplashPlayer.onLaunchFrame].
+  final VoidCallback? onLaunchFrame;
 
   @override
   State<SplashPage> createState() => _SplashPageState();
@@ -27,7 +33,7 @@ class _SplashPageState extends State<SplashPage> {
   void _goToShell() {
     if (_routed || !mounted) return;
     _routed = true;
-    context.go(Routes.shell, extra: ShellEntrance.splash);
+    context.go(Routes.shell, extra: ShellArrival());
   }
 
   @override
@@ -39,6 +45,7 @@ class _SplashPageState extends State<SplashPage> {
       child: SplashPlayer(
         variant: widget.variant ?? SplashVariant.configured,
         onFinished: _goToShell,
+        onLaunchFrame: widget.onLaunchFrame,
       ),
     ),
   );

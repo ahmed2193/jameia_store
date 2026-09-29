@@ -92,46 +92,52 @@ class _ProfileFormState extends State<ProfileForm> {
       child: Column(
         children: [
           Expanded(
-            child: ListView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsetsDirectional.all(AppSpacing.s16),
-              children: [
-                const StaggerEntrance(index: 0, child: ProfileCompletionCard()),
-                const SizedBox(height: AppSpacing.s16),
-                StaggerEntrance(
-                  index: 1,
-                  child: ProfileSectionCard(
-                    children: [
-                      ProfileSectionTitle('profile.details_title'.tr()),
-                      const SizedBox(height: AppSpacing.s16),
-                      ProfileNameField(
-                        controller: _name,
-                        focusNode: _nameFocus,
-                      ),
-                      const SizedBox(height: AppSpacing.s16),
-                      ProfileEmailField(
-                        controller: _email,
-                        focusNode: _emailFocus,
-                      ),
-                    ],
+            child: EntranceCascade(
+              child: ListView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsetsDirectional.all(AppSpacing.s16),
+                children: [
+                  const EntranceCascadeItem(
+                    index: 0,
+                    child: ProfileCompletionCard(),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.s16),
-                const StaggerEntrance(
-                  index: 2,
-                  child: ProfileSectionCard(
-                    children: [
-                      ProfileAboutHeader(),
-                      SizedBox(height: AppSpacing.s16),
-                      ProfileDateOfBirthField(),
-                      SizedBox(height: AppSpacing.s16),
-                      ProfileGenderSelector(),
-                      SizedBox(height: AppSpacing.s16),
-                      ProfileHouseholdField(),
-                    ],
+                  const SizedBox(height: AppSpacing.s16),
+                  EntranceCascadeItem(
+                    index: 1,
+                    child: ProfileSectionCard(
+                      children: [
+                        ProfileSectionTitle('profile.details_title'.tr()),
+                        const SizedBox(height: AppSpacing.s16),
+                        ProfileNameField(
+                          controller: _name,
+                          focusNode: _nameFocus,
+                        ),
+                        const SizedBox(height: AppSpacing.s16),
+                        ProfileEmailField(
+                          controller: _email,
+                          focusNode: _emailFocus,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.s16),
+                  const EntranceCascadeItem(
+                    index: 2,
+                    child: ProfileSectionCard(
+                      children: [
+                        ProfileAboutHeader(),
+                        SizedBox(height: AppSpacing.s16),
+                        ProfileDateOfBirthField(),
+                        SizedBox(height: AppSpacing.s16),
+                        ProfileGenderSelector(),
+                        SizedBox(height: AppSpacing.s16),
+                        ProfileHouseholdField(),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const ProfileSaveBar(),

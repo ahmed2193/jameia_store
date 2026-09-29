@@ -63,7 +63,7 @@ class _CheckoutCouponSheetState extends State<CheckoutCouponSheet> {
   }
 
   void _refuse(String message) {
-    Haptics.warning();
+    Haptics.refuse();
     setState(() {
       _error = message;
       _refusedText = _controller.text;
@@ -116,7 +116,7 @@ class _CheckoutCouponSheetState extends State<CheckoutCouponSheet> {
       _awaiting = null;
       _done = true;
     });
-    Haptics.success();
+    Haptics.done();
     context.pop(true);
   }
 

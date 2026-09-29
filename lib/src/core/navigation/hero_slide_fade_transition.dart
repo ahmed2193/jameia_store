@@ -2,13 +2,12 @@ import 'package:flutter/widgets.dart';
 
 import '../motion/motion.dart';
 
-/// The route-level Hero page motion: slide up from the bottom (100% -> 0) +
-/// fade, driven by the route's primary [animation].
-///
-/// Faithful to 1Day's decoded `anim/activity_slide_in` (MOTION_AND_NAVIGATION
-/// §2): 300ms ease-out. Shared by [HeroTransitionPage] (enter/exit curve pair)
-/// and [HeroSlideUpTransitionPage] (enter curve on both legs). Gated by
-/// [MotionGuard] so reduced motion degrades to an instant cut.
+/// The modal page motion: slide up from the bottom (100% -> 0) + fade,
+/// driven by the route's primary [animation] through [curve] /
+/// [reverseCurve] (docs/motion §9.4 #10). [HeroSlideUpTransitionPage] hands
+/// it an animation its route already eased (so [AppMotion.linear] here).
+/// Gated by [MotionGuard] so reduced motion degrades to an instant cut when
+/// used on its own.
 ///
 /// Stateful so the curve is built once: the route rebuilds this on every tick
 /// of its own and of the route above it, and a CurvedAnimation made in build()
@@ -40,9 +39,12 @@ class HeroSlideFadeTransition extends StatefulWidget {
 }
 
 class _HeroSlideFadeTransitionState extends State<HeroSlideFadeTransition> {
+  /// Enters from a full screen-height below (translate Y 100% -> 0).
+  static const Offset _below = Offset(0, 1);
+
   static final Tween<Offset> _slide = Tween<Offset>(
-    begin: AppMotion.pageSlideBegin,
-    end: AppMotion.pageSlideEnd,
+    begin: _below,
+    end: Offset.zero,
   );
 
   late CurvedAnimation _curved = _make();

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/auth_customer_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import 'mine_avatar_edit_badge.dart';
 import 'mine_header_metrics.dart';
 
@@ -13,7 +15,7 @@ import 'mine_header_metrics.dart';
 ///
 ///   * signed in with a name — its first letter, white on the brand green;
 ///   * signed in, no name yet — a person glyph on the brand green;
-///   * a guest — a grey person glyph on white.
+///   * a guest — the Hero person glyph, deep green on the soft brand disc.
 ///
 /// A white ring frames it; a Pro member gets the Pro gradient ring instead.
 /// The pencil badge (signed in only) shrinks away as the avatar docks
@@ -71,7 +73,7 @@ class MineAvatar extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.smallBackground,
+                  color: AppColors.brandLightBg,
                   gradient: person == null
                       ? null
                       : const LinearGradient(
@@ -82,11 +84,11 @@ class MineAvatar extends StatelessWidget {
                 ),
                 child: Center(
                   child: initial.isEmpty
-                      ? Icon(
-                          Icons.person_rounded,
+                      ? HeroSvgGlyph.mono(
+                          HeroAssets.tabAccount,
                           size: _glyph,
                           color: person == null
-                              ? AppColors.tertiaryText
+                              ? AppColors.brandDeep
                               : AppColors.white,
                         )
                       : Text(

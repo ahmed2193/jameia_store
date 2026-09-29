@@ -8,10 +8,11 @@
 // goes on to the chat) or the first greeting's invitation; "maybe later"
 // hands back to the launcher, which thinks out loud where it lives. On a
 // calm screen the launcher thinks "How can I help you today?" above its
-// head: it rises out of the mascot, floats, types a greeting after a few
-// dots, then hands over in place to one more line; a touch or a scroll lets
-// it finish, pressing the mascot squishes it, a line about offers asks for
-// them in the chat, and coming back to the app after a while greets again.
+// head: it rises out of the mascot, its words come in at once (no dots),
+// it holds still (no float), then hands over in place to one more line; a
+// touch or a scroll sends the line away, pressing the mascot dips it, a line
+// about offers asks for them in the chat, and coming back to the app after a
+// while greets again (docs/motion §9.6 §3).
 import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
@@ -30,7 +31,6 @@ import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/routes/route_args/assistant_chat_args.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
-import 'package:hero_mart/src/core/motion/float_loop.dart';
 import 'package:hero_mart/src/core/widgets/branded_dot_loader.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_availability.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_starter.dart';
@@ -45,7 +45,7 @@ import 'package:hero_mart/src/features/assistant/presentation/widgets/buddy/assi
 import 'package:hero_mart/src/features/assistant/presentation/widgets/buddy/assistant_buddy_thought_bubble.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/buddy/assistant_buddy_thought_cloud.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/buddy/assistant_buddy_tour_chip.dart';
-import 'package:hero_mart/src/features/assistant/presentation/widgets/buddy/assistant_buddy_typing_caret.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/buddy/buddy_motion_gate.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/mascot/assistant_mascot.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_sheet.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
@@ -114,16 +114,37 @@ void main() {
     await buddy.start();
   }
 
-  /// Lets lines go by quickly until one [wanted] is up; returns it.
+  /// The app goes to the background and comes back [after] later.
+  Future<void> awayFor(WidgetTester tester, Duration after) async {
+    Future<void> lifecycle(AppLifecycleState state) =>
+        tester.binding.defaultBinaryMessenger.handlePlatformMessage(
+          'flutter/lifecycle',
+          const StringCodec().encodeMessage(state.toString()),
+          (_) {},
+        );
+    await lifecycle(AppLifecycleState.paused);
+    now = now.add(after);
+    await lifecycle(AppLifecycleState.resumed);
+  }
+
+  /// Lets lines go by quickly until one [wanted] is up; returns it. A visit
+  /// says few lines, so a quiet launcher is sent to a new visit.
   Future<AssistantThought> skipUntil(
     WidgetTester tester,
     bool Function(AssistantThought line) wanted,
   ) async {
-    for (var i = 0; i < 300; i++) {
+    var quiet = 0;
+    for (var i = 0; i < 600; i++) {
       final current = buddy.state.thought;
       if (current != null) {
+        quiet = 0;
         if (wanted(current)) return current;
-        buddy.thoughtDone(current);
+        // Said: the opening line hands over to its second one.
+        buddy.thoughtSaid(current);
+        if (buddy.state.thought == current) buddy.thoughtDone(current);
+      } else if (++quiet > 20) {
+        quiet = 0;
+        await awayFor(tester, AssistantBuddyCubit.defaultVisitGap);
       }
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -143,20 +164,7 @@ void main() {
     matching: find.text(line.textKey.tr()),
   );
 
-  /// The app goes to the background and comes back [after] later.
-  Future<void> awayFor(WidgetTester tester, Duration after) async {
-    Future<void> lifecycle(AppLifecycleState state) =>
-        tester.binding.defaultBinaryMessenger.handlePlatformMessage(
-          'flutter/lifecycle',
-          const StringCodec().encodeMessage(state.toString()),
-          (_) {},
-        );
-    await lifecycle(AppLifecycleState.paused);
-    now = now.add(after);
-    await lifecycle(AppLifecycleState.resumed);
-  }
-
-  /// The launcher's thought saying [key], once typed out.
+  /// The launcher's thought saying [key].
   Finder thought(String key) => find.descendant(
     of: find.byType(AssistantBuddyThoughtBubble),
     matching: find.text(enJson['assistant'][key] as String),
@@ -492,16 +500,116 @@ void main() {
     });
   });
 
+  group('the motion gate (the buddy holds still)', () {
+    bool mayMove(WidgetTester tester) => tester
+        .widget<BuddyMotionGate>(
+          find.byType(BuddyMotionGate, skipOffstage: false),
+        )
+        .mayMove;
+
+    Object? hops(WidgetTester tester) => tester
+        .widget<AssistantMascot>(
+          find.descendant(
+            of: find.byType(AssistantBuddyLauncher, skipOffstage: false),
+            matching: find.byType(AssistantMascot, skipOffstage: false),
+            skipOffstage: false,
+          ),
+        )
+        .cheer;
+
+    testWidgets('while the customer types: the keyboard is up', (tester) async {
+      nudges.log = nudges.log.shownAt(now);
+      await pump(tester);
+      expect(mayMove(tester), isTrue);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 900);
+      addTearDown(tester.view.resetViewInsets);
+      await frames(tester, 2);
+      expect(mayMove(tester), isFalse);
+      tester.view.resetViewInsets();
+      await frames(tester, 5);
+      expect(mayMove(tester), isFalse, reason: 'it settles first');
+      await frames(tester, 20);
+      expect(mayMove(tester), isTrue);
+      await unmount(tester);
+    });
+
+    testWidgets('while the customer scrolls, and a moment after', (
+      tester,
+    ) async {
+      nudges.log = nudges.log.shownAt(now);
+      await pump(tester);
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('row 4')),
+      );
+      await gesture.moveBy(const Offset(0, 60));
+      await tester.pump(const Duration(milliseconds: 50));
+      await gesture.moveBy(const Offset(0, 60));
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(mayMove(tester), isFalse);
+      await gesture.up();
+      await frames(tester, 5);
+      expect(mayMove(tester), isFalse, reason: 'it settles first');
+      await frames(tester, 25);
+      expect(mayMove(tester), isTrue);
+      await unmount(tester);
+    });
+
+    testWidgets('under a page on top (checkout, payment, a placed order): a '
+        'cart hop is dropped, and back in front it settles first', (
+      tester,
+    ) async {
+      nudges.log = nudges.log.shownAt(now);
+      final router = await pump(tester);
+      final rest = hops(tester);
+      router.push(Routes.assistant);
+      await frames(tester, 5);
+      expect(mayMove(tester), isFalse);
+      buddy.cheer();
+      await frames(tester, 2);
+      expect(hops(tester), rest, reason: 'still: no hop');
+
+      router.pop();
+      await frames(tester, 5);
+      expect(mayMove(tester), isFalse, reason: 'it settles first');
+      await frames(tester, 25);
+      expect(mayMove(tester), isTrue);
+      await unmount(tester);
+    });
+
+    testWidgets('the greeting countdown never runs out under a page; back '
+        'in front it starts again from full', (tester) async {
+      final router = await pump(tester);
+      await greet(tester);
+      expect(find.byType(AssistantBuddyGreetingCard), findsOneWidget);
+      router.push(Routes.assistant);
+      await frames(tester, 5);
+      await tester.pump(const Duration(seconds: 12));
+      router.pop();
+      await frames(tester, 5);
+      expect(find.byType(AssistantBuddyGreetingCard), findsOneWidget);
+      expect(nudges.log.ignoredInARow, 0, reason: 'nothing logged');
+
+      await tester.pump(const Duration(seconds: 5));
+      expect(find.byType(AssistantBuddyGreetingCard), findsOneWidget);
+      await tester.pump(const Duration(seconds: 4));
+      await frames(tester);
+      expect(find.byType(AssistantBuddyGreetingCard), findsNothing);
+      expect(nudges.log.ignoredInARow, 1);
+      await unmount(tester);
+    });
+  });
+
   group('the thoughts', () {
-    testWidgets('a calm launcher thinks, types a greeting above its head, '
-        'then hands over in place to one more line', (tester) async {
+    testWidgets('a calm launcher thinks a greeting above its head — words at '
+        'once, no dots, holding still — then hands over in place to one '
+        'more line', (tester) async {
       nudges.log = nudges.log.shownAt(now);
       await thinker();
       await pump(tester);
-      expect(find.byType(BrandedDotLoader), findsOneWidget, reason: 'dots');
+      expect(find.byType(BrandedDotLoader), findsNothing, reason: 'no dots');
       final opener = buddy.state.thought!;
       expect(opener.opens, isTrue);
-      expect(saying(opener), findsNothing);
+      expect(saying(opener), findsOneWidget, reason: 'its words, at once');
       expect(nudges.writes, 0, reason: 'nothing to remember: every opening');
       expect(
         find.descendant(
@@ -511,46 +619,32 @@ void main() {
         findsOneWidget,
         reason: 'what it is about, at a glance',
       );
-
-      bool caret() => tester
-          .widget<AssistantBuddyTypingCaret>(
-            find.byType(AssistantBuddyTypingCaret),
-          )
-          .visible;
-      await frames(tester, 8);
-      expect(caret(), isTrue, reason: 'typing');
+      await frames(tester, 2);
       expect(
         tester.widget<AssistantMascot>(launcher()).wave,
         1,
         reason: 'its sprout waves as it greets',
       );
 
-      await frames(tester, 17);
+      await frames(tester, 15);
       expect(saying(opener), findsWidgets);
-      expect(caret(), isFalse, reason: 'typed');
-      expect(
-        find.descendant(
-          of: find.byType(AssistantBuddyThoughtCloud),
-          matching: find.byType(FloatLoop),
-        ),
-        findsOneWidget,
-        reason: 'it floats',
-      );
       final bubble = tester.getRect(find.byType(AssistantBuddyThoughtBubble));
       final mascot = tester.getRect(launcher());
       expect(bubble.bottom, lessThanOrEqualTo(mascot.top), reason: 'above');
+      final cloud = tester.getRect(find.byType(AssistantBuddyThoughtCloud));
+      await frames(tester, 5);
+      expect(
+        tester.getRect(find.byType(AssistantBuddyThoughtCloud)),
+        cloud,
+        reason: 'it holds still while it is up',
+      );
 
       await untilPast(tester, opener);
       final second = buddy.state.thought!;
       expect(second.opens, isFalse);
-      await tester.pump();
-      expect(
-        find.byType(BrandedDotLoader),
-        findsOneWidget,
-        reason: 'thinking again, in the same bubble',
-      );
-      await frames(tester, 40);
-      expect(saying(second), findsWidgets);
+      await frames(tester, 5);
+      expect(saying(second), findsWidgets, reason: 'in the same bubble');
+      expect(find.byType(BrandedDotLoader), findsNothing);
 
       await frames(tester, 80);
       expect(find.byType(AssistantBuddyThoughtCloud), findsNothing);
@@ -558,7 +652,7 @@ void main() {
       await unmount(tester);
     });
 
-    testWidgets('a touch elsewhere lets it finish its line', (tester) async {
+    testWidgets('a touch elsewhere sends the line away', (tester) async {
       nudges.log = nudges.log.shownAt(now);
       await thinker();
       await pump(tester);
@@ -568,27 +662,24 @@ void main() {
 
       await tester.tap(find.text('row 5'));
       await frames(tester, 5);
-      expect(saying(opener), findsWidgets);
-      expect(buddy.state.thought, opener);
+      expect(buddy.state.thought, isNull);
+      expect(find.byType(AssistantBuddyThoughtCloud), findsNothing);
       await unmount(tester);
     });
 
-    testWidgets('scrolling down keeps the launcher until its line is said — '
-        'then no second line, and it tucks away', (tester) async {
+    testWidgets('scrolling sends the line away and tucks the launcher', (
+      tester,
+    ) async {
       nudges.log = nudges.log.shownAt(now);
       await thinker();
       await pump(tester);
       await frames(tester, 25);
-      final opener = buddy.state.thought!;
+      expect(buddy.state.thought, isNotNull);
       await tester.drag(find.text('row 3'), const Offset(0, -400));
       await frames(tester, 5);
-      expect(launcher().hitTestable(), findsOneWidget);
-      expect(saying(opener), findsWidgets);
-
-      await frames(tester, 60);
       expect(buddy.state.thought, isNull);
       expect(find.byType(AssistantBuddyThoughtCloud), findsNothing);
-      expect(launcher().hitTestable(), findsNothing, reason: 'then it tucks');
+      expect(launcher().hitTestable(), findsNothing, reason: 'it tucks');
       await unmount(tester);
     });
 

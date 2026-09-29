@@ -23,10 +23,10 @@ class AccountRepositoryImpl
 
   @override
   Future<Either<Failure, AccountOverview>> getAccountOverview() => execute(
-    () => AccountOverview(
+    () async => AccountOverview(
       user: _local.user().toEntity(),
       couponCount: _local.couponCount(),
-      favouriteCount: _local.favouriteCount(),
+      favouriteCount: await _local.favouriteCount(),
       customerServiceUnread: _local.customerServiceUnread(),
     ),
   );

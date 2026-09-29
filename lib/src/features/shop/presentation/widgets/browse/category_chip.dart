@@ -24,18 +24,16 @@ class CategoryChip extends StatelessWidget {
   final VoidCallback onTap;
 
   static const double height = AppSize.s36;
-  static const double _pressedScale = 0.97;
 
   @override
   Widget build(BuildContext context) {
     final duration = MotionGuard.duration(context, AppMotion.fast);
     return PressScale(
       onTap: onTap,
-      pressedScale: _pressedScale,
       haptic: HapticKind.selection,
       child: AnimatedContainer(
         duration: duration,
-        curve: MotionGuard.curve(context, AppMotion.standard),
+        curve: MotionGuard.curve(context, AppMotion.signature),
         height: height,
         alignment: AlignmentDirectional.center,
         padding: const EdgeInsetsDirectional.symmetric(

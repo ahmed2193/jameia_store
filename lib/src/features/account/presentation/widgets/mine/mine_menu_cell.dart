@@ -5,18 +5,21 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/press_row.dart';
 import 'mine_icon_tile.dart';
 import 'mine_tone.dart';
 import 'mine_unread_badge.dart';
 
 /// One Mine menu row (52dp): tinted icon tile, label, optional unread badge
-/// and [trailing] status, and a chevron that mirrors in RTL. A frequent,
-/// full-width action — it only highlights on touch (no ripple, no shrink,
-/// no haptic). Paint it on a [Material] so the highlight shows.
+/// and [trailing] status, and a chevron that mirrors in RTL. It presses like
+/// every row in the app ([PressRow]: a dip and the flat brand tint, no
+/// haptic). Paint it on a [Material] so the tint shows.
 class MineMenuCell extends StatelessWidget {
   const MineMenuCell({
     super.key,
-    required this.icon,
+    this.icon,
+    this.asset,
+    this.plate = false,
     required this.label,
     required this.onTap,
     this.tone = MineTone.neutral,
@@ -32,7 +35,9 @@ class MineMenuCell extends StatelessWidget {
 
   static const double _chevron = AppSize.s16;
 
-  final IconData icon;
+  final IconData? icon;
+  final String? asset;
+  final bool plate;
   final String label;
   final VoidCallback onTap;
   final MineTone tone;
@@ -44,10 +49,8 @@ class MineMenuCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final end = trailing;
-    return InkWell(
+    return PressRow(
       onTap: onTap,
-      splashFactory: NoSplash.splashFactory,
-      highlightColor: AppColors.overlayDivider,
       child: SizedBox(
         height: height,
         child: Padding(
@@ -56,7 +59,7 @@ class MineMenuCell extends StatelessWidget {
           ),
           child: Row(
             children: [
-              MineIconTile(icon: icon, tone: tone),
+              MineIconTile(icon: icon, asset: asset, plate: plate, tone: tone),
               const SizedBox(width: AppSpacing.s12),
               Expanded(
                 child: Text(
@@ -68,10 +71,11 @@ class MineMenuCell extends StatelessWidget {
                   ),
                 ),
               ),
-              if (badgeCount > 0) ...[
-                const SizedBox(width: AppSpacing.s8),
-                MineUnreadBadge(count: badgeCount),
-              ],
+              // Always mounted: it fades out at zero instead of cutting.
+              MineUnreadBadge(
+                count: badgeCount,
+                margin: const EdgeInsetsDirectional.only(start: AppSpacing.s8),
+              ),
               if (end != null) ...[const SizedBox(width: AppSpacing.s8), end],
               const SizedBox(width: AppSpacing.s8),
               const Icon(

@@ -19,9 +19,8 @@ class RewardApplyingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox.expand(
-      child: LightSweep(
-        period: AppMotion.shimmer,
-        sweepShare: 1,
+      // Work in progress, not decoration: the unbounded kind.
+      child: LightSweep.progress(
         peakAlpha: _bandAlpha,
         child: ColoredBox(
           color: _veil,

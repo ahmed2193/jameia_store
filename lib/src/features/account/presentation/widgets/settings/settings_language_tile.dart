@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/locale_swap_veil.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/motion/spring_curve.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_segmented_control.dart';
 import '../../cubit/setting_cubit.dart';
@@ -17,7 +17,8 @@ import 'settings_tone.dart';
 /// (full width, so both labels fit at any text size). A tap glides the
 /// thumb to the new language first; once it lands, the switch itself runs
 /// under [LocaleSwapVeil] — one calm veil over the whole app while it
-/// rebuilds and mirrors, never two app trees on screen.
+/// rebuilds and mirrors, never two app trees on screen. The success haptic
+/// lands once the veil has lifted, on the language the customer now sees.
 class SettingsLanguageTile extends StatefulWidget {
   const SettingsLanguageTile({
     super.key,
@@ -50,12 +51,16 @@ class _SettingsLanguageTileState extends State<SettingsLanguageTile> {
       MotionGuard.duration(context, AppSprings.calm.duration),
     );
     if (!mounted) return;
+    var switched = false;
     try {
       await LocaleSwapVeil.run(
         context,
         color: AppColors.mediumBackground,
-        commit: () => settings.changeLanguage(context, language.code),
+        commit: () async {
+          switched = await settings.changeLanguage(context, language.code);
+        },
       );
+      if (switched) Haptics.done();
     } finally {
       if (mounted) setState(() => _pending = null);
     }

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/design/hero_assets.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/error/failures.dart';
@@ -128,6 +129,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: CubitBusyOverlay<CheckoutCubit, CheckoutState>(
             busyOf: (state) => state.isPlacing,
             doneOf: (state) => state.status == CheckoutStatus.placed,
+            failOf: (state) =>
+                state.failedAction == CheckoutAction.place &&
+                state.failure != null &&
+                !state.requiresSignIn,
             label: 'checkout.placing'.tr(),
             doneLabel: 'checkout.order_placed'.tr(),
             child: Scaffold(
@@ -171,7 +176,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ),
                       ),
                       _CheckoutBucket.empty => HeroStateView(
-                        icon: Icons.shopping_basket_outlined,
+                        art: HeroAssets.emptyBasket,
                         message: 'checkout.cart_empty'.tr(),
                         actionLabel: 'cart.start_shopping'.tr(),
                         onAction: () => context.pop(),

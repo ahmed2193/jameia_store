@@ -452,7 +452,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Log in or sign up'));
+    await tester.tap(find.text('Sign in'));
     await _settle(tester);
     expect(find.text('login page'), findsOneWidget);
   });

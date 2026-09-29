@@ -3,18 +3,21 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/motion/rolling_number_text.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// Warm amber → orange points card at the top of the loyalty history (the
 /// Rewards family): muted label, big value, an optional caption and the
-/// [icon] in a white disc, over a soft ring in the corner. Static — the
-/// points never count up on open.
+/// [icon] in a white disc, over a soft ring in the corner. The value is there
+/// as is on open (never a count-up); when it changes while shown, only its
+/// number rolls ([RollingNumberText]).
 class LedgerBalanceCard extends StatelessWidget {
   const LedgerBalanceCard({
     super.key,
     required this.icon,
     required this.label,
     required this.value,
+    required this.valueText,
     this.caption = '',
   });
 
@@ -42,7 +45,10 @@ class LedgerBalanceCard extends StatelessWidget {
 
   final IconData icon;
   final String label;
-  final String value;
+  final num value;
+
+  /// The phrase around the number ("320 pts").
+  final String Function(String number) valueText;
 
   /// A secondary line (what the points are worth); hidden when empty.
   final String caption;
@@ -94,8 +100,9 @@ class LedgerBalanceCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: AppSpacing.s4),
-                          Text(
-                            value,
+                          RollingNumberText(
+                            value: value,
+                            text: valueText,
                             style: AppTextStyles.displayLarge.copyWith(
                               fontSize: AppSize.font40,
                               height: AppSize.lh1_2,

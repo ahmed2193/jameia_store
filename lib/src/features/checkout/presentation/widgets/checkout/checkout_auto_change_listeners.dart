@@ -70,7 +70,11 @@ class _CheckoutAutoChangeListenersState
     );
     if (next == null) return;
     checkout.setPaymentMethod(next);
-    showHeroSnackBar(context, 'checkout.wallet_reverted'.tr());
+    showHeroSnackBar(
+      context,
+      'checkout.wallet_reverted'.tr(),
+      tone: HeroSnackTone.warning,
+    );
     context.read<CheckoutUiController>().bumpPayment();
   }
 
@@ -100,6 +104,7 @@ class _CheckoutAutoChangeListenersState
     showHeroSnackBar(
       context,
       'checkout.coupon_dropped'.tr(namedArgs: {'code': code}),
+      tone: HeroSnackTone.warning,
     );
   }
 
@@ -113,7 +118,11 @@ class _CheckoutAutoChangeListenersState
     if (draft.timing != DeliveryTiming.express) return;
     checkout.setTiming(DeliveryTiming.asap);
     if (draft.isPickup) return;
-    showHeroSnackBar(context, 'checkout.express_reset'.tr());
+    showHeroSnackBar(
+      context,
+      'checkout.express_reset'.tr(),
+      tone: HeroSnackTone.warning,
+    );
   }
 
   @override

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/navigation/screen_failure_listener.dart';
 import '../../../../core/widgets/back_to_top_overlay.dart';
@@ -49,7 +50,7 @@ class OffersBody extends StatelessWidget {
                 hasScrollBody: false,
                 child: EmptyStateView(
                   message: 'offers.empty'.tr(),
-                  icon: Icons.local_offer_outlined,
+                  art: HeroAssets.emptyCoupons,
                 ),
               ),
               LoadPhase.loaded => OffersListSliver(offers: state.offers),

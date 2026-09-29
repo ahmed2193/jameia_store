@@ -12,14 +12,16 @@ import 'assistant_reply_layout.dart';
 /// One assistant reply row — live, stored, failed or stopped — under ONE
 /// widget type and key, so when `message_end` swaps the streamed reply for
 /// the stored one the row's elements (text, cards, images) are kept and only
-/// the caret leaves and the chips arrive. The live reply is read through a
-/// narrow selector: a streamed word rebuilds this row only.
+/// the caret leaves and the chips arrive; a retried reply keeps the row too
+/// and turns back into the thinking bubble in place. The live reply is read
+/// through a narrow selector: a streamed word rebuilds this row only.
 class AssistantReplyRow extends StatelessWidget {
   const AssistantReplyRow({
     super.key,
     required this.rowKey,
     this.entry,
     this.isLast = false,
+    this.animate = false,
   });
 
   /// The live turn's key; the stored reply inherits it.
@@ -28,6 +30,9 @@ class AssistantReplyRow extends StatelessWidget {
   /// The stored reply or the ended turn; `null` while it streams.
   final AssistantThreadEntry? entry;
   final bool isLast;
+
+  /// First appearance in this session's live flow.
+  final bool animate;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +52,7 @@ class AssistantReplyRow extends StatelessWidget {
             toolName: live.activeToolName,
             streaming: true,
             live: true,
+            animate: animate,
           );
         }
         return switch (entry) {

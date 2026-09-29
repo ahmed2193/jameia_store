@@ -19,7 +19,6 @@ class LoginSocialButton extends StatelessWidget {
 
   static const double _height = AppSize.s52;
   static const double _logo = AppSize.s24;
-  static const double _pressedScale = 0.97;
   static const BorderRadius _radius = BorderRadius.all(
     Radius.circular(AppRadius.pill),
   );
@@ -33,7 +32,6 @@ class LoginSocialButton extends StatelessWidget {
     // Passive press-scale (no onTap) so the InkWell keeps owning the gesture +
     // ripple while the whole pill still dips under the finger.
     return PressScale(
-      pressedScale: _pressedScale,
       child: Material(
         color: AppColors.white,
         shape: const RoundedRectangleBorder(

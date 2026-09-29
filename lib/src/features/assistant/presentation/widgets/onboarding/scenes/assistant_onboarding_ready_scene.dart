@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../core/motion/motion.dart';
-import '../../../../../../core/motion/spring_curve.dart';
 import '../../../../../../core/responsive/app_size.dart';
 import '../assistant_onboarding_cue.dart';
 import '../assistant_onboarding_timeline.dart';
@@ -19,10 +18,14 @@ class AssistantOnboardingReadyScene extends StatelessWidget {
   const AssistantOnboardingReadyScene({
     super.key,
     required this.active,
+    this.played = false,
     required this.onCue,
   });
 
   final bool active;
+
+  /// Its demo already played in this opening of the tour: its end, at once.
+  final bool played;
   final ValueChanged<AssistantOnboardingCue> onCue;
 
   static const Duration _length = Duration(milliseconds: 3400);
@@ -59,12 +62,13 @@ class AssistantOnboardingReadyScene extends StatelessWidget {
   Widget build(BuildContext context) {
     return AssistantOnboardingTimeline(
       active: active,
+      played: played,
       length: _length,
       beats: _beats,
       onCue: onCue,
       builder: (context, t) {
         final phone = t.span(0, _phoneIn, AppMotion.emphasizedDecelerate);
-        final pulsing = t.span(_pulseFrom, _pulseTo, Curves.linear);
+        final pulsing = t.span(_pulseFrom, _pulseTo, AppMotion.linear);
         final pulse = pulsing <= 0 || pulsing >= 1
             ? 0.0
             : pulsing * _pulses % 1;

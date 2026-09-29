@@ -49,7 +49,7 @@ class ProSparkPainter extends CustomPainter {
     for (var i = 0; i < _angles.length; i++) {
       final local = ((t - i * _stagger) / _growShare).clamp(0.0, 1.0);
       if (local <= 0) continue;
-      final grown = AppMotion.emphasized.transform(local);
+      final grown = AppSprings.snappy.transform(local);
       final angle = _angles[i];
       final unit = Offset(math.cos(angle) * direction, math.sin(angle));
       final start = side * _inner;

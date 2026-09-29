@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../domain/entities/category_browse.dart';
 import '../../cubit/category_browse_cubit.dart';
@@ -12,7 +13,10 @@ import 'category_chip.dart';
 
 /// The deepest category row: the children of the picked sub-category as pills,
 /// "All" first. The open pill glides to the middle of the row when picked.
-/// Empty (and invisible) when that sub-category is a leaf.
+/// Empty (and invisible) when that sub-category is a leaf. A row that
+/// arrives after the page (the tree landing after the products) or goes
+/// (a leaf picked) opens / folds its room ([CollapseReveal]) instead of
+/// shoving the grid in one frame.
 class CategoryChips extends StatefulWidget {
   const CategoryChips({super.key, required this.level});
 
@@ -31,6 +35,9 @@ class _CategoryChipsState extends State<CategoryChips> {
 
   /// The pill last brought into sight.
   String? _revealed;
+
+  /// The row last drawn: a folding row keeps showing it.
+  Widget? _lastRow;
 
   /// Glides the open pill to the middle — only this row moves
   /// (`Scrollable.ensureVisible` would scroll the listing too).
@@ -66,7 +73,10 @@ class _CategoryChipsState extends State<CategoryChips> {
         final options = browse.optionsAt(level);
         if (options.isEmpty) {
           _revealed = null;
-          return const SizedBox.shrink();
+          return CollapseReveal(
+            visible: false,
+            child: _lastRow ?? const SizedBox.shrink(),
+          );
         }
         final selected = browse.selectionAt(level);
         final cubit = context.read<CategoryBrowseCubit>();
@@ -75,7 +85,7 @@ class _CategoryChipsState extends State<CategoryChips> {
         // "All" first; a handful of pills, all built, so the open one is
         // always there to bring into sight.
         final entries = [null, ...options];
-        return ColoredBox(
+        final row = ColoredBox(
           color: AppColors.white,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -100,6 +110,8 @@ class _CategoryChipsState extends State<CategoryChips> {
             ),
           ),
         );
+        _lastRow = row;
+        return CollapseReveal(visible: true, child: row);
       },
     );
   }

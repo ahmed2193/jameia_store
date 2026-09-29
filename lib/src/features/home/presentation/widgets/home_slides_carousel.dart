@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
-import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../core/motion/on_screen_gate.dart';
 import '../../domain/entities/home_slide_entity.dart';
 import 'home_carousel_page.dart';
-import 'home_reveal_scope.dart';
 import 'home_slide_card.dart';
 
 /// The hero banners of the home feed (`slides[]`): wide rounded banners in a
@@ -15,7 +14,8 @@ import 'home_slide_card.dart';
 /// artwork drifts against the swipe. They advance by themselves — unless the
 /// customer asked for reduced motion, a screen reader is on, or there is a
 /// single slide — but not under a finger (letting go starts a full dwell on
-/// the banner it left) nor while the banners are off screen. The banner
+/// the banner it left) nor while the banners are off screen, the tab is
+/// hidden or the app is in the background ([OnScreenGate]). The banner
 /// keeps the storefront's proportion at any screen width.
 class HomeSlidesCarousel extends StatefulWidget {
   const HomeSlidesCarousel({super.key, required this.slides});
@@ -26,7 +26,8 @@ class HomeSlidesCarousel extends StatefulWidget {
   State<HomeSlidesCarousel> createState() => _HomeSlidesCarouselState();
 }
 
-class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
+class _HomeSlidesCarouselState extends State<HomeSlidesCarousel>
+    with OnScreenGate<HomeSlidesCarousel> {
   static const double _viewportFraction = 0.92;
 
   /// Half the room between two banners.
@@ -41,19 +42,19 @@ class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
   Timer? _autoAdvance;
   int _fingers = 0;
 
-  /// Reduced motion, or a screen reader walking the page.
-  bool _still = false;
-  bool _onScreen = true;
+  /// Ambient motion is allowed here (not reduced, no screen reader, the tab
+  /// on screen: `MotionGuard.ambientAllowed`).
+  bool _allowed = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _still =
-        MotionGuard.reduced(context) ||
-        MediaQuery.accessibleNavigationOf(context);
-    _onScreen = HomeRevealScope.onScreenOf(context);
+    _allowed = MotionGuard.ambientAllowed(context);
     _rearm();
   }
+
+  @override
+  void onScreenChanged() => _rearm();
 
   /// A refresh hands the same widget a new slide list, so the timer has to be
   /// reconsidered: a feed that drops to one slide must stop advancing, and
@@ -66,7 +67,7 @@ class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
 
   void _rearm() {
     _autoAdvance?.cancel();
-    if (widget.slides.length < 2 || _still || !_onScreen || _fingers > 0) {
+    if (widget.slides.length < 2 || !_allowed || !onScreen || _fingers > 0) {
       return;
     }
     _autoAdvance = Timer.periodic(AppMotion.carousel, (_) => _next());
@@ -121,10 +122,6 @@ class _HomeSlidesCarouselState extends State<HomeSlidesCarousel> {
             child: PageView.builder(
               controller: _controller,
               itemCount: slides.length,
-              // A soft click as the finger carries in the next banner.
-              onPageChanged: (_) {
-                if (_fingers > 0) Haptics.selection();
-              },
               itemBuilder: (context, index) => HomeCarouselPage(
                 controller: _controller,
                 index: index,

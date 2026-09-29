@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
-import '../motion/haptics.dart';
-import '../motion/motion.dart';
-import '../motion/spring_curve.dart';
 import '../responsive/app_size.dart';
 import 'hero_segment.dart';
+import 'segmented_thumb_track.dart';
 
 /// The thumb of a [HeroSegmentedControl].
 enum HeroSegmentTone {
@@ -19,13 +17,13 @@ enum HeroSegmentTone {
   brandSoft,
 }
 
-/// Pill SEGMENTED CONTROL with one thumb that glides (a calm spring,
-/// [AppSprings.calm]) under the selected segment — the language switch in
-/// settings, any two-to-four way choice. Equal-width segments share the
-/// width; a selection haptic fires only when the value actually changes; the
-/// thumb follows RTL. [tone] picks the thumb (see [HeroSegmentTone]);
-/// [iconOf] puts an 18 dp glyph before each label. Reduced motion → the
-/// thumb jumps and the colours change at once.
+/// Pill SEGMENTED CONTROL — the language switch in settings, checkout's
+/// delivery / pickup, any two-to-four way choice: equal-width segments on
+/// the app's one thumb track ([SegmentedThumbTrack]: the thumb slides on the
+/// calm spring, mirrors under RTL, jumps under reduced motion, and a
+/// selection haptic fires only when the value actually changes). [tone]
+/// picks the thumb (see [HeroSegmentTone]); [iconOf] puts an 18 dp glyph
+/// before each label.
 class HeroSegmentedControl<T> extends StatelessWidget {
   const HeroSegmentedControl({
     super.key,
@@ -81,51 +79,22 @@ class HeroSegmentedControl<T> extends StatelessWidget {
         color: AppColors.smallBackground,
         borderRadius: _pill,
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.maxWidth / values.length;
-          return Stack(
-            children: [
-              if (index >= 0)
-                AnimatedPositionedDirectional(
-                  duration: MotionGuard.duration(
-                    context,
-                    AppSprings.calm.duration,
-                  ),
-                  curve: AppSprings.calm,
-                  start: width * index,
-                  top: 0,
-                  bottom: 0,
-                  width: width,
-                  child: DecoratedBox(
-                    decoration: tone == HeroSegmentTone.brandSoft
-                        ? _brandSoftThumb
-                        : _darkThumb,
-                  ),
-                ),
-              Row(
-                children: [
-                  for (final value in values)
-                    Expanded(
-                      child: HeroSegment(
-                        label: labelOf(value),
-                        selected: value == selected,
-                        tone: tone,
-                        icon: iconOf?.call(value),
-                        onTap: change == null
-                            ? null
-                            : () {
-                                if (value == selected) return;
-                                Haptics.selection();
-                                change(value);
-                              },
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          );
-        },
+      child: SegmentedThumbTrack(
+        count: values.length,
+        selected: index,
+        thumb: DecoratedBox(
+          decoration: tone == HeroSegmentTone.brandSoft
+              ? _brandSoftThumb
+              : _darkThumb,
+        ),
+        onSelected: change == null ? null : (i) => change(values[i]),
+        segmentBuilder: (context, i, select, _) => HeroSegment(
+          label: labelOf(values[i]),
+          selected: i == index,
+          tone: tone,
+          icon: iconOf?.call(values[i]),
+          onTap: select,
+        ),
       ),
     );
   }

@@ -26,7 +26,7 @@ class AssistantVoiceLanguageSwitch extends StatelessWidget {
   };
 
   void _switch(BuildContext context) {
-    Haptics.selection();
+    Haptics.pick();
     context.read<AssistantVoiceCubit>().switchLanguage();
   }
 

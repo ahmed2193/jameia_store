@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../motion/motion_widgets.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
@@ -8,11 +7,8 @@ import '../utils/formatters.dart';
 
 /// Price display using the MT Digital Display digit font, with optional struck
 /// original price — the Hero campaign-price look (final price in red on discount).
-///
-/// Set [animate] to flip the amount when [price] changes (VIP-mode toggle,
-/// free-delivery threshold, cart recalculation). Defaults OFF so list scrolling
-/// doesn't trigger flip-storms — only opt in on surfaces where the price mutates
-/// in place (shop SKU, checkout summary).
+/// Static: a price that changes in place while watched is a
+/// `HeroMoneyText(rolling: true)` (docs/motion CC-05).
 class PriceText extends StatelessWidget {
   const PriceText({
     super.key,
@@ -20,14 +16,12 @@ class PriceText extends StatelessWidget {
     this.originalPrice = 0,
     this.size = 16,
     this.color,
-    this.animate = false,
   });
 
   final double price;
   final double originalPrice;
   final double size;
   final Color? color;
-  final bool animate;
 
   bool get _discounted => originalPrice > price && originalPrice > 0;
 
@@ -52,7 +46,7 @@ class PriceText extends StatelessWidget {
           style: AppTextStyles.captionLarge.copyWith(color: main),
         ),
         const SizedBox(width: AppSpacing.s2),
-        if (animate) FlipValue(flipKey: price, child: amount) else amount,
+        amount,
         if (_discounted) ...[
           const SizedBox(width: AppSpacing.s4),
           Text(

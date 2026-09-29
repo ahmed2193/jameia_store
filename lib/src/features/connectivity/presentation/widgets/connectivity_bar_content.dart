@@ -21,7 +21,7 @@ class ConnectivityBarContent extends StatelessWidget {
   bool get _backOnline => mode == ConnectivityBannerMode.backOnline;
 
   void _retry(BuildContext context) {
-    Haptics.tap();
+    Haptics.commit();
     context.read<ConnectivityCubit>().retry();
   }
 

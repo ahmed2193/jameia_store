@@ -1,31 +1,44 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_svg_glyph.dart';
 import '../../domain/entities/notification_entity.dart';
 
 /// Leading glyph of a notification row: the kind's icon in a tinted circle.
-/// Hero glyphs where the icon font has one; Material otherwise.
+/// Money, rewards, coupons, offers and Pro wear the drawn Hero plates
+/// ([plateFor]), the account the Hero person ([glyphFor]); the rest are
+/// Hero font glyphs, Material only where the font has none.
 class NotificationKindIcon extends StatelessWidget {
   const NotificationKindIcon({super.key, required this.kind});
 
   final NotificationKind kind;
 
+  static const double _plate = AppSize.s24;
+
+  /// A colour plate (colours baked in), drawn in the disc.
+  static String? plateFor(NotificationKind kind) => switch (kind) {
+    NotificationKind.points => HeroAssets.checkoutPoints,
+    NotificationKind.wallet => HeroAssets.checkoutWallet,
+    NotificationKind.coupon => HeroAssets.checkoutTicket,
+    NotificationKind.offer => HeroAssets.offerPercent,
+    NotificationKind.subscription => HeroAssets.proCrown,
+    NotificationKind.campaign => HeroAssets.offerGift,
+    _ => null,
+  };
+
+  /// A mono Hero glyph, tinted [inkFor].
+  static String? glyphFor(NotificationKind kind) =>
+      kind == NotificationKind.account ? HeroAssets.tabAccount : null;
+
+  /// The font glyph of the kinds without a drawn one.
   static IconData iconFor(NotificationKind kind) => switch (kind) {
     NotificationKind.order => HeroIcons.orders,
-    // Material for both: the font's reward glyph is the word 賞 and its pay
-    // glyph is a ¥ sign, and this app bills in Kuwaiti dinars.
-    NotificationKind.points => Icons.loyalty_outlined,
-    NotificationKind.wallet => Icons.account_balance_wallet_outlined,
-    NotificationKind.coupon => Icons.confirmation_number_outlined,
-    NotificationKind.offer => HeroIcons.flame,
     NotificationKind.review => HeroIcons.star,
-    NotificationKind.subscription => Icons.autorenew_rounded,
-    NotificationKind.account => Icons.person_outline_rounded,
-    NotificationKind.campaign => Icons.campaign_outlined,
     NotificationKind.support => HeroIcons.customerService,
-    NotificationKind.other => HeroIcons.notice,
+    _ => HeroIcons.notice,
   };
 
   static Color inkFor(NotificationKind kind) => switch (kind) {
@@ -63,7 +76,15 @@ class NotificationKindIcon extends StatelessWidget {
       height: AppSize.s40,
       decoration: BoxDecoration(color: tintFor(kind), shape: BoxShape.circle),
       alignment: Alignment.center,
-      child: Icon(iconFor(kind), size: AppSize.s20, color: inkFor(kind)),
+      child: switch ((plateFor(kind), glyphFor(kind))) {
+        (final String plate, _) => HeroSvgGlyph.art(plate, size: _plate),
+        (_, final String glyph) => HeroSvgGlyph.mono(
+          glyph,
+          size: AppSize.s20,
+          color: inkFor(kind),
+        ),
+        _ => Icon(iconFor(kind), size: AppSize.s20, color: inkFor(kind)),
+      },
     );
   }
 }

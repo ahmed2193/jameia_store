@@ -1,23 +1,47 @@
 import 'package:flutter/widgets.dart';
 
-import '../responsive/app_size.dart';
+import 'entrance_arrival.dart';
 import 'entrance_cascade.dart';
 import 'motion.dart';
 
-/// One item of an [EntranceCascade]: fades in while rising [_rise], delayed
-/// `index × AppMotion.staggerStep`, once — decided when it mounts, so the
-/// widget shape never changes. One controller; the delay is an [Interval]
-/// (no Timer: it honours TickerMode and leaves nothing pending in tests).
-/// Reduced motion, a closed scope or `index ≥ maxItems` → the child as is.
+/// One item of an [EntranceCascade]: fades in while rising
+/// [AppMotion.entranceRise], `index × AppMotion.staggerStep` after the
+/// first, over [AppMotion.medium] / [AppMotion.signature] — once, decided
+/// when it mounts, so the widget shape never changes. One controller; the
+/// delay is an [Interval] (no Timer: it honours TickerMode — a list that
+/// arrives on a hidden tab plays when the tab comes up — and leaves nothing
+/// pending in tests). The touches inside read its arrival through
+/// [EntranceArrival].
+///
+/// A closed or spent scope, no scope, `index ≥ maxItems` or motion off → the
+/// child as is. Reduced motion → one [AppMotion.fast] fade, no rise, no
+/// delay (the whole list fades together).
+///
+/// [EntranceCascadeItem.single] is the same entrance for one element that
+/// has no list around it (a sent bubble, a footer): it plays on mount when
+/// [play], [index] steps late.
 class EntranceCascadeItem extends StatefulWidget {
   const EntranceCascadeItem({
     super.key,
     required this.index,
     required this.child,
-  });
+  }) : play = true,
+       _single = false;
+
+  const EntranceCascadeItem.single({
+    super.key,
+    required this.child,
+    this.play = true,
+    this.index = 0,
+  }) : _single = true;
 
   final int index;
   final Widget child;
+
+  /// [EntranceCascadeItem.single] only: `false` mounts it at rest.
+  final bool play;
+
+  final bool _single;
 
   @override
   State<EntranceCascadeItem> createState() => _EntranceCascadeItemState();
@@ -25,11 +49,12 @@ class EntranceCascadeItem extends StatefulWidget {
 
 class _EntranceCascadeItemState extends State<EntranceCascadeItem>
     with SingleTickerProviderStateMixin {
-  static const double _rise = AppSize.s16;
   static const double _end = 1;
 
   AnimationController? _controller;
-  Animation<double>? _progress;
+  Animation<double>? _arrival;
+  Animation<double>? _eased;
+  bool _rises = false;
   bool _decided = false;
 
   @override
@@ -37,26 +62,41 @@ class _EntranceCascadeItemState extends State<EntranceCascadeItem>
     super.didChangeDependencies();
     if (_decided) return;
     _decided = true;
-    final scope = context.findAncestorStateOfType<EntranceCascadeState>();
-    if (scope == null ||
-        !scope.isOpen ||
-        widget.index >= scope.maxItems ||
-        MotionGuard.reduced(context)) {
+    if (!_plays() || MotionGuard.off(context)) return;
+    if (MotionGuard.reduced(context)) {
+      _start(AppMotion.fast, delay: Duration.zero, curve: AppMotion.linear);
       return;
     }
-    final delay = AppMotion.staggerStep * widget.index;
-    final total = delay + AppMotion.medium;
+    _rises = true;
+    final steps = widget.index.clamp(0, AppMotion.staggerMaxItems);
+    _start(
+      AppMotion.medium,
+      delay: AppMotion.staggerStep * steps,
+      curve: AppMotion.signature,
+    );
+  }
+
+  bool _plays() {
+    if (widget._single) return widget.play;
+    final scope = context.findAncestorStateOfType<EntranceCascadeState>();
+    return scope != null && scope.isOpen && widget.index < scope.maxItems;
+  }
+
+  void _start(
+    Duration length, {
+    required Duration delay,
+    required Curve curve,
+  }) {
+    final total = delay + length;
     final controller = AnimationController(vsync: this, duration: total);
     _controller = controller;
-    _progress = controller.drive(
+    final arrival = controller.drive(
       CurveTween(
-        curve: Interval(
-          delay.inMicroseconds / total.inMicroseconds,
-          _end,
-          curve: AppMotion.signature,
-        ),
+        curve: Interval(delay.inMicroseconds / total.inMicroseconds, _end),
       ),
     );
+    _arrival = arrival;
+    _eased = arrival.drive(CurveTween(curve: curve));
     controller.forward();
   }
 
@@ -68,19 +108,30 @@ class _EntranceCascadeItemState extends State<EntranceCascadeItem>
 
   @override
   Widget build(BuildContext context) {
-    final progress = _progress;
-    if (progress == null) return widget.child;
+    final eased = _eased;
+    final arrival = _arrival;
+    if (eased == null || arrival == null) return widget.child;
+    // The item's own layer: the fade and the rise only re-composite it.
+    final shown = RepaintBoundary(
+      child: EntranceArrival(arrival: arrival, child: widget.child),
+    );
     return FadeTransition(
-      opacity: progress,
+      opacity: eased,
+      // An item waiting for its turn is already there for a screen reader.
       alwaysIncludeSemantics: true,
-      child: AnimatedBuilder(
-        animation: progress,
-        child: widget.child,
-        builder: (context, child) => Transform.translate(
-          offset: Offset(0, (_end - progress.value) * _rise),
-          child: child,
-        ),
-      ),
+      child: _rises
+          ? AnimatedBuilder(
+              animation: eased,
+              child: shown,
+              builder: (context, child) => Transform.translate(
+                offset: Offset(
+                  0,
+                  (_end - eased.value) * AppMotion.entranceRise,
+                ),
+                child: child,
+              ),
+            )
+          : shown,
     );
   }
 }

@@ -16,7 +16,6 @@ import 'package:hero_mart/src/features/assistant/data/datasources/assistant_hist
 import 'package:hero_mart/src/features/assistant/data/datasources/assistant_remote_data_source.dart';
 import 'package:hero_mart/src/features/assistant/data/repositories/assistant_repository_impl.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
-import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_history_state.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import '../../core/storage/cache_test_fakes.dart';

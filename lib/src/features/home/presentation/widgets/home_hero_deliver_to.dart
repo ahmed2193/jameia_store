@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/motion/haptics.dart';
+import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
 import 'home_layout.dart';
-import 'home_pressable.dart';
 
 /// The delivery line of the header: `📍 Deliver to <place> ⌄`, ink on the
 /// white header. Tapping it opens the saved addresses.
@@ -35,12 +34,10 @@ class HomeHeroDeliverTo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      child: HomePressable(
+      child: PressScale(
         child: GestureDetector(
-          onTap: () {
-            Haptics.tap();
-            onTap();
-          },
+          // Opening the address picker is navigation: no haptic (§9.5).
+          onTap: onTap,
           behavior: HitTestBehavior.opaque,
           child: Row(
             mainAxisSize: MainAxisSize.min,

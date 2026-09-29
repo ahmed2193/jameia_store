@@ -30,7 +30,7 @@ class CartExpressToggle extends StatelessWidget {
       (cubit) => cubit.state.busyAction == CartAction.express,
     );
     void toggle(bool enabled) {
-      Haptics.selection();
+      Haptics.pick();
       context.read<CartCubit>().setExpress(enabled: enabled);
     }
 

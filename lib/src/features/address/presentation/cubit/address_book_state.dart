@@ -23,7 +23,7 @@ class AddressBookState extends Equatable {
     this.loadFailure,
     this.failure,
     this.failedAction,
-    this.deleted = false,
+    this.deletedId,
   });
 
   final AddressBookStatus status;
@@ -36,7 +36,8 @@ class AddressBookState extends Equatable {
   /// restored from the device alone is not synced.
   final bool isSynced;
 
-  /// Addresses whose DELETE is in flight (their row is disabled).
+  /// Addresses taken out of the book whose delete the server has not
+  /// confirmed yet: in their Undo window, or the DELETE in flight.
   final Set<String> deletingIds;
 
   /// Why the screen shows [AddressBookStatus.error] / `signedOut`; kept until
@@ -49,8 +50,9 @@ class AddressBookState extends Equatable {
   /// Transient, set together with [failure].
   final AddressBookAction? failedAction;
 
-  /// Transient one-shot: a delete just succeeded.
-  final bool deleted;
+  /// Transient one-shot: this address just left the book (the page offers
+  /// Undo while the delete waits).
+  final String? deletedId;
 
   bool get isLoaded => status == AddressBookStatus.loaded;
 
@@ -66,7 +68,7 @@ class AddressBookState extends Equatable {
     bool clearLoadFailure = false,
     Failure? failure,
     AddressBookAction? failedAction,
-    bool deleted = false,
+    String? deletedId,
   }) => AddressBookState(
     status: status ?? this.status,
     book: book ?? this.book,
@@ -76,7 +78,7 @@ class AddressBookState extends Equatable {
     loadFailure: clearLoadFailure ? null : (loadFailure ?? this.loadFailure),
     failure: failure,
     failedAction: failedAction,
-    deleted: deleted,
+    deletedId: deletedId,
   );
 
   @override
@@ -89,6 +91,6 @@ class AddressBookState extends Equatable {
     loadFailure,
     failure,
     failedAction,
-    deleted,
+    deletedId,
   ];
 }

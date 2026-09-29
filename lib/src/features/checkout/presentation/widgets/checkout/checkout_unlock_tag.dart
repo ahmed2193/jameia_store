@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/domain/entities/offer_entity.dart';
+import '../../../../../core/motion/deferred_value.dart';
+import '../../../../../core/motion/motion_beat.dart';
 import '../../../../../core/motion/pop_switcher.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
@@ -22,7 +24,8 @@ import 'checkout_red_tag.dart';
 /// types) shows no tag.
 ///
 /// A new offer pops in from the end; the same offer with a new amount just
-/// updates; nothing pops on the first build.
+/// updates; nothing pops on the first build. A change lands a beat after
+/// the control that caused it ([MotionBeat.second], backlog B2-03).
 class CheckoutUnlockTag extends StatelessWidget {
   const CheckoutUnlockTag({super.key});
 
@@ -72,13 +75,20 @@ class CheckoutUnlockTag extends StatelessWidget {
         pickup: pickup,
       ),
     );
-    final label = unlock == null ? null : _label(unlock);
-    return PopSwitcher(
-      stateKey: label == null ? '' : unlock?.offerId ?? '',
-      alignment: AlignmentDirectional.bottomEnd,
-      child: label == null
-          ? const SizedBox.shrink()
-          : CheckoutRedTag(label: label),
+    final liveLabel = unlock == null ? null : _label(unlock);
+    return DeferredValue<(String, String?)>(
+      value: (liveLabel == null ? '' : unlock?.offerId ?? '', liveLabel),
+      delay: MotionBeat.second,
+      builder: (context, shown) {
+        final (offerId, label) = shown;
+        return PopSwitcher(
+          stateKey: offerId,
+          alignment: AlignmentDirectional.bottomEnd,
+          child: label == null
+              ? const SizedBox.shrink()
+              : CheckoutRedTag(label: label),
+        );
+      },
     );
   }
 }

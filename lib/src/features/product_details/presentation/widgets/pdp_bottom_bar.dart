@@ -7,10 +7,7 @@ import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/cart_line_entity.dart';
 import '../../../../core/domain/entities/cart_line_ref.dart';
-import '../../../../core/motion/fly_to_cart.dart';
-import '../../../../core/motion/haptics.dart';
-import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/hero_card_image.dart';
+import '../../../../core/widgets/catalog_cart_gestures.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
@@ -34,36 +31,20 @@ class PdpBottomBar extends StatelessWidget {
   /// is scrolled out of sight (or unknown).
   final GlobalKey? galleryKey;
 
-  static const double _thumb = AppSize.s56;
-
   void _add(BuildContext context, ProductDetailState state) {
     final detail = state.detail;
     if (detail == null || !state.canAdd) return;
-    Haptics.tap();
-    final thumbnail = HeroCardImage(
-      url: detail.product.image,
-      width: _thumb,
-      height: _thumb,
-      radius: AppRadius.r4,
+    // The gallery is the first thing on the page, so it only ever leaves
+    // through the top: while some of it shows, the flight starts there.
+    CatalogCartGestures.add(
+      context,
+      image: detail.product.image,
+      from: galleryKey,
+      commit: () => context.read<CartCubit>().addCatalogProduct(
+        detail.product,
+        variantId: state.selectedVariant?.id,
+      ),
     );
-    final gallery = galleryKey;
-    if (gallery != null && _isOnScreen(gallery)) {
-      FlyToCart.fly(context, sourceKey: gallery, thumbnail: thumbnail);
-    } else {
-      FlyToCart.flyFrom(context, thumbnail: thumbnail);
-    }
-    context.read<CartCubit>().addCatalogProduct(
-      detail.product,
-      variantId: state.selectedVariant?.id,
-    );
-  }
-
-  /// Whether some of [key]'s box still shows. The gallery is the first
-  /// thing on the page, so it only ever leaves through the top.
-  static bool _isOnScreen(GlobalKey key) {
-    final box = key.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.attached || !box.hasSize) return false;
-    return box.localToGlobal(box.size.bottomLeft(Offset.zero)).dy > 0;
   }
 
   @override

@@ -1,24 +1,30 @@
-// Order tracking, invoice and review on the white search-style page: the
-// tracking journey (a painted stepper that fills, breathes three times and
-// rests), notices that open and fold with the order, the "Your items" list
-// with its invoice link, the invoice's three sections, the review stars
-// (44 dp targets read "Rate n of 5", a cascading fill) and the submit pill
-// that refuses until a star is set — in English and Arabic, at 360 dp and
-// text scale 1.3 without overflow.
+// The order page (tracking + details, delivery-app style), the invoice and
+// the review: the status panel (the time, the stage in words, the painted
+// four-stage bar whose band runs a while and rests), the blocks that open
+// and fold with the order one after another, the delivered moment, the
+// items card folded to three, the invoice's three sections, the review
+// stars (44 dp targets read "Rate n of 5", a cascading fill) and the submit
+// pill that refuses until a star is set — in English and Arabic, at 360 dp
+// and text scale 1.3 without overflow.
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:hero_mart/src/config/routes/route_args/order_review_args.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/core/data/mappers/order_mapper.dart';
 import 'package:hero_mart/src/core/data/models/order_model.dart';
 import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/confetti_burst.dart';
+import 'package:hero_mart/src/core/motion/haptics.dart';
 import 'package:hero_mart/src/core/responsive/app_size.dart';
 import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
 import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
+import 'package:hero_mart/src/core/widgets/hero_title_bar.dart';
 import 'package:hero_mart/src/features/orders/domain/usecases/cancel_order_usecase.dart';
 import 'package:hero_mart/src/features/orders/domain/usecases/submit_product_review_usecase.dart';
 import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_cubit.dart';
@@ -31,9 +37,11 @@ import 'package:hero_mart/src/features/orders/presentation/widgets/review/review
 import 'package:hero_mart/src/features/orders/presentation/widgets/review/review_submit_bar.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/order_tracking_view.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_body.dart';
-import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_painter.dart';
-import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_progress_stepper.dart';
-import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_status_header.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_rate_star.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_rate_thanks.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_stage_bar.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_stage_bar_painter.dart';
+import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_status_hero.dart';
 import 'package:hero_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,19 +65,50 @@ class _NoImageOrdersRepository extends FakeOrdersRepository {
   }
 }
 
+/// [json] with no product pictures (a network image would shimmer forever
+/// under the test clock).
+OrderEntity _withoutImages(Map<String, dynamic> json) {
+  for (final line in json['lines'] as List<Map<String, dynamic>>) {
+    (line['product'] as Map<String, dynamic>)['image'] = '';
+  }
+  return OrderModel.fromJson(json).toEntity();
+}
+
 OrderEntity _order({
   String status = 'placed',
   Map<String, dynamic>? cancellation,
   Map<String, dynamic>? picking,
   Map<String, dynamic>? delivery,
-}) => OrderModel.fromJson(
+}) => _withoutImages(
   orderJson(
     status: status,
     cancellation: cancellation,
     picking: picking,
     delivery: delivery,
   ),
-).toEntity();
+);
+
+/// [order] as if it had been placed at [createdAt].
+OrderEntity _withCreatedAt(OrderEntity order, DateTime createdAt) =>
+    OrderEntity(
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      address: order.address,
+      branch: order.branch,
+      lines: order.lines,
+      subtotalFils: order.subtotalFils,
+      deliveryFeeFils: order.deliveryFeeFils,
+      totalFils: order.totalFils,
+      etaMinutes: order.etaMinutes,
+      payment: order.payment,
+      picking: order.picking,
+      delivery: order.delivery,
+      createdAt: createdAt,
+    );
+
+/// The order page's body over [order], help going nowhere.
+Widget _body(OrderEntity order) => TrackingBody(order: order, onHelp: () {});
 
 /// A cancelled order that went through picking: every optional block shows.
 OrderEntity _busyOrder({String status = 'picking'}) => _order(
@@ -128,6 +167,32 @@ Future<void> _pump(
       GoRoute(
         path: Routes.login,
         builder: (_, _) => const Scaffold(body: Text('login')),
+      ),
+      // The review as the rating card sees it: it closes with `true` once
+      // the review went through, with nothing when the customer backs out.
+      GoRoute(
+        path: Routes.orderReview,
+        builder: (_, state) => Scaffold(
+          body: Builder(
+            builder: (context) => Column(
+              children: [
+                Text('review:${(state.extra! as OrderReviewArgs).rating}'),
+                TextButton(
+                  onPressed: () => context.pop(true),
+                  child: const Text('review-sent'),
+                ),
+                TextButton(
+                  onPressed: () => context.pop(),
+                  child: const Text('review-back'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: Routes.orders,
+        builder: (_, _) => const Scaffold(body: Text('orders-list')),
       ),
     ],
   );
@@ -189,16 +254,16 @@ double _starScale(WidgetTester tester, int star) {
   return tester.widget<ScaleTransition>(scale).scale.value;
 }
 
-TrackingProgressPainter _painter(WidgetTester tester) =>
+TrackingStageBarPainter _painter(WidgetTester tester) =>
     tester
             .widget<CustomPaint>(
               find.descendant(
-                of: find.byType(TrackingProgressStepper),
+                of: find.byType(TrackingStageBar),
                 matching: find.byType(CustomPaint),
               ),
             )
             .painter!
-        as TrackingProgressPainter;
+        as TrackingStageBarPainter;
 
 void main() {
   setUpAll(() async {
@@ -246,33 +311,59 @@ void main() {
     testWidgets('the journey, the items and the invoice link (en)', (
       tester,
     ) async {
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       await _pump(
         tester,
-        _trackingHome(trackingCubit, TrackingBody(order: _order())),
+        _trackingHome(trackingCubit, _body(_order())),
+        size: const Size(400, 1400),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Placed'), findsOneWidget);
-      expect(find.textContaining('Arrives in about 45'), findsOneWidget);
-      expect(find.text('Deliver to'), findsOneWidget);
-      expect(find.text('Your items'), findsOneWidget);
+      // No time to promise (the week-old estimate has passed): the stage
+      // leads the panel, with the "late" plate under it.
+      expect(find.text('Order received'), findsOneWidget);
+      expect(find.text('Waiting for the store to confirm it'), findsOneWidget);
+      expect(find.textContaining('Running a little late'), findsOneWidget);
+      expect(find.text('Delivery details'), findsOneWidget);
+      expect(find.text('As soon as possible'), findsOneWidget);
+      expect(find.text('Order summary'), findsOneWidget);
       expect(find.text('Basmati rice'), findsOneWidget);
       expect(find.text('2×'), findsOneWidget);
-      expect(find.text('KD 3.000'), findsOneWidget); // the line
+      expect(find.text('KD 3.000'), findsNWidgets(2)); // the line + subtotal
       expect(find.text('KD 3.500'), findsOneWidget); // the order total
+      expect(find.text('Cash on delivery'), findsOneWidget);
+      expect(find.text('Pay on delivery'), findsOneWidget);
+      expect(find.text('JM-1001'), findsOneWidget);
 
-      await tester.ensureVisible(find.text('Invoice'));
-      await tester.tap(find.text('Invoice'));
+      await tester.ensureVisible(find.text('View invoice'));
+      await tester.tap(find.text('View invoice'));
       await tester.pumpAndSettle();
       expect(find.text('invoice:o1'), findsOneWidget);
+    });
+
+    testWidgets('a fresh order counts down to its rounded-up time', (
+      tester,
+    ) async {
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
+      addTearDown(trackingCubit.close);
+      // Placed now with a 45 min estimate: 40–50 min left, never late.
+      final order = _withCreatedAt(_order(status: 'picking'), DateTime.now());
+      await _pump(tester, _trackingHome(trackingCubit, _body(order)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Arriving in'), findsOneWidget);
+      expect(find.textContaining(RegExp(r'^(4\d|50) min$')), findsOneWidget);
+      expect(find.textContaining('Estimated at'), findsOneWidget);
+      expect(find.textContaining('Running a little late'), findsNothing);
+      // The stage moves under the bar.
+      expect(find.text('Packing your order'), findsOneWidget);
     });
 
     testWidgets('cancel shows while the order can be cancelled, then folds', (
       tester,
     ) async {
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       final order = ValueNotifier<OrderEntity>(_order());
       addTearDown(order.dispose);
@@ -282,13 +373,14 @@ void main() {
           trackingCubit,
           ValueListenableBuilder<OrderEntity>(
             valueListenable: order,
-            builder: (_, value, _) => TrackingBody(order: value),
+            builder: (_, value, _) => _body(value),
           ),
         ),
-        size: const Size(400, 1200),
+        size: const Size(400, 1600),
       );
       await tester.pumpAndSettle();
       expect(find.text('Cancel order'), findsOneWidget);
+      expect(find.byType(TrackingStageBar), findsOneWidget);
 
       order.value = _order(
         status: 'cancelled',
@@ -296,84 +388,108 @@ void main() {
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      // Folding: the last button is still drawn, but no longer tappable.
-      expect(find.text('Cancel order'), findsOneWidget);
+      // One after another (B2-03): the panel has answered, the notice and
+      // the button still wait their turn — the last button is still drawn,
+      // but no longer tappable.
+      expect(find.text('Order cancelled'), findsOneWidget);
       expect(find.text('Cancelled by the store'), findsOneWidget);
+      expect(find.text('Cancel order'), findsOneWidget);
+      await tester.pump(const Duration(milliseconds: 250));
+      expect(find.text('Cancelled by the store'), findsNWidgets(2));
+      await tester.pump(const Duration(milliseconds: 400));
       await tester.pumpAndSettle();
       expect(find.text('Cancel order'), findsNothing);
-      expect(find.byType(TrackingProgressStepper), findsNothing);
+      expect(find.byType(TrackingStageBar), findsNothing);
 
       // A delivered order never offered it.
       order.value = _order(status: 'delivered');
+      await tester.pump(const Duration(milliseconds: 500));
       await tester.pumpAndSettle();
       expect(find.text('Cancel order'), findsNothing);
     });
 
-    testWidgets('the cancellation, picking and delivery notices render', (
+    testWidgets('the cancellation and picking notices, the marked lines', (
       tester,
     ) async {
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
+      addTearDown(trackingCubit.close);
+      await _pump(
+        tester,
+        _trackingHome(trackingCubit, _body(_busyOrder(status: 'cancelled'))),
+        size: const Size(400, 1600),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Order cancelled'), findsOneWidget);
+      // The panel's line and the notice's title.
+      expect(find.text('Cancelled by you'), findsNWidgets(2));
+      expect(find.text('Note: Too late'), findsOneWidget);
+      expect(find.text('Changes while picking'), findsOneWidget);
+      expect(find.text('Unavailable items: 1'), findsOneWidget);
+      expect(find.text('Replaced items: 1'), findsOneWidget);
+      // The replaced line says what came instead.
+      expect(
+        find.textContaining('Replaced with Jasmine rice', findRichText: true),
+        findsOneWidget,
+      );
+      // A cancelled order has left the journey; nobody is handling it.
+      expect(find.byType(TrackingStageBar), findsNothing);
+      expect(find.text('Your picker'), findsNothing);
+      expect(find.text('Cancel order'), findsNothing);
+    });
+
+    testWidgets('the picker and the driver, with "Now" on the driver', (
+      tester,
+    ) async {
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       await _pump(
         tester,
         _trackingHome(
           trackingCubit,
-          TrackingBody(order: _busyOrder(status: 'cancelled')),
+          _body(_busyOrder(status: 'out_for_delivery')),
         ),
-        size: const Size(400, 1200),
+        size: const Size(400, 1600),
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Cancelled'), findsOneWidget);
-      expect(find.text('Cancelled by you'), findsOneWidget);
-      expect(find.text('Note: Too late'), findsOneWidget);
-      expect(find.text('Changes while picking'), findsOneWidget);
-      expect(find.text('1 items were unavailable'), findsOneWidget);
-      expect(find.text('Jasmine rice was substituted'), findsOneWidget);
-      expect(find.text('Picker: Ali'), findsOneWidget);
-      expect(find.text('Driver: Sam'), findsOneWidget);
-      // A cancelled order has left the journey.
-      expect(find.byType(TrackingProgressStepper), findsNothing);
-      expect(find.text('Cancel order'), findsNothing);
+      expect(find.text('Ali'), findsOneWidget);
+      expect(find.text('Your picker'), findsOneWidget);
+      expect(find.text('Sam'), findsOneWidget);
+      expect(find.text('Your driver'), findsOneWidget);
+      expect(find.text('Now'), findsOneWidget);
+      expect(find.text('Sam is bringing your order'), findsOneWidget);
     });
 
-    testWidgets('the stepper reads "Step 2 of 6", fills, breathes, rests', (
+    testWidgets('the bar reads its stage, runs its band a while, rests', (
       tester,
     ) async {
       final semantics = tester.ensureSemantics();
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       await _pump(
         tester,
-        _trackingHome(
-          trackingCubit,
-          TrackingBody(order: _order(status: 'confirmed')),
-        ),
+        _trackingHome(trackingCubit, _body(_order(status: 'picking'))),
       );
 
-      expect(find.bySemanticsLabel('Step 2 of 6'), findsOneWidget);
-      // The first build is the start of the sweep, not the end state.
-      expect(_painter(tester).fill.value, lessThan(2));
-      // The page's first sweep holds while the body fades in, so it is seen.
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(_painter(tester).fill.value, 0);
+      expect(find.bySemanticsLabel('Packing. Step 2 of 4'), findsOneWidget);
+      // Drawn at the order's stage at once: no sweep on every visit.
+      expect(_painter(tester).fill.value, 1);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(tester.hasRunningAnimations, isTrue); // the band runs
 
-      await tester.pump(const Duration(seconds: 1)); // sweep done
-      await tester.pump(const Duration(milliseconds: 100)); // breathing
-      expect(_painter(tester).fill.value, 2);
-      expect(tester.hasRunningAnimations, isTrue);
-
-      await tester.pump(const Duration(seconds: 4)); // three breaths later
-      await tester.pump();
+      // Past the ambient budget everything rests.
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pump(const Duration(seconds: 1));
       expect(tester.hasRunningAnimations, isFalse);
-      expect(_painter(tester).pulse.value, 0);
+      expect(_painter(tester).sweep.value, 0);
       semantics.dispose();
     });
 
-    testWidgets('a poll that moves the step fills on from the old step', (
+    testWidgets('a poll that moves the stage fills on from the old stage', (
       tester,
     ) async {
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       final order = ValueNotifier<OrderEntity>(_order());
       addTearDown(order.dispose);
@@ -383,28 +499,32 @@ void main() {
           trackingCubit,
           ValueListenableBuilder<OrderEntity>(
             valueListenable: order,
-            builder: (_, value, _) => TrackingBody(order: value),
+            builder: (_, value, _) => _body(value),
           ),
         ),
       );
       await tester.pumpAndSettle();
-      expect(_painter(tester).fill.value, 1);
+      expect(_painter(tester).fill.value, 0);
 
       order.value = _order(status: 'picking');
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      // The headline answers first; the bar follows a beat later.
+      expect(find.text('Packing your order'), findsOneWidget);
+      expect(_painter(tester).fill.value, 0);
+      await tester.pump(const Duration(milliseconds: 150));
+      await tester.pump(const Duration(milliseconds: 200));
       final mid = _painter(tester).fill.value;
-      expect(mid, greaterThan(1));
-      expect(mid, lessThan(3));
+      expect(mid, greaterThan(0));
+      expect(mid, lessThan(1));
+      await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
-      expect(_painter(tester).fill.value, 3);
-      expect(find.text('Being picked'), findsOneWidget);
+      expect(_painter(tester).fill.value, 1);
     });
 
     testWidgets('a poll rebuilds the status, never the unchanged lines', (
       tester,
     ) async {
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       // A counter beside the order, so an equal (fresh) order still reaches
       // the body — as a poll does when its BlocBuilder lets it through.
@@ -416,10 +536,10 @@ void main() {
           trackingCubit,
           ValueListenableBuilder<(int, OrderEntity)>(
             valueListenable: poll,
-            builder: (_, value, _) => TrackingBody(order: value.$2),
+            builder: (_, value, _) => _body(value.$2),
           ),
         ),
-        size: const Size(400, 1200),
+        size: const Size(400, 1400),
       );
       await tester.pumpAndSettle();
       expect(find.byType(OrderLineRow), findsOneWidget);
@@ -432,54 +552,82 @@ void main() {
       expect(builds.of(TrackingBody), 1);
       expect(builds.of(OrderLineRow), 0);
 
-      // The status moved, the lines did not: header yes, lines no.
+      // The status moved, the lines did not: the panel yes, lines no.
       builds.reset();
       poll.value = (2, _order(status: 'confirmed'));
       await tester.pump();
-      expect(builds.of(TrackingStatusHeader), 1);
+      expect(builds.of(TrackingStatusHero), 1);
       expect(builds.of(OrderLineRow), 0);
       await tester.pumpAndSettle();
-      expect(find.text('Confirmed'), findsOneWidget);
+      expect(find.text('Order confirmed'), findsOneWidget);
 
       // A line changed: its row rebuilds.
       builds.reset();
       poll.value = (
         3,
-        OrderModel.fromJson(
+        _withoutImages(
           orderJson(
             status: 'confirmed',
             lines: <Map<String, dynamic>>[orderLineJson(quantity: 3)],
           ),
-        ).toEntity(),
+        ),
       );
       await tester.pump();
       expect(builds.of(OrderLineRow), 1);
       expect(find.text('3×'), findsOneWidget);
     });
 
-    testWidgets('reduced motion paints the step at once and runs nothing', (
+    testWidgets('more than three items fold behind "Show N more"', (
       tester,
     ) async {
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
+      addTearDown(trackingCubit.close);
+      final order = _withoutImages(
+        orderJson(
+          lines: <Map<String, dynamic>>[
+            for (var i = 1; i <= 5; i++)
+              orderLineJson(key: 'l$i', productId: 'p$i'),
+          ],
+        ),
+      );
+      await _pump(
+        tester,
+        _trackingHome(trackingCubit, _body(order)),
+        size: const Size(400, 1800),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(OrderLineRow), findsNWidgets(3));
+
+      await tester.ensureVisible(find.text('Show 2 more'));
+      await tester.tap(find.text('Show 2 more'));
+      await tester.pumpAndSettle();
+      expect(find.byType(OrderLineRow), findsNWidgets(5));
+
+      await tester.tap(find.text('Show less'));
+      await tester.pumpAndSettle();
+      expect(find.byType(OrderLineRow), findsNWidgets(3));
+    });
+
+    testWidgets('reduced motion paints the stage at once and runs nothing', (
+      tester,
+    ) async {
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       await _pump(
         tester,
-        _trackingHome(
-          trackingCubit,
-          TrackingBody(order: _order(status: 'confirmed')),
-        ),
+        _trackingHome(trackingCubit, _body(_order(status: 'picking'))),
         reduceMotion: true,
       );
 
-      expect(_painter(tester).fill.value, 2);
-      expect(_painter(tester).pulse.value, 0);
+      expect(_painter(tester).fill.value, 1);
+      expect(_painter(tester).sweep.value, 0);
       expect(tester.hasRunningAnimations, isFalse);
     });
 
     testWidgets('the page: title bar, and the signed-out state signs in', (
       tester,
     ) async {
-      final trackingRepository = FakeOrdersRepository()
+      final trackingRepository = _NoImageOrdersRepository()
         ..detailFailure = const UnauthorizedFailure();
       final trackingCubit = _trackingCubit(trackingRepository);
       addTearDown(trackingCubit.close);
@@ -493,7 +641,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Order tracking'), findsOneWidget);
+      expect(find.text('Order details'), findsOneWidget);
+      expect(find.text('Help'), findsOneWidget);
       expect(find.text('Sign in to see your orders'), findsOneWidget);
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
@@ -503,7 +652,42 @@ void main() {
     testWidgets('the page: an error offers a retry that fetches again', (
       tester,
     ) async {
-      final trackingRepository = FakeOrdersRepository()
+      final trackingRepository = _NoImageOrdersRepository()
+        ..detailFailure = const ServerFailure('boom', statusCode: 500);
+      final trackingCubit = _trackingCubit(trackingRepository);
+      addTearDown(trackingCubit.close);
+      await tester.runAsync(() => trackingCubit.load('o1'));
+      await _pump(
+        tester,
+        BlocProvider<OrderTrackingCubit>.value(
+          value: trackingCubit,
+          child: const OrderTrackingView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Retry'));
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pumpAndSettle();
+      expect(trackingRepository.calls, <String>['getOrder:o1', 'getOrder:o1']);
+      expect(find.byType(TrackingBody), findsOneWidget);
+      // The number arrived with the order: the title says it.
+      expect(
+        find.descendant(
+          of: find.byType(HeroTitleBar),
+          matching: find.textContaining('JM-1001'),
+        ),
+        findsOneWidget,
+      );
+      // The retry armed the 30 s poll inside the fake clock: hiding the page
+      // disarms it, as leaving the route would.
+      trackingCubit.setVisible(false);
+    });
+
+    testWidgets('the page: a gone order offers the way back, no retry', (
+      tester,
+    ) async {
+      final trackingRepository = _NoImageOrdersRepository()
         ..detailFailure = const NotFoundFailure('gone');
       final trackingCubit = _trackingCubit(trackingRepository);
       addTearDown(trackingCubit.close);
@@ -518,20 +702,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text("This order isn't available"), findsOneWidget);
-      await tester.tap(find.text('Retry'));
-      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      expect(find.text('Retry'), findsNothing);
+      await tester.tap(find.text('Back to orders'));
       await tester.pumpAndSettle();
-      expect(trackingRepository.calls, <String>['getOrder:o1', 'getOrder:o1']);
-      expect(find.byType(TrackingBody), findsOneWidget);
-      // The retry armed the 30 s poll inside the fake clock: hiding the page
-      // disarms it, as leaving the route would.
-      trackingCubit.setVisible(false);
+      expect(find.text('orders-list'), findsOneWidget);
     });
 
     testWidgets('a page pushed over tracking rebuilds none of the page', (
       tester,
     ) async {
-      final trackingCubit = _trackingCubit(FakeOrdersRepository());
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
       addTearDown(trackingCubit.close);
       await tester.runAsync(() => trackingCubit.load('o1'));
       await _pump(
@@ -540,15 +720,17 @@ void main() {
           value: trackingCubit,
           child: const OrderTrackingView(),
         ),
-        size: const Size(400, 1200),
+        size: const Size(400, 1600),
       );
       await tester.pumpAndSettle();
       expect(find.byType(OrderLineRow), findsOneWidget);
+      await tester.ensureVisible(find.text('View invoice'));
+      await tester.pumpAndSettle();
       final builds = RebuildProbe<Widget, Type>((w) => w.runtimeType)..start();
       addTearDown(builds.stop);
 
       // The route above flips the page's route status on push and on pop.
-      await tester.tap(find.text('Invoice'));
+      await tester.tap(find.text('View invoice'));
       await tester.pumpAndSettle();
       expect(find.text('invoice:o1'), findsOneWidget);
       GoRouter.of(tester.element(find.text('invoice:o1'))).pop();
@@ -559,9 +741,136 @@ void main() {
       expect(builds.of(OrderLineRow), 0);
       trackingCubit.setVisible(false); // disarms the poll the load armed
     });
+
+    testWidgets('delivered live: the success moment, then the rating card', (
+      tester,
+    ) async {
+      Haptics.debugReset();
+      final haptics = <MethodCall>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'HapticFeedback.vibrate') haptics.add(call);
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
+      addTearDown(trackingCubit.close);
+      final order = ValueNotifier<OrderEntity>(
+        _order(status: 'out_for_delivery'),
+      );
+      addTearDown(order.dispose);
+      await _pump(
+        tester,
+        _trackingHome(
+          trackingCubit,
+          ValueListenableBuilder<OrderEntity>(
+            valueListenable: order,
+            builder: (_, value, _) => _body(value),
+          ),
+        ),
+        size: const Size(400, 1600),
+      );
+      await tester.pumpAndSettle();
+      expect(haptics, isEmpty);
+      expect(find.text('How was your order?'), findsNothing);
+
+      order.value = _order(status: 'delivered');
+      await tester.pump();
+      // The success haptic lands with the panel's answer, before anything
+      // else moves.
+      expect(haptics, hasLength(1));
+      expect(find.text('Order delivered'), findsOneWidget);
+      final burst = tester.widget<ConfettiBurst>(find.byType(ConfettiBurst));
+      expect(burst.playKey, isNull); // the burst waits for the pop
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).playKey,
+        1,
+      );
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(find.text('How was your order?'), findsOneWidget);
+      expect(haptics, hasLength(1));
+    });
+
+    testWidgets('a delivered order opened later plays no moment', (
+      tester,
+    ) async {
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
+      addTearDown(trackingCubit.close);
+      await _pump(
+        tester,
+        _trackingHome(trackingCubit, _body(_order(status: 'delivered'))),
+        size: const Size(400, 1600),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).playKey,
+        isNull,
+      );
+      expect(find.text('Delivered at'), findsOneWidget);
+      expect(find.text('How was your order?'), findsOneWidget);
+    });
+
+    testWidgets('a review that went through turns the rating card to thanks', (
+      tester,
+    ) async {
+      final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
+      addTearDown(trackingCubit.close);
+      await _pump(
+        tester,
+        _trackingHome(trackingCubit, _body(_order(status: 'delivered'))),
+        size: const Size(400, 1600),
+      );
+      await tester.pumpAndSettle();
+
+      // Backing out of the review keeps the question.
+      await tester.tap(find.byType(TrackingRateStar).at(1));
+      await tester.pumpAndSettle();
+      expect(find.text('review:2'), findsOneWidget);
+      await tester.tap(find.text('review-back'));
+      await tester.pumpAndSettle();
+      expect(find.text('How was your order?'), findsOneWidget);
+      expect(find.byType(TrackingRateThanks), findsNothing);
+
+      // The stars travel to the review; one that went through says thanks.
+      await tester.tap(find.byType(TrackingRateStar).at(3));
+      await tester.pumpAndSettle();
+      expect(find.text('review:4'), findsOneWidget);
+      await tester.tap(find.text('review-sent'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TrackingRateThanks), findsOneWidget);
+      expect(find.text('Thanks for rating!'), findsOneWidget);
+      expect(find.text('How was your order?'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
   });
 
   group('invoice', () {
+    testWidgets('the receipt marks what the picker changed', (tester) async {
+      await _pump(
+        tester,
+        Scaffold(
+          body: InvoiceBody(order: _busyOrder(status: 'delivered')),
+        ),
+        size: const Size(400, 1400),
+      );
+      await tester.pumpAndSettle();
+
+      // Line l1 was substituted (the fixture's l2 is not on the order).
+      expect(
+        find.textContaining('Replaced with Jasmine rice', findRichText: true),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('three sections, no invoice link, the server totals', (
       tester,
     ) async {
@@ -580,7 +889,11 @@ void main() {
       expect(find.text('Pending'), findsOneWidget);
       expect(find.text('KD 0.500'), findsOneWidget); // delivery fee
       expect(find.text('KD 3.500'), findsNWidgets(2)); // items + summary
-      expect(find.text('You earned 35 points'), findsOneWidget);
+      // Not delivered yet: the points come with the delivery.
+      expect(
+        find.text("You'll earn 35 points once it's delivered"),
+        findsOneWidget,
+      );
     });
   });
 
@@ -713,11 +1026,11 @@ void main() {
       testWidgets('tracking at 360 dp, text x1.3 (${locale.languageCode})', (
         tester,
       ) async {
-        final trackingCubit = _trackingCubit(FakeOrdersRepository());
+        final trackingCubit = _trackingCubit(_NoImageOrdersRepository());
         addTearDown(trackingCubit.close);
         await _pump(
           tester,
-          _trackingHome(trackingCubit, TrackingBody(order: _busyOrder())),
+          _trackingHome(trackingCubit, _body(_busyOrder())),
           locale: locale,
           textScale: 1.3,
           size: const Size(360, 800),
@@ -748,7 +1061,8 @@ void main() {
           find.descendant(of: money, matching: find.byType(Text)),
           findsOneWidget,
         );
-        expect(find.text(rtl ? 'د.ك 3.000' : 'KD 3.000'), findsOneWidget);
+        // The line and the subtotal.
+        expect(find.text(rtl ? 'د.ك 3.000' : 'KD 3.000'), findsWidgets);
       });
 
       testWidgets('invoice at 360 dp, text x1.3 (${locale.languageCode})', (

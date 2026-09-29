@@ -14,7 +14,9 @@ import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/motion/float_loop.dart';
 import 'package:hero_mart/src/core/motion/fly_to_cart.dart';
+import 'package:hero_mart/src/core/motion/haptics.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/motion_beat.dart';
 import 'package:hero_mart/src/core/motion/rolling_number.dart';
 import 'package:hero_mart/src/core/motion/rotating_line.dart';
 import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
@@ -143,6 +145,8 @@ void main() {
   });
 
   setUp(() {
+    // The refusal throttle reads the real clock: start every test fresh.
+    Haptics.debugReset();
     cartRepository = FakeCartRepository()..snapshot = snapshot();
     cartCubit = buildCartCubit(cartRepository);
     checkoutRepository = FakeCheckoutRepository();
@@ -251,6 +255,11 @@ void main() {
 
         await emit(tester, snapshot(subtotalFils: 2400));
         await tester.pumpAndSettle();
+        // The settled amount lands on its beat (B2-03): after the receipt's
+        // lines, still "Updating…" until then — never a stale amount.
+        expect(inBar(find.bySemanticsLabel('Updating…')), findsOneWidget);
+        await tester.pump(MotionBeat.third);
+        await tester.pumpAndSettle();
         expect(identical(tester.element(roller), before), isTrue);
         expect(inBar(find.bySemanticsLabel('KD 2.900')), findsOneWidget);
         expect(find.semantics.byLabel('Updating…'), findsNothing);
@@ -323,7 +332,7 @@ void main() {
         ..start();
       addTearDown(probe.stop);
       await tester.pump(AppMotion.carousel);
-      await tester.pump(AppMotion.flip);
+      await tester.pump(AppMotion.medium);
       await tester.pump(const Duration(milliseconds: 16));
 
       expect(probe.of(RotatingLine), greaterThan(0));
@@ -351,14 +360,14 @@ void main() {
     });
 
     /// No swap is under way: a swapping line holds two facts (the one
-    /// leaving and the one arriving) for [AppMotion.flip].
+    /// leaving and the one arriving) for [AppMotion.medium].
     Future<void> expectNoSwap(WidgetTester tester) async {
       final facts = find.descendant(
         of: find.byType(RotatingLine),
         matching: find.byType(CheckoutBarFactText),
       );
       expect(facts, findsOneWidget);
-      await tester.pump(AppMotion.flip ~/ 2);
+      await tester.pump(AppMotion.medium ~/ 2);
       expect(facts, findsOneWidget);
     }
 
@@ -450,7 +459,7 @@ void main() {
       // Every saving together first, then the coupon's own.
       expect(find.text('Saving KD 0.200'), findsOneWidget);
       await tester.pump(AppMotion.carousel);
-      await tester.pump(AppMotion.flip);
+      await tester.pump(AppMotion.medium);
       await tester.pump(const Duration(milliseconds: 16));
       expect(find.text('KD 0.200 saved with SAVE'), findsOneWidget);
     });
@@ -659,8 +668,10 @@ void main() {
       await checkoutCubit.start(defaultAddressId: 'a1');
       await pumpBar(tester, child: const _BarWithHint());
       expect(find.byType(CheckoutHintBubble), findsOneWidget);
+      // On stage (its one budgeted swap may already be spent by now: the
+      // settle ran past the ambient budget).
       expect(
-        tester.state<RotatingLineState>(find.byType(RotatingLine)).debugResting,
+        tester.state<RotatingLineState>(find.byType(RotatingLine)).debugOnStage,
         isTrue,
       );
 
@@ -669,10 +680,9 @@ void main() {
 
       expect(checkoutCubit.state.status, CheckoutStatus.placed);
       expect(find.byType(CheckoutHintBubble), findsNothing);
-      expect(
-        tester.state<RotatingLineState>(find.byType(RotatingLine)).debugResting,
-        isFalse,
-      );
+      final line = tester.state<RotatingLineState>(find.byType(RotatingLine));
+      expect(line.debugOnStage, isFalse);
+      expect(line.debugResting, isFalse);
     });
 
     for (final locale in const [checkoutEn, checkoutAr]) {
@@ -704,7 +714,7 @@ void main() {
           // Every fact of the line takes its turn without overflowing.
           for (var turn = 0; turn < 4; turn++) {
             await tester.pump(AppMotion.carousel);
-            await tester.pump(AppMotion.flip);
+            await tester.pump(AppMotion.medium);
             await tester.pump(const Duration(milliseconds: 16));
             expect(tester.takeException(), isNull);
           }

@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/hero_address_entity.dart';
-import '../../../../../core/motion/motion_widgets.dart';
-import 'address_label_glyph.dart';
+import '../../../../../core/widgets/address_label_icon.dart';
+import '../../../../../core/widgets/press_row.dart';
 import 'address_row_actions.dart';
 import 'address_row_details.dart';
 
@@ -18,29 +18,26 @@ class AddressRowTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Passive PressScale (no onTap) so the InkWell keeps its ripple while the
-    // whole row gives the subtle press feel.
-    return PressScale(
-      child: InkWell(
-        onTap: () => context.pop(address),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.s12,
-            vertical: AppSpacing.s20,
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsetsDirectional.only(top: AppSpacing.s2),
-                child: AddressLabelGlyph(label: address.labelKind),
-              ),
-              const SizedBox(width: AppSpacing.s10),
-              Expanded(child: AddressRowDetails(address: address)),
-              const SizedBox(width: AppSpacing.s8),
-              AddressRowActions(address: address),
-            ],
-          ),
+    // The edit / delete actions press themselves; the row stays still then.
+    return PressRow(
+      onTap: () => context.pop(address),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.s12,
+          vertical: AppSpacing.s20,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.only(top: AppSpacing.s2),
+              child: AddressLabelIcon(label: address.labelKind),
+            ),
+            const SizedBox(width: AppSpacing.s10),
+            Expanded(child: AddressRowDetails(address: address)),
+            const SizedBox(width: AppSpacing.s8),
+            AddressRowActions(address: address),
+          ],
         ),
       ),
     );

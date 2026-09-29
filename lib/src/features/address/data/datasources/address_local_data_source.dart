@@ -31,7 +31,7 @@ class AddressLocalDataSourceImpl implements AddressLocalDataSource {
   /// previous customer's addresses and phone numbers.
   static const List<String> _retiredKeys = [
     'account.addresses.v1',
-    'jameia.addressbook.v1',
+    'hero.addressbook.v1',
   ];
 
   final LocalStorage _storage;

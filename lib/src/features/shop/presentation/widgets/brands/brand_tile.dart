@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/brand_entity.dart';
+import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_image.dart';
 
@@ -19,9 +20,8 @@ class BrandTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressScale(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
       child: Container(
         margin: const EdgeInsetsDirectional.fromSTEB(
           AppSpacing.s12,

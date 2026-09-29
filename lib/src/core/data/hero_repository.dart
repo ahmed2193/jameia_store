@@ -6,25 +6,28 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'hero/hero_loader.dart';
-import 'hero/hero_models.dart';
 import 'models/models.dart';
 
 /// In-memory repository backed by bundled data — what is still offline.
 ///
 /// Account-side data (user / addresses / coupons / orders) comes from
-/// `assets/data/hero_data.json`. The shop list (the Mine favourites count)
+/// `assets/data/hero_data.json`. The shop count (the Mine favourites count)
 /// comes from the real **Hero** export, slimmed offline by
 /// `tool/build_hero_asset.js` into a single ~2MB asset
-/// (`assets/data/hero/hero_catalog.json`) that is parsed **in an isolate**
-/// at boot.
+/// (`assets/data/hero/hero_catalog.json`): counted **in an isolate** the
+/// first time it is asked for ([shopCount]), never before the first frame
+/// (BX-05 / PB-14), and only the number is kept.
 ///
 /// Registered as a singleton; call [load] during bootstrap before the first
 /// screen reads data.
 class HeroRepository {
   HeroRepository();
 
-  // ── Hero catalogue ──────────────────────────────────────────────────────
-  HeroCatalog _catalog = const HeroCatalog();
+  static const String _catalogAsset = 'assets/data/hero/hero_catalog.json';
+
+  // ── Hero catalogue (only its shop count is read) ───────────────────────────
+  Future<int>? _shopCount;
+  int? _knownShopCount;
 
   // ── Account-side ──────────────────────────────────────────────────────────
   late UserProfile _user;
@@ -66,25 +69,38 @@ class HeroRepository {
         .map((e) => Shop.fromJson(e as Map<String, dynamic>))
         .toList();
 
-    // Hero catalogue — heavy decode + build runs off the main thread.
-    try {
-      final assetRaw = await rootBundle.loadString(
-        'assets/data/hero/hero_catalog.json',
-      );
-      _catalog = await compute(parseHeroCatalog, assetRaw);
-    } catch (_) {
-      _catalog = const HeroCatalog(); // fall back to hero_data above
-    }
-
     _loaded = true;
   }
 
   UserProfile get user => _user;
-  List<Shop> get shops =>
-      _catalog.shops.isNotEmpty ? _catalog.shops : _fallbackShops;
   List<HeroAddress> get addresses => _addresses;
   List<Coupon> get coupons => _coupons;
   List<HeroOrder> get orders => _orders;
+
+  /// How many shops the bundled catalogue lists — one per top category, like
+  /// the parsed catalogue's `shops`. The 2 MB asset is read uncached and
+  /// decoded in an isolate on the first call only (warmed after the first
+  /// frame, else the Mine tab), and just the number comes back;
+  /// `hero_data`'s shop block counts when the catalogue cannot be read. Once
+  /// known, the answer is a fresh future in the caller's zone.
+  Future<int> shopCount() {
+    final known = _knownShopCount;
+    if (known != null) return Future<int>.value(known);
+    return _shopCount ??= _countShops().then(
+      (count) => _knownShopCount = count,
+    );
+  }
+
+  Future<int> _countShops() async {
+    try {
+      final raw = await rootBundle.loadString(_catalogAsset, cache: false);
+      final count = await compute(countHeroShops, raw);
+      if (count > 0) return count;
+    } on Object catch (_) {
+      // Unreadable catalogue: the fallback block below.
+    }
+    return _fallbackShops.length;
+  }
 
   /// The default address, or a benign empty placeholder ([HeroAddress.empty])
   /// when the book is empty — never throws.
@@ -129,7 +145,7 @@ class HeroRepository {
 
   // ── Local persistence (shared_preferences) ──────────────────────────────────
 
-  static const String _kAddrPrefsKey = 'jameia.addressbook.v1';
+  static const String _kAddrPrefsKey = 'hero.addressbook.v1';
 
   /// Write the current address book to local storage.
   Future<void> _persistAddresses() async {
@@ -159,7 +175,7 @@ class HeroRepository {
     }
   }
 
-  static const String _kOrdersPrefsKey = 'jameia.orders.v1';
+  static const String _kOrdersPrefsKey = 'hero.orders.v1';
 
   /// The orders older builds placed on-device, if any.
   Future<List<HeroOrder>> _restoreOrders() async {

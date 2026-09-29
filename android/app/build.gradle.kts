@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.jameiamart.app"
+    namespace = "com.herodelivery.app"
     // Pinned past Flutter 3.47's defaults (API 36 / NDK 28.2) to the latest stable
     // Android 17 SDK and NDK r30; permission_handler_android 14 compiles against 37.
     compileSdk = 37
@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.jameiamart.app"
+        applicationId = "com.herodelivery.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

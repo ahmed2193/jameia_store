@@ -24,19 +24,20 @@ class AssistantOnboardingConfirmButton extends StatelessWidget {
   final VoidCallback onTap;
 
   static const double _height = AppSize.s36;
-  static const double _pressedScale = 0.94;
 
   @override
   Widget build(BuildContext context) {
     final foreground = confirmed ? AppColors.primaryDark : AppColors.white;
     return AnimatedScale(
-      scale: pressed ? _pressedScale : 1,
-      duration: MotionGuard.duration(context, AppMotion.fast),
+      scale: pressed ? AppMotion.pressedScale : 1,
+      duration: MotionGuard.duration(
+        context,
+        pressed ? AppMotion.microPop : AppMotion.fast,
+      ),
       curve: AppMotion.signature,
       child: PressScale(
         onTap: confirmed ? null : onTap,
         enabled: !confirmed,
-        haptic: null,
         child: AnimatedContainer(
           height: _height,
           duration: MotionGuard.duration(context, AppMotion.medium),

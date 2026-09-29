@@ -25,6 +25,16 @@ class SettingsRepositoryImpl
   });
 
   @override
+  Either<Failure, bool?> hapticsEnabled() => executeSync(_local.hapticsEnabled);
+
+  @override
+  Future<Either<Failure, Unit>> setHapticsEnabled({required bool enabled}) =>
+      execute(() async {
+        await _local.setHapticsEnabled(enabled: enabled);
+        return unit;
+      });
+
+  @override
   Future<Either<Failure, Unit>> clearCache() => execute(() async {
     await _local.clearCache();
     return unit;

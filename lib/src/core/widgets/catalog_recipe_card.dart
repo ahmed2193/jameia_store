@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
@@ -8,10 +7,11 @@ import '../domain/entities/recipe_summary_entity.dart';
 import '../responsive/app_size.dart';
 import 'catalog_recipe_tag.dart';
 import 'hero_image.dart';
+import 'recipe_meta_line.dart';
 
 /// A recipe card (home recipe rail, "recipes using this product", the recipe
 /// list): photo with the cuisine / diet tags over it, then the title and
-/// "80 min · 6 servings".
+/// "⏱ 80 min · 👤 6 servings" ([RecipeMetaLine]).
 class CatalogRecipeCard extends StatelessWidget {
   const CatalogRecipeCard({
     super.key,
@@ -70,18 +70,9 @@ class CatalogRecipeCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.s2),
-            Text(
-              'catalog.recipe_meta'.tr(
-                namedArgs: {
-                  'minutes': '${recipe.totalMinutes}',
-                  'servings': '${recipe.servings}',
-                },
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.captionLarge.copyWith(
-                color: AppColors.secondaryText,
-              ),
+            RecipeMetaLine(
+              minutes: recipe.totalMinutes,
+              servings: recipe.servings,
             ),
           ],
         ),

@@ -4,25 +4,19 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/motion/motion_widgets.dart';
+import '../../../../core/motion/rolling_number.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
 import 'coupon_fade.dart';
 
 /// Start side of a coupon ticket: the warm amber → orange gradient with a
-/// soft highlight, the discount [amount] in big bold figures (counting up from 0
-/// the first time it shows when [countsUp]) and the "OFF" caption. [faded]
+/// soft highlight, the discount [amount] in big bold figures (at once on
+/// open; it rolls only on a real change) and the "OFF" caption. [faded]
 /// paints it in the spent-coupon greys ([CouponFade]).
 class CouponStub extends StatelessWidget {
-  const CouponStub({
-    super.key,
-    required this.amount,
-    this.countsUp = false,
-    this.faded = false,
-  });
+  const CouponStub({super.key, required this.amount, this.faded = false});
 
   final double amount;
-  final bool countsUp;
   final bool faded;
 
   static const List<Color> gradient = [
@@ -112,11 +106,9 @@ class CouponStub extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.s2),
-                      CountUpText(
+                      RollingNumber(
                         value: amount,
-                        from: countsUp ? 0 : null,
-                        maxLines: 1,
-                        format: Formatters.amount,
+                        format: (value) => Formatters.amount(value.toDouble()),
                         style: digits,
                       ),
                     ],

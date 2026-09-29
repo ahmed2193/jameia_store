@@ -13,6 +13,8 @@ class SearchState extends Equatable {
     this.suggestions = const <CatalogProductEntity>[],
     this.isSuggesting = false,
     this.suggestFailure,
+    this.isDiscoverLoading = false,
+    this.discoverFailure,
   });
 
   /// What is in the field right now.
@@ -30,6 +32,14 @@ class SearchState extends Equatable {
   /// the next keystroke. A `NetworkFailure` turns the list into the offline
   /// one (recent terms + "search needs a connection").
   final Failure? suggestFailure;
+
+  /// The discover blocks' read is running with nothing of theirs on screen
+  /// yet: their skeleton shows.
+  final bool isDiscoverLoading;
+
+  /// Why the discover blocks could not load when neither has anything to
+  /// show (both failed, nothing saved); `null` otherwise.
+  final Failure? discoverFailure;
 
   bool get isTyping => query.trim().isNotEmpty;
 
@@ -61,6 +71,9 @@ class SearchState extends Equatable {
     bool? isSuggesting,
     Failure? suggestFailure,
     bool clearSuggestFailure = false,
+    bool? isDiscoverLoading,
+    Failure? discoverFailure,
+    bool clearDiscoverFailure = false,
   }) => SearchState(
     query: query ?? this.query,
     recents: recents ?? this.recents,
@@ -70,6 +83,10 @@ class SearchState extends Equatable {
     suggestFailure: clearSuggestFailure
         ? null
         : (suggestFailure ?? this.suggestFailure),
+    isDiscoverLoading: isDiscoverLoading ?? this.isDiscoverLoading,
+    discoverFailure: clearDiscoverFailure
+        ? null
+        : (discoverFailure ?? this.discoverFailure),
   );
 
   @override
@@ -80,5 +97,7 @@ class SearchState extends Equatable {
     suggestions,
     isSuggesting,
     suggestFailure,
+    isDiscoverLoading,
+    discoverFailure,
   ];
 }

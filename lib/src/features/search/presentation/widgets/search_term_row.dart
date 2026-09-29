@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/motion/motion.dart';
+import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/press_row.dart';
 import 'search_highlighted_text.dart';
 
 /// A past search that matches the typed text: the clock icon, the term with
@@ -27,7 +30,7 @@ class SearchTermRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    return InkWell(
+    return PressRow(
       onTap: onTap,
       // The term below carries the row's action for screen readers, so the
       // refine arrow stays a separate button.
@@ -66,16 +69,20 @@ class SearchTermRow extends StatelessWidget {
                   ),
                 ),
               ),
-              IconButton(
-                tooltip: 'search.refine_term'.tr(namedArgs: {'term': term}),
-                onPressed: onRefine,
-                style: IconButton.styleFrom(
-                  fixedSize: const Size.square(AppSize.s48),
-                ),
-                icon: Icon(
-                  rtl ? Icons.north_east_rounded : Icons.north_west_rounded,
-                  size: AppSize.s20,
-                  color: AppColors.secondaryText,
+              // Presses itself; the row stays still then.
+              PressScale(
+                pressedScale: AppMotion.pressedScaleSmall,
+                child: IconButton(
+                  tooltip: 'search.refine_term'.tr(namedArgs: {'term': term}),
+                  onPressed: onRefine,
+                  style: IconButton.styleFrom(
+                    fixedSize: const Size.square(AppSize.s48),
+                  ),
+                  icon: Icon(
+                    rtl ? Icons.north_east_rounded : Icons.north_west_rounded,
+                    size: AppSize.s20,
+                    color: AppColors.secondaryText,
+                  ),
                 ),
               ),
             ],

@@ -94,7 +94,8 @@ class _ConnectivityBannerHostState extends State<ConnectivityBannerHost> {
     if (!_allowed || !context.read<ConnectivityCubit>().state.isOffline) {
       return;
     }
-    Haptics.tap();
+    // An action that needs the internet: the one refusal buzz (§9.5).
+    Haptics.refuse();
     _nudges.value++;
   }
 

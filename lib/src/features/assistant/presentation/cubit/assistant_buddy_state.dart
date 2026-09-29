@@ -14,6 +14,7 @@ class AssistantBuddyState extends Equatable {
     this.onboarded = true,
     this.touring = false,
     this.thought,
+    this.visit = 0,
   });
 
   final AssistantBuddyScene scene;
@@ -22,8 +23,8 @@ class AssistantBuddyState extends Equatable {
   /// device log is read, so it never flashes in and out at launch.
   final bool launcherHidden;
 
-  /// The customer is scrolling down the content: the launcher steps aside —
-  /// once it has finished the line it is thinking out loud.
+  /// The customer is scrolling down the content: the launcher steps aside
+  /// (a line it was thinking goes with it).
   final bool scrolledAway;
 
   /// The greeting on screen, `null` when none.
@@ -43,6 +44,11 @@ class AssistantBuddyState extends Equatable {
   /// The line the launcher is thinking out loud, `null` when none.
   final AssistantThought? thought;
 
+  /// Counts the customer's visits (an opening of the app, or a return
+  /// after a long while away): what the buddy allows itself per visit
+  /// starts over when it changes.
+  final int visit;
+
   bool get launcherShown =>
       scene.available &&
       scene.launcherHere &&
@@ -50,7 +56,7 @@ class AssistantBuddyState extends Equatable {
       !launcherHidden &&
       !touring &&
       nudge == null &&
-      (!scrolledAway || scene.screenReader || thought != null);
+      (!scrolledAway || scene.screenReader);
 
   AssistantBuddyState copyWith({
     AssistantBuddyScene? scene,
@@ -61,6 +67,7 @@ class AssistantBuddyState extends Equatable {
     bool? onboarded,
     bool? touring,
     AssistantThought? Function()? thought,
+    int? visit,
   }) => AssistantBuddyState(
     scene: scene ?? this.scene,
     launcherHidden: launcherHidden ?? this.launcherHidden,
@@ -70,6 +77,7 @@ class AssistantBuddyState extends Equatable {
     onboarded: onboarded ?? this.onboarded,
     touring: touring ?? this.touring,
     thought: thought != null ? thought() : this.thought,
+    visit: visit ?? this.visit,
   );
 
   @override
@@ -82,5 +90,6 @@ class AssistantBuddyState extends Equatable {
     onboarded,
     touring,
     thought,
+    visit,
   ];
 }

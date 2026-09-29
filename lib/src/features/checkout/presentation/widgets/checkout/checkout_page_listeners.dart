@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../config/routes/route_args/placed_order_args.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/motion/confetti_overlay.dart';
 import '../../../../../core/motion/haptics.dart';
+import '../../../../../core/motion/success_beat.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
@@ -26,7 +28,7 @@ import 'checkout_ui_controller.dart';
 /// - A new destination re-reads the cart (its fee and totals changed).
 /// - Placed: the cart lets go of the order, the wallet and points are
 ///   re-read, a success haptic and a confetti burst (the flow's one
-///   celebration), then the tracking page.
+///   celebration), then — once the check has held — the tracking page.
 /// - A failed call is a snack, except a load failure (its own view) and a
 ///   401 (the sign-in prompt); offline, a choice or the order says it needs
 ///   the internet (the draft stays). A refused order re-reads the cart (and
@@ -60,14 +62,26 @@ class CheckoutPageListeners extends StatelessWidget {
     context.read<CartCubit>().onOrderPlaced();
     final session = context.read<AuthSessionCubit>();
     if (session.state.isSignedIn) unawaited(session.restore());
-    Haptics.success();
+    Haptics.done();
     ConfettiOverlay.play(
       context,
       colors: _confetti,
       origin: _confettiOrigin,
       count: _confettiPieces,
     );
-    context.pushReplacement(Routes.orderTracking, extra: order.id);
+    unawaited(_openTracking(context, order.id));
+  }
+
+  /// The busy disc's check draws and holds first (docs/motion B2-04: the
+  /// moment is seen, not hidden by the next page); then a new root —
+  /// tracking fades through in place of the checkout.
+  Future<void> _openTracking(BuildContext context, String orderId) async {
+    await SuccessBeat.hold(context);
+    if (!context.mounted) return;
+    context.pushReplacement(
+      Routes.orderTracking,
+      extra: PlacedOrderArgs(orderId),
+    );
   }
 
   void _onFailure(BuildContext context, CheckoutState state) {
@@ -116,8 +130,11 @@ class CheckoutPageListeners extends StatelessWidget {
         BlocListener<CheckoutCubit, CheckoutState>(
           listenWhen: (previous, current) =>
               current.notice == CheckoutNotice.slotReset,
-          listener: (context, _) =>
-              showHeroSnackBar(context, 'checkout.slot_reset'.tr()),
+          listener: (context, _) => showHeroSnackBar(
+            context,
+            'checkout.slot_reset'.tr(),
+            tone: HeroSnackTone.warning,
+          ),
         ),
       ],
       child: CheckoutAutoChangeListeners(child: child),

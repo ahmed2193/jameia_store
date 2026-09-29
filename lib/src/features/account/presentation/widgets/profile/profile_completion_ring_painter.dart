@@ -3,13 +3,16 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 /// Paints the completion ring: a full [trackColor] circle and, from twelve
-/// o'clock clockwise, a [progress] (0..1) arc in [color] with round caps.
+/// o'clock, a [progress] (0..1) arc in [color] with round caps. The arc
+/// grows in the reading direction: clockwise, counter-clockwise under RTL
+/// ([textDirection]; docs/motion B1-20, horizontal motion mirrors).
 class ProfileCompletionRingPainter extends CustomPainter {
   const ProfileCompletionRingPainter({
     required this.progress,
     required this.color,
     required this.trackColor,
     required this.strokeWidth,
+    this.textDirection = TextDirection.ltr,
   });
 
   static const double _fullTurn = 2 * math.pi;
@@ -19,6 +22,9 @@ class ProfileCompletionRingPainter extends CustomPainter {
   final Color color;
   final Color trackColor;
   final double strokeWidth;
+
+  /// Which way the arc grows from twelve o'clock.
+  final TextDirection textDirection;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -35,7 +41,8 @@ class ProfileCompletionRingPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..color = color;
-    canvas.drawArc(rect, _twelveOClock, sweep, false, arc);
+    final turn = textDirection == TextDirection.rtl ? -sweep : sweep;
+    canvas.drawArc(rect, _twelveOClock, turn, false, arc);
   }
 
   @override
@@ -43,5 +50,6 @@ class ProfileCompletionRingPainter extends CustomPainter {
       oldDelegate.progress != progress ||
       oldDelegate.color != color ||
       oldDelegate.trackColor != trackColor ||
-      oldDelegate.strokeWidth != strokeWidth;
+      oldDelegate.strokeWidth != strokeWidth ||
+      oldDelegate.textDirection != textDirection;
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../../core/motion/motion.dart';
+import 'splash_motion.dart';
 import 'splash_scene_painter.dart';
 import 'splash_status_bar.dart';
 import 'splash_tagline.dart';
@@ -19,8 +20,8 @@ import 'splash_wordmark.dart';
 /// cape, centred, on the same green), so the hand-over from the OS splash
 /// cannot be seen.
 /// Nothing moves until that frame is really on screen: the clock starts
-/// [AppMotion.splashHandOffHold] after the engine reports the first frame
-/// rasterized (or after [AppMotion.splashFirstFrameWait] at most), so a slow
+/// [SplashMotion.handOffHold] after the engine reports the first frame
+/// rasterized (or after [SplashMotion.firstFrameWait] at most), so a slow
 /// first frame or the OS splash's exit cross-fade never eats the opening.
 /// The whole scene is one [CustomPaint] driven by one controller: it repaints
 /// every frame without rebuilding widgets.
@@ -33,12 +34,18 @@ import 'splash_wordmark.dart';
 /// [onFinished] fires EXACTLY ONCE — when the intro ends, or after a failsafe
 /// of twice its length (plus the start delay), whichever lands first. Reduced
 /// motion shows the finished lockup straight away and hands off after
-/// [AppMotion.splashReducedHold].
+/// [SplashMotion.reducedHold].
+///
+/// [onLaunchFrame] fires once, when the launch frame is on screen and
+/// holding still (at once under reduced motion): the moment to start the
+/// first screen's data, so its load overlaps the intro (B1-14) and the work
+/// it puts on this isolate lands while nothing moves yet.
 class SplashPlayer extends StatefulWidget {
   const SplashPlayer({
     super.key,
     required this.variant,
     required this.onFinished,
+    this.onLaunchFrame,
   });
 
   final SplashVariant variant;
@@ -46,9 +53,12 @@ class SplashPlayer extends StatefulWidget {
   /// Called once when the intro is over — drives navigation.
   final VoidCallback onFinished;
 
+  /// Called once when the launch frame holds, before the intro moves.
+  final VoidCallback? onLaunchFrame;
+
   /// Longest time from the first frame to the start of the motion.
   static Duration get maxStartDelay =>
-      AppMotion.splashFirstFrameWait + AppMotion.splashHandOffHold;
+      SplashMotion.firstFrameWait + SplashMotion.handOffHold;
 
   @override
   State<SplashPlayer> createState() => _SplashPlayerState();
@@ -95,7 +105,8 @@ class _SplashPlayerState extends State<SplashPlayer>
     _started = true;
     if (MotionGuard.reduced(context)) {
       _clock.value = 1;
-      _reducedHold = Timer(AppMotion.splashReducedHold, _finishOnce);
+      widget.onLaunchFrame?.call();
+      _reducedHold = Timer(SplashMotion.reducedHold, _finishOnce);
       return;
     }
     _touch = SplashTouch(this);
@@ -107,7 +118,7 @@ class _SplashPlayerState extends State<SplashPlayer>
         (_) => _startAfterHold(),
       ),
     );
-    _firstFrameWait = Timer(AppMotion.splashFirstFrameWait, _startAfterHold);
+    _firstFrameWait = Timer(SplashMotion.firstFrameWait, _startAfterHold);
   }
 
   /// Holds the launch frame a beat, then runs the intro — once.
@@ -115,7 +126,8 @@ class _SplashPlayerState extends State<SplashPlayer>
     if (_clockStarted || !mounted) return;
     _clockStarted = true;
     _firstFrameWait?.cancel();
-    _handOffHold = Timer(AppMotion.splashHandOffHold, () {
+    widget.onLaunchFrame?.call();
+    _handOffHold = Timer(SplashMotion.handOffHold, () {
       if (mounted) _clock.forward();
     });
   }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// A hairline that runs down while the greeting waits ([elapsed] `0..1`),
 /// so its leaving is never a surprise. Scaled, not re-laid out, each frame.
+/// Reduced motion: the bar holds still, full (the time still runs).
 class AssistantBuddyCountdownBar extends StatelessWidget {
   const AssistantBuddyCountdownBar({super.key, required this.elapsed});
 
@@ -27,6 +29,7 @@ class AssistantBuddyCountdownBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final still = MotionGuard.reduced(context);
     final origin = AlignmentDirectional.centerStart.resolve(
       Directionality.of(context),
     );
@@ -38,11 +41,11 @@ class AssistantBuddyCountdownBar extends StatelessWidget {
           child: DecoratedBox(
             decoration: _track,
             child: AnimatedBuilder(
-              animation: elapsed,
+              animation: still ? kAlwaysCompleteAnimation : elapsed,
               // Never scaled to zero: a degenerate transform crashes some
               // GPU back ends (seen with Impeller on the emulator).
               builder: (context, child) {
-                final left = 1 - elapsed.value;
+                final left = still ? 1.0 : 1 - elapsed.value;
                 return left < _minLeft
                     ? const SizedBox.shrink()
                     : Transform(

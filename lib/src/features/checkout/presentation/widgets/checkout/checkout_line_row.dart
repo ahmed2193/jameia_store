@@ -26,7 +26,7 @@ class CheckoutLineRow extends StatelessWidget {
   final CartLineEntity line;
 
   void _remove(BuildContext context) {
-    Haptics.selection();
+    Haptics.cartRemove();
     context.read<CartCubit>().removeLine(line);
   }
 

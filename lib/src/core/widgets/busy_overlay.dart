@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 
 import '../motion/motion.dart';
-import '../motion/spring_curve.dart';
 import 'busy_overlay_layer.dart';
 
 /// Holds the screen while a submit is in flight — sending a code, placing an
@@ -13,6 +12,12 @@ import 'busy_overlay_layer.dart';
 /// page's `Scaffold`, so the app bar is covered too. [done] turns the dots
 /// into a drawn check for the beat before the page moves on (announced as
 /// [doneLabel]).
+///
+/// [failed] turning true while the overlay is up (the submit came back
+/// refused or unreached) turns the dots into a drawn × instead
+/// (docs/motion B3-05), holds it for the mark's draw plus
+/// [AppMotion.successHold] (announced as [failLabel]), then the overlay
+/// leaves and the snack bar the page shows for the failure is what stays.
 ///
 /// It shows at once — a submit wants an answer to the tap — and, once
 /// shown, stays at least [AppMotion.busyMinVisible], so a fast reply reads
@@ -23,15 +28,18 @@ import 'busy_overlay_layer.dart';
 /// loader on screen.
 ///
 /// Reduced motion: the scrim and the disc come and go without motion, the
-/// dots rest side by side.
+/// dots rest side by side, the marks appear whole (the × still holds for
+/// [AppMotion.successHold]).
 class BusyOverlay extends StatefulWidget {
   const BusyOverlay({
     super.key,
     required this.busy,
     required this.child,
     this.done = false,
+    this.failed = false,
     this.label,
     this.doneLabel,
+    this.failLabel,
   });
 
   final bool busy;
@@ -39,11 +47,18 @@ class BusyOverlay extends StatefulWidget {
   /// The work succeeded and the page is about to move on: the check.
   final bool done;
 
+  /// The work could not finish. Only a change to `true` while the overlay
+  /// is up plays the × (a failure left over from before is not replayed).
+  final bool failed;
+
   /// Read out when the overlay appears (defaults to "Loading").
   final String? label;
 
   /// Read out when the check appears.
   final String? doneLabel;
+
+  /// Read out when the × appears (defaults to "Couldn't finish").
+  final String? failLabel;
   final Widget child;
 
   @override
@@ -51,7 +66,7 @@ class BusyOverlay extends StatefulWidget {
 }
 
 class _BusyOverlayState extends State<BusyOverlay>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   /// The disc follows the scrim in once it is this far along.
   static const double _discFrom = 0.2;
 
@@ -71,6 +86,13 @@ class _BusyOverlayState extends State<BusyOverlay>
     reverseCurve: AppMotion.exit,
   );
 
+  /// The × on screen: its draw, then the hold. A frame-driven clock (not a
+  /// timer) so the beat also runs out under a test's settle.
+  late final AnimationController _failBeat = AnimationController(
+    vsync: this,
+    duration: AppMotion.slow + AppMotion.successHold,
+  );
+
   /// Runs while the overlay has not been up [AppMotion.busyMinVisible] yet.
   Timer? _minimum;
 
@@ -78,7 +100,10 @@ class _BusyOverlayState extends State<BusyOverlay>
   bool _layerUp = false;
   bool _started = false;
 
-  bool get _wanted => widget.busy || widget.done;
+  /// The × is showing (its beat has not run out yet).
+  bool _failing = false;
+
+  bool get _wanted => widget.busy || widget.done || _failing;
 
   @override
   void didChangeDependencies() {
@@ -87,6 +112,9 @@ class _BusyOverlayState extends State<BusyOverlay>
     _presence
       ..duration = reduced ? Duration.zero : AppMotion.slow
       ..reverseDuration = reduced ? Duration.zero : AppMotion.fast;
+    _failBeat.duration = reduced
+        ? AppMotion.successHold
+        : AppMotion.slow + AppMotion.successHold;
     // Mounted busy (a page that opens mid-submit): up from the first frame.
     if (!_started) {
       _started = true;
@@ -97,12 +125,42 @@ class _BusyOverlayState extends State<BusyOverlay>
   @override
   void didUpdateWidget(BusyOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final wanted = oldWidget.busy || oldWidget.done;
+    final wanted = oldWidget.busy || oldWidget.done || _failing;
+    if (widget.busy && !oldWidget.busy) _stopFailing();
+    if (widget.failed && !oldWidget.failed && !widget.done && _layerUp) {
+      _startFailing();
+    }
     if (_wanted && !wanted) {
       _show();
     } else if (!_wanted && wanted && _minimum == null) {
       _leave();
     }
+  }
+
+  /// Called before a build (new flags), so no setState.
+  void _startFailing() {
+    _failing = true;
+    unawaited(
+      _failBeat
+          .forward(from: 0)
+          .orCancel
+          .then(
+            (_) => _onFailShown(),
+            onError: (Object _) {}, // disposed mid-beat
+          ),
+    );
+  }
+
+  void _stopFailing() {
+    if (!_failing) return;
+    _failing = false;
+    _failBeat.stop();
+  }
+
+  void _onFailShown() {
+    if (!mounted || !_failing) return;
+    setState(() => _failing = false);
+    if (!_wanted && _minimum == null) _leave();
   }
 
   /// Called before a build (mount / new flags), so no setState.
@@ -133,7 +191,14 @@ class _BusyOverlayState extends State<BusyOverlay>
     _scrim.dispose();
     _disc.dispose();
     _presence.dispose();
+    _failBeat.dispose();
     super.dispose();
+  }
+
+  String? get _label {
+    if (widget.done) return widget.doneLabel;
+    if (_failing) return widget.failLabel ?? 'core.action_failed'.tr();
+    return widget.label ?? 'core.loading'.tr();
   }
 
   @override
@@ -155,9 +220,8 @@ class _BusyOverlayState extends State<BusyOverlay>
                 scrim: _scrim,
                 disc: _disc,
                 done: widget.done,
-                label: widget.done
-                    ? widget.doneLabel
-                    : widget.label ?? 'core.loading'.tr(),
+                failed: _failing,
+                label: _label,
               ),
             ),
         ],

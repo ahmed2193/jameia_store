@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_mart/src/config/routes/feature_routes/product_details_routes.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_merch_tag.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/core/navigation/navigation.dart';
@@ -290,7 +291,7 @@ void main() {
       // The viewer's photo wears the same tag.
       expect(heroes, findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.tap(find.byIcon(HeroIcons.close));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(find.byType(PdpPhotoFlight), findsOneWidget);

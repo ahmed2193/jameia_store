@@ -115,6 +115,15 @@ class HeroIcons {
   /// delivery (`wm_c_iconfont_delivery`)
   static const IconData delivery = IconData(0xe039, fontFamily: fontFamily);
 
+  /// [delivery] where the van's heading means "on its way" (a status line,
+  /// an order stage): mirrors under RTL so it drives along the reading
+  /// direction.
+  static const IconData deliveryDirectional = IconData(
+    0xe039,
+    fontFamily: fontFamily,
+    matchTextDirection: true,
+  );
+
   // ── Camera / media ──────────────────────────────────────────────────────────
   /// camera (`wm_c_iconfont_xiangji`)
   static const IconData camera = IconData(0xe04d, fontFamily: fontFamily);
@@ -146,7 +155,7 @@ class HeroIcons {
   //   • plus  / add   — no `jia`/`add` glyph in the font cmap.
   //   • minus / remove — no `jian`/`minus`/`remove` glyph in the font cmap.
   //   • scan / QR      — no `saoyisao`/`scan`/`qrcode` glyph (use `camera` for
-  //                      capture flows, or the `scan_qrcode` PNG in
-  //                      HeroAssets.mineScanQrCode for the Mine scan entry).
+  //                      capture flows; the Mine scan entry, which opens the
+  //                      delivery code, uses [confirmReceipt]).
   // Use Material `Icons.add` / `Icons.remove` for stepper +/- controls.
 }

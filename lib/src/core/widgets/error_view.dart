@@ -1,14 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../motion/motion_widgets.dart';
-import '../responsive/app_size.dart';
+import '../design/hero_assets.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import 'app_outline_button.dart';
+import 'state_art.dart';
 
-/// Error-state placeholder with retry.
+/// Error-state placeholder with retry: the error illustration
+/// ([HeroAssets.stateError]), the message and a Retry pill.
 class ErrorView extends StatelessWidget {
   const ErrorView({super.key, required this.onRetry, this.message});
   final VoidCallback onRetry;
@@ -17,18 +18,12 @@ class ErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.s24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const PopScale.onMount(
-              child: Icon(
-                Icons.error_outline_rounded,
-                size: AppSize.s56,
-                color: AppColors.error,
-              ),
-            ),
+            const StateArt(asset: HeroAssets.stateError),
             const SizedBox(height: AppSpacing.s12),
             Text(
               message ?? 'core.something_went_wrong'.tr(),

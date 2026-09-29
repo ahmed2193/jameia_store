@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/motion/entrance_cascade_item.dart';
 import '../../domain/entities/home_section_entity.dart';
 import 'home_accent_palette.dart';
 import 'home_layout.dart';
 import 'home_product_strip.dart';
 import 'home_product_tile.dart';
-import 'home_reveal_item.dart';
 import 'home_section_block.dart';
 
 /// A product rail of the home feed: a lazily built horizontal strip
@@ -53,10 +53,9 @@ class HomeProductRail extends StatelessWidget {
                     runSpacing: AppSpacing.s12,
                     children: [
                       for (final (index, product) in products.indexed)
-                        HomeRevealItem(
+                        EntranceCascadeItem(
                           key: ValueKey<String>(product.id),
                           index: index,
-                          axis: Axis.vertical,
                           child: HomeProductTile(
                             product: product,
                             width: width,

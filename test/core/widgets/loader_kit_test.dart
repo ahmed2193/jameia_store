@@ -1,5 +1,6 @@
 // The loader kit: the two Hero dots (BrandedDotPainter's orbit and depth,
-// the looping BrandedDotLoader and its still pose under reduced motion), the
+// the looping BrandedDotLoader, its opacity breathe under iOS reduce motion
+// and its still pose with motion off), the
 // block AppLoader (waits, then springs in) vs AppLoader.inline, BusyOverlay
 // (covers the route at once, swallows taps and "back", stays a minimum beat,
 // the done check), CubitBusyOverlay (the flag never rebuilds the page) and
@@ -8,6 +9,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:easy_localization/easy_localization.dart';
 // ignore: implementation_imports
@@ -79,6 +81,18 @@ List<(Rect, int)> _paintAt(double phase) {
   ).paint(canvas, const Size(40, 20));
   return canvas.ovals;
 }
+
+BrandedDotPainter _dotPainter(WidgetTester tester) =>
+    tester
+            .widget<CustomPaint>(
+              find.byWidgetPredicate(
+                (widget) =>
+                    widget is CustomPaint &&
+                    widget.painter is BrandedDotPainter,
+              ),
+            )
+            .painter!
+        as BrandedDotPainter;
 
 Widget _app(Widget home, {bool reduced = false}) => MaterialApp(
   builder: (context, child) => MediaQuery(
@@ -161,6 +175,71 @@ void main() {
       await tester.pump();
       expect(tester.binding.hasScheduledFrame, isFalse);
     });
+
+    testWidgets('iOS reduce motion (not off): the orbit becomes a slow '
+        'opacity breathe of the dots side by side', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(reduceMotion: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await tester.pumpWidget(
+        _app(const Center(child: BrandedDotLoader(size: 32))),
+      );
+      final painter = _dotPainter(tester);
+      final seen = <double>{};
+      for (var i = 0; i < 12; i++) {
+        await tester.pump(AppMotion.breathe ~/ 6);
+        expect(painter.phase.value, 0, reason: 'no orbit');
+        seen.add(painter.opacity!.value);
+      }
+      expect(tester.binding.hasScheduledFrame, isTrue, reason: 'breathing');
+      final low = seen.reduce(math.min);
+      final high = seen.reduce(math.max);
+      expect(low, closeTo(BrandedDotPainter.breatheLow, 0.05));
+      expect(high, closeTo(1, 0.05));
+    });
+
+    test('the breathe dims both dots in the paint', () {
+      final canvas = _OvalCanvas();
+      BrandedDotPainter(
+        phase: const AlwaysStoppedAnimation<double>(0),
+        lead: const Color(_lead),
+        trail: const Color(_trail),
+        opacity: const AlwaysStoppedAnimation<double>(0.5),
+      ).paint(canvas, const Size(40, 20));
+      for (final (_, argb) in canvas.ovals) {
+        expect((argb >> 24) & 0xFF, closeTo(0x80, 1));
+      }
+    });
+
+    testWidgets('motion off: no orbit, no breathe', (tester) async {
+      await tester.pumpWidget(
+        _app(const Center(child: BrandedDotLoader(size: 32)), reduced: true),
+      );
+      await tester.pump(AppMotion.breathe);
+      final painter = _dotPainter(tester);
+      expect(painter.phase.value, 0);
+      expect(painter.opacity!.value, 1);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    testWidgets('the busy disc breathes under iOS reduce motion', (
+      tester,
+    ) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(reduceMotion: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await tester.pumpWidget(_app(const Center(child: LoaderDisc())));
+      final painter = _dotPainter(tester);
+      await tester.pump(AppMotion.breathe ~/ 2);
+      final first = painter.opacity!.value;
+      await tester.pump(AppMotion.breathe ~/ 2);
+      expect(painter.opacity!.value, isNot(first));
+      expect(painter.phase.value, 0);
+    });
   });
 
   group('AppLoader', () {
@@ -187,11 +266,18 @@ void main() {
       expect(find.bySemanticsLabel('Loading'), findsOneWidget);
     });
 
-    testWidgets('reduced motion: the disc at once', (tester) async {
+    testWidgets('B2-06 reduced motion: the same wait, then the disc at once', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _app(const Scaffold(body: AppLoader()), reduced: true),
       );
+      // A load that answers within the delay never flashes the disc.
+      expect(discOpacity(tester), 0);
+      await tester.pump(AppMotion.loaderDelay);
       expect(discOpacity(tester), 1);
+      await tester.pump();
+      expect(tester.binding.hasScheduledFrame, isFalse, reason: 'still');
     });
 
     testWidgets('inline: the bare dots, no disc', (tester) async {
@@ -387,6 +473,42 @@ void main() {
       expect(refreshes, 1);
       expect(find.byType(RefreshDisc), findsOneWidget);
       expect(tester.binding.hasScheduledFrame, isTrue, reason: 'looping');
+      refresh.complete();
+      await tester.pumpAndSettle();
+      expect(find.byType(RefreshDisc), findsNothing);
+    });
+
+    testWidgets('iOS reduce motion: the refreshing disc breathes, its dots '
+        'do not orbit', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(reduceMotion: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      final refresh = Completer<void>();
+      await tester.pumpWidget(
+        _app(
+          Scaffold(
+            body: BrandedRefresh(
+              onRefresh: () => refresh.future,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: const [SizedBox(height: 2000)],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.fling(find.byType(ListView), const Offset(0, 300), 1000);
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
+      final painter = _dotPainter(tester);
+      final phase = painter.phase.value;
+      final first = painter.opacity!.value;
+      await tester.pump(AppMotion.breathe ~/ 2);
+      expect(painter.opacity!.value, isNot(first), reason: 'breathing');
+      expect(painter.phase.value, phase, reason: 'no orbit');
       refresh.complete();
       await tester.pumpAndSettle();
       expect(find.byType(RefreshDisc), findsNothing);

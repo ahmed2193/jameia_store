@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/animated_accordion.dart';
 import '../../../domain/entities/assistant_block.dart';
 
 /// One question: tap to unfold its answer (chevron turns, the answer grows
@@ -63,9 +63,8 @@ class _AssistantFaqRowState extends State<AssistantFaqRow> {
             ),
           ),
         ),
-        AnimatedAccordion(
-          expanded: _open,
-          alignment: AlignmentDirectional.topStart,
+        CollapseReveal(
+          visible: _open,
           child: Padding(
             padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s12),
             child: Text(

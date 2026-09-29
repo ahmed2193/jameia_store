@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
 
 /// Secondary button: a white pill with a hairline border and an ink label
 /// ([destructive] → red label). [compact] is the 44 dp card-action size with
-/// the 14 medium label. The label shrinks to fit instead of wrapping.
+/// the 14 medium label. The label shrinks to fit instead of wrapping. It dips
+/// when pressed like every button (PressScale; the Material ink stays).
 class HeroSecondaryButton extends StatelessWidget {
   const HeroSecondaryButton({
     super.key,
@@ -56,10 +58,13 @@ class HeroSecondaryButton extends StatelessWidget {
             icon: Icon(icon, size: AppSize.s20),
             label: text,
           );
-    return SizedBox(
-      height: height,
-      width: expanded ? double.infinity : null,
-      child: button,
+    return PressScale(
+      enabled: onPressed != null,
+      child: SizedBox(
+        height: height,
+        width: expanded ? double.infinity : null,
+        child: button,
+      ),
     );
   }
 }

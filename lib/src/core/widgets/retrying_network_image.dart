@@ -243,7 +243,10 @@ class _RetryingNetworkImageState extends State<RetryingNetworkImage> {
       height: widget.height,
       memCacheWidth: widget.memCacheWidth,
       memCacheHeight: widget.memCacheHeight,
-      fadeInDuration: AppMotion.imageFade,
+      // One quick fade from the placeholder (docs/motion §9.4 #25), none
+      // under reduced motion; a photo from the memory cache paints at once.
+      fadeInDuration: MotionGuard.duration(context, AppMotion.fast),
+      fadeOutDuration: MotionGuard.duration(context, AppMotion.fast),
       cacheManager: HeroImageCacheManager.instance,
       // gaplessPlayback in cached_network_image is derived from this flag — it
       // keeps the previous frame on screen during a re-resolve (no flash).

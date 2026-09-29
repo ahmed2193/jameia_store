@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/utils/failure_message.dart';
 import '../../../../../core/widgets/app_loader.dart';
@@ -39,7 +40,7 @@ class CartDealProducts extends StatelessWidget {
               : state.isEmpty
               ? EmptyStateView(
                   message: 'cart.deals_empty'.tr(),
-                  icon: Icons.local_offer_outlined,
+                  art: HeroAssets.emptyCoupons,
                 )
               : CartDealGrid(products: state.products),
         );

@@ -290,7 +290,7 @@ void main() {
         final local = SearchLocalDataSourceImpl(storage);
 
         await local.writeRecentSearches(['rice', 'milk']);
-        expect(storage.values.keys.single, 'jameia.search.recents.v1');
+        expect(storage.values.keys.single, 'hero.search.recents.v1');
         expect(local.readRecentSearches(), ['rice', 'milk']);
 
         await local.writeRecentSearches(const []);
@@ -419,9 +419,38 @@ void main() {
 
         expect(cubit.state.discover.categories.single.slug, 'fresh-food');
         expect(cubit.state.discover.brands, isEmpty);
+        expect(cubit.state.discoverFailure, isNull, reason: 'a block shows');
+        expect(cubit.state.isDiscoverLoading, isFalse);
         await cubit.close();
       },
     );
+
+    test('discover: loading while nothing shows; both failed with nothing '
+        'saved keeps the reason; a retry clears it', () async {
+      final repository = _FakeRepository()
+        ..tree = const Left(ServerFailure('down'))
+        ..brands = const Left(ServerFailure('down'));
+      final cubit = _cubit(repository);
+
+      final reading = cubit.loadDiscover();
+      expect(cubit.state.isDiscoverLoading, isTrue);
+      expect(cubit.state.discoverFailure, isNull);
+      await reading;
+
+      expect(cubit.state.isDiscoverLoading, isFalse);
+      expect(cubit.state.discoverFailure, isA<ServerFailure>());
+
+      repository
+        ..tree = Right(_tree)
+        ..brands = const Right(_brands);
+      final retry = cubit.loadDiscover();
+      expect(cubit.state.discoverFailure, isNull, reason: 'the skeleton again');
+      expect(cubit.state.isDiscoverLoading, isTrue);
+      await retry;
+      expect(cubit.state.isDiscoverLoading, isFalse);
+      expect(cubit.state.discover.categories.single.slug, 'fresh-food');
+      await cubit.close();
+    });
 
     test('reconnect refreshes stale blocks once, then nothing', () async {
       final repository = _FakeRepository()

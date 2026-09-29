@@ -19,6 +19,7 @@ import 'package:hero_mart/src/core/domain/entities/cart_offer_progress_entity.da
 import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
+import 'package:hero_mart/src/core/motion/change_bump.dart';
 import 'package:hero_mart/src/core/widgets/hero_close_button.dart';
 import 'package:hero_mart/src/core/widgets/hero_title_bar.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
@@ -613,8 +614,12 @@ void main() {
     ) async {
       phone(tester, height: 1600);
       await pump(tester, _snapshot(_cartOf(const [_rice])));
+      // The ticket's own bump (the row around it also presses: PressRow).
       Finder ticket() => find.descendant(
-        of: find.byType(CartCouponRow),
+        of: find.descendant(
+          of: find.byType(CartCouponRow),
+          matching: find.byType(ChangeBump),
+        ),
         matching: find.byType(ScaleTransition),
       );
       expect(tester.widget<ScaleTransition>(ticket()).scale.value, 1);

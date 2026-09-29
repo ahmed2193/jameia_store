@@ -2,7 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/responsive/content_clamp.dart';
+import '../../../../../core/widgets/state_views.dart';
 import '../../../domain/entities/faq_item.dart';
 import '../../cubit/customer_service_question_cubit.dart';
 import 'support_faq_results.dart';
@@ -76,10 +78,29 @@ class _SupportTopicsBodyState extends State<SupportTopicsBody> {
                     listenWhen: (previous, current) =>
                         previous.faqs != current.faqs,
                     listener: (context, state) => _maybePreExpand(state.faqs),
-                    builder: (context, state) => SupportFaqResults(
-                      faqs: state.faqs,
-                      query: _query,
-                      expanded: _expanded,
+                    // The dots while the topics load (never the "no
+                    // results" plate over a list that is still coming), a
+                    // Retry when they did not; the list fades through in.
+                    builder: (context, state) => FadeThroughSwitcher(
+                      stateKey:
+                          state.status == CustomerServiceQuestionStatus.initial
+                          ? CustomerServiceQuestionStatus.loading
+                          : state.status,
+                      child: switch (state.status) {
+                        CustomerServiceQuestionStatus.loaded =>
+                          SupportFaqResults(
+                            faqs: state.faqs,
+                            query: _query,
+                            expanded: _expanded,
+                          ),
+                        CustomerServiceQuestionStatus.error => ErrorView(
+                          message: state.errorMessage,
+                          onRetry: context
+                              .read<CustomerServiceQuestionCubit>()
+                              .load,
+                        ),
+                        _ => const AppLoader(),
+                      },
                     ),
                   ),
             ),

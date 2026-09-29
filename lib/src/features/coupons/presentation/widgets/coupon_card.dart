@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/coupon_entity.dart';
-import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../domain/entities/coupon_status.dart';
 import 'coupon_body.dart';
@@ -16,7 +15,8 @@ import 'coupon_use_button.dart';
 
 /// A coupon of the wallet as a ticket. Tapping it opens its detail sheet.
 ///
-/// An available coupon counts its amount up on first show and carries the
+/// An available coupon shows its amount at once (never a count-up on open)
+/// and carries the
 /// "Use" pill ([onUse]; it shimmers now and then while [shimmers]). A used or
 /// expired coupon is faded to grey under a "USED" / "EXPIRED" stamp and has
 /// no action.
@@ -34,12 +34,6 @@ class CouponCard extends StatelessWidget {
   final VoidCallback? onUse;
   final bool shimmers;
 
-  /// Delay between two cards of a list's entrance cascade.
-  static const Duration cascadeStep = Duration(milliseconds: 60);
-
-  /// Cards after this one enter with the last delay (no long waits).
-  static const int maxCascadeSteps = 5;
-
   /// Only the first few "Use" pills shimmer (the screen's loop budget).
   static const int maxShimmering = 3;
 
@@ -55,11 +49,7 @@ class CouponCard extends StatelessWidget {
     final ticket = RepaintBoundary(
       child: CouponTicket(
         faded: faded,
-        stub: CouponStub(
-          amount: coupon.amount,
-          countsUp: available,
-          faded: faded,
-        ),
+        stub: CouponStub(amount: coupon.amount, faded: faded),
         body: CouponBody(
           coupon: coupon,
           status: status,
@@ -72,8 +62,8 @@ class CouponCard extends StatelessWidget {
     return Semantics(
       button: true,
       child: PressScale(
+        // Opening the rules sheet is navigation: no haptic (§9.5).
         onTap: () => CouponRuleSheet.show(context, coupon),
-        haptic: HapticKind.selection,
         child: available
             ? ticket
             : Stack(

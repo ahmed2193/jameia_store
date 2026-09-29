@@ -85,6 +85,11 @@ abstract final class EndPoints {
   static const String pushRegister = '$_v/push/register';
 
   // --- Support ---------------------------------------------------------------
+  /// Public: the taxonomy of the compose form.
+  static const String supportCategories = '$_v/support/categories';
+
+  /// Customer: open a ticket (`POST`), list mine (`GET`).
+  static const String supportTickets = '$_v/support/tickets';
 
   // --- Assistant (customer or X-Assistant-Guest) -----------------------------
   static const String assistantConversations = '$_v/assistant/conversations';

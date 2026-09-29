@@ -26,6 +26,7 @@ import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/haptics.dart';
 import 'package:hero_mart/src/core/motion/second_clock_scope.dart';
 import 'package:hero_mart/src/core/widgets/countdown_digits.dart';
 import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
@@ -130,6 +131,8 @@ void main() {
   });
 
   setUp(() {
+    // The refusal throttle reads the real clock: start every test fresh.
+    Haptics.debugReset();
     cartRepository = FakeCartRepository()..snapshot = snapshotOf(cartWith());
     cart = null;
     catalog = FakeCheckoutCatalogRepository();

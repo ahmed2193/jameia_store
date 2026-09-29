@@ -43,6 +43,9 @@ class _HomeAddBurstState extends State<HomeAddBurst>
   static const double _tuck = AppSpacing.s4;
   static const double _rise = 1.5;
 
+  /// The whole "+1" burst, rise to fade-out.
+  static const Duration _burstLength = Duration(milliseconds: 700);
+
   /// In quickly, held, out slowly — invisible before and after.
   static final Animatable<double> _fade = TweenSequence<double>([
     TweenSequenceItem(tween: Tween(begin: 0, end: 1), weight: 1),
@@ -63,7 +66,7 @@ class _HomeAddBurstState extends State<HomeAddBurst>
 
   late final AnimationController _burst = AnimationController(
     vsync: this,
-    duration: AppMotion.drawOn,
+    duration: _burstLength,
   );
 
   @override

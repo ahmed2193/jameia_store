@@ -242,6 +242,8 @@ void main() {
       );
       await tester.pump();
       await tapSave(tester);
+      // The check draws and holds (SuccessBeat) before the page pops.
+      await settle(tester);
 
       expect(updateProfile.calls.single.update.name, 'Ahmed Ali');
       expect(session.state.customer, kProfileCustomer);
@@ -287,6 +289,8 @@ void main() {
     await tester.pump();
     expect(find.text('1'), findsOneWidget);
     await tapSave(tester);
+    // The check draws and holds (SuccessBeat) before the page pops.
+    await settle(tester);
 
     expect(updateProfile.calls.single.update.householdSize, 1);
     expect(session.state.customer, completed);

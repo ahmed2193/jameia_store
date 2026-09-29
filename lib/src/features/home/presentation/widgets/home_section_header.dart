@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/entrance_arrival.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../domain/entities/home_icon.dart';
@@ -10,7 +11,6 @@ import 'home_accent_palette.dart';
 import 'home_arrow_button.dart';
 import 'home_icon_view.dart';
 import 'home_layout.dart';
-import 'home_reveal_scope.dart';
 
 /// Title row of a home block: the backend's icon in its accent, the bold
 /// title, and the round arrow to the whole collection when there is one.
@@ -31,20 +31,16 @@ class HomeSectionHeader extends StatelessWidget {
 
   static const double _popFrom = 0.4;
 
-  /// On the block's reveal clock: the icon pops in with a small overshoot,
+  /// On the block's arrival ([EntranceArrival]): the icon pops in with a small overshoot,
   /// the arrow a beat later.
-  static final Animatable<double> _iconPop =
-      Tween<double>(begin: _popFrom, end: 1).chain(
-        CurveTween(
-          curve: const Interval(0.15, 0.65, curve: AppMotion.emphasized),
-        ),
-      );
-  static final Animatable<double> _arrowPop =
-      Tween<double>(begin: _popFrom, end: 1).chain(
-        CurveTween(
-          curve: const Interval(0.3, 0.8, curve: AppMotion.emphasized),
-        ),
-      );
+  static final Animatable<double> _iconPop = Tween<double>(
+    begin: _popFrom,
+    end: 1,
+  ).chain(CurveTween(curve: Interval(0.15, 0.65, curve: AppSprings.snappy)));
+  static final Animatable<double> _arrowPop = Tween<double>(
+    begin: _popFrom,
+    end: 1,
+  ).chain(CurveTween(curve: Interval(0.3, 0.8, curve: AppSprings.snappy)));
   static final Animatable<double> _arrowFade = CurveTween(
     curve: const Interval(0.3, 0.8, curve: AppMotion.signature),
   );
@@ -52,7 +48,7 @@ class HomeSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onSeeAll = this.onSeeAll;
-    final reveal = HomeRevealScope.revealOf(context);
+    final reveal = EntranceArrival.of(context);
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
         HomeLayout.gutter,

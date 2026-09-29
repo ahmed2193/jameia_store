@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../motion/entrance_arrival.dart';
 import '../motion/motion.dart';
 import '../utils/formatters.dart';
-import 'shelf_arrival_scope.dart';
 import 'shelf_marker_painter.dart';
 
 /// A product card's price: the currency and the amount in a medium weight,
@@ -60,7 +60,7 @@ class ShelfCardPrice extends StatelessWidget {
       children: [
         CustomPaint(
           painter: ShelfMarkerPainter(
-            progress: ShelfArrivalScope.of(context)
+            progress: EntranceArrival.of(context)
                 .drive(CurveTween(curve: _draw)),
             color: AppColors.proLime,
             textDirection: Directionality.of(context),

@@ -5,7 +5,6 @@ import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_availability.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_conversation_entity.dart';
 import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_availability_state.dart';
-import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_history_state.dart';
 
 import 'assistant_test_fakes.dart';
 

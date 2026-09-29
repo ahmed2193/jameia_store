@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/motion/motion_widgets.dart';
+import '../../../../../core/motion/rolling_number_text.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/loyalty_rewards.dart';
@@ -12,7 +12,7 @@ import 'rewards_next_tier.dart';
 import 'rewards_star_badge.dart';
 
 /// Warm amber → orange hero at the top of the Rewards screen: the balance
-/// counting up from 0, what it is worth, the glowing star and — while a tier
+/// (there at once on open; it rolls only on a real change), what it is worth, the glowing star and — while a tier
 /// is still locked — the progress toward the next one. Text is dark ink:
 /// white on the light amber read at under 2:1.
 class RewardsBalanceCard extends StatelessWidget {
@@ -100,12 +100,10 @@ class RewardsBalanceCard extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: AppSpacing.s4),
-                            CountUpText(
-                              value: rewards.balance.toDouble(),
-                              from: 0,
-                              maxLines: 1,
-                              format: (points) => 'loyalty.points_value'.tr(
-                                namedArgs: {'points': '${points.round()}'},
+                            RollingNumberText(
+                              value: rewards.balance,
+                              text: (points) => 'loyalty.points_value'.tr(
+                                namedArgs: {'points': points},
                               ),
                               style: AppTextStyles.displayLarge.copyWith(
                                 fontSize: AppSize.font40,

@@ -33,7 +33,7 @@ class BackToTopButton extends StatelessWidget {
           child: AnimatedScale(
             scale: shown ? 1 : _hiddenScale,
             duration: duration,
-            curve: shown ? AppMotion.emphasized : AppMotion.exit,
+            curve: shown ? AppSprings.snappy : AppMotion.exit,
             child: Semantics(
               button: true,
               label: 'core.back_to_top'.tr(),

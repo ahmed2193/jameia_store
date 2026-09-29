@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'motion.dart';
@@ -51,6 +53,10 @@ class _ScrollRevealState extends State<ScrollReveal>
   bool _started = false;
   bool _checkScheduled = false;
 
+  /// The cascade delay of a reveal already in view; cancelled on dispose so
+  /// a row the list drops never fires later.
+  Timer? _delay;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -98,7 +104,7 @@ class _ScrollRevealState extends State<ScrollReveal>
     _position?.removeListener(_onScroll);
     _position = null;
     if (initial && widget.delay > Duration.zero) {
-      Future<void>.delayed(widget.delay, () {
+      _delay = Timer(widget.delay, () {
         if (mounted) _controller.forward();
       });
     } else {
@@ -150,6 +156,7 @@ class _ScrollRevealState extends State<ScrollReveal>
 
   @override
   void dispose() {
+    _delay?.cancel();
     _position?.removeListener(_onScroll);
     _controller.dispose();
     super.dispose();

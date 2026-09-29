@@ -44,6 +44,7 @@ class SplashFrame {
     this.capePhase = HeroMark.restPhase,
     this.capeFold = 0,
     this.speedLines = 0,
+    this.forward = 1,
     this.deliveries = const <SplashDelivery>[],
     this.burst = 0,
     this.groceries = const <double>[],
@@ -80,6 +81,10 @@ class SplashFrame {
 
   /// Streaks trailing the flying mark, 0 (none) → 1 (longest).
   final double speedLines;
+
+  /// The way the mark flies across the screen: 1 = to the right, -1 = to
+  /// the left (the Arabic name). The speed lines trail the other way.
+  final double forward;
 
   /// Each piece of the name the bag has sent out, in delivery order. Pieces
   /// not sent yet are missing.
@@ -143,6 +148,7 @@ class SplashFrame {
     capePhase: capePhase,
     capeFold: capeFold,
     speedLines: speedLines,
+    forward: forward,
     deliveries: deliveries,
     burst: burst,
     groceries: groceries,

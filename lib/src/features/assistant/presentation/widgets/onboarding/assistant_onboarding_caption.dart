@@ -5,25 +5,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../domain/entities/assistant_onboarding_step.dart';
-import '../chat/assistant_entrance.dart';
 
 /// The step's words under its demo: the title (the first one greets the
 /// customer by name) and a line of explanation, rising in one after the
-/// other each time the step becomes [active].
+/// other when the step first comes in front ([active]) — mounted when
+/// ready, and at rest on a step already [played].
 class AssistantOnboardingCaption extends StatelessWidget {
   const AssistantOnboardingCaption({
     super.key,
     required this.step,
     required this.active,
+    this.played = false,
   });
 
   final AssistantOnboardingStep step;
   final bool active;
-
-  static const Offset _rise = Offset(0, 0.3);
-  static const Duration _bodyDelay = Duration(milliseconds: 70);
+  final bool played;
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +36,9 @@ class AssistantOnboardingCaption extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AssistantEntrance(
+        EntranceCascadeItem.single(
           key: ValueKey<(String, bool)>((step.titleKey, active)),
-          animate: active,
-          beginOffset: _rise,
+          play: active && !played,
           child: Semantics(
             header: true,
             child: Text(
@@ -52,11 +51,10 @@ class AssistantOnboardingCaption extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.s8),
-        AssistantEntrance(
+        EntranceCascadeItem.single(
           key: ValueKey<(String, bool)>((step.bodyKey, active)),
-          animate: active,
-          beginOffset: _rise,
-          delay: _bodyDelay,
+          play: active && !played,
+          index: 1,
           child: Text(
             step.bodyKey.tr(),
             textAlign: TextAlign.center,

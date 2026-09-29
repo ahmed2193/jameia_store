@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/motion/entrance_arrival.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
-import 'home_reveal_scope.dart';
 
 /// The little hand beside the greeting: it waves hello once, as the greeting
 /// lands, and again every time [trigger] ticks (a tap on the greeting).
@@ -62,7 +62,7 @@ class _HomeWavingHandState extends State<HomeWavingHand>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final arrival = HomeRevealScope.revealOf(context);
+    final arrival = EntranceArrival.of(context);
     if (arrival == _arrival) return;
     _arrival?.removeStatusListener(_landed);
     _arrival = arrival..addStatusListener(_landed);

@@ -111,6 +111,7 @@ class AuthSessionCubit extends Cubit<AuthSessionState>
         customer: customer,
         isVerified: true,
         expired: false,
+        signIns: state.signIns + 1,
       ),
     );
     _persist(customer);

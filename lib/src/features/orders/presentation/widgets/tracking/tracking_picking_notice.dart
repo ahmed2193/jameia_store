@@ -7,8 +7,8 @@ import '../../../../../core/domain/entities/order_progress_entities.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import 'tracking_notice_card.dart';
 
-/// What changed while the order was picked: unavailable lines and
-/// substitutions. Opens (height + fade) when a poll brings the first change;
+/// What changed while the order was picked, counted: replaced and
+/// unavailable items (the struck lines below say which, and with what). Opens (height + fade) when a poll brings the first change;
 /// takes no space while nothing changed.
 class TrackingPickingNotice extends StatelessWidget {
   const TrackingPickingNotice({super.key, this.picking});
@@ -19,7 +19,6 @@ class TrackingPickingNotice extends StatelessWidget {
   Widget build(BuildContext context) {
     final picking = this.picking;
     final changes = picking != null && picking.hasChanges ? picking : null;
-    final lc = context.locale.languageCode;
     return CollapseReveal(
       visible: changes != null,
       child: changes == null
@@ -36,15 +35,15 @@ class TrackingPickingNotice extends StatelessWidget {
                 iconColor: AppColors.warn,
                 title: 'orders.picking_changes'.tr(),
                 lines: [
+                  if (changes.substitutions.isNotEmpty)
+                    'orders.replaced_count'.tr(
+                      namedArgs: {'count': '${changes.substitutions.length}'},
+                    ),
                   if (changes.unavailableLineKeys.isNotEmpty)
-                    'orders.unavailable_items'.tr(
+                    'orders.unavailable_count'.tr(
                       namedArgs: {
                         'count': '${changes.unavailableLineKeys.length}',
                       },
-                    ),
-                  for (final row in changes.substitutions)
-                    'orders.substituted_item'.tr(
-                      namedArgs: {'name': row.productNameFor(lc)},
                     ),
                 ],
               ),

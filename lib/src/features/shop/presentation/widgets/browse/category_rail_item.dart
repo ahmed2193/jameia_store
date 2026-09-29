@@ -3,16 +3,19 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_image.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 
 /// One circle of the sub-category rail: the artwork, the name below it. The
 /// open one wears an ink ring and a bold name and grows a touch while the
 /// others settle back, so the eye lands on it. Also draws the "All" entry
-/// (the artwork of the category the rail belongs to).
+/// ([all]): its own Hero glyph (four tiles, [HeroAssets.categoryAll]), so it
+/// never reads as one more category without a picture.
 class CategoryRailItem extends StatelessWidget {
   const CategoryRailItem({
     super.key,
@@ -20,6 +23,7 @@ class CategoryRailItem extends StatelessWidget {
     required this.image,
     required this.selected,
     required this.onTap,
+    this.all = false,
   });
 
   final String label;
@@ -29,11 +33,13 @@ class CategoryRailItem extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
+  /// The "All" entry: the category-all glyph instead of an [image].
+  final bool all;
+
   static const double _ring = AppSize.s64;
   static const double _image = AppSize.s54;
   static const double _labelWidth = AppSize.s76;
   static const double _ringWidth = AppSize.s2;
-  static const double _pressedScale = 0.97;
 
   /// The resting size of an entry that is not the open one.
   static const double _restingScale = 0.92;
@@ -43,7 +49,6 @@ class CategoryRailItem extends StatelessWidget {
     final duration = MotionGuard.duration(context, AppMotion.medium);
     return PressScale(
       onTap: onTap,
-      pressedScale: _pressedScale,
       haptic: HapticKind.selection,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -52,10 +57,10 @@ class CategoryRailItem extends StatelessWidget {
           AnimatedScale(
             scale: selected ? 1 : _restingScale,
             duration: duration,
-            curve: AppMotion.emphasized,
+            curve: AppSprings.snappy,
             child: AnimatedContainer(
               duration: duration,
-              curve: MotionGuard.curve(context, AppMotion.standard),
+              curve: MotionGuard.curve(context, AppMotion.signature),
               width: _ring,
               height: _ring,
               alignment: Alignment.center,
@@ -73,7 +78,15 @@ class CategoryRailItem extends StatelessWidget {
                   color: AppColors.smallBackground,
                   child: SizedBox.square(
                     dimension: _image,
-                    child: image.isEmpty
+                    child: all
+                        ? HeroSvgGlyph.mono(
+                            HeroAssets.categoryAll,
+                            size: AppSize.s24,
+                            color: selected
+                                ? AppColors.primaryText
+                                : AppColors.secondaryText,
+                          )
+                        : image.isEmpty
                         ? const Icon(
                             Icons.category_outlined,
                             size: AppSize.s24,

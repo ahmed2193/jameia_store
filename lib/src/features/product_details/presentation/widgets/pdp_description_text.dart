@@ -45,7 +45,7 @@ class _PdpDescriptionTextState extends State<PdpDescriptionText> {
   }
 
   void _toggle() {
-    Haptics.selection();
+    Haptics.pick();
     setState(() => _expanded = !_expanded);
   }
 

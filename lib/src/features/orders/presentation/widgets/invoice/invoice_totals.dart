@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
+import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../../core/widgets/hero_summary_line.dart';
 import '../../../../../core/widgets/thin_divider.dart';
@@ -15,11 +16,18 @@ import 'invoice_section.dart';
 /// server, nothing is recomputed here. Deductions and "Free" read in brand
 /// deep green; money is one left-to-right run.
 class InvoiceTotals extends StatelessWidget {
-  const InvoiceTotals({super.key, required this.order});
+  const InvoiceTotals({
+    super.key,
+    required this.order,
+    this.trailing = const <Widget>[],
+  });
 
   static const TextStyle _freeStyle = TextStyle(color: AppColors.brandDeep);
 
   final OrderEntity order;
+
+  /// More rows at the foot of the card (the order page adds how it is paid).
+  final List<Widget> trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +81,16 @@ class InvoiceTotals extends StatelessWidget {
               emphasized: true,
               value: HeroMoneyText(kd: order.totalKd),
             ),
+            ...trailing,
           ],
         ),
-        if (loyalty.pointsEarned > 0)
-          InvoiceLoyaltyNote(points: loyalty.pointsEarned),
+        // A cancelled or failed order earns nothing.
+        if (loyalty.pointsEarned > 0 &&
+            (!order.isTerminal || order.status == OrderStatus.delivered))
+          InvoiceLoyaltyNote(
+            points: loyalty.pointsEarned,
+            pending: order.status != OrderStatus.delivered,
+          ),
       ],
     );
   }

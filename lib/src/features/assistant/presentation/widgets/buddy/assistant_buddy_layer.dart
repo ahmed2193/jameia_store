@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/route_args/assistant_chat_args.dart';
 import '../../../../../config/routes/routes.dart';
+import '../../../../../core/motion/confetti_burst.dart';
+import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_state.dart';
@@ -22,12 +24,22 @@ import 'assistant_buddy_greeting.dart';
 import 'assistant_buddy_hide_sheet.dart';
 import '../onboarding/assistant_onboarding_result.dart';
 import '../onboarding/assistant_onboarding_sheet.dart';
+import '../assistant_motion.dart';
 import 'assistant_buddy_launcher.dart';
+import 'buddy_motion_gate.dart';
 
 /// Stacks the buddy over [child] and tells its cubit what goes on around
 /// it: the tab, the store's switch, dialogs and pages on top, the keyboard,
 /// a screen reader, scrolling and touches. The shell's content is never
 /// rebuilt by the buddy — it is passed through untouched.
+///
+/// It holds the buddy's [BuddyMotionGate] too (docs/motion §9.6 §3.2): the
+/// mascot stays still while the keyboard is up, while the customer scrolls,
+/// while a page, sheet or dialog is over the shell or its tab is hidden and
+/// while the app is away — and for `AssistantMotion.settle` after each —,
+/// and holds a reaction while a thumbnail flies to the cart. The tab content
+/// and the buddy paint on layers of their own, so a buddy frame never
+/// repaints the screen under it.
 ///
 /// It also presents the assistant's tour: on the launcher's first tap and
 /// from the first greeting's invitation.
@@ -61,11 +73,42 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
   AssistantBuddyScene? _reported;
   bool _keyboardOpen = false;
   bool _resumed = true;
+  bool _scrolling = false;
+
+  /// Calm came back a moment ago (keyboard down, scroll ended, the shell
+  /// in front again, the app back): the buddy waits out the settle.
+  bool _settling = false;
+  bool _wasCalm = true;
+  Timer? _settle;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    FlyToCart.inFlight.addListener(_onFlight);
+    ConfettiBurst.playing.addListener(_onFlight);
+  }
+
+  void _onFlight() {
+    if (mounted) setState(() {});
+  }
+
+  /// Nothing the layer knows keeps the buddy still; a change back to calm
+  /// is held for the settle first.
+  bool _calm(bool inFront) {
+    final calm = inFront && _resumed && !_keyboardOpen && !_scrolling;
+    if (calm && !_wasCalm) {
+      _settling = true;
+      _settle?.cancel();
+      _settle = Timer(AssistantMotion.settle, () {
+        if (mounted) setState(() => _settling = false);
+      });
+    } else if (!calm) {
+      _settle?.cancel();
+      _settling = false;
+    }
+    _wasCalm = calm;
+    return calm && !_settling;
   }
 
   // The shell's Scaffold strips the keyboard inset from its body, so it is
@@ -105,6 +148,8 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
   bool _onScroll(UserScrollNotification notification) {
     if (notification.metrics.axis != Axis.vertical) return false;
     final buddy = context.read<AssistantBuddyCubit>();
+    final scrolling = notification.direction != ScrollDirection.idle;
+    if (scrolling != _scrolling) setState(() => _scrolling = scrolling);
     switch (notification.direction) {
       case ScrollDirection.reverse:
         buddy.scrollStarted(towardsEnd: true);
@@ -176,12 +221,20 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    FlyToCart.inFlight.removeListener(_onFlight);
+    ConfettiBurst.playing.removeListener(_onFlight);
+    _settle?.cancel();
     _touches.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // A hidden tab (its tickers muted) is not in front either.
+    final inFront =
+        (ModalRoute.isCurrentOf(context) ?? true) &&
+        TickerMode.valuesOf(context).enabled;
+    final calm = _calm(inFront);
     _report(
       AssistantBuddyScene(
         place: widget.place,
@@ -190,7 +243,7 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
         ),
         greetHere: widget.greetHere,
         launcherHere: widget.launcherHere,
-        inFront: ModalRoute.isCurrentOf(context) ?? true,
+        inFront: inFront,
         keyboardOpen: _keyboardOpen,
         screenReader: MediaQuery.accessibleNavigationOf(context),
         hasCartItems: context.select<CartCubit, bool>(
@@ -210,42 +263,56 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
             child: Listener(
               behavior: HitTestBehavior.translucent,
               onPointerDown: _onPointerDown,
-              child: widget.child,
+              child: RepaintBoundary(child: widget.child),
             ),
           ),
           Positioned.fill(
-            child:
-                BlocSelector<
-                  AssistantBuddyCubit,
-                  AssistantBuddyState,
-                  (bool, int, AssistantThought?)
-                >(
-                  selector: (state) =>
-                      (state.launcherShown, state.cheers, state.thought),
-                  builder: (context, launcher) => AssistantBuddyLauncher(
-                    shown: launcher.$1,
-                    cheers: launcher.$2,
-                    thought: launcher.$3,
-                    onThoughtSaid: context
-                        .read<AssistantBuddyCubit>()
-                        .thoughtSaid,
-                    onThoughtDone: context
-                        .read<AssistantBuddyCubit>()
-                        .thoughtDone,
-                    alive: _resumed,
-                    touches: _touches,
-                    onOpen: _open,
-                    onThoughtTap: (thought) => _open(asked: thought.starter),
-                    onHide: _offerHide,
-                  ),
-                ),
+            child: BuddyMotionGate(
+              mayMove: calm,
+              holding: FlyToCart.inFlight.value || ConfettiBurst.playing.value,
+              sensitive: !inFront,
+              child: RepaintBoundary(
+                child:
+                    BlocSelector<
+                      AssistantBuddyCubit,
+                      AssistantBuddyState,
+                      (bool, int, int, AssistantThought?)
+                    >(
+                      selector: (state) => (
+                        state.launcherShown,
+                        state.cheers,
+                        state.visit,
+                        state.thought,
+                      ),
+                      builder: (context, launcher) => AssistantBuddyLauncher(
+                        shown: launcher.$1,
+                        cheers: launcher.$2,
+                        visit: launcher.$3,
+                        thought: launcher.$4,
+                        onThoughtSaid: context
+                            .read<AssistantBuddyCubit>()
+                            .thoughtSaid,
+                        onThoughtDone: context
+                            .read<AssistantBuddyCubit>()
+                            .thoughtDone,
+                        touches: _touches,
+                        onOpen: _open,
+                        onThoughtTap: (thought) =>
+                            _open(asked: thought.starter),
+                        onHide: _offerHide,
+                      ),
+                    ),
+              ),
+            ),
           ),
           PositionedDirectional(
             top: 0,
             start: 0,
             end: 0,
-            child: AssistantBuddyGreeting(
-              onTour: () => unawaited(_tour(fromLauncher: false)),
+            child: RepaintBoundary(
+              child: AssistantBuddyGreeting(
+                onTour: () => unawaited(_tour(fromLauncher: false)),
+              ),
             ),
           ),
         ],

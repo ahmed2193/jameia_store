@@ -12,6 +12,7 @@ class BusyOverlayLayer extends StatelessWidget {
     required this.scrim,
     required this.disc,
     required this.done,
+    this.failed = false,
     this.label,
   });
 
@@ -23,6 +24,9 @@ class BusyOverlayLayer extends StatelessWidget {
   /// 0 → 1 (a touch past it on the spring) as the disc comes in.
   final Animation<double> disc;
   final bool done;
+
+  /// The work could not finish: the disc shows the drawn ×.
+  final bool failed;
   final String? label;
 
   @override
@@ -45,7 +49,7 @@ class BusyOverlayLayer extends StatelessWidget {
                   opacity: scrim,
                   child: ScaleTransition(
                     scale: disc.drive(Tween<double>(begin: _discFrom, end: 1)),
-                    child: LoaderDisc(done: done),
+                    child: LoaderDisc(done: done, failed: failed),
                   ),
                 ),
               ),

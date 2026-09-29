@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../config/routes/route_args/shell_arrival.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
@@ -18,8 +19,9 @@ class LoginGuestButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: TextButton(
-        onPressed: () =>
-            context.canPop() ? context.pop() : context.go(Routes.shell),
+        onPressed: () => context.canPop()
+            ? context.pop()
+            : context.go(Routes.shell, extra: ShellArrival()),
         style: TextButton.styleFrom(
           foregroundColor: AppColors.secondaryText,
           minimumSize: const Size(0, AppSize.s48),

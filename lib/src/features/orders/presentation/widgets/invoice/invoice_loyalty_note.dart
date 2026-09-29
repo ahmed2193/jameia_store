@@ -7,11 +7,19 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_surface_card.dart';
 
-/// "You earned N points" under the payment summary, on the brand wash.
+/// "You earned N points" under the payment summary, on the brand wash —
+/// "You'll earn N points" while the order is still on its way ([pending]).
 class InvoiceLoyaltyNote extends StatelessWidget {
-  const InvoiceLoyaltyNote({super.key, required this.points});
+  const InvoiceLoyaltyNote({
+    super.key,
+    required this.points,
+    this.pending = false,
+  });
 
   final int points;
+
+  /// Not delivered yet: the points come with the delivery.
+  final bool pending;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +46,8 @@ class InvoiceLoyaltyNote extends StatelessWidget {
             const SizedBox(width: AppSpacing.s8),
             Expanded(
               child: Text(
-                'orders.loyalty_earned'.tr(namedArgs: {'points': '$points'}),
+                (pending ? 'orders.loyalty_pending' : 'orders.loyalty_earned')
+                    .tr(namedArgs: {'points': '$points'}),
                 style: AppTextStyles.label.copyWith(color: AppColors.brandDeep),
               ),
             ),

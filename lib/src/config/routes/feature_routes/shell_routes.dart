@@ -12,7 +12,7 @@ import '../../../features/home/presentation/pages/home_page.dart';
 import '../../../features/orders/presentation/pages/orders_page.dart';
 import '../../../features/search/presentation/pages/search_page.dart';
 import '../../../features/shell/presentation/pages/main_shell_page.dart';
-import '../route_args/shell_entrance.dart';
+import '../route_args/shell_arrival.dart';
 import '../route_args/shell_tabs.dart';
 import '../routes.dart';
 
@@ -53,21 +53,22 @@ const ShellTabs _tabs = ShellTabs(
 /// Main tab shell plus the stand-alone tab pages. [Routes.shell] and
 /// [Routes.home] both land on [MainShellPage].
 final List<RouteBase> shellRoutes = <RouteBase>[
+  // Every arrival (splash, sign-in, "Use" a coupon, the Pro bar's way home)
+  // is a `go`: always the same page type, so a shell already in the stack
+  // is kept with its tabs, and the fresh [ShellArrival] picks the tab.
   GoRoute(
     path: Routes.shell,
-    // From the splash the app fades in over it (Hero-style hand-off);
-    // every other entrance keeps the standard page motion.
-    pageBuilder: (_, state) => state.extra == ShellEntrance.splash
-        ? HeroFadeThroughPage<Object?>(
-            key: state.pageKey,
-            name: state.uri.path,
-            child: const MainShellPage(tabs: _tabs),
-          )
-        : HeroTransitionPage<Object?>(
-            key: state.pageKey,
-            name: state.uri.path,
-            child: const MainShellPage(tabs: _tabs),
-          ),
+    pageBuilder: (_, state) {
+      final arrival = state.extra;
+      return HeroFadeThroughPage<Object?>(
+        key: state.pageKey,
+        name: state.uri.path,
+        child: MainShellPage(
+          tabs: _tabs,
+          arrival: arrival is ShellArrival ? arrival : null,
+        ),
+      );
+    },
   ),
   GoRoute(
     path: Routes.home,
@@ -77,9 +78,10 @@ final List<RouteBase> shellRoutes = <RouteBase>[
       child: const MainShellPage(tabs: _tabs),
     ),
   ),
+  // Search from a pill (Home, Offers, a listing): a modal layer.
   GoRoute(
     path: Routes.search,
-    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroSlideUpTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const SearchPage(),

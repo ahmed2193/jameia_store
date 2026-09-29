@@ -1,13 +1,16 @@
 import 'package:flutter/widgets.dart';
 
+import 'ambient_loop.dart';
 import 'motion.dart';
 
-/// An endless 0 → 1 loop over [period] for a figure that should feel alive
-/// while it stays on screen (a mark whose cape ripples, a gentle bob), handed
-/// to [builder] — usually straight into a painter's `repaint`, so the loop
-/// repaints without rebuilding. It rests at 0 while [running] is off, under
-/// reduced motion and while the route is covered (`TickerMode`).
-class IdleLoop extends StatefulWidget {
+/// An idle 0 → 1 loop over [period] for a figure that should feel alive
+/// when it comes on screen (a mark whose cape ripples, a gentle bob): an
+/// [AmbientLoop] preset (D14), handed to [builder] — usually straight into
+/// a painter's `repaint`, so the loop repaints without rebuilding. Whole
+/// laps for at most [AppMotion.ambientBudget] per appearance; it rests at 0
+/// while [running] is off, off screen, under reduced motion, with a screen
+/// reader and while the route is covered.
+class IdleLoop extends StatelessWidget {
   const IdleLoop({
     super.key,
     required this.builder,
@@ -20,50 +23,9 @@ class IdleLoop extends StatefulWidget {
   final bool running;
 
   @override
-  State<IdleLoop> createState() => _IdleLoopState();
-}
-
-class _IdleLoopState extends State<IdleLoop>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _loop = AnimationController(
-    vsync: this,
-    duration: widget.period,
+  Widget build(BuildContext context) => AmbientLoop(
+    period: period,
+    active: running,
+    builder: (context, loop, _) => builder(context, loop),
   );
-  bool _reduced = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _reduced = MotionGuard.reduced(context);
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(covariant IdleLoop oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.period != widget.period) _loop.duration = widget.period;
-    if (oldWidget.running != widget.running ||
-        oldWidget.period != widget.period) {
-      _sync();
-    }
-  }
-
-  void _sync() {
-    if (widget.running && !_reduced) {
-      if (!_loop.isAnimating) _loop.repeat();
-    } else {
-      _loop
-        ..stop()
-        ..value = 0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _loop.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.builder(context, _loop);
 }

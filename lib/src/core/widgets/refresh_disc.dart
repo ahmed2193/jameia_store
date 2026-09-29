@@ -6,15 +6,19 @@ import '../responsive/app_size.dart';
 import 'branded_dot_painter.dart';
 
 /// The pull-to-refresh disc: a small white [LoaderDisc] whose dots stand at
-/// [dots] (the pull while the finger is down, the loop while refreshing).
+/// [dots] (the pull while the finger is down, the loop while refreshing);
+/// [opacity] fades them (the reduced-motion breathe while refreshing).
 class RefreshDisc extends StatelessWidget {
-  const RefreshDisc({super.key, required this.dots});
+  const RefreshDisc({super.key, required this.dots, this.opacity});
 
   static const double diameter = AppSize.s44;
   static const double _dotsWidth = AppSize.s18;
 
   /// The dots' loop position ([BrandedDotPainter.phase]).
   final Animation<double> dots;
+
+  /// The dots' opacity ([BrandedDotPainter.opacity]); null = full.
+  final Animation<double>? opacity;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +40,7 @@ class RefreshDisc extends StatelessWidget {
               phase: dots,
               lead: AppColors.primary,
               trail: AppColors.proAmber,
+              opacity: opacity,
             ),
           ),
         ),

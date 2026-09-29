@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../motion/entrance_arrival.dart';
 import '../motion/motion.dart';
-import 'shelf_arrival_scope.dart';
 
 /// "Save 10%" on the corner of a discounted card's picture, in marker lime.
-/// It pops in a beat after its card lands ([ShelfArrivalScope]).
+/// It pops in a beat after its card lands ([EntranceArrival]).
 class ShelfSaveBadge extends StatelessWidget {
   const ShelfSaveBadge({super.key, required this.percent});
 
@@ -17,11 +17,11 @@ class ShelfSaveBadge extends StatelessWidget {
   static const double _poppedFrom = 0.6;
 
   /// The badge pops over the second half of its card's arrival.
-  static const Interval _pop = Interval(0.45, 1, curve: AppMotion.emphasized);
+  static final Interval _pop = Interval(0.45, 1, curve: AppSprings.snappy);
 
   @override
   Widget build(BuildContext context) {
-    final arrival = ShelfArrivalScope.of(context);
+    final arrival = EntranceArrival.of(context);
     return ScaleTransition(
       scale: arrival
           .drive(CurveTween(curve: _pop))

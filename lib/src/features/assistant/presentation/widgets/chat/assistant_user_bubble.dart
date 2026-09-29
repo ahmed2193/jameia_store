@@ -5,11 +5,13 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/motion/collapse_reveal.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
+import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../domain/entities/assistant_message_entity.dart';
 import '../../../domain/entities/assistant_text_direction.dart';
 import 'assistant_copy_sheet.dart';
-import 'assistant_entrance.dart';
 import 'assistant_unsent_row.dart';
 
 /// What the customer said: end-aligned, brand-tinted, in the direction of
@@ -30,8 +32,6 @@ class AssistantUserBubble extends StatelessWidget {
   final bool canRetry;
 
   static const double _maxWidthFactor = 0.8;
-  static const Offset _rise = Offset(0, 0.3);
-  static const double _riseScale = 0.96;
   static const BorderRadiusDirectional _shape = BorderRadiusDirectional.only(
     topStart: Radius.circular(SuiRadius.bubble),
     topEnd: Radius.circular(SuiRadius.bubble),
@@ -52,11 +52,8 @@ class AssistantUserBubble extends StatelessWidget {
           constraints: BoxConstraints(
             maxWidth: MediaQuery.sizeOf(context).width * _maxWidthFactor,
           ),
-          child: AssistantEntrance(
-            animate: animate,
-            beginOffset: _rise,
-            beginScale: _riseScale,
-            alignment: AlignmentDirectional.bottomEnd,
+          child: EntranceCascadeItem.single(
+            play: animate,
             child: Semantics(
               container: true,
               label: 'assistant.you_said'.tr(),
@@ -88,8 +85,16 @@ class AssistantUserBubble extends StatelessWidget {
             ),
           ),
         ),
-        if (failed)
-          AssistantUnsentRow(draftKey: message.key, canRetry: canRetry),
+        // Folds in over `fast` when the send is refused (docs/motion §9.6
+        // §2.8), and away when a retry goes.
+        CollapseReveal(
+          visible: failed,
+          duration: AppMotion.fast,
+          alignment: AlignmentDirectional.topEnd,
+          child: failed
+              ? AssistantUnsentRow(draftKey: message.key, canRetry: canRetry)
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }

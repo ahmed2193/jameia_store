@@ -1,9 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/screen_load.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/widgets/reconnect_refresh.dart';
@@ -26,7 +24,6 @@ class LedgerBody<T extends LedgerEntry> extends StatelessWidget {
     required this.header,
     required this.entryBuilder,
     required this.entryDate,
-    required this.emptyIcon,
     required this.emptyMessage,
     required this.signInMessage,
     required this.todayLabel,
@@ -41,7 +38,6 @@ class LedgerBody<T extends LedgerEntry> extends StatelessWidget {
 
   /// When a line was booked — the history groups on its day.
   final DateTime Function(T entry) entryDate;
-  final IconData emptyIcon;
   final String emptyMessage;
   final String signInMessage;
   final String todayLabel;
@@ -66,11 +62,8 @@ class LedgerBody<T extends LedgerEntry> extends StatelessWidget {
           ),
           child: switch (state.status) {
             LoadPhase.initial || LoadPhase.loading => const LedgerSkeleton(),
-            LoadPhase.error when state.isSignedOut => EmptyStateView(
+            LoadPhase.error when state.isSignedOut => HeroStateView.signedOut(
               message: signInMessage,
-              icon: Icons.lock_outline_rounded,
-              actionLabel: 'auth.log_in_or_sign_up'.tr(),
-              onAction: () => context.go(Routes.login),
             ),
             LoadPhase.error => FailureView(
               failure: state.failure,
@@ -81,7 +74,10 @@ class LedgerBody<T extends LedgerEntry> extends StatelessWidget {
               header: header,
               entryBuilder: entryBuilder,
               entryDate: entryDate,
-              empty: EmptyStateView(message: emptyMessage, icon: emptyIcon),
+              empty: EmptyStateView(
+                message: emptyMessage,
+                art: HeroAssets.emptyLedger,
+              ),
               todayLabel: todayLabel,
               yesterdayLabel: yesterdayLabel,
             ),

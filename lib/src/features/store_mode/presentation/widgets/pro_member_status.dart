@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/size_fade_switcher.dart';
 import '../../domain/entities/pro_membership.dart';
 import '../cubit/pro_membership_cubit.dart';
 import '../cubit/pro_membership_state.dart';
@@ -15,7 +16,8 @@ import 'pro_member_card.dart';
 /// A member's side of the greeting card: "You're a Pro member", their Pro
 /// member card (plan, renewal / benefits date) and, while the membership
 /// still renews, the cancel action — once cancelled, the notice that it
-/// will not renew and until when the perks stay on.
+/// will not renew and until when the perks stay on. The cancel action and
+/// the notice swap with one height change ([SizeFadeSwitcher]), not a snap.
 class ProMemberStatus extends StatelessWidget {
   const ProMemberStatus({super.key});
 
@@ -40,13 +42,27 @@ class ProMemberStatus extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.s16),
             ProMemberCard(subscription: subscription),
-            if (subscription.canCancel) ...[
-              const SizedBox(height: AppSpacing.s8),
-              const ProCancelRenewalButton(),
-            ] else if (subscription.cancelAtPeriodEnd) ...[
-              const SizedBox(height: AppSpacing.s12),
-              ProEndingNotice(periodEnd: subscription.currentPeriodEnd),
-            ],
+            SizeFadeSwitcher(
+              stateKey: (
+                subscription.canCancel,
+                subscription.cancelAtPeriodEnd,
+              ),
+              child: subscription.canCancel
+                  ? const Padding(
+                      padding: EdgeInsetsDirectional.only(top: AppSpacing.s8),
+                      child: ProCancelRenewalButton(),
+                    )
+                  : subscription.cancelAtPeriodEnd
+                  ? Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        top: AppSpacing.s12,
+                      ),
+                      child: ProEndingNotice(
+                        periodEnd: subscription.currentPeriodEnd,
+                      ),
+                    )
+                  : const SizedBox(width: double.infinity),
+            ),
           ],
         );
       },

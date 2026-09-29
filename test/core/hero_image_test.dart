@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hero_mart/src/core/responsive/app_size.dart';
 import 'package:hero_mart/src/core/widgets/hero_cdn_transform.dart';
 import 'package:hero_mart/src/core/widgets/hero_image.dart';
+import 'package:hero_mart/src/core/widgets/hero_image_placeholder.dart';
 
 Widget _host(Widget child) => MediaQuery(
   data: const MediaQueryData(),
@@ -14,15 +15,18 @@ Widget _host(Widget child) => MediaQuery(
 
 void main() {
   group('HeroImage', () {
-    testWidgets('empty url renders the sized placeholder icon tile', (
+    testWidgets('empty url renders the sized brand placeholder', (
       tester,
     ) async {
       await tester.pumpWidget(
         _host(const HeroImage(url: '', width: 60, height: 40)),
       );
 
-      final icon = tester.widget<Icon>(find.byIcon(Icons.image_outlined));
-      expect(icon.size, AppSize.s28);
+      // The grey fill with the bag outline, 40 % of the short side.
+      expect(find.byType(HeroImagePlaceholder), findsOneWidget);
+      final glyph = tester.widget<SvgPicture>(find.byType(SvgPicture));
+      expect(glyph.width, 40 * 0.4);
+      expect(find.byIcon(Icons.image_outlined), findsNothing);
       expect(tester.getSize(find.byType(HeroImage)), const Size(60, 40));
       expect(
         find.descendant(
@@ -37,15 +41,13 @@ void main() {
     testWidgets('circle wraps the repaint boundary in a ClipOval', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        _host(const HeroImage.circle(url: '', size: 40)),
-      );
+      await tester.pumpWidget(_host(const HeroImage.circle(url: '', size: 40)));
 
       expect(tester.getSize(find.byType(HeroImage)), const Size(40, 40));
       expect(
         find.descendant(
           of: find.byType(ClipOval),
-          matching: find.byIcon(Icons.image_outlined),
+          matching: find.byType(HeroImagePlaceholder),
         ),
         findsOneWidget,
       );

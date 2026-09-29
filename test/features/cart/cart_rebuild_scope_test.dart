@@ -299,7 +299,10 @@ void main() {
   ) async {
     await pump(tester, _snapshot(const [_a, _b], revision: 1));
     final bar = find.descendant(
-      of: find.byType(CartCheckoutBar),
+      of: find.descendant(
+        of: find.byType(CartCheckoutBar),
+        matching: find.byType(HeroBarTotal),
+      ),
       matching: find.byType(RollingNumber),
     );
     final before = tester.element(bar);

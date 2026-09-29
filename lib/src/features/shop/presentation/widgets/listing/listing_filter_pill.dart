@@ -30,7 +30,6 @@ class ListingFilterPill extends StatelessWidget {
 
   static const double height = AppSize.s40;
   static const double _glyph = AppSize.s18;
-  static const double _pressedScale = 0.97;
 
   /// The caret turns over while its filter is on (a half turn).
   static const double _caretTurned = 0.5;
@@ -41,11 +40,10 @@ class ListingFilterPill extends StatelessWidget {
     final foreground = selected ? AppColors.white : AppColors.primaryText;
     return PressScale(
       onTap: onTap,
-      pressedScale: _pressedScale,
       haptic: HapticKind.selection,
       child: AnimatedContainer(
         duration: duration,
-        curve: MotionGuard.curve(context, AppMotion.standard),
+        curve: MotionGuard.curve(context, AppMotion.signature),
         height: height,
         padding: const EdgeInsetsDirectional.symmetric(
           horizontal: AppSpacing.s16,

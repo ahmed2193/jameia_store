@@ -43,7 +43,7 @@ class _ProOutcomeListenerState extends State<ProOutcomeListener> {
 
   Future<void> _celebrate() async {
     setState(() => _celebrations++);
-    Haptics.success();
+    Haptics.done();
     // The sheet's scrim would dim the burst: let it peak first.
     await Future<void>.delayed(
       MotionGuard.duration(context, AppMotion.confetti ~/ 2),
@@ -72,7 +72,11 @@ class _ProOutcomeListenerState extends State<ProOutcomeListener> {
         case ProMembershipOutcome.subscribed:
           unawaited(_celebrate());
         case ProMembershipOutcome.cancelled:
-          showHeroSnackBar(context, 'pro.cancelled_toast'.tr());
+          showHeroSnackBar(
+            context,
+            'pro.cancelled_toast'.tr(),
+            tone: HeroSnackTone.success,
+          );
       }
       // The reply carries no customer object: re-read the session so
       // `isPro` (member prices everywhere) follows.

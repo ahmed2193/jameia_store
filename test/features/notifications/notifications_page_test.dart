@@ -235,7 +235,7 @@ void main() {
     final router = await pumpPage(tester);
 
     expect(find.text('Sign in to see your notifications'), findsOneWidget);
-    await tester.tap(find.text('Log in or sign up'));
+    await tester.tap(find.text('Sign in'));
     await settle(tester);
 
     expect(router.state.uri.path, Routes.login);

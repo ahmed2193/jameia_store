@@ -18,7 +18,8 @@ import 'reward_card_footer.dart';
 
 /// One redemption tier: the art with its "KD x off" pill, the title and the
 /// points it costs (or, when out of reach, a bar toward it and the points
-/// still missing). Rises into place once, in cascade order.
+/// still missing). Rises into place once, in the screen's first-load
+/// cascade ([EntranceCascadeItem] at [entranceIndex]).
 ///
 /// Tapping a ready card spends its points on the current basket through the
 /// app-global cart (`POST /v1/cart/loyalty`); a locked card is not tappable.
@@ -52,12 +53,6 @@ class RewardCard extends StatefulWidget {
   /// Called once this tier was applied to the basket.
   final VoidCallback onRedeemed;
 
-  /// Delay between two cards of the cascade.
-  static const Duration cascadeStep = Duration(milliseconds: 70);
-
-  /// Cards after this one start with the last delay (no long waits).
-  static const int maxCascadeSteps = 5;
-
   bool get isLocked => missingPoints > 0;
 
   @override
@@ -71,7 +66,11 @@ class _RewardCardState extends State<RewardCard> {
   Future<void> _redeem() async {
     final cart = context.read<CartCubit>();
     if (cart.state.isEmpty) {
-      showHeroSnackBar(context, 'loyalty.rewards_empty_cart'.tr());
+      showHeroSnackBar(
+        context,
+        'loyalty.rewards_empty_cart'.tr(),
+        tone: HeroSnackTone.warning,
+      );
       return;
     }
     final points = widget.reward.points;
@@ -85,7 +84,7 @@ class _RewardCardState extends State<RewardCard> {
     if (!mounted) return;
     setState(() => _applying = false);
     if (applied) {
-      Haptics.success();
+      Haptics.done();
       widget.onRedeemed();
     }
     showHeroSnackBar(
@@ -93,6 +92,7 @@ class _RewardCardState extends State<RewardCard> {
       applied
           ? 'loyalty.reward_applied'.tr(namedArgs: {'points': '$points'})
           : failure?.localizedMessage ?? 'core.something_went_wrong'.tr(),
+      tone: applied ? HeroSnackTone.success : HeroSnackTone.error,
     );
   }
 
@@ -101,11 +101,8 @@ class _RewardCardState extends State<RewardCard> {
     final reward = widget.reward;
     final isLocked = widget.isLocked;
     final amount = Formatters.price(reward.valueKd);
-    final delay =
-        RewardCard.cascadeStep *
-        widget.entranceIndex.clamp(0, RewardCard.maxCascadeSteps);
-    return ScrollReveal(
-      delay: delay,
+    return EntranceCascadeItem(
+      index: widget.entranceIndex,
       child: Semantics(
         button: !isLocked,
         enabled: !isLocked,
@@ -131,7 +128,6 @@ class _RewardCardState extends State<RewardCard> {
                     isApplying: isRedeeming && _applying,
                     isApplied: isApplied,
                     floats: widget.floats,
-                    popDelay: delay,
                   ),
                   const SizedBox(height: AppSpacing.s10),
                   Text(

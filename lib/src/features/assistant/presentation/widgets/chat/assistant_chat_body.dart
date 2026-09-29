@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/hero_assets.dart';
+import '../../../../../core/motion/collapse_reveal.dart';
+import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/responsive/content_clamp.dart';
-import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/widgets/reconnect_refresh.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../cubit/assistant_availability_cubit.dart';
 import '../../cubit/assistant_availability_state.dart';
@@ -21,7 +23,11 @@ import 'assistant_thread_skeleton.dart';
 /// Switches the chat screen: off when the store turned the assistant off,
 /// a sign-in prompt when guests may not chat, then loading / error /
 /// welcome / the conversation — with the handoff banner on top and the
-/// composer (or the "chat ended" bar) at the bottom.
+/// composer (or the "chat ended" bar) at the bottom. The bones cross-fade
+/// into the conversation, other status swaps fade through
+/// ([FadeThroughSwitcher]). A thread that failed to load for want of a
+/// connection says "Checking your connection…", then "No connection"
+/// ([FailureView]), and loads again when the connection returns.
 class AssistantChatBody extends StatelessWidget {
   const AssistantChatBody({super.key});
 
@@ -42,43 +48,67 @@ class AssistantChatBody extends StatelessWidget {
     if (unavailable) {
       return EmptyStateView(
         message: 'assistant.unavailable'.tr(),
-        icon: Icons.auto_awesome_outlined,
+        art: HeroAssets.stateUnavailable,
         actionLabel: 'assistant.go_back'.tr(),
         onAction: () => context.pop(),
       );
     }
     // Never a pre-check of the session: the server's 401 decides (§3.2).
-    return BlocBuilder<AssistantChatCubit, AssistantChatState>(
-      buildWhen: _layoutChanged,
-      builder: (context, state) => switch (state.status) {
-        AssistantChatStatus.loading => const AssistantThreadSkeleton(),
-        AssistantChatStatus.signedOut => EmptyStateView(
-          message: 'assistant.sign_in_prompt'.tr(),
-          icon: Icons.lock_outline_rounded,
-          actionLabel: 'auth.log_in_or_sign_up'.tr(),
-          onAction: () => context.go(Routes.login),
-        ),
-        AssistantChatStatus.error => ErrorView(
-          message: state.failure?.localizedMessage,
-          onRetry: () => context.read<AssistantChatCubit>().retryLoad(),
-        ),
-        AssistantChatStatus.ready => ContentClamp(
-          child: Column(
-            children: [
-              if (state.thread.isHandedOff) const AssistantHandoffBanner(),
-              Expanded(
-                child: state.isWelcome
-                    ? const AssistantWelcomeView()
-                    : const AssistantMessageList(),
+    return ReconnectRefresh(
+      onReconnected: () => context.read<AssistantChatCubit>().onReconnected(),
+      child: BlocBuilder<AssistantChatCubit, AssistantChatState>(
+        buildWhen: _layoutChanged,
+        builder: (context, state) => FadeThroughSwitcher(
+          stateKey: state.status,
+          // The switcher bakes each child's timing in when it arrives: the
+          // bones must be a cross-fade child too, or they linger.
+          crossFade:
+              state.status == AssistantChatStatus.loading ||
+              state.status == AssistantChatStatus.ready,
+          child: switch (state.status) {
+            AssistantChatStatus.loading => const AssistantThreadSkeleton(),
+            AssistantChatStatus.signedOut => HeroStateView.signedOut(
+              message: 'assistant.sign_in_prompt'.tr(),
+            ),
+            AssistantChatStatus.error => FailureView(
+              failure: state.failure,
+              onRetry: () => context.read<AssistantChatCubit>().retryLoad(),
+            ),
+            AssistantChatStatus.ready => ContentClamp(
+              child: Column(
+                children: [
+                  // Opens when a person takes the chat (the reversed list
+                  // is pinned to its bottom, so the reader's place holds);
+                  // a thread opened already handed off shows it at once.
+                  CollapseReveal(
+                    visible: state.thread.isHandedOff,
+                    child: const AssistantHandoffBanner(),
+                  ),
+                  // The welcome fades through to the first message (§2.12).
+                  Expanded(
+                    child: FadeThroughSwitcher(
+                      stateKey: state.isWelcome,
+                      child: SizedBox.expand(
+                        child: state.isWelcome
+                            ? const AssistantWelcomeView()
+                            : const AssistantMessageList(),
+                      ),
+                    ),
+                  ),
+                  FadeThroughSwitcher(
+                    stateKey: state.thread.hasEnded,
+                    crossFade: true,
+                    alignment: AlignmentDirectional.bottomCenter,
+                    child: state.thread.hasEnded
+                        ? const AssistantChatEndedBar()
+                        : const AssistantComposer(),
+                  ),
+                ],
               ),
-              if (state.thread.hasEnded)
-                const AssistantChatEndedBar()
-              else
-                const AssistantComposer(),
-            ],
-          ),
+            ),
+          },
         ),
-      },
+      ),
     );
   }
 }

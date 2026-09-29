@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
-import '../../../../../core/navigation/navigation.dart';
 import '../settings/settings_section.dart';
 import '../settings/settings_tile.dart';
 import '../settings/settings_tone.dart';
 import 'about_version_chip.dart';
 
 /// Legal and feedback rows of About: the terms and the privacy policy (the
-/// backend's CMS pages), the open-source licenses and "Rate us".
+/// backend's CMS pages), the open-source licenses and "Rate us". The app
+/// has no store hand-off yet, so "Rate us" says so and opens nothing — it
+/// never thanks the customer for a rating that did not happen (B1-19).
 class AboutLinksSection extends StatelessWidget {
   const AboutLinksSection({super.key});
 
@@ -48,11 +49,7 @@ class AboutLinksSection extends StatelessWidget {
           icon: Icons.star_outline_rounded,
           tone: SettingsTone.amber,
           title: 'account.rate_us'.tr(),
-          onTap: () => showHeroSnackBar(
-            context,
-            'account.rate_us_thanks'.tr(),
-            behavior: SnackBarBehavior.floating,
-          ),
+          subtitle: 'account.rate_us_soon'.tr(),
         ),
       ],
     );

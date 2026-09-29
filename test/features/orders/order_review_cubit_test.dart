@@ -6,7 +6,6 @@ import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_cu
 
 import 'fake_orders_repository.dart';
 
-import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_state.dart';
 import 'package:hero_mart/src/features/orders/domain/usecases/watch_order_usecase.dart';
 
 void main() {
@@ -19,6 +18,30 @@ void main() {
       submitReview: SubmitProductReviewUseCase(repository),
     );
   }
+
+  test('stars tapped on the order page start every product there', () async {
+    final cubit = build();
+
+    await cubit.load('o1', initialRating: 4);
+
+    expect(cubit.state.draft.ratingOf('p1'), 4);
+    expect(cubit.state.canSubmit, isTrue);
+    // A later read keeps what the customer changed.
+    cubit.rate('p1', 2);
+    await cubit.refresh();
+    expect(cubit.state.draft.ratingOf('p1'), 2);
+    await cubit.close();
+  });
+
+  test('a rating outside 1–5 from the order page chooses nothing', () async {
+    final cubit = build();
+
+    await cubit.load('o1', initialRating: 9);
+
+    expect(cubit.state.draft.ratingOf('p1'), 0);
+    expect(cubit.state.canSubmit, isFalse);
+    await cubit.close();
+  });
 
   test('nothing can be submitted before a product is rated', () async {
     final cubit = build();

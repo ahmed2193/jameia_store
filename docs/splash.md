@@ -65,14 +65,17 @@ The code carries the name too: the Dart package is `hero_mart`, the classes
 are `Hero*` (`HeroAssets`, `HeroTransitionPage`, …) and the API skills are
 `.claude/skills/hero-api-*`.
 
+On 2026-09-29 the application id / bundle id moved from `com.jameiamart.app`
+to `com.herodelivery.app` (Android `applicationId` + `namespace` + the `MainActivity`
+package, iOS `PRODUCT_BUNDLE_IDENTIFIER`). A new id installs as a new app, so
+the saved-data keys moved with it (`hero.addressbook.v1`, `hero.orders.v1`,
+`hero.search.recents.v1`, `hero.home.popup_shown.*`).
+
 Kept on purpose, because renaming them breaks something outside the code:
-- the application id / bundle id `com.jameiamart.app` (store and signing
-  identity);
 - the backend hosts (`api.jm3eia.store`, `media.jm3eia.com`) and their docs;
-- the saved-data keys `jameia.addressbook.v1`, `jameia.orders.v1`,
-  `jameia.search.recents.v1` and `jameia.home.popup_shown.*`: phones that
-  already have the app keep their data under them;
 - the social handles on the About page, until Hero's own accounts exist;
+- the Codemagic App Store Connect integration name `jameia` and the GitHub
+  repo `jameia_store`;
 - the repo folder `keeta_clone`.
 
 Texts the server sends (plan names, assistant replies) come as the server
@@ -88,10 +91,13 @@ writes them.
 2. **Flutter splash** (`features/splash`): its first frame repeats the native
    one exactly, drawn by the same painter at the same size and place. It holds
    still until that frame is really on screen: first frame rasterized, then
-   `AppMotion.splashHandOffHold` (600 ms fallback). Then the intro plays.
+   `SplashMotion.handOffHold` (250 ms; `firstFrameWait`, 600 ms, is the failsafe). Then the
+   intro plays. On that launch frame `onLaunchFrame` starts the Home read
+   (`HomeLaunchPrefetch`), so Home usually has its feed when the shell arrives
+   (under reduced motion it fires at once).
    `MainActivity` removes the Android 12 system splash at once; its default
    exit dimmed the logo.
-3. **Hand-off**: `context.go(Routes.shell, extra: ShellEntrance.splash)`. The
+3. **Hand-off**: `context.go(Routes.shell, extra: ShellArrival())`. The
    shell fades in (`HeroFadeThroughPage`).
 
 ## Versions
@@ -114,7 +120,7 @@ Pick one at build time with `--dart-define=SPLASH_VARIANT=<name>`
 | 130–650 | Flight: it swoops 36 dp forward and 64 dp up, then glides into the lockup. It tips further back, its cape whips (bigger wave, faster travel, its amber underside twisting into view) and slanted streaks fade behind it. |
 | 650 | Arrival: a ring in the air and a pulse of the glow behind it. |
 | 690 → | Delivery: every 80 ms (Arabic: 150 ms, two joined runs) the bag throws the next piece of the name. Each piece pops out of the opening, flies a ballistic arc into its place (growing, turning upright, hidden while it passes behind the bag) and squashes as it lands. Each throw bobs the bag and flicks its cape. |
-| last landing | Confetti from the name, a light sweep across the whole lockup, the tagline fades in. |
+| last landing | Confetti from the name (its run is compressed to end inside the clock), a light sweep across the whole lockup, the tagline fades in. |
 | to the end | The bag floats (1.6 units, 1.7 s a bob), its cape rippling. |
 
 Under all of it:
@@ -124,7 +130,7 @@ Under all of it:
   Tapping the bag makes it hop and flick its cape, with a light haptic. Touch
   never changes how long the intro plays.
 - **Reduced motion**: the finished lockup at once, no touch effects, then the
-  app after `AppMotion.splashReducedHold`.
+  app after `SplashMotion.reducedHold`.
 
 ## How it is built
 

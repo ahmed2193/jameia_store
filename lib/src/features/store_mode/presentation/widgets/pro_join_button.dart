@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/routes/route_args/login_args.dart';
 import '../../../../config/routes/routes.dart';
+import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/pro_membership.dart';
@@ -17,12 +18,13 @@ import 'pro_cta_button.dart';
 /// the page is rebuilt for the new session, and comes back here once signed
 /// in); a customer confirms, then subscribes — a lapsed member "rejoins".
 /// Cannot fire twice: disabled while any money action runs. The label flips
-/// to the new price when the customer switches plans.
+/// to the new price a beat after the customer switches plans (backlog B2-03:
+/// the tabs' thumb answers first; the button acts on the chosen plan at
+/// once, and its confirmation names it).
 class ProJoinButton extends StatelessWidget {
   const ProJoinButton({super.key});
 
-  static String _label(ProMembershipState state) {
-    final plan = state.selectedPlan;
+  static String _label(ProMembershipState state, ProPlan? plan) {
     if (state.isSignedOut) return 'pro.sign_in_to_join'.tr();
     if (plan == null) return 'pro.subscribe'.tr();
     // "/ month" and "/ year" only describe a single-period plan; the price
@@ -80,11 +82,16 @@ class ProJoinButton extends StatelessWidget {
           previous.isBusy != current.isBusy,
       builder: (context, state) {
         final plan = state.selectedPlan;
-        return ProCtaButton(
-          label: _label(state),
-          holding: plan != null && state.submittingPlanId == plan.id,
-          enabled: !state.isBusy && plan != null,
-          onPressed: plan == null ? null : () => _join(context, plan),
+        return DeferredValue<ProPlan?>(
+          value: plan,
+          delay: MotionBeat.second,
+          deferWhen: (shown, next) => shown != null && next != null,
+          builder: (context, shown) => ProCtaButton(
+            label: _label(state, shown),
+            holding: plan != null && state.submittingPlanId == plan.id,
+            enabled: !state.isBusy && plan != null,
+            onPressed: plan == null ? null : () => _join(context, plan),
+          ),
         );
       },
     );

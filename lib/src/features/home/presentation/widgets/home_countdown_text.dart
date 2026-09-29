@@ -1,14 +1,16 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/motion/motion_widgets.dart';
-import 'home_reveal_scope.dart';
 
 /// `HH:MM:SS` left until [endsAt], ticking once a second like a flip clock:
-/// only the part that changed rolls to its new value. Only this text
-/// rebuilds on a tick, and not at all while its block is off screen;
-/// [onFinished] fires once when the time is up.
+/// only the part that changed rolls to its new value. It ticks on the nearest
+/// `SecondClockScope`'s clock (else on one [SecondClock] of its own), and it
+/// lets go of the clock while it is off screen ([OnScreenGate]), the app is
+/// in the background or the tab is hidden —
+/// no timer runs for a countdown nobody sees (docs/motion PB-06). Back on
+/// screen it shows the time as it is now. [onFinished] fires once when the
+/// time is up. The clock half is shared with `CountdownDigits`
+/// ([SecondClockFollower]).
 class HomeCountdownText extends StatefulWidget {
   const HomeCountdownText({
     super.key,
@@ -25,65 +27,88 @@ class HomeCountdownText extends StatefulWidget {
   State<HomeCountdownText> createState() => _HomeCountdownTextState();
 }
 
-class _HomeCountdownTextState extends State<HomeCountdownText> {
-  static const Duration _tick = Duration(seconds: 1);
+class _HomeCountdownTextState extends State<HomeCountdownText>
+    with
+        OnScreenGate<HomeCountdownText>,
+        SecondClockFollower<HomeCountdownText> {
   static const int _pad = 2;
   static const String _separator = ':';
 
-  Timer? _timer;
-  late Duration _left;
-  bool _onScreen = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _left = _remaining();
-    _timer = Timer.periodic(_tick, (_) => _onTick());
-  }
+  /// Only without a scope: this text's own clock.
+  SecondClock? _own;
+  bool _tickersOn = true;
+  bool _finished = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _onScreen = HomeRevealScope.onScreenOf(context);
-    // Back on screen: show the time as it is now.
-    if (_onScreen) _left = _remaining();
+    if (followedClock == null) {
+      followClock(SecondClockScope.maybeOf(context) ?? (_own = SecondClock()));
+    }
+    // A scope rests its clock by itself; an own clock follows the tab.
+    _tickersOn = TickerMode.valuesOf(context).enabled;
+    _own?.enabled = _tickersOn;
+    _sync();
   }
+
+  /// Back on screen it shows the time as it is now.
+  @override
+  void onScreenChanged() => setState(_sync);
+
+  bool get _live => onScreen && _tickersOn;
 
   @override
   void didUpdateWidget(covariant HomeCountdownText oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.endsAt != widget.endsAt) _left = _remaining();
+    if (oldWidget.endsAt == widget.endsAt) return;
+    _finished = false;
+    _sync();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    // Let go before the own clock goes.
+    stopListeningToClock();
+    _own?.dispose();
     super.dispose();
   }
 
-  Duration _remaining() {
-    final left = widget.endsAt.difference(DateTime.now());
-    return left.isNegative ? Duration.zero : left;
-  }
+  Duration get _left => timeLeftUntil(widget.endsAt);
 
-  void _onTick() {
-    final left = _remaining();
-    if (left == Duration.zero) {
-      _timer?.cancel();
-      widget.onFinished?.call();
-    } else if (!_onScreen) {
+  /// Listens while on screen and running; at zero, finishes after the frame.
+  void _sync() {
+    if (_left == Duration.zero) {
+      stopListeningToClock();
+      if (!_finished) {
+        _finished = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) widget.onFinished?.call();
+        });
+      }
       return;
     }
-    if (mounted) setState(() => _left = left);
+    listenToClock(_live);
+  }
+
+  @override
+  void onClockTick() {
+    if (!mounted) return;
+    if (_left == Duration.zero && !_finished) {
+      _finished = true;
+      stopListeningToClock();
+      widget.onFinished?.call();
+    }
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final left = _left;
     String two(int value) => value.toString().padLeft(_pad, '0');
     final parts = [
-      _left.inHours,
-      _left.inMinutes.remainder(Duration.minutesPerHour),
-      _left.inSeconds.remainder(Duration.secondsPerMinute),
+      left.inHours,
+      left.inMinutes.remainder(Duration.minutesPerHour),
+      left.inSeconds.remainder(Duration.secondsPerMinute),
     ];
     return Semantics(
       label: parts.map(two).join(_separator),

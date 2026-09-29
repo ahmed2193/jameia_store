@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/design/hero_icons.dart';
+import '../../../../../core/motion/change_bump.dart';
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 
-/// Label tag chip with a Hero glyph (Home | Work | Hangout | Other).
+/// Label tag chip with its drawn Hero glyph (Home | Work | Hangout | Other;
+/// a mono `HeroAssets.addressLabel*` tinted like the words).
 class LabelChip extends StatelessWidget {
   const LabelChip({
     super.key,
@@ -28,11 +31,12 @@ class LabelChip extends StatelessWidget {
     final fg = selected ? AppColors.primaryText : AppColors.secondaryText;
     return PressScale(
       onTap: onTap,
-      child: PopScale(
-        popKey: selected,
+      haptic: HapticKind.selection,
+      child: ChangeBump(
+        value: selected,
         child: AnimatedContainer(
           duration: MotionGuard.duration(context, AppMotion.fast),
-          curve: MotionGuard.curve(context, AppMotion.standard),
+          curve: MotionGuard.curve(context, AppMotion.signature),
           height: AppSize.s40,
           padding: const EdgeInsetsDirectional.symmetric(
             horizontal: AppSpacing.s14,
@@ -51,13 +55,7 @@ class LabelChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                iconAsset,
-                width: AppSize.s16,
-                height: AppSize.s16,
-                errorBuilder: (context, error, stackTrace) =>
-                    Icon(HeroIcons.location, size: AppSize.s15, color: fg),
-              ),
+              HeroSvgGlyph.mono(iconAsset, size: AppSize.s16, color: fg),
               const SizedBox(width: AppSpacing.s6),
               Text(
                 label,

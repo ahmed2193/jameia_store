@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'confetti_painter.dart';
@@ -10,6 +12,8 @@ import 'motion.dart';
 /// through, a reward applied). Pieces come from a fixed seed, so a burst looks
 /// the same every time and tests stay deterministic. The overlay ignores
 /// touches and paints nothing while idle. Reduced motion → no burst.
+/// [playing] tells a reaction that must not compete with a burst (the
+/// assistant buddy's hop) to wait until it is over.
 class ConfettiBurst extends StatefulWidget {
   const ConfettiBurst({
     super.key,
@@ -23,6 +27,23 @@ class ConfettiBurst extends StatefulWidget {
   /// Launch point as fractions of the overlay size (centre, a third down).
   static const Offset defaultOrigin = Offset(0.5, 0.33);
   static const int defaultCount = 48;
+
+  static int _bursts = 0;
+  static final ValueNotifier<bool> _playing = ValueNotifier<bool>(false);
+
+  /// Whether a burst is in the air anywhere in the app.
+  static ValueListenable<bool> get playing => _playing;
+
+  static void _count(int delta, {bool later = false}) {
+    _bursts += delta;
+    void apply() => _playing.value = _bursts > 0;
+    // From `dispose` (mid tree teardown) nothing may rebuild synchronously.
+    if (later) {
+      scheduleMicrotask(apply);
+    } else {
+      apply();
+    }
+  }
 
   final Object? playKey;
   final List<Color> colors;
@@ -45,7 +66,21 @@ class _ConfettiBurstState extends State<ConfettiBurst>
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: AppMotion.confetti,
-  );
+  )..addStatusListener(_onStatus);
+
+  /// This burst is counted in [ConfettiBurst.playing].
+  bool _counted = false;
+
+  void _onStatus(AnimationStatus status) {
+    if (status.isCompleted) _release();
+  }
+
+  void _release({bool later = false}) {
+    if (!_counted) return;
+    _counted = false;
+    ConfettiBurst._count(-1, later: later);
+  }
+
   late final List<ConfettiPiece> _pieces = _buildPieces();
 
   List<ConfettiPiece> _buildPieces() {
@@ -70,12 +105,17 @@ class _ConfettiBurstState extends State<ConfettiBurst>
     if (widget.playKey != null &&
         widget.playKey != oldWidget.playKey &&
         !MotionGuard.reduced(context)) {
+      if (!_counted) {
+        _counted = true;
+        ConfettiBurst._count(1);
+      }
       _controller.forward(from: 0);
     }
   }
 
   @override
   void dispose() {
+    _release(later: true);
     _controller.dispose();
     super.dispose();
   }

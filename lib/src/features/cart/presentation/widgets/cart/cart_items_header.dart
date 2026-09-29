@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/widgets/hero_section_header.dart';
 import '../../../../../core/widgets/hero_text_link.dart';
 import '../../cubit/cart_cubit.dart';
@@ -35,10 +34,8 @@ class CartItemsHeader extends StatelessWidget {
         label: 'cart.clear'.tr(),
         navigates: false,
         onTap: canClear
-            ? () {
-                Haptics.selection();
-                CartClearDialog.confirmAndClear(context);
-              }
+            // Opening the dialog is silent; its confirm warns (§9.5).
+            ? () => CartClearDialog.confirmAndClear(context)
             : null,
       ),
     );

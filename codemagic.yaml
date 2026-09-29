@@ -1,0 +1,108 @@
+# Hero (hero_mart) — Codemagic CI for the App Store.
+# Full reference (what the app is, every iOS setting, first-upload checklist,
+# troubleshooting): docs/ios_release.md.
+#
+# Before the FIRST run, in Codemagic → Team settings:
+#   1. Integrations → App Store Connect: an API key named `jameia` (the same
+#      key the jm3eia_mobile app uses; rename below if yours differs).
+#   2. Code signing identities → iOS certificates: an "Apple Distribution"
+#      certificate (with its private key). Profiles are fetched automatically
+#      for BUNDLE_ID through the integration.
+#   3. APP_STORE_APP_ID below = the app's Apple ID (App Store Connect → App → App Information
+#      → Apple ID, a number).
+workflows:
+  ios-release:
+    name: Hero - iOS App Store Release
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    # No `triggering:` block → the build starts only from the Codemagic UI
+    # ("Start new build"). To ship on every push to main, add:
+    #   triggering:
+    #     events: [push]
+    #     branch_patterns:
+    #       - pattern: 'main'
+    #         include: true
+    integrations:
+      app_store_connect: jameia
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.herodelivery.app
+      vars:
+        BUNDLE_ID: com.herodelivery.app
+        APP_STORE_APP_ID: "6817324787" # Apple ID of Hero in App Store Connect
+        # Backend origin baked in with --dart-define (lib/src/core/constants/app_env.dart).
+        API_BASE_URL: https://api.jm3eia.store
+      # Pinned to the version the app is developed and tested on (CLAUDE.md
+      # stack line). Bump together with the local SDK.
+      flutter: 3.47.4
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter clean
+          flutter pub get
+
+      # Hybrid iOS build: Swift Package Manager (Flutter's default) for every
+      # plugin except google_maps_flutter_ios, which is CocoaPods-only. The
+      # config-only build lets Flutter write Generated.xcconfig and wire both
+      # sides into Runner.xcodeproj before `pod install`.
+      - name: Install iOS dependencies
+        script: |
+          rm -rf ios/Pods ios/Podfile.lock
+          flutter build ios --config-only --no-codesign
+          cd ios
+          pod install --repo-update
+          cd ..
+
+      # permission_handler_apple (SPM) turns a permission ON only when its
+      # NS*UsageDescription key is in Runner/Info.plist. A missing key = the
+      # permission is always "denied" on device; fail early instead.
+      - name: Verify Info.plist usage strings
+        script: |
+          PLIST=ios/Runner/Info.plist
+          for KEY in NSLocationWhenInUseUsageDescription NSMicrophoneUsageDescription NSSpeechRecognitionUsageDescription ITSAppUsesNonExemptEncryption; do
+            if ! /usr/libexec/PlistBuddy -c "Print :$KEY" "$PLIST" >/dev/null 2>&1; then
+              echo "❌ $PLIST is missing $KEY"; exit 1
+            fi
+          done
+          echo "✅ Info.plist carries every usage string + export compliance"
+
+      - name: Set up code signing
+        script: |
+          xcode-project use-profiles
+
+      # Version name comes from pubspec.yaml (`version: X.Y.Z+N`); the build
+      # number is always "latest TestFlight build + 1" so two uploads never clash.
+      - name: Build IPA
+        script: |
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APP_ID" 2>/dev/null || echo 0)
+          BUILD_NUMBER=$((LATEST + 1))
+          echo "Build number: $BUILD_NUMBER"
+          flutter build ipa --release \
+            --build-number=$BUILD_NUMBER \
+            --dart-define=API_BASE_URL=$API_BASE_URL \
+            --export-options-plist=/Users/builder/export_options.plist \
+            2>&1 | tee build_output.log
+          if [ ${PIPESTATUS[0]} -ne 0 ]; then exit 1; fi
+          ls -la build/ios/ipa/
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - build_output.log
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      email:
+        recipients:
+          - ahmed.alfawali@gmail.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false

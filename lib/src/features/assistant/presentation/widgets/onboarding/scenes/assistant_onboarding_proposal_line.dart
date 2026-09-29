@@ -15,10 +15,14 @@ class AssistantOnboardingProposalLine extends StatelessWidget {
     super.key,
     required this.item,
     required this.appear,
+    this.glyphKey,
   });
 
   final AssistantOnboardingItem item;
   final double appear;
+
+  /// Marks the glyph (a flight to the cart takes off from it).
+  final GlobalKey? glyphKey;
 
   static const double _slide = AppSize.s12;
   static const double _glyph = AppSize.s22;
@@ -35,7 +39,11 @@ class AssistantOnboardingProposalLine extends StatelessWidget {
         offset: Offset(fromStart * (1 - shown), 0),
         child: Row(
           children: [
-            AssistantOnboardingItemGlyph(item: item, size: _glyph),
+            AssistantOnboardingItemGlyph(
+              key: glyphKey,
+              item: item,
+              size: _glyph,
+            ),
             const SizedBox(width: AppSpacing.s8),
             Expanded(
               child: Text(

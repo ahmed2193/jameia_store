@@ -23,7 +23,7 @@ import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
-import 'package:hero_mart/src/core/motion/stagger_entrance.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
 import 'package:hero_mart/src/core/widgets/collection_frame.dart';
 import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
 import 'package:hero_mart/src/core/widgets/countdown_chip.dart';
@@ -413,7 +413,9 @@ void main() {
       // Ending today counts down; ending in three months shows its day.
       expect(find.byType(CountdownChip), findsOneWidget);
       expect(find.textContaining('Ends in'), findsOneWidget);
-      expect(find.textContaining('01:5'), findsOneWidget);
+      // The page clock reads whole seconds: two hours left shows 02:00:00
+      // (or 01:59:59 when a second boundary passed since the fixture).
+      expect(find.textContaining(RegExp('02:00:00|01:59:59')), findsOneWidget);
       expect(find.textContaining('Valid until'), findsOneWidget);
       // An empty basket: no pill.
       expect(find.byType(ViewCartPill), findsNothing);
@@ -743,7 +745,7 @@ void main() {
       // The cascade is skipped: no fade over the cards.
       expect(
         find.descendant(
-          of: find.byType(StaggerEntrance),
+          of: find.byType(EntranceCascadeItem),
           matching: find.byType(FadeTransition),
         ),
         findsNothing,

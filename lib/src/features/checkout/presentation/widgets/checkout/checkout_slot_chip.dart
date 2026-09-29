@@ -22,8 +22,6 @@ class CheckoutSlotChip extends StatelessWidget {
     required this.onTap,
   });
 
-  static const double _pressedScale = 0.97;
-
   final String label;
   final bool selected;
   final bool enabled;
@@ -59,7 +57,6 @@ class CheckoutSlotChip extends StatelessWidget {
         onTap: enabled ? onTap : null,
         enabled: enabled,
         haptic: HapticKind.selection,
-        pressedScale: _pressedScale,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppSize.s44),
           child: Center(

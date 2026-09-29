@@ -20,7 +20,6 @@ class SearchTermChip extends StatelessWidget {
 
   static const double _pillHeight = AppSize.s36;
   static const double _maxWidth = AppSize.s240;
-  static const double _pressedScale = 0.97;
 
   final String label;
   final VoidCallback onTap;
@@ -36,7 +35,6 @@ class SearchTermChip extends StatelessWidget {
       child: PressScale(
         onTap: onTap,
         haptic: HapticKind.selection,
-        pressedScale: _pressedScale,
         child: ConstrainedBox(
           constraints: const BoxConstraints(
             minHeight: AppSize.s44,

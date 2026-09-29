@@ -23,7 +23,6 @@ import 'package:hero_mart/src/features/account/data/repositories/wallet_reposito
 import 'package:hero_mart/src/features/account/domain/entities/ledger.dart';
 import 'package:hero_mart/src/features/account/domain/entities/wallet_entry_entity.dart';
 import 'package:hero_mart/src/features/account/presentation/cubit/ledger_cubit.dart';
-import 'package:hero_mart/src/features/account/presentation/cubit/ledger_state.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import '../../core/storage/cache_test_fakes.dart';

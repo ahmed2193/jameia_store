@@ -4,6 +4,7 @@ import '../../features/assistant/presentation/cubit/assistant_availability_cubit
 import '../../features/auth/presentation/cubit/auth_session_cubit.dart';
 import '../../features/cart/presentation/cubit/cart_cubit.dart';
 import '../../features/connectivity/presentation/cubit/connectivity_cubit.dart';
+import '../../features/home/presentation/cubit/home_launch_prefetch.dart';
 import '../../features/language/presentation/cubit/localization_cubit.dart';
 import '../../features/notifications/presentation/cubit/unread_notifications_cubit.dart';
 import '../../features/store_mode/presentation/cubit/pro_status_cubit.dart';
@@ -45,4 +46,13 @@ abstract final class AppGlobalCubits {
   /// Where the customer stands with Hero Pro; unsettled until the app
   /// root calls `start()` (signed in) or `stop()` (a guest).
   static ProStatusCubit proStatus() => sl<ProStatusCubit>();
+
+  /// Starts home's first read while the splash intro plays (B1-14), so the
+  /// home page adopts a cubit that is already reading — or done. Nothing
+  /// when home is not registered (a router test without DI).
+  static void prefetchHome() {
+    if (sl.isRegistered<HomeLaunchPrefetch>()) {
+      sl<HomeLaunchPrefetch>().start();
+    }
+  }
 }

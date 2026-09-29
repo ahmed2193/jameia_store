@@ -1,5 +1,6 @@
-// How the home tab moves: blocks come in as they are first seen and their
-// cards follow in turn, looping touches rest off screen, the banners hold
+// How the home tab moves: the blocks on screen when the feed arrives come in
+// one after another (EntranceCascade) and their cards follow in turn, never
+// again on scroll-back, looping touches rest off screen, the banners hold
 // under a finger, the search hint suggests things to look for, the bell
 // swings for news and the countdown rolls only what changed — and under
 // reduced motion none of it runs.
@@ -14,6 +15,10 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/motion/ambient_loop.dart';
+import 'package:hero_mart/src/core/motion/entrance_arrival.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
 import 'package:hero_mart/src/core/motion/flip_value.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_icon.dart';
@@ -22,11 +27,7 @@ import 'package:hero_mart/src/features/home/presentation/widgets/home_bell_ring.
 import 'package:hero_mart/src/features/home/presentation/widgets/home_carousel_page.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_countdown_text.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_icon_view.dart';
-import 'package:hero_mart/src/features/home/presentation/widgets/home_loop.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_notifications_bell.dart';
-import 'package:hero_mart/src/features/home/presentation/widgets/home_reveal.dart';
-import 'package:hero_mart/src/features/home/presentation/widgets/home_reveal_item.dart';
-import 'package:hero_mart/src/features/home/presentation/widgets/home_reveal_scope.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_search_hint.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_section_header.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_slides_carousel.dart';
@@ -83,113 +84,80 @@ void main() {
       .opacity
       .value;
 
-  group('HomeReveal', () {
-    testWidgets('a block below the fold waits, then comes in when reached', (
-      tester,
-    ) async {
-      final page = ScrollController();
-      addTearDown(page.dispose);
-      await pumpApp(
-        tester,
-        SingleChildScrollView(
-          controller: page,
-          child: const Column(
-            children: [
-              SizedBox(height: _fold),
-              HomeReveal(child: SizedBox(height: 200, child: Text('Late'))),
-              SizedBox(height: _fold),
-            ],
-          ),
-        ),
-      );
-      await tester.pump(const Duration(seconds: 2));
-      final block = find.byType(HomeReveal);
-      expect(opacityUnder(tester, block), 0, reason: 'not seen yet');
-
-      page.jumpTo(_fold - 300);
-      await tester.pump();
-      await tester.pump();
-      await tester.pump(AppMotion.drawOn);
-      expect(opacityUnder(tester, block), 1);
-    });
-
-    testWidgets('the blocks on screen at launch come in one after another', (
+  group('the feed entrance (EntranceCascade)', () {
+    testWidgets('the blocks on screen at arrival come in one after another', (
       tester,
     ) async {
       await pumpApp(
         tester,
-        SingleChildScrollView(
-          child: Column(
-            children: [
-              const HomeReveal(child: SizedBox(height: 100)),
-              const HomeReveal(order: 2, child: SizedBox(height: 100)),
-              const SizedBox(height: _fold),
-            ],
+        const EntranceCascade(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                EntranceCascadeItem(index: 0, child: SizedBox(height: 100)),
+                EntranceCascadeItem(index: 2, child: SizedBox(height: 100)),
+                SizedBox(height: _fold),
+              ],
+            ),
           ),
         ),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-      final first = opacityUnder(tester, find.byType(HomeReveal).at(0));
-      final third = opacityUnder(tester, find.byType(HomeReveal).at(1));
+      final blocks = find.byType(EntranceCascadeItem);
+      final first = opacityUnder(tester, blocks.at(0));
+      final third = opacityUnder(tester, blocks.at(1));
       expect(first, greaterThan(0));
-      expect(third, lessThan(first), reason: 'its turn comes two beats later');
+      expect(third, lessThan(first), reason: 'its turn comes two steps later');
 
-      // Its beat comes; its clock starts on the next frame and runs out.
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump(AppMotion.drawOn);
-      expect(opacityUnder(tester, find.byType(HomeReveal).at(1)), 1);
+      await tester.pump(AppMotion.slow);
+      expect(opacityUnder(tester, blocks.at(1)), 1);
     });
 
-    testWidgets('the block tells its pieces whether it is on screen', (
+    testWidgets('a block built later (reached, scrolled back to) shows as is', (
       tester,
     ) async {
-      final page = ScrollController();
-      addTearDown(page.dispose);
-      final seen = <bool>[];
+      final feed = ScrollController();
+      addTearDown(feed.dispose);
       await pumpApp(
         tester,
-        SingleChildScrollView(
-          controller: page,
-          child: Column(
-            children: [
-              HomeReveal(
-                child: Builder(
-                  builder: (context) {
-                    seen.add(HomeRevealScope.onScreenOf(context));
-                    return const SizedBox(height: 100);
-                  },
-                ),
-              ),
-              const SizedBox(height: _fold),
-            ],
+        EntranceCascade(
+          child: ListView.builder(
+            controller: feed,
+            itemCount: 30,
+            itemBuilder: (context, index) => EntranceCascadeItem(
+              key: ValueKey<int>(index),
+              index: index,
+              child: SizedBox(height: 200, child: Text('block $index')),
+            ),
           ),
         ),
       );
-      await tester.pump();
-      expect(seen.last, isTrue);
+      await tester.pumpAndSettle();
 
-      page.jumpTo(_fold);
+      feed.jumpTo(3000);
       await tester.pump();
-      await tester.pump();
-      expect(seen.last, isFalse);
+      expect(find.text('block 16'), findsOneWidget);
+      expect(tester.hasRunningAnimations, isFalse, reason: 'reached: as is');
 
-      page.jumpTo(0);
+      feed.jumpTo(0);
       await tester.pump();
-      await tester.pump();
-      expect(seen.last, isTrue);
+      expect(find.text('block 0'), findsOneWidget);
+      expect(tester.hasRunningAnimations, isFalse, reason: 'no replay');
     });
 
     testWidgets('with reduced motion a block is simply there', (tester) async {
       await pumpApp(
         tester,
-        const HomeReveal(child: Text('Block')),
+        const EntranceCascade(
+          child: EntranceCascadeItem(index: 0, child: Text('Block')),
+        ),
         reducedMotion: true,
       );
       await tester.pump();
       expect(
         find.descendant(
-          of: find.byType(HomeReveal),
+          of: find.byType(EntranceCascadeItem),
           matching: find.byType(FadeTransition),
         ),
         findsNothing,
@@ -203,11 +171,11 @@ void main() {
   ) async {
     await pumpApp(
       tester,
-      HomeReveal(
+      EntranceCascade(
         child: Row(
           children: [
-            for (var i = 0; i <= HomeRevealItem.maxAnimated; i++)
-              HomeRevealItem(
+            for (var i = 0; i <= AppMotion.staggerMaxItems; i++)
+              EntranceCascadeItem(
                 index: i,
                 child: SizedBox(width: 40, height: 40, child: Text('$i')),
               ),
@@ -216,45 +184,57 @@ void main() {
       ),
     );
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    final items = find.byType(HomeRevealItem);
+    await tester.pump(const Duration(milliseconds: 100));
+    final items = find.byType(EntranceCascadeItem);
     expect(
       opacityUnder(tester, items.at(0)),
       greaterThan(opacityUnder(tester, items.at(3))),
     );
     expect(
       find.descendant(
-        of: items.at(HomeRevealItem.maxAnimated),
+        of: items.at(AppMotion.staggerMaxItems),
         matching: find.byType(FadeTransition),
       ),
       findsNothing,
     );
   });
 
-  group('HomeLoop', () {
-    Widget loop(List<double> seen, {required bool onScreen}) => HomeRevealScope(
-      reveal: kAlwaysCompleteAnimation,
-      onScreen: onScreen,
-      child: HomeLoop(
-        period: AppMotion.floatLoop,
-        builder: (context, t, child) {
-          seen.add(t);
-          return child;
-        },
-        child: const SizedBox(),
-      ),
-    );
+  // Home's looping touches (the retired HomeLoop) run on the core
+  // AmbientLoop, which measures its own box against the feed.
+  group('AmbientLoop on a home block', () {
+    Widget loop(List<double> seen, [ScrollController? feed]) =>
+        SingleChildScrollView(
+          controller: feed,
+          child: Column(
+            children: [
+              AmbientLoop.value(
+                period: AppMotion.floatLoop,
+                valueBuilder: (context, t, child) {
+                  seen.add(t);
+                  return child;
+                },
+                child: const SizedBox(height: 100, width: 100),
+              ),
+              const SizedBox(height: 2000),
+            ],
+          ),
+        );
 
     testWidgets('runs while its block is on screen, rests off it', (
       tester,
     ) async {
       final seen = <double>[];
-      await pumpApp(tester, loop(seen, onScreen: true));
+      final feed = ScrollController();
+      addTearDown(feed.dispose);
+      await pumpApp(tester, loop(seen, feed));
       await tester.pump(const Duration(milliseconds: 500));
       expect(seen.last, greaterThan(0));
 
-      await pumpApp(tester, loop(seen, onScreen: false));
+      feed.jumpTo(1000);
+      await tester.pump();
+      await tester.pump();
       final parked = seen.last;
+      expect(parked, 0, reason: 'back on its resting pose');
       await tester.pump(const Duration(seconds: 2));
       expect(seen.last, parked);
       expect(tester.binding.hasScheduledFrame, isFalse);
@@ -262,7 +242,7 @@ void main() {
 
     testWidgets('holds its resting pose under reduced motion', (tester) async {
       final seen = <double>[];
-      await pumpApp(tester, loop(seen, onScreen: true), reducedMotion: true);
+      await pumpApp(tester, loop(seen), reducedMotion: true);
       await tester.pump(const Duration(seconds: 2));
       expect(seen.toSet(), {0.0});
       expect(tester.binding.hasScheduledFrame, isFalse);
@@ -297,14 +277,19 @@ void main() {
     });
 
     testWidgets('off screen the banners hold still', (tester) async {
+      // Below the fold of the 600-high test screen.
       await pumpApp(
         tester,
-        const HomeRevealScope(
-          reveal: kAlwaysCompleteAnimation,
-          onScreen: false,
-          child: HomeSlidesCarousel(slides: _slides),
+        const SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: _fold),
+              HomeSlidesCarousel(slides: _slides),
+            ],
+          ),
         ),
       );
+      await tester.pump();
       await tester.pump(AppMotion.carousel * 3);
       expect(controllerOf(tester).page, 0);
     });
@@ -336,10 +321,17 @@ void main() {
   group('HomeSearchHint', () {
     const style = TextStyle();
 
-    testWidgets('suggests things to look for, one after another', (
-      tester,
-    ) async {
-      await pumpApp(tester, const HomeSearchHint(style: style));
+    testWidgets('suggests things to look for, one after another — one '
+        'swap per appearance (the ambient budget, BX-08)', (tester) async {
+      // The same tree with the tab shown / hidden (TickerMode).
+      Future<void> show({required bool on}) => pumpApp(
+        tester,
+        TickerMode(
+          enabled: on,
+          child: const HomeSearchHint(style: style),
+        ),
+      );
+      await show(on: true);
       expect(find.text('Search products'), findsOneWidget);
 
       await tester.pump(AppMotion.carousel);
@@ -348,7 +340,15 @@ void main() {
       expect(find.text('Search for "milk"'), findsOneWidget);
       expect(find.text('Search products'), findsNothing);
 
-      await tester.pump(AppMotion.carousel - const Duration(seconds: 1));
+      // Another swap would end past the budget: it rests on this one.
+      await tester.pump(AppMotion.carousel * 2);
+      await tester.pumpAndSettle();
+      expect(find.text('Search for "milk"'), findsOneWidget);
+
+      // Back on screen (the tab shown again): a fresh budget, the next one.
+      await show(on: false);
+      await show(on: true);
+      await tester.pump(AppMotion.carousel);
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
       expect(find.text('Search for "bread"'), findsOneWidget);
@@ -438,7 +438,7 @@ void main() {
           style: style,
         ),
       );
-      await tester.pump(AppMotion.flip ~/ 2);
+      await tester.pump(AppMotion.medium ~/ 2);
       int textsIn(int part) => find
           .descendant(
             of: find.byType(FlipValue).at(part),
@@ -462,16 +462,15 @@ void main() {
     });
   });
 
-  testWidgets('a section header pops its icon in with its block', (
+  testWidgets('a section header pops its icon in on its block arrival', (
     tester,
   ) async {
     final clock = AnimationController(vsync: const TestVSync());
     addTearDown(clock.dispose);
     await pumpApp(
       tester,
-      HomeRevealScope(
-        reveal: clock,
-        onScreen: true,
+      EntranceArrival(
+        arrival: clock,
         child: HomeSectionHeader(
           title: "Today's deals",
           icon: const HomeIcon(key: HomeIconKey.zap),

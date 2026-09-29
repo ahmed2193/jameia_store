@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/motion/spring_curve.dart';
+import '../../../../../core/motion/success_beat.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
@@ -30,19 +30,19 @@ class ProfileEditListener extends StatelessWidget {
   final Widget child;
 
   Future<void> _onSaved(BuildContext context, ProfileState state) async {
-    Haptics.success();
+    Haptics.done();
     final bonus = state.bonusEarned;
     final message = bonus > 0
         ? 'profile.profile_bonus_earned'.tr(namedArgs: {'pts': '$bonus'})
         : 'profile.saved'.tr();
-    await Future<void>.delayed(AppSprings.successHold);
+    await SuccessBeat.hold(context);
     if (!context.mounted) return;
-    showHeroSnackBar(context, message);
+    showHeroSnackBar(context, message, tone: HeroSnackTone.success);
     context.pop();
   }
 
   void _onRefused(BuildContext context, ProfileState state) {
-    Haptics.warning();
+    Haptics.refuse();
     final message = switch (state.firstInvalidField) {
       ProfileField.name => 'profile.name_required'.tr(),
       ProfileField.email => 'profile.email_invalid'.tr(),
@@ -81,7 +81,7 @@ class ProfileEditListener extends StatelessWidget {
               current.customer != null,
           listener: (context, state) {
             // Offline, the banner's nudge is the haptic.
-            if (!ConnectivityScope.readIsOffline(context)) Haptics.warning();
+            if (!ConnectivityScope.readIsOffline(context)) Haptics.refuse();
             // A failed save keeps every field as typed; a reload is a read.
             showFailureSnackBar(
               context,
@@ -102,7 +102,7 @@ class ProfileEditListener extends StatelessWidget {
               current.isDirty &&
               !previous.completion.isComplete &&
               current.completion.isComplete,
-          listener: (_, _) => Haptics.success(),
+          listener: (_, _) => Haptics.done(),
         ),
       ],
       child: child,

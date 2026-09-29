@@ -60,7 +60,7 @@ class CartLoyaltyRow extends StatelessWidget {
         onTap: busy
             ? null
             : () {
-                Haptics.selection();
+                Haptics.pick();
                 final cubit = context.read<CartCubit>();
                 if (applied) {
                   cubit.removeLoyalty();

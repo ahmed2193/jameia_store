@@ -82,8 +82,13 @@ class _OrdersPageState extends State<OrdersPage> {
         // answers.
         child: CubitBusyOverlay<OrdersCubit, OrdersState>(
           busyOf: (state) => state.cancellingId != null,
+          failOf: (state) =>
+              state.load.failedOnAction && state.load.toldFailure != null,
           child: CubitBusyOverlay<CartCubit, CartState>(
             busyOf: (state) => state.busyAction == CartAction.addItems,
+            failOf: (state) =>
+                state.failedAction == CartAction.addItems &&
+                state.failure != null,
             child: Scaffold(
               backgroundColor: AppColors.white,
               // The page has no text field; only the cancel sheet above it opens

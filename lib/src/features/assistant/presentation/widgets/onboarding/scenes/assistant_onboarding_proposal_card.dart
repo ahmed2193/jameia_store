@@ -22,12 +22,16 @@ class AssistantOnboardingProposalCard extends StatelessWidget {
     required this.progress,
     required this.confirmed,
     required this.pressed,
+    this.lineKeys = const {},
     required this.onConfirm,
   });
 
   final double progress;
   final bool confirmed;
   final bool pressed;
+
+  /// Each line's glyph, where its thumbnail takes off once confirmed.
+  final Map<AssistantOnboardingItem, GlobalKey> lineKeys;
   final VoidCallback onConfirm;
 
   /// The card's size in the stage's design space; the scene aims the
@@ -92,6 +96,7 @@ class AssistantOnboardingProposalCard extends StatelessWidget {
                       in AssistantOnboardingItem.values.indexed)
                     AssistantOnboardingProposalLine(
                       item: item,
+                      glyphKey: lineKeys[item],
                       appear: progress.span(
                         _linesFrom + _lineStep * index,
                         _linesFrom + _lineStep * index + _lineLength,

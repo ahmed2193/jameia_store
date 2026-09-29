@@ -1,7 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:flutter/animation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
+
+import '../motion/motion.dart';
 
 /// The two Hero loader dots — the bag's green and the cape's amber — circling
 /// each other on a flat ring seen edge-on: they swap places twice a loop and
@@ -13,15 +16,33 @@ import 'package:flutter/rendering.dart';
 /// [phase] is the loop position (0 → 1 = one full circle; it repaints on
 /// every tick of it without a rebuild). The box is `width × width / 2`
 /// ([heightShare]); at phase 0 the dots sit side by side, [lead] first.
+///
+/// [opacity] (optional) fades both dots: the reduced-motion breathe that
+/// replaces the orbit ([breatheOf]); the painter repaints on its ticks too.
 class BrandedDotPainter extends CustomPainter {
   BrandedDotPainter({
     required this.phase,
     required this.lead,
     required this.trail,
-  }) : super(repaint: phase);
+    this.opacity,
+  }) : super(
+         repaint: opacity == null ? phase : Listenable.merge([phase, opacity]),
+       );
 
   /// Box height for a given width.
   static const double heightShare = 0.5;
+
+  /// The dim end of the reduced-motion breathe (the bright end is 1).
+  static const double breatheLow = 0.4;
+
+  /// The reduced-motion breathe for [opacity]: [loop] (repeating in reverse,
+  /// [AppMotion.breathe] each way) eased between [breatheLow] and full.
+  static Animation<double> breatheOf(Animation<double> loop) => loop.drive(
+    Tween<double>(
+      begin: breatheLow,
+      end: 1,
+    ).chain(CurveTween(curve: AppMotion.machEaseInOut)),
+  );
 
   static const double _radiusShare = 0.2;
   static const double _ringShare = 0.29;
@@ -49,6 +70,9 @@ class BrandedDotPainter extends CustomPainter {
   final Animation<double> phase;
   final Color lead;
   final Color trail;
+
+  /// Both dots' opacity (0 → 1); null = full.
+  final Animation<double>? opacity;
 
   /// Re-coloured per dot: a frame allocates nothing.
   final Paint _paint = Paint();
@@ -101,7 +125,8 @@ class BrandedDotPainter extends CustomPainter {
     Color color,
   ) {
     final diameter = radius * 2 * (1 + _depth * depth);
-    final alpha = depth < 0 ? 1 + _backDim * depth : 1.0;
+    final alpha =
+        (depth < 0 ? 1 + _backDim * depth : 1.0) * (opacity?.value ?? 1);
     canvas.drawOval(
       Rect.fromCenter(
         center: Offset(x, y),
@@ -114,5 +139,8 @@ class BrandedDotPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant BrandedDotPainter old) =>
-      old.phase != phase || old.lead != lead || old.trail != trail;
+      old.phase != phase ||
+      old.lead != lead ||
+      old.trail != trail ||
+      old.opacity != opacity;
 }

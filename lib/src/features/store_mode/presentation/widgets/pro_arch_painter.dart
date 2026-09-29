@@ -8,18 +8,22 @@ import 'package:flutter/widgets.dart';
 ///
 /// The outline draws itself: [draw] (0 → 1) grows both sides from their feet
 /// up to the crown at once, so the doodle reads the same in LTR and RTL. The
-/// fill blends from [fromFill] to [fill] with [fillIn]. Both animations only
+/// fill blends from [fromFill] to [fill] with [fillIn], and the outline
+/// from [fromStroke] to [stroke] with it (a recolour for another plan).
+/// Both animations only
 /// repaint this painter — no widget rebuilds.
 class ProArchPainter extends CustomPainter {
   ProArchPainter({
     required this.fill,
     required this.fromFill,
     required this.stroke,
+    Color? fromStroke,
     required this.strokeWidth,
     required this.sideInset,
     required this.draw,
     required this.fillIn,
-  }) : super(repaint: Listenable.merge([draw, fillIn]));
+  }) : fromStroke = fromStroke ?? stroke,
+       super(repaint: Listenable.merge([draw, fillIn]));
 
   /// Where the sides stop being vertical, as a fraction of the height.
   static const double _shoulder = 0.3;
@@ -33,6 +37,9 @@ class ProArchPainter extends CustomPainter {
   /// Fill the arch starts from (the previous plan's, or a transparent one).
   final Color fromFill;
   final Color stroke;
+
+  /// Outline colour the arch recolours from (the previous plan's).
+  final Color fromStroke;
   final double strokeWidth;
 
   /// Gap between the box's sides and the arch's sides.
@@ -73,7 +80,7 @@ class ProArchPainter extends CustomPainter {
     final progress = draw.value;
     if (progress <= 0) return;
     final outline = Paint()
-      ..color = stroke
+      ..color = Color.lerp(fromStroke, stroke, fillIn.value) ?? stroke
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -92,6 +99,7 @@ class ProArchPainter extends CustomPainter {
       oldDelegate.fill != fill ||
       oldDelegate.fromFill != fromFill ||
       oldDelegate.stroke != stroke ||
+      oldDelegate.fromStroke != fromStroke ||
       oldDelegate.strokeWidth != strokeWidth ||
       oldDelegate.sideInset != sideInset ||
       oldDelegate.draw != draw ||

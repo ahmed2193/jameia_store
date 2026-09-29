@@ -12,7 +12,8 @@ import 'reward_off_pill.dart';
 
 /// The "image" of a reward card: the warm backdrop (its gift gently floating
 /// on ready cards when [floats]), the points and the discount pill, which
-/// pops in right after the card's own entrance starts. Locked tiers sit
+/// pops in as the card's own entrance lands ([EntranceArrival]; a card
+/// that simply shows has it at once). Locked tiers sit
 /// behind a light veil with a lock; the tier being redeemed fades in the
 /// applying overlay; the tier on the basket gets a green ring. Ready cards
 /// cast a soft warm shadow.
@@ -25,7 +26,6 @@ class RewardCardArt extends StatelessWidget {
     required this.isApplying,
     required this.isApplied,
     required this.floats,
-    required this.popDelay,
   });
 
   final int points;
@@ -38,9 +38,6 @@ class RewardCardArt extends StatelessWidget {
 
   /// The gift idles up and down (the screen caps how many cards loop).
   final bool floats;
-
-  /// When the card's own entrance starts; the pill pops right after it.
-  final Duration popDelay;
 
   static const double _aspectRatio = 1.17;
   static const double _lockedVeilAlpha = 0.5;
@@ -59,11 +56,15 @@ class RewardCardArt extends StatelessWidget {
   ];
   static const double _ringWidth = AppSize.s2_5;
 
+  /// The pill's pop over the second half of the card's arrival.
+  static final Animatable<double> _pillPop = CurveTween(
+    curve: Interval(0.5, 1, curve: AppSprings.snappy),
+  );
+
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(AppRadius.r3);
-    final lead = popDelay + AppMotion.fast;
-    final popDuration = lead + AppMotion.medium;
+    final arrival = EntranceArrival.of(context);
     return DecoratedBox(
       position: DecorationPosition.foreground,
       decoration: BoxDecoration(
@@ -93,13 +94,8 @@ class RewardCardArt extends StatelessWidget {
                   end: AppSpacing.s10,
                   child: Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: PopScale.onMount(
-                      duration: popDuration,
-                      curve: Interval(
-                        lead.inMicroseconds / popDuration.inMicroseconds,
-                        1,
-                        curve: AppMotion.emphasized,
-                      ),
+                    child: ScaleTransition(
+                      scale: arrival.drive(_pillPop),
                       child: RewardOffPill(label: offLabel),
                     ),
                   ),

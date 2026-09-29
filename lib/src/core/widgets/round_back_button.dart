@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/theme/app_colors.dart';
+import '../motion/motion.dart';
 import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
 
@@ -13,12 +14,11 @@ class RoundBackButton extends StatelessWidget {
   const RoundBackButton({super.key});
 
   static const double diameter = AppSize.s48;
-  static const double _pressedScale = 0.9;
 
   @override
   Widget build(BuildContext context) {
     return PressScale(
-      pressedScale: _pressedScale,
+      pressedScale: AppMotion.pressedScaleSmall,
       child: IconButton(
         tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         onPressed: () => context.pop(),

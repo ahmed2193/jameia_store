@@ -68,7 +68,7 @@ void main() {
   test('clear removes the copy and the retired address books', () async {
     storage.values
       ..['account.addresses.v1'] = '[]'
-      ..['jameia.addressbook.v1'] = '[{"id":"legacy"}]'
+      ..['hero.addressbook.v1'] = '[{"id":"legacy"}]'
       ..['app_language'] = 'ar';
     await dataSource.saveAddresses(CachedAddressBookModel.empty);
 

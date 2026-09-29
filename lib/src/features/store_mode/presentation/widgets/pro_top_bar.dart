@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../config/routes/route_args/shell_arrival.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
@@ -22,7 +23,7 @@ class ProTopBar extends StatelessWidget {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go(Routes.shell);
+      context.go(Routes.shell, extra: ShellArrival());
     }
   }
 

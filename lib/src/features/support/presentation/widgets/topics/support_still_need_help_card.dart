@@ -1,18 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/core_widgets.dart';
 
-/// "Still need help?" — the footer card under the topics, into the chat.
+/// "Still need help?" — the footer card under the topics, into the chat,
+/// headed by the Hero teammate drawing ([HeroAssets.assistantPropHandoff],
+/// decorative; mirrored in RTL like everywhere it appears).
 class SupportStillNeedHelpCard extends StatelessWidget {
   const SupportStillNeedHelpCard({super.key});
+
+  static const double _art = AppSize.s72;
 
   @override
   Widget build(BuildContext context) {
@@ -25,19 +31,12 @@ class SupportStillNeedHelpCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            width: AppSize.s48,
-            height: AppSize.s48,
-            decoration: const BoxDecoration(
-              color: AppColors.brandLightBg,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: const Icon(
-              HeroIcons.customerService,
-              size: AppSize.s24,
-              color: AppColors.primaryText,
-            ),
+          SvgPicture.asset(
+            HeroAssets.assistantPropHandoff,
+            width: _art,
+            height: _art,
+            matchTextDirection: true,
+            excludeFromSemantics: true,
           ),
           const SizedBox(height: AppSpacing.s12),
           Text(

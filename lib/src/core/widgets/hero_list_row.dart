@@ -4,10 +4,12 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../responsive/app_size.dart';
+import 'press_row.dart';
 
 /// One row of a list: a 24 dp leading icon, the title (+ an optional grey
 /// subtitle), a trailing value / link / switch and a chevron. At least 56 dp
-/// tall, a highlight on press. Read as one element unless [mergeSemantics] is
+/// tall; it presses like every row ([PressRow]: a dip and the flat brand
+/// tint). Read as one element unless [mergeSemantics] is
 /// false — turn it off when [trailing] is its own control (a switch, a ✕, a
 /// link) so a screen reader can still reach it.
 ///
@@ -108,7 +110,7 @@ class HeroListRow extends StatelessWidget {
         : AppTextStyles.meta;
     const vertical = AppSpacing.s12;
     final tap = enabled ? onTap : null;
-    final row = InkWell(
+    final row = PressRow(
       onTap: tap,
       child: Padding(
         padding: EdgeInsetsDirectional.only(start: inset),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../error/failures.dart';
+import '../motion/fade_through_switcher.dart';
 import '../utils/failure_message.dart';
 import 'error_view.dart';
 import 'failure_verdict_builder.dart';
@@ -11,7 +12,9 @@ import 'hero_state_view.dart';
 /// as a full screen: "Checking your connection…" while the live check runs
 /// (never "No connection" straight away), the calm "No connection" state
 /// (the screen loads by itself when the connection returns), or the error
-/// with a retry ([errorBuilder] when the page draws its own).
+/// with a retry ([errorBuilder] when the page draws its own). A verdict that
+/// changes in place (checking → offline) cross-fades: the dots sit where the
+/// offline art's disc lands, so nothing jumps.
 class FailureView extends StatelessWidget {
   const FailureView({
     super.key,
@@ -34,19 +37,24 @@ class FailureView extends StatelessWidget {
     failure: failure,
     onRetry: onRetry,
     builder: (context, verdict) {
-      switch (verdict) {
-        case FailureVerdict.checking:
-          return const HeroStateView.checking();
-        case FailureVerdict.offline:
-          return HeroStateView.offline(onRetry: onRetry);
-        case FailureVerdict.unreachable:
-        case FailureVerdict.error:
-          final message = verdict == FailureVerdict.unreachable
-              ? null
-              : failure?.localizedMessage;
-          return errorBuilder?.call(message) ??
-              ErrorView(message: message, onRetry: onRetry);
-      }
+      // Unreachable: the generic words — its own "no internet" would be wrong.
+      final message = verdict == FailureVerdict.unreachable
+          ? null
+          : failure?.localizedMessage;
+      return FadeThroughSwitcher(
+        // The two error verdicts are one screen.
+        stateKey: verdict == FailureVerdict.unreachable
+            ? FailureVerdict.error
+            : verdict,
+        crossFade: true,
+        child: switch (verdict) {
+          FailureVerdict.checking => const HeroStateView.checking(),
+          FailureVerdict.offline => HeroStateView.offline(onRetry: onRetry),
+          FailureVerdict.unreachable || FailureVerdict.error =>
+            errorBuilder?.call(message) ??
+                ErrorView(message: message, onRetry: onRetry),
+        },
+      );
     },
   );
 }

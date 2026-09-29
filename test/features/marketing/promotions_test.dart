@@ -27,9 +27,7 @@ import 'package:hero_mart/src/features/marketing/domain/repositories/promotions_
 import 'package:hero_mart/src/features/marketing/domain/usecases/watch_content_page_usecase.dart';
 import 'package:hero_mart/src/features/marketing/domain/usecases/watch_offers_usecase.dart';
 import 'package:hero_mart/src/features/marketing/presentation/cubit/content_page_cubit.dart';
-import 'package:hero_mart/src/features/marketing/presentation/cubit/content_page_state.dart';
 import 'package:hero_mart/src/features/marketing/presentation/cubit/offers_cubit.dart';
-import 'package:hero_mart/src/features/marketing/presentation/cubit/offers_state.dart';
 
 import '../../core/data/catalog_test_fakes.dart';
 import '../../core/data/snapshot_test_fakes.dart';

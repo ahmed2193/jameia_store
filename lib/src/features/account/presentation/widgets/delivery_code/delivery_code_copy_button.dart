@@ -26,7 +26,6 @@ class DeliveryCodeCopyButton extends StatefulWidget {
 
 class _DeliveryCodeCopyButtonState extends State<DeliveryCodeCopyButton> {
   static const Duration _copiedHold = Duration(milliseconds: 1800);
-  static const double _pressedScale = 0.95;
 
   bool _copied = false;
   Timer? _reset;
@@ -51,8 +50,7 @@ class _DeliveryCodeCopyButtonState extends State<DeliveryCodeCopyButton> {
   Widget build(BuildContext context) {
     final enabled = widget.code.isNotEmpty;
     final ink = _copied ? AppColors.primaryDark : AppColors.primaryText;
-    final label = (_copied ? 'settings.code_copied' : 'settings.code_copy')
-        .tr();
+    final label = (_copied ? 'settings.copied' : 'settings.code_copy').tr();
     return Semantics(
       button: true,
       enabled: enabled,
@@ -60,7 +58,6 @@ class _DeliveryCodeCopyButtonState extends State<DeliveryCodeCopyButton> {
       label: label,
       excludeSemantics: true,
       child: PressScale(
-        pressedScale: _pressedScale,
         haptic: HapticKind.selection,
         enabled: enabled,
         onTap: enabled ? _copy : null,

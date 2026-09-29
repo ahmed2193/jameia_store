@@ -14,7 +14,7 @@ import 'otp_code_slot.dart';
 /// from [OtpChallenge.slotCount] and the row grows / shrinks with it.
 ///
 /// A whole code arriving at once (paste, SMS autofill, the test-code hint)
-/// lands as a left-to-right cascade, [_cascadeStep] per digit.
+/// lands as a left-to-right cascade, [cascadeStep] per digit.
 class OtpCodeSlots extends StatefulWidget {
   const OtpCodeSlots({
     super.key,
@@ -25,8 +25,9 @@ class OtpCodeSlots extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
 
-  /// Delay between two digits of a pasted code.
-  static const Duration cascadeStep = Duration(milliseconds: 35);
+  /// Delay between two digits of a pasted code: the one cascade step
+  /// ([AppMotion.staggerStep]).
+  static const Duration cascadeStep = AppMotion.staggerStep;
 
   @override
   State<OtpCodeSlots> createState() => _OtpCodeSlotsState();

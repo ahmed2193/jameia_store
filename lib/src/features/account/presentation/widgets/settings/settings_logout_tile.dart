@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../auth/presentation/cubit/auth_session_state.dart';
@@ -16,7 +15,8 @@ import 'settings_tile.dart';
 import 'settings_tone.dart';
 
 /// "Log out" in its own card at the end of Settings, shown only while
-/// signed in. It asks first; on yes a warning haptic, the session ends
+/// signed in. It asks first; its confirm button gives the one warning
+/// haptic (§9.5 destructive confirm), then the session ends
 /// (revoked server-side, wiped locally even offline) and the whole stack is
 /// replaced by login.
 class SettingsLogoutTile extends StatelessWidget {
@@ -33,7 +33,6 @@ class SettingsLogoutTile extends StatelessWidget {
       pageBuilder: (_) => const SettingsLogoutDialog(),
     );
     if (confirmed != true) return;
-    Haptics.warning();
     await session.signOut();
     if (!context.mounted) return;
     context.go(Routes.login);

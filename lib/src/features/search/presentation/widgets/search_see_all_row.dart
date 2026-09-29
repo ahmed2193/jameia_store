@@ -5,6 +5,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/press_row.dart';
 
 /// The last suggestion row: "See all results for “…”" with a chevron — the
 /// same as the keyboard's search key. Read as one element.
@@ -19,7 +20,7 @@ class SearchSeeAllRow extends StatelessWidget {
     return MergeSemantics(
       child: Semantics(
         button: true,
-        child: InkWell(
+        child: PressRow(
           onTap: onTap,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppSize.s56),

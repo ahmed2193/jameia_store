@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../motion/second_clock.dart';
+import '../motion/second_clock_follower.dart';
 import '../motion/second_clock_scope.dart';
 import 'countdown_digit_box.dart';
 
@@ -21,7 +21,9 @@ import 'countdown_digit_box.dart';
 /// once — it never refetches.
 ///
 /// Without a scope it shows the time left when it was built (and asserts in
-/// debug). Reduced motion does not stop it: only the digits change.
+/// debug). Reduced motion does not stop it: only the digits change. The
+/// clock half is shared with the home strip's countdown
+/// ([SecondClockFollower]).
 class CountdownDigits extends StatefulWidget {
   const CountdownDigits({super.key, required this.endsAt, this.onEnded});
 
@@ -44,25 +46,24 @@ class CountdownDigits extends StatefulWidget {
   State<CountdownDigits> createState() => _CountdownDigitsState();
 }
 
-class _CountdownDigitsState extends State<CountdownDigits> {
+class _CountdownDigitsState extends State<CountdownDigits>
+    with SecondClockFollower<CountdownDigits> {
   static const int _pad = 2;
   static const String _colon = ':';
 
-  SecondClock? _clock;
   bool _looked = false;
-  bool _listening = false;
   bool _ended = false;
 
-  DateTime get _now => _clock?.now ?? DateTime.now();
+  DateTime get _now => clockNow;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_looked) return;
     _looked = true;
-    _clock = SecondClockScope.maybeOf(context);
+    followClock(SecondClockScope.maybeOf(context));
     assert(
-      _clock != null,
+      followedClock != null,
       'CountdownDigits needs a SecondClockScope above it to tick.',
     );
     _sync();
@@ -76,36 +77,18 @@ class _CountdownDigitsState extends State<CountdownDigits> {
     _sync();
   }
 
-  @override
-  void dispose() {
-    _detach();
-    super.dispose();
-  }
-
   /// Listens while the countdown runs (in the window, not ended).
   void _sync() {
-    final clock = _clock;
-    if (clock == null) return;
-    final run = !_ended && CountdownDigits.countsDown(widget.endsAt, _now);
-    if (run && !_listening) {
-      clock.addListener(_onTick);
-      _listening = true;
-    } else if (!run) {
-      _detach();
-    }
+    if (followedClock == null) return;
+    listenToClock(!_ended && CountdownDigits.countsDown(widget.endsAt, _now));
   }
 
-  void _detach() {
-    if (!_listening) return;
-    _clock?.removeListener(_onTick);
-    _listening = false;
-  }
-
-  void _onTick() {
+  @override
+  void onClockTick() {
     if (!mounted) return;
     if (widget.endsAt.difference(_now) <= Duration.zero && !_ended) {
       _ended = true;
-      _detach();
+      stopListeningToClock();
       widget.onEnded?.call();
     }
     setState(() {});

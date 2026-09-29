@@ -76,6 +76,29 @@ void main() {
         ),
       ],
     );
+
+    test('a returning connection loads a failed form again; a form on '
+        'screen or a sign-in prompt is left alone', () async {
+      getProfile.result = const Left(NetworkFailure());
+      final failed = build();
+      await failed.load();
+      expect(failed.state.status, ProfileStatus.error);
+      getProfile.result = Right(fresh);
+      await failed.onReconnected();
+      expect(getProfile.calls, 2);
+      expect(failed.state.customer, fresh);
+      await failed.onReconnected();
+      expect(getProfile.calls, 2, reason: 'the form is on screen');
+      await failed.close();
+
+      getProfile.result = const Left(UnauthorizedFailure());
+      final guest = build();
+      await guest.load();
+      expect(guest.state.isSignedOut, isTrue);
+      await guest.onReconnected();
+      expect(getProfile.calls, 3, reason: 'a sign-in prompt stays');
+      await guest.close();
+    });
   });
 
   group('about you', () {

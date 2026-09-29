@@ -36,7 +36,6 @@ class ProUnderlinedLink extends StatelessWidget {
       link: true,
       child: PressScale(
         onTap: onTap,
-        haptic: null,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: _minTarget),
           child: Align(

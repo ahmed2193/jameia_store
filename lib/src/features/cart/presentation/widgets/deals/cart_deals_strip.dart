@@ -8,7 +8,6 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/change_bump.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
-import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/widgets/sticker_button.dart';
 import '../../../domain/entities/cart_offers_view.dart';
 import '../../cubit/cart_cubit.dart';
@@ -54,7 +53,6 @@ class CartDealsStrip extends StatelessWidget {
                             children: [
                               ChangeBump(
                                 value: done,
-                                haptic: done ? HapticKind.success : null,
                                 alignment: AlignmentDirectional.centerStart,
                                 child: FadeThroughSwitcher(
                                   stateKey: headline,

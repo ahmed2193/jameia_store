@@ -83,16 +83,17 @@ class _AssistantMessageListState extends State<AssistantMessageList> {
   void _updateAway(double offset) =>
       _awayFromLatest.value = offset > _jumpThreshold;
 
+  /// Glides to the newest row over `slow` (docs/motion §9.6 §2.3, BX-01;
+  /// a jump under reduced motion), the anchor let go meanwhile.
   void _jumpToLatest() {
     if (!_scroll.hasClients) return;
-    if (MotionGuard.reduced(context)) {
-      _scroll.jumpTo(0);
-      return;
-    }
     _anchor.suspended = true;
-    _scroll
-        .animateTo(0, duration: AppMotion.page, curve: AppMotion.signature)
-        .whenComplete(() => _anchor.suspended = false);
+    MotionGuard.scrollTo(
+      context,
+      _scroll.position,
+      0,
+      duration: AppMotion.slow,
+    ).whenComplete(() => _anchor.suspended = false);
   }
 
   List<String> _keysOf(_Rows rows) => [

@@ -24,12 +24,14 @@ import 'domain/repositories/wallet_repository.dart';
 import 'domain/usecases/clear_app_cache_usecase.dart';
 import 'domain/usecases/get_account_overview_usecase.dart';
 import 'domain/usecases/get_delivery_code_usecase.dart';
+import 'domain/usecases/get_haptics_enabled_usecase.dart';
 import 'domain/usecases/get_loyalty_ledger_usecase.dart';
 import 'domain/usecases/get_loyalty_program_usecase.dart';
 import 'domain/usecases/get_loyalty_rewards_usecase.dart';
 import 'domain/usecases/get_notifications_enabled_usecase.dart';
 import 'domain/usecases/get_profile_usecase.dart';
 import 'domain/usecases/get_wallet_ledger_usecase.dart';
+import 'domain/usecases/set_haptics_enabled_usecase.dart';
 import 'domain/usecases/set_notifications_enabled_usecase.dart';
 import 'domain/usecases/update_profile_usecase.dart';
 import 'domain/usecases/watch_loyalty_ledger_usecase.dart';
@@ -71,12 +73,16 @@ void initAccountFeature() {
     )
     ..registerLazySingleton(() => GetNotificationsEnabledUseCase(sl()))
     ..registerLazySingleton(() => SetNotificationsEnabledUseCase(sl()))
+    ..registerLazySingleton(() => GetHapticsEnabledUseCase(sl()))
+    ..registerLazySingleton(() => SetHapticsEnabledUseCase(sl()))
     ..registerLazySingleton(() => ClearAppCacheUseCase(sl()))
     ..registerFactory(
       () => SettingCubit(
         getNotificationsEnabled: sl(),
         setNotificationsEnabled: sl(),
         clearAppCache: sl(),
+        getHapticsEnabled: sl(),
+        setHapticsEnabled: sl(),
       ),
     )
     ..registerLazySingleton<WalletRemoteDataSource>(

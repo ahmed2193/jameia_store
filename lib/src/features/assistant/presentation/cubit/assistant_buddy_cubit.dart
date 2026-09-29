@@ -9,6 +9,7 @@ import '../../domain/entities/assistant_day_part.dart';
 import '../../domain/entities/assistant_nudge_outcome.dart';
 import '../../domain/entities/assistant_thought.dart';
 import '../../domain/entities/assistant_thought_deck.dart';
+import '../../domain/entities/assistant_thought_place.dart';
 import '../../domain/usecases/claim_assistant_nudge_usecase.dart';
 import '../../domain/usecases/complete_assistant_onboarding_usecase.dart';
 import '../../domain/usecases/get_assistant_launcher_hidden_usecase.dart';
@@ -33,14 +34,17 @@ import 'assistant_buddy_state.dart';
 /// [thinkAfter] and nothing was touched for [thinkQuiet], it thinks out loud.
 /// Every visit — each opening of the app, or coming back after [visitGap]
 /// away — opens with a greeting ("How can I help you today?") and one more
-/// line in the same bubble; later a single line comes [thinkEvery] after
-/// the last one ended, further apart every few ([sessionsPerRound]), and
-/// after [maxSessionsPerVisit] it rests until the next visit. Back from the
-/// chat, it asks whether there is anything else. The lines come from the
-/// [AssistantThoughtDeck]: varied, fitting the screen, the cart and the time
-/// of day, never the same topic twice in a row. Each plays its whole cycle —
-/// a touch elsewhere does not cut it short. None starts behind a dialog,
-/// sheet or page, nor with a screen reader (the launcher says what it does).
+/// line in the same bubble; then at most ONE follow-up, [thinkEvery] after
+/// the last line ended and only on a screen that browses or searches, and
+/// it rests until the next visit ([maxSessionsPerVisit]; docs/motion §9.6
+/// §3.4). Back from the chat, that follow-up asks whether there is anything
+/// else. The lines come from the [AssistantThoughtDeck]: varied, fitting
+/// the screen, the cart and the time of day, never the same topic twice in
+/// a row. A line yields to the customer: a touch or a scroll sends it away
+/// at once (it counts as said, and no second line follows it). None starts
+/// — and one on screen goes, never to come back — behind a dialog, sheet or
+/// page, on a hidden tab, with the keyboard up, while the app is away or
+/// with a screen reader (the launcher says what it does).
 ///
 /// A customer who never met the assistant gets its tour instead of the
 /// chat: from the first greeting (an invitation) or the first tap on the
@@ -71,16 +75,12 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
   static const Duration defaultQuiet = Duration(seconds: 4);
   static const Duration defaultThinkAfter = Duration(seconds: 3);
   static const Duration defaultThinkQuiet = Duration(seconds: 2);
-  static const Duration defaultThinkEvery = Duration(seconds: 45);
-  static const Duration defaultVisitGap = Duration(minutes: 1);
+  static const Duration defaultThinkEvery = Duration(seconds: 90);
+  static const Duration defaultVisitGap = Duration(minutes: 30);
 
-  /// Thoughts per stretch of the same pace; each stretch waits one
-  /// [thinkEvery] more between them, up to [maxRounds] more.
-  static const int sessionsPerRound = 3;
-  static const int maxRounds = 3;
-
-  /// Thoughts in one visit; then the launcher rests until the next.
-  static const int maxSessionsPerVisit = 8;
+  /// Times the launcher thinks out loud in one visit — the opening pair,
+  /// then one follow-up; then it rests until the next visit.
+  static const int maxSessionsPerVisit = 2;
 
   final ClaimAssistantNudgeUseCase _claim;
   final RecordAssistantNudgeOutcomeUseCase _record;
@@ -103,7 +103,7 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
   /// Time without touching or scrolling before it may think out loud.
   final Duration thinkQuiet;
 
-  /// Time from the end of one thought to the next (in the first round).
+  /// Time from the end of the opening lines to the follow-up.
   final Duration thinkEvery;
 
   /// Time away from the app after which coming back counts as opening it.
@@ -159,16 +159,20 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
       state.copyWith(scene: scene, scrolledAway: newPlace ? false : null),
     );
     if (newPlace) _greetableSince = null;
+    // Covered, tucked away, typing, a screen reader: a line on screen goes
+    // and is not said again.
+    if (!_launcherSeen || scene.screenReader) _yieldThought();
     _arm();
     _armThought();
   }
 
   /// A finger went down anywhere over the shell: the greeting waits for
-  /// [quiet] after it, so it never looks like the answer to that tap (a
-  /// thought on screen finishes its line).
+  /// [quiet] after it, so it never looks like the answer to that tap, and a
+  /// thought on screen makes way.
   void touched() {
     _touched = true;
     _lastActivity = _clock();
+    _yieldThought();
     _arm();
     _armThought();
   }
@@ -181,6 +185,7 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
     _lastActivity = _clock();
     _due?.cancel();
     _think?.cancel();
+    _yieldThought();
     if (towardsEnd != state.scrolledAway) {
       safeEmit(state.copyWith(scrolledAway: towardsEnd));
     }
@@ -193,9 +198,11 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
     _armThought();
   }
 
-  /// The app went to the background: no thought starts while nobody sees.
+  /// The app went to the background: a line on screen goes, and none
+  /// starts while nobody sees.
   void appPaused() {
     _awaySince ??= _clock();
+    _yieldThought();
     _armThought();
   }
 
@@ -209,12 +216,13 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
       _sessions = 0;
       _pairing = false;
       _lastThoughtEnd = null;
-      if (state.thought != null) safeEmit(state.copyWith(thought: () => null));
+      safeEmit(state.copyWith(thought: () => null, visit: state.visit + 1));
     }
     _armThought();
   }
 
-  /// The mascot hops (the cart just grew) — only worth it when it is seen.
+  /// The mascot may hop (the cart just grew) — only worth it when it is
+  /// seen; how often it really hops is the launcher's to decide.
   void cheer() {
     if (state.launcherShown) {
       safeEmit(state.copyWith(cheers: state.cheers + 1));
@@ -319,6 +327,16 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
     await _hide(HideAssistantLauncherParams(at: _clock()));
   }
 
+  /// The customer acted (or the launcher went out of sight): the line on
+  /// screen goes at once. It counts as said — the visit's opening pair ends
+  /// there — and it is never said again.
+  void _yieldThought() {
+    _pairing = false;
+    if (state.thought == null) return;
+    _lastThoughtEnd = _clock();
+    safeEmit(state.copyWith(thought: () => null));
+  }
+
   /// (Re)plans the greeting for the first moment every condition can hold.
   void _arm() {
     _due?.cancel();
@@ -370,14 +388,15 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
       return;
     }
     if (!_canThink || _sessions >= maxSessionsPerVisit) return;
+    // The follow-up only where the customer browses or searches.
+    if (_sessions > 0 && !_followsUpHere) return;
     final now = _clock();
     final since = _shownSince ??= now;
     if (_scrolling) return;
     var due = since.add(thinkAfter);
     final lastEnd = _lastThoughtEnd;
     if (lastEnd != null) {
-      final rounds = min(_sessions ~/ sessionsPerRound, maxRounds);
-      final next = lastEnd.add(thinkEvery * (1 + rounds));
+      final next = lastEnd.add(thinkEvery);
       if (next.isAfter(due)) due = next;
     }
     final lastActivity = _lastActivity;
@@ -393,6 +412,11 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
   bool get _launcherSeen =>
       state.launcherShown && state.scene.inFront && _awaySince == null;
 
+  bool get _followsUpHere => switch (state.scene.thoughtPlace) {
+    AssistantThoughtPlace.browsing || AssistantThoughtPlace.searching => true,
+    AssistantThoughtPlace.account || AssistantThoughtPlace.elsewhere => false,
+  };
+
   bool get _canThink =>
       state.thought == null &&
       state.nudge == null &&
@@ -404,6 +428,7 @@ class AssistantBuddyCubit extends Cubit<AssistantBuddyState>
   void _thinkOutLoud() {
     if (_scrolling || !_launcherSeen || !_canThink) return;
     final opening = _sessions == 0;
+    if (!opening && !_followsUpHere) return;
     final askedLately = _deck.recent.contains(AssistantThought.anythingElse);
     final line = switch (opening) {
       true => _deck.opener(

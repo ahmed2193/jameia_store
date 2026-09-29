@@ -1,34 +1,33 @@
-import 'package:go_router/go_router.dart';
-
 import '../motion/motion.dart';
-import 'hero_slide_fade_transition.dart';
+import 'hero_page.dart';
+import 'hero_through_transition.dart';
 
-/// Shared GoRouter page transition — every standard `GoRoute` builds its page
-/// through this so each push animates the same way. `routes.dart` /
-/// `app_router.dart` decide WHICH screen; this decides HOW it animates.
+/// The forward push — every step deeper into the app (docs/motion §9.4 #8):
+/// the Material shared X axis. The page below fades out while sliding
+/// [AppMotion.slideShift] toward the start edge; this page then fades in
+/// while sliding the same distance in from the end edge. Mirrored in RTL,
+/// the pop plays it backwards; in over [AppMotion.page], out over
+/// [AppMotion.medium] ([HeroPage] adds the easing, reduced motion and the
+/// back gestures).
 ///
-/// Faithful to 1Day's decoded `anim/activity_slide_in` (MOTION_AND_NAVIGATION
-/// §2): **300ms ease-out, slide-up from the bottom (100%→0) + fade**. 1Day pairs
-/// interpolator_style2 (enter, ease-out) with interpolator_style1 (exit,
-/// ease-in), so the reverse leg uses its ease-in companion ([AppMotion.exit])
-/// and pop matches the exit curve instead of re-using the enter curve
-/// (MOTION_AND_NAVIGATION.md:40-44). Pop runs for [AppMotion.medium].
-/// [MotionGuard] collapses the transition to an instant cut under reduced motion.
-class HeroTransitionPage<T> extends CustomTransitionPage<T> {
-  HeroTransitionPage({
+/// Modal presentations use [HeroSlideUpTransitionPage]; top-level swaps
+/// ([GoRouter.go]) use [HeroFadeThroughPage].
+class HeroTransitionPage<T> extends HeroPage<T> {
+  const HeroTransitionPage({
     required super.child,
     super.key,
     super.name,
     super.arguments,
-  }) : super(
-         transitionDuration: AppMotion.page,
-         reverseTransitionDuration: AppMotion.medium,
-         transitionsBuilder: (_, animation, _, child) =>
-             HeroSlideFadeTransition(
-               animation: animation,
-               curve: AppMotion.signature,
-               reverseCurve: AppMotion.exit,
-               child: child,
-             ),
-       );
+  });
+
+  @override
+  bool get shiftsCoveredPage => true;
+
+  @override
+  HeroEnterBuilder get enter =>
+      (context, animation, child) => HeroThroughTransition(
+        animation: animation,
+        shift: AppMotion.slideShift,
+        child: child,
+      );
 }

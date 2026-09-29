@@ -32,7 +32,6 @@ class CartDealCard extends StatelessWidget {
   static const double pointerHeight = AppSize.s8;
   static const double _pointerWidth = AppSize.s16;
   static const double _frame = AppSize.s2;
-  static const double _pressedScale = 0.97;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +49,6 @@ class CartDealCard extends StatelessWidget {
           Expanded(
             child: PressScale(
               onTap: onTap,
-              pressedScale: _pressedScale,
               child: AnimatedContainer(
                 duration: duration,
                 curve: AppMotion.signature,

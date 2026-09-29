@@ -7,7 +7,10 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// The white card every block sits in: an optional icon + title, then the
-/// content. The border tweens (a proposal turns green once confirmed).
+/// content. The border tweens over `medium` (a proposal turns green once
+/// confirmed); a [muted] card (a spent proposal) cross-fades its title and
+/// icon to the muted palette over `fast` — colours only, so no opacity
+/// layer is left behind.
 class AssistantCardFrame extends StatelessWidget {
   const AssistantCardFrame({
     super.key,
@@ -17,6 +20,7 @@ class AssistantCardFrame extends StatelessWidget {
     this.borderColor = AppColors.divider,
     this.padding = defaultPadding,
     this.transparent = false,
+    this.muted = false,
   });
 
   static const EdgeInsetsGeometry defaultPadding = EdgeInsetsDirectional.all(
@@ -33,10 +37,18 @@ class AssistantCardFrame extends StatelessWidget {
   /// card, so the frame itself must not cover it.
   final bool transparent;
 
+  /// Spent: the heading in the muted palette.
+  final bool muted;
+
   @override
   Widget build(BuildContext context) {
     final heading = title;
     final glyph = icon;
+    final fade = MotionGuard.duration(context, AppMotion.fast);
+    final headingColor = muted
+        ? AppColors.secondaryText
+        : AppColors.primaryText;
+    final glyphColor = muted ? AppColors.secondaryText : AppColors.primaryDark;
     return AnimatedContainer(
       duration: MotionGuard.duration(context, AppMotion.medium),
       curve: AppMotion.signature,
@@ -54,13 +66,24 @@ class AssistantCardFrame extends StatelessWidget {
             Row(
               children: [
                 if (glyph != null) ...[
-                  Icon(glyph, size: AppSize.s18, color: AppColors.primaryDark),
+                  TweenAnimationBuilder<Color?>(
+                    tween: ColorTween(end: glyphColor),
+                    duration: fade,
+                    builder: (context, color, _) =>
+                        Icon(glyph, size: AppSize.s18, color: color),
+                  ),
                   const SizedBox(width: AppSpacing.s6),
                 ],
                 Expanded(
                   child: Semantics(
                     header: true,
-                    child: Text(heading, style: AppTextStyles.headingSmall),
+                    child: AnimatedDefaultTextStyle(
+                      duration: fade,
+                      style: AppTextStyles.headingSmall.copyWith(
+                        color: headingColor,
+                      ),
+                      child: Text(heading),
+                    ),
                   ),
                 ),
               ],

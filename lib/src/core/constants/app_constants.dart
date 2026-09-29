@@ -34,12 +34,6 @@ class AppConstants {
   /// Default countdown window for a Home flash-sale rail (6h), in seconds.
   static const int flashSaleWindowSeconds = 6 * 60 * 60;
 
-  /// Home hero carousel auto-advance dwell (business timer, not motion).
-  static const Duration heroAutoAdvance = Duration(seconds: 4);
-
-  /// Home search-pill trending-hint rotation dwell (business timer, not motion).
-  static const Duration searchHintRotate = Duration(seconds: 3);
-
   /// Reachability re-check cadence WHILE OFFLINE (business timer, not motion):
   /// short, so the app notices the connection coming back quickly.
   static const Duration connectivityPoll = Duration(seconds: 3);

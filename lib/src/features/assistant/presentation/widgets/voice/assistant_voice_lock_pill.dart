@@ -8,13 +8,15 @@ import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/float_loop.dart';
 import '../../../../../core/motion/motion.dart';
+import '../../../../../core/motion/pop_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'assistant_voice_drag.dart';
 
-/// The lock above the held mic (WhatsApp): an open padlock and a nudging
-/// chevron say "slide up". As the finger climbs, the pill shortens and the
-/// padlock closes; at the top the recording locks. Heading for the bin
-/// instead, it fades away.
+/// The lock above the held mic (WhatsApp): an open padlock and a chevron
+/// that nudges up ONCE as the pill appears say "slide up" (docs/motion §9.6
+/// §2.9 — it never bobs on). As the finger climbs, the pill shortens; at the
+/// top the padlock snaps shut ([PopSwitcher], `snappy`) and the recording
+/// locks. Heading for the bin instead, it fades away.
 ///
 /// The pill shortens inside a box of fixed size, toward its foot, in a
 /// layer of its own: a move lays out and repaints the pill alone, not the
@@ -73,19 +75,23 @@ class AssistantVoiceLockPill extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Icon(
-                          climb >= 1
-                              ? Icons.lock_rounded
-                              : Icons.lock_open_rounded,
-                          size: AppSize.s20,
-                          color: climb >= _closing
-                              ? AppColors.primaryDark
-                              : AppColors.secondaryText,
+                        PopSwitcher(
+                          stateKey: climb >= 1,
+                          child: Icon(
+                            climb >= 1
+                                ? Icons.lock_rounded
+                                : Icons.lock_open_rounded,
+                            size: AppSize.s20,
+                            color: climb >= _closing
+                                ? AppColors.primaryDark
+                                : AppColors.secondaryText,
+                          ),
                         ),
                         Opacity(
                           opacity: 1 - climb,
                           child: const FloatLoop(
                             amplitude: AppSize.s3,
+                            count: 1,
                             child: Icon(
                               Icons.keyboard_arrow_up_rounded,
                               size: AppSize.s20,

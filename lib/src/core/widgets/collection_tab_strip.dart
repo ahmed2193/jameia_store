@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../motion/haptics.dart';
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
 
@@ -110,8 +109,8 @@ class _CollectionTabStripState extends State<CollectionTabStrip> {
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {
+                        // A tab switch is navigation: no haptic (§9.5).
                         if (i == widget.selected) return;
-                        Haptics.selection();
                         widget.onSelected(i);
                       },
                       child: Container(

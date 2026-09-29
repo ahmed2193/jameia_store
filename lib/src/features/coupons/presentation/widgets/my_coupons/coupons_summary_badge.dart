@@ -5,40 +5,48 @@ import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// The ticket glyph at the corner of the savings card: a white disc with a
-/// soft breathing glow behind it ([GlowPulse]; a still glow under reduced
-/// motion). Decorative only.
+/// soft breathing glow behind it ([FloatLoop.glow]; a still glow under reduced
+/// motion). Both wait for the card to land ([AfterArrival], backlog B2-03):
+/// the disc pops and the glow starts once the card has risen in, not with
+/// it. Decorative only.
 class CouponsSummaryBadge extends StatelessWidget {
   const CouponsSummaryBadge({super.key});
 
   static const double _glowDiameter = AppSize.s80;
   static const double _discDiameter = AppSize.s48;
 
+  static const Widget _disc = DecoratedBox(
+    decoration: BoxDecoration(color: AppColors.white, shape: BoxShape.circle),
+    child: SizedBox.square(
+      dimension: _discDiameter,
+      child: Icon(
+        Icons.confirmation_number_rounded,
+        size: AppSize.s28,
+        color: kHeroPillPin,
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    return const ExcludeSemantics(
+    return ExcludeSemantics(
       child: SizedBox.square(
         dimension: _glowDiameter,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            GlowPulse(color: AppColors.white, diameter: _glowDiameter),
-            PopScale.onMount(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: SizedBox.square(
-                  dimension: _discDiameter,
-                  child: Icon(
-                    Icons.confirmation_number_rounded,
-                    size: AppSize.s28,
-                    color: kHeroPillPin,
-                  ),
-                ),
+        child: AfterArrival(
+          builder: (context, landed) => Stack(
+            alignment: Alignment.center,
+            children: [
+              FloatLoop.glow(
+                color: AppColors.white,
+                diameter: _glowDiameter,
+                active: landed,
               ),
-            ),
-          ],
+              if (landed)
+                const PopScale.onMount(child: _disc)
+              else
+                const Visibility.maintain(visible: false, child: _disc),
+            ],
+          ),
         ),
       ),
     );

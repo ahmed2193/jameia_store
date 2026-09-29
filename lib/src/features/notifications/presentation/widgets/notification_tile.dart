@@ -8,6 +8,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/press_row.dart';
 import '../../domain/entities/notification_entity.dart';
 import '../cubit/notifications_cubit.dart';
 import 'notification_kind_icon.dart';
@@ -37,7 +38,7 @@ class NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final languageCode = context.locale.languageCode;
     final unread = notification.isUnread;
-    return InkWell(
+    return PressRow(
       onTap: () => _onTap(context),
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(

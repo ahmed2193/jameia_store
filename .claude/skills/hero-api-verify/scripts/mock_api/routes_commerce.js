@@ -39,6 +39,22 @@ function handleAdmin(pathname, ok) {
     }
     return ok(order || { error: 'unknown order' });
   }
+  // The picker's changes, as the live API reports them: the first line is
+  // substituted (Jasmine rice), the last one (with 2+ lines) was unavailable.
+  const changes = pathname.match(/^\/__admin\/orders\/picking-changes\/([0-9a-f]{24})$/);
+  if (changes) {
+    const order = state.orders.find((o) => o._id === changes[1]);
+    if (!order) return ok({ error: 'unknown order' });
+    const lines = order.lines || [];
+    const now = new Date().toISOString();
+    order.picking = {
+      ...(order.picking || { picker: { _id: 'u_picker', name: 'Sara' }, startedAt: now, lines: [] }),
+      substitutedLines: lines.length ? [{ lineKey: lines[0].key, product: { id: 'p_jasmine', name: { en: 'Jasmine rice', ar: 'أرز ياسمين' } } }] : [],
+      unavailableLines: lines.length > 1 ? [{ lineKey: lines[lines.length - 1].key }] : [],
+    };
+    order.updatedAt = now;
+    return ok(order);
+  }
   if (pathname === '/__admin/orders') return ok(state.orders);
   return false;
 }

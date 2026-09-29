@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/design/hero_assets.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/navigation/screen_failure_listener.dart';
+import '../../../../core/widgets/poppable_state_frame.dart';
 import '../../../../core/widgets/reconnect_refresh.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../cubit/product_detail_cubit.dart';
@@ -59,10 +61,10 @@ class PdpBody extends StatelessWidget {
               );
             }
             if (state.isNotFound) {
-              return SafeArea(
+              return PoppableStateFrame(
                 child: EmptyStateView(
                   message: 'product.not_found'.tr(),
-                  icon: Icons.search_off_rounded,
+                  art: HeroAssets.stateNotFound,
                   actionLabel: 'common.back'.tr(),
                   onAction: () => context.pop(),
                 ),
@@ -71,7 +73,7 @@ class PdpBody extends StatelessWidget {
             final preview = state.preview;
             final failed = state.status == LoadPhase.error;
             if (preview == null) {
-              return SafeArea(
+              return PoppableStateFrame(
                 child: failed
                     ? FailureView(failure: state.failure, onRetry: cubit.load)
                     : const AppLoader(),

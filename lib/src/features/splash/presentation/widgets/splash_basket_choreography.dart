@@ -6,6 +6,7 @@ import 'splash_beat.dart';
 import 'splash_choreography.dart';
 import 'splash_frame.dart';
 import 'splash_layout.dart';
+import 'splash_motion.dart';
 import 'splash_wordmark.dart';
 
 /// The mart intro: a bottle, an orange and some greens drop into the bag one
@@ -28,7 +29,7 @@ class SplashBasketChoreography extends SplashChoreography {
   static const SplashAssembly assembly = SplashAssembly(540);
 
   @override
-  Duration get duration => AppMotion.splashBasket;
+  Duration get duration => SplashMotion.basket;
 
   @override
   Interval tagline(SplashWordmark wordmark) =>
@@ -60,6 +61,7 @@ class SplashBasketChoreography extends SplashChoreography {
       squash: squash,
       capeWave: wave,
       groceries: groceries,
+      total: duration.inMilliseconds.toDouble(),
     );
   }
 }

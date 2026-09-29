@@ -10,8 +10,9 @@ import 'package:flutter/physics.dart';
 /// For SPATIAL motion only (a sliding thumb, a scale pop, a check): an
 /// under-damped spring overshoots past 1, which is the point for movement but
 /// wrong for colours / opacity (use `AppMotion.fast` + `signature` there).
-/// Tokens: `AppMotion.springSnappy` (M3 Expressive fast-spatial, ζ 0.6) and
-/// `AppMotion.springCalm` (M3 default-spatial, ζ 0.9).
+/// Tokens: [AppSprings.snappy] (M3 Expressive fast-spatial, ζ 0.6) and
+/// [AppSprings.calm] (M3 default-spatial, ζ 0.9). `motion.dart` re-exports
+/// both, so feature code imports only `core/motion/motion.dart`.
 class SpringCurve extends Curve {
   SpringCurve(this.spring) : settle = _settleSeconds(spring);
 
@@ -59,22 +60,20 @@ class SpringCurve extends Curve {
   double transformInternal(double t) => _sim.x(t * settle);
 }
 
-/// The app's two springs (Material 3 Expressive motion tokens,
-/// `ExpressiveMotionTokens` / `StandardMotionTokens` in androidx).
+/// The app's two springs — the spatial half of the motion tokens (§9.2;
+/// Material 3 Expressive `ExpressiveMotionTokens` / `StandardMotionTokens` in
+/// androidx). Damping = ζ · 2√(k·m). Never on opacity or colour.
 abstract final class AppSprings {
-  /// Fast spatial, damping ratio 0.6 (≈ 320 ms, a little overshoot): a check
-  /// popping in, a chip changing shape.
+  /// Fast spatial, ζ 0.6, k 800 (≈ 320 ms, a little overshoot): small pops of
+  /// 48 dp or less — a check, a badge, add → stepper, a chip.
   static final SpringCurve snappy = SpringCurve(
     const SpringDescription(mass: 1, stiffness: 800, damping: 33.94),
   );
 
-  /// Default spatial, damping ratio 0.9 (≈ 210 ms, no visible overshoot):
-  /// utilitarian movement — a segmented control's thumb, a typed OTP digit.
+  /// Default spatial, ζ 0.9, k 700 (≈ 210 ms, no visible overshoot):
+  /// utilitarian movement and settles — a segmented control's thumb, a typed
+  /// OTP digit, the loader disc, a pull-to-refresh settle.
   static final SpringCurve calm = SpringCurve(
     const SpringDescription(mass: 1, stiffness: 700, damping: 47.62),
   );
-
-  /// How long a success state (a check on a button) stays before the screen
-  /// moves on.
-  static const Duration successHold = Duration(milliseconds: 400);
 }

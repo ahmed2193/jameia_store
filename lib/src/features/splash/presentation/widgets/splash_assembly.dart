@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' show TextDirection;
 
 import 'package:flutter/animation.dart';
 
@@ -36,8 +37,9 @@ class SplashAssembly {
   static const double takeOffStretch = 0.1;
   static const double stretchLength = 240;
 
-  /// The flight swoops this far forward (right) and up (dp) at its middle,
-  /// on its way to the lockup, tipping back by [flightLean] as it climbs.
+  /// The flight swoops this far forward (right; left for the Arabic name)
+  /// and up (dp) at its middle, on its way to the lockup, tipping back by
+  /// [flightLean] as it climbs.
   static const double flightSwing = 36;
   static const double flightRise = 64;
   static const double flightLean = -0.16;
@@ -74,6 +76,11 @@ class SplashAssembly {
 
   // ── Finale ─────────────────────────────────────────────────────────────────
   static const double confettiDelay = 20;
+
+  /// The celebration's own time: the confetti painting throws the pieces
+  /// through this much simulated flight. On screen it plays inside what is
+  /// left of the run ([confettiRunIn]) — never past the hand-off, where it
+  /// would freeze mid-burst under the fade-through (B1-14).
   static const double confettiLength = 950;
 
   /// The light sweep starts this long before the last piece lands.
@@ -104,6 +111,18 @@ class SplashAssembly {
         math.max(landed + taglineLength, landed - shineLead + shineLength);
   }
 
+  /// How long the confetti really plays in a run of [total] ms: its full
+  /// [confettiLength] when there is room, else the time left between its
+  /// start and the end of the run — the whole burst plays faster and has
+  /// faded out before the clock completes.
+  double confettiRunIn(SplashWordmark wordmark, double total) => math.max(
+    0,
+    math.min(
+      confettiLength,
+      total - start - lastLanding(wordmark) - confettiDelay,
+    ),
+  );
+
   /// Tagline beat as a fraction of a run of [total] ms.
   Interval taglineOf(SplashWordmark wordmark, double total) {
     final landed = start + lastLanding(wordmark);
@@ -116,11 +135,13 @@ class SplashAssembly {
 
   /// The frame at [ms] for a mark that was at [fromCenter] / [fromUnit] with
   /// [squash], [lift] and extra [capeWave] from the prelude when the
-  /// assembly began; [ripples] adds the prelude's own rings.
+  /// assembly began; [ripples] adds the prelude's own rings. [total] is the
+  /// whole run (ms) the confetti must fit in ([confettiRunIn]).
   SplashFrame frameAt(
     double ms,
     SplashLayout layout, {
     required Offset fromCenter,
+    double total = double.infinity,
     required double fromUnit,
     double squash = 0,
     double lift = 0,
@@ -144,9 +165,10 @@ class SplashAssembly {
       AppMotion.emphasizedDecelerate,
     );
     final swoop = math.sin(math.pi * fly);
+    final forward = wordmark.direction == TextDirection.rtl ? -1.0 : 1.0;
     final center =
         SplashBeat.offset(fromCenter, layout.markCenter, fly) +
-        Offset(flightSwing, -flightRise) * swoop;
+        Offset(flightSwing * forward, -flightRise) * swoop;
     final flightArc = SplashBeat.arc(t, takeOff, flightLength);
     final capeArc = SplashBeat.arc(t, takeOff, flightLength + capeSettle);
 
@@ -181,7 +203,7 @@ class SplashAssembly {
           takeOffStretch * SplashBeat.arc(t, takeOff, stretchLength) +
           arrivalSquash * SplashBeat.arc(t, arrival - 40, arrivalLength),
       lift: lift + recoilLift * recoil + floating,
-      lean: flightLean * flightArc,
+      lean: flightLean * forward * flightArc,
       capeWave:
           HeroMark.restWave +
           capeWave +
@@ -194,6 +216,7 @@ class SplashAssembly {
               SplashBeat.span(t, takeOff, flightLength + capeSettle),
       capeFold: flightCapeFold * capeArc,
       speedLines: SplashBeat.arc(t, takeOff, speedLinesLength),
+      forward: forward,
       deliveries: deliveries,
       burst: burst,
       groceries: groceries,
@@ -216,7 +239,11 @@ class SplashAssembly {
             ground: false,
           ),
       ],
-      confetti: SplashBeat.span(t, landed + confettiDelay, confettiLength),
+      confetti: SplashBeat.span(
+        t,
+        landed + confettiDelay,
+        confettiRunIn(wordmark, total),
+      ),
       confettiOrigin: layout.wordCenter,
       shine: SplashBeat.span(
         t,

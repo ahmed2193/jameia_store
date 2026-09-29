@@ -15,7 +15,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
 
   final LocalStorage _storage;
 
-  static const String _keyPrefix = 'jameia.home.popup_shown.';
+  static const String _keyPrefix = 'hero.home.popup_shown.';
 
   @override
   String? popupShownDay(String popupId) =>

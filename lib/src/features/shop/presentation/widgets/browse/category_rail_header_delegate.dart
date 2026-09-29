@@ -120,13 +120,11 @@ class CategoryRailHeaderDelegate extends SliverPersistentHeaderDelegate {
   static void _backToTop(BuildContext context) {
     final list = Scrollable.maybeOf(context)?.position;
     if (list == null || !list.hasPixels || list.pixels <= 0) return;
-    if (MotionGuard.reduced(context)) {
-      list.jumpTo(0);
-      return;
-    }
-    list.animateTo(
+    MotionGuard.scrollTo(
+      context,
+      list,
       0,
-      duration: AppMotion.sheetLarge,
+      duration: AppMotion.slow,
       curve: AppMotion.emphasizedDecelerate,
     );
   }

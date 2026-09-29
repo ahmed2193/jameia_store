@@ -5,10 +5,12 @@ import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../config/theme/app_text_styles.dart';
 import '../../../../../../core/constants/app_constants.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../assistant_word_reveal.dart';
 
-/// The customer's question in the ask demo, typing itself out in a
-/// brand-tinted bubble. The whole line holds the bubble's size from the
-/// first letter, so nothing around it moves while it types.
+/// The customer's question in the ask demo, coming in word by word in a
+/// brand-tinted bubble ([AssistantWordReveal] on the demo's clock — whole
+/// words, so Arabic keeps its joined forms). The whole line holds the
+/// bubble's size from the first word, so nothing around it moves.
 class AssistantOnboardingTypedBubble extends StatelessWidget {
   const AssistantOnboardingTypedBubble({
     super.key,
@@ -19,7 +21,7 @@ class AssistantOnboardingTypedBubble extends StatelessWidget {
 
   final String text;
 
-  /// Share of [text] typed so far, `0 → 1`.
+  /// Share of the reveal so far, `0 → 1`.
   final double typed;
 
   /// The bubble's scale as it pops in from its tail.
@@ -36,8 +38,6 @@ class AssistantOnboardingTypedBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final letters = text.characters;
-    final shown = letters.take((letters.length * typed).ceil()).toString();
     final style = AppTextStyles.bodyLarge.copyWith(
       color: AppColors.primaryText,
     );
@@ -56,21 +56,12 @@ class AssistantOnboardingTypedBubble extends StatelessWidget {
               horizontal: AppSpacing.s12,
               vertical: AppSpacing.s8,
             ),
-            child: Stack(
-              children: [
-                Text(
-                  text,
-                  maxLines: _maxLines,
-                  overflow: TextOverflow.ellipsis,
-                  style: style.copyWith(color: AppColors.scrimTransparent),
-                ),
-                Text(
-                  shown,
-                  maxLines: _maxLines,
-                  overflow: TextOverflow.ellipsis,
-                  style: style,
-                ),
-              ],
+            child: AssistantWordReveal.at(
+              text: text,
+              progress: typed,
+              maxLines: _maxLines,
+              overflow: TextOverflow.ellipsis,
+              style: style,
             ),
           ),
         ),

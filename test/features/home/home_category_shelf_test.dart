@@ -12,6 +12,8 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_section_entity.dart';
@@ -19,7 +21,6 @@ import 'package:hero_mart/src/features/home/presentation/widgets/home_category_a
 import 'package:hero_mart/src/features/home/presentation/widgets/home_category_entrance.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_category_grid.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_category_tile.dart';
-import 'package:hero_mart/src/features/home/presentation/widgets/home_reveal.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_tile_backdrop.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -53,8 +54,8 @@ void main() {
     );
   });
 
-  /// The shelf as the feed shows it: inside its block, which tells it when
-  /// it is on screen and runs its entrance.
+  /// The shelf as the feed shows it: a block of the feed's first-load
+  /// cascade, whose arrival runs the tiles' entrance.
   Future<void> pumpShelf(
     WidgetTester tester, {
     int count = _long,
@@ -75,11 +76,14 @@ void main() {
                 controller: page,
                 child: Column(
                   children: [
-                    HomeReveal(
-                      child: HomeCategoryGrid(
-                        section: _shelf(count),
-                        onOpenCategory: (_) {},
-                        onViewAll: () {},
+                    EntranceCascade(
+                      child: EntranceCascadeItem(
+                        index: 0,
+                        child: HomeCategoryGrid(
+                          section: _shelf(count),
+                          onOpenCategory: (_) {},
+                          onViewAll: () {},
+                        ),
                       ),
                     ),
                     const SizedBox(height: _below),
@@ -91,7 +95,7 @@ void main() {
         ),
       ),
     );
-    // The block measures itself after the first frame and comes in.
+    // The block starts its entrance on the next frame.
     await tester.pump();
   }
 
@@ -142,20 +146,62 @@ void main() {
       expect(shelf.pixels, closeTo(HomeCategoryGrid.glideSpeed, 1));
     });
 
-    testWidgets('at the end it rests, then glides back', (tester) async {
+    testWidgets('BX-03 it glides in bursts of one ambient budget with a rest '
+        'between; at the end it rests, then glides back', (tester) async {
       await pumpShelf(tester);
       final shelf = shelfOf(tester);
       final end = shelf.maxScrollExtent;
+      expect(end, greaterThan(HomeCategoryGrid.burstReach));
 
       await tester.pump(AppMotion.carousel);
-      await tester.pump(glideTime(end));
-      expect(shelf.pixels, end);
+      await tester.pump(AppMotion.ambientBudget);
       // An animation is over on the first frame past its duration.
       await tester.pump(_frame);
+      expect(shelf.pixels, closeTo(HomeCategoryGrid.burstReach, 1));
+
+      // The rest: nothing moves and nothing ticks.
+      final rested = shelf.pixels;
+      await tester.pump(AppMotion.carousel ~/ 2);
+      expect(shelf.pixels, rested);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+
+      // Burst after burst, to the end.
+      for (var burst = 0; burst < 20 && shelf.pixels < end; burst++) {
+        await tester.pump(AppMotion.carousel);
+        await tester.pump(AppMotion.ambientBudget);
+        await tester.pump(_frame);
+      }
+      expect(shelf.pixels, end);
+      expect(glideTime(end), greaterThan(AppMotion.ambientBudget));
 
       await tester.pump(AppMotion.carousel);
       await tester.pump(const Duration(seconds: 1));
       expect(shelf.pixels, closeTo(end - HomeCategoryGrid.glideSpeed, 1));
+    });
+
+    testWidgets('BX-03 a drag holds the shelf until its scroll settles, then '
+        'a full rest', (tester) async {
+      await pumpShelf(tester);
+      final shelf = shelfOf(tester);
+      await tester.pump(AppMotion.carousel);
+      await tester.pump(const Duration(seconds: 1));
+      expect(shelf.pixels, greaterThan(0), reason: 'gliding');
+
+      await tester.fling(find.byType(GridView), const Offset(-120, 0), 800);
+      await tester.pumpAndSettle();
+      final settled = shelf.pixels;
+      expect(
+        tester.binding.hasScheduledFrame,
+        isFalse,
+        reason: 'the wash stopped with the glide',
+      );
+
+      await tester.pump(AppMotion.carousel - const Duration(milliseconds: 100));
+      expect(shelf.pixels, settled, reason: 'resting after the scroll');
+
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(seconds: 1));
+      expect(shelf.pixels, isNot(settled));
     });
 
     testWidgets('a finger holds the shelf; it picks up again after a rest', (
@@ -282,8 +328,21 @@ void main() {
         tester.widget<CustomPaint>(washes.first).painter!
             as HomeCategoryAuroraPainter;
     final before = wash.progress.value;
+    // BX-03: still through the rest before the first burst.
+    await tester.pump(AppMotion.carousel - const Duration(seconds: 1));
+    expect(wash.progress.value, before, reason: 'the wash rests');
+
+    await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 1));
     expect(wash.progress.value, isNot(before), reason: 'the wash drifts');
+
+    // The burst ends within one ambient budget, and the wash rests again.
+    await tester.pump(AppMotion.ambientBudget);
+    await tester.pump(_frame);
+    final rested = wash.progress.value;
+    await tester.pump(AppMotion.carousel ~/ 2);
+    expect(wash.progress.value, rested);
+    expect(tester.binding.hasScheduledFrame, isFalse);
   });
 
   test('a tile never shares its colour with the next one in either row', () {

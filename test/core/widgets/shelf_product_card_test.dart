@@ -15,13 +15,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
 import 'package:hero_mart/src/config/theme/app_text_styles.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
 import 'package:hero_mart/src/core/widgets/catalog_pill_stepper.dart';
 import 'package:hero_mart/src/core/widgets/shelf_add_button.dart';
 import 'package:hero_mart/src/core/widgets/shelf_card_media.dart';
 import 'package:hero_mart/src/core/widgets/shelf_marker_painter.dart';
 import 'package:hero_mart/src/core/widgets/shelf_product_card.dart';
-import 'package:hero_mart/src/features/shop/presentation/widgets/listing/listing_reveal.dart';
-import 'package:hero_mart/src/features/shop/presentation/widgets/listing/listing_reveal_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const CatalogProductEntity _turkey = CatalogProductEntity(
@@ -256,9 +256,11 @@ void main() {
   });
 
   testWidgets('the marker draws itself in as the card lands', (tester) async {
-    Widget landing(bool settled) => ListingReveal(
-      settled: settled,
-      child: ListingRevealItem(index: 0, child: card(_turkey)),
+    Widget landing(bool settled) => EntranceCascade(
+      ready: settled,
+      child: settled
+          ? EntranceCascadeItem(index: 0, child: card(_turkey))
+          : const SizedBox.shrink(),
     );
     double drawn() =>
         (tester
@@ -275,9 +277,9 @@ void main() {
             .value;
 
     await pump(tester, landing(false));
+    await pump(tester, landing(true));
     expect(drawn(), 0);
 
-    await pump(tester, landing(true));
     await tester.pump();
     await tester.pump(_clock);
     expect(drawn(), 1);

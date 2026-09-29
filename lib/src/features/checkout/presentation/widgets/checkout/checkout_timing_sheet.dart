@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_assets.dart';
+import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/option_row.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/checkout_draft.dart';
@@ -53,7 +57,11 @@ class CheckoutTimingSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             OptionRow(
-              icon: Icons.schedule_rounded,
+              leading: const HeroSvgGlyph.mono(
+                HeroAssets.sharedClock,
+                size: AppSize.s24,
+                color: AppColors.primaryText,
+              ),
               title: 'checkout.timing_asap'.tr(),
               subtitle: standardMinutes == null
                   ? null
@@ -66,7 +74,10 @@ class CheckoutTimingSheet extends StatelessWidget {
             ),
             if (offered)
               OptionRow(
-                icon: Icons.bolt_rounded,
+                leading: const HeroSvgGlyph.art(
+                  HeroAssets.checkoutExpressBolt,
+                  size: AppSize.s24,
+                ),
                 title: 'checkout.timing_express'.tr(),
                 subtitle: expressMinutes == null
                     ? null

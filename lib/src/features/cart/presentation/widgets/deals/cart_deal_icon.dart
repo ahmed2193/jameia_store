@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/offer_reward_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/offer_plate.dart';
 
 /// The rounded glyph of a deal card: the scooter for free delivery, a gift
-/// for a free product, a voucher for any discount.
+/// for a free product, the "%" plate for a percentage off, a voucher for any
+/// other discount.
 class CartDealIcon extends StatelessWidget {
   const CartDealIcon({super.key, required this.type});
 
@@ -16,18 +17,9 @@ class CartDealIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final asset = switch (type) {
-      OfferRewardType.freeDelivery => HeroAssets.offerDelivery,
-      OfferRewardType.freeProduct => HeroAssets.offerGift,
-      OfferRewardType.percentageDiscount ||
-      OfferRewardType.fixedDiscount ||
-      OfferRewardType.other => HeroAssets.offerVoucher,
-    };
-    return SvgPicture.asset(
-      asset,
-      width: _size,
-      height: _size,
-      excludeFromSemantics: true,
+    return OfferPlate(
+      asset: OfferPlate.assetFor(type) ?? HeroAssets.offerVoucher,
+      size: _size,
     );
   }
 }

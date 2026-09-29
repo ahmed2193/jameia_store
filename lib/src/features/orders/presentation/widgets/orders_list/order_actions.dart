@@ -8,6 +8,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/catalog_cart_gestures.dart';
 import '../../../../../core/widgets/hero_secondary_button.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../../cart/presentation/cubit/cart_state.dart';
@@ -32,11 +33,24 @@ class OrderActions extends StatelessWidget {
     if (request != null) await cubit.cancel(request);
   }
 
+  /// The order page's flow: every paid line back in the cart in one
+  /// request, then the add-to-cart gesture of every product surface (the
+  /// click, the first line's photo flying from the pill to the cart on
+  /// screen), then the cart opens to check it before checking out — after
+  /// the landing, so the sheet never covers the flight. A failure is told
+  /// the cart's way (offline: the connection banner).
   Future<void> _reorder(BuildContext context) async {
-    final added = await context.read<CartCubit>().addItems(order.reorderItems);
-    if (added && context.mounted) {
-      showHeroSnackBar(context, 'orders.reorder_done'.tr());
+    final cart = context.read<CartCubit>();
+    final added = await cart.addItems(order.reorderItems);
+    if (!context.mounted) return;
+    if (added) {
+      await CatalogCartGestures.added(context, image: order.reorderImage);
+      if (!context.mounted) return;
+      await context.push(Routes.cartPreview);
+      return;
     }
+    final failure = cart.state.failure;
+    if (failure != null) showFailureSnackBar(context, failure, action: true);
   }
 
   @override
@@ -63,11 +77,14 @@ class OrderActions extends StatelessWidget {
           onPressed: () => context.push(Routes.orderReview, extra: order.id),
         ),
       if (order.isTerminal)
-        HeroSecondaryButton(
-          label: 'orders.reorder'.tr(),
-          compact: true,
-          height: _actionHeight,
-          onPressed: reordering ? null : () => _reorder(context),
+        // Its own context: the flight leaves from the pill, not the row.
+        Builder(
+          builder: (context) => HeroSecondaryButton(
+            label: 'orders.reorder'.tr(),
+            compact: true,
+            height: _actionHeight,
+            onPressed: reordering ? null : () => _reorder(context),
+          ),
         ),
     ];
     if (buttons.isEmpty) return const SizedBox.shrink();

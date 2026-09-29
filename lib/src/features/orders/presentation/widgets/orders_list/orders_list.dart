@@ -63,7 +63,9 @@ class _OrdersListState extends State<OrdersList> {
       child: EntranceCascade(
         child: Column(
           children: [
-            // Rebuilt on its own when the freshness changes, never the list.
+            // Rebuilt on its own when the freshness changes, never the list;
+            // the note folds by height + fade itself (CollapseReveal), so the
+            // list eases down / up as it comes and goes.
             const ScreenStaleNotice<OrdersCubit, OrdersState>(),
             Expanded(
               child: BrandedRefresh(

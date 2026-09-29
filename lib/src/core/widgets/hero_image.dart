@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../config/theme/app_colors.dart';
-import '../responsive/app_size.dart';
+import 'hero_image_placeholder.dart';
 import 'hero_network_image.dart';
 import 'retrying_network_image.dart';
 
@@ -15,7 +14,9 @@ export 'hero_card_image.dart';
 // the placeholder and are handled by RetryingNetworkImage's unbounded backoff.
 // ---------------------------------------------------------------------------
 
-/// Sized, cached network image with skeleton placeholder + graceful error tile.
+/// Sized, cached network image over the brand placeholder
+/// ([HeroImagePlaceholder]: grey fill + the bag outline), fading in over
+/// a fast fade once decoded.
 /// The single image entry point for feature code (never raw `Image.network`).
 ///
 /// Internally: applies a responsive CDN transform (`media.jm3eia.com`), sizes
@@ -89,17 +90,8 @@ class HeroImage extends StatelessWidget {
 
     Widget content;
     if (url.isEmpty) {
-      content = Container(
-        color: AppColors.smallBackground,
-        width: width,
-        height: height,
-        alignment: Alignment.center,
-        child: const Icon(
-          Icons.image_outlined,
-          color: AppColors.disabledText,
-          size: AppSize.s28,
-        ),
-      );
+      // No photo at all: the brand placeholder, for good.
+      content = const HeroImagePlaceholder();
     } else if (!_hasUsableDim(width) && !_hasUsableDim(height)) {
       // No usable explicit size — discover the painted area via LayoutBuilder so
       // the CDN transform + decode sizing still fire for layout-driven tiles

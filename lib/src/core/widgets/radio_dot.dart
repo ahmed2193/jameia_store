@@ -28,8 +28,7 @@ class RadioDot extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: selected
-          ? PopScale(
-              popKey: selected,
+          ? PopScale.onMount(
               child: Container(
                 width: AppSize.s10,
                 height: AppSize.s10,

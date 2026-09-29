@@ -6,7 +6,7 @@ import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 
 /// One − / + of the buy bar's stepper pill: a 40 dp touch target that sinks
-/// under the finger with a selection tick. When it cannot move any further
+/// under the finger with a selection tick (the − side: a remove's tap). When it cannot move any further
 /// it is dimmed and fully inert — no tap, no haptic, no press.
 class PdpStepButton extends StatelessWidget {
   const PdpStepButton({
@@ -17,6 +17,7 @@ class PdpStepButton extends StatelessWidget {
     this.active = true,
     this.color = AppColors.primaryText,
     this.disabledColor = AppColors.disabledText,
+    this.removes = false,
   });
 
   final IconData icon;
@@ -27,6 +28,9 @@ class PdpStepButton extends StatelessWidget {
   final bool active;
   final Color color;
   final Color disabledColor;
+
+  /// The − side: a remove's tap instead of an add's click (§9.5).
+  final bool removes;
 
   static const double size = AppSize.s40;
 
@@ -41,7 +45,7 @@ class PdpStepButton extends StatelessWidget {
       child: PressScale(
         onTap: active ? onTap : null,
         enabled: active,
-        haptic: HapticKind.selection,
+        haptic: removes ? HapticKind.tap : HapticKind.selection,
         child: SizedBox.square(
           dimension: size,
           child: Icon(

@@ -6,17 +6,22 @@ import 'pro_hero_lines.dart';
 import 'pro_hero_tone.dart';
 
 /// The plan hero's two big centred lines, worded for the plan's billing
-/// interval (see [ProHeroLines]) — key it by plan so a new plan re-plays the
-/// stagger.
+/// interval (see [ProHeroLines]). The lines rise in when the hero first
+/// shows ([entrance]); a later plan's words cross-fade in instead (its host
+/// switches them), so a plan switch never replays the entrance.
 class ProHeroHeadline extends StatelessWidget {
   const ProHeroHeadline({
     super.key,
     required this.interval,
     required this.tone,
+    this.entrance = true,
   });
 
   final ProBillingInterval interval;
   final ProHeroTone tone;
+
+  /// The lines rise in on mount.
+  final bool entrance;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +40,7 @@ class ProHeroHeadline extends StatelessWidget {
       lineOne: lineOne.tr(),
       lineTwo: lineTwo.tr(),
       tone: tone,
+      entrance: entrance,
     );
   }
 }

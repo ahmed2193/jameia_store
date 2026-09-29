@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/offer_entity.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/offer_plate.dart';
 
-/// The tinted disc at the start of an offer card: a truck for free delivery,
-/// a percent sign for a percentage off, a tag for money off, a gift for a
-/// free item. Decorative: the card's text says the same.
+/// The tinted disc at the start of an offer card, holding the kind's Hero
+/// offer plate (`HeroAssets.offer*`): the scooter for free delivery, "%" for
+/// a percentage off, the voucher for money off, the gift for a free item;
+/// any other offer keeps a plain tag. Decorative: the card's text says the
+/// same.
 class OfferRewardDisc extends StatelessWidget {
   const OfferRewardDisc({super.key, required this.type});
 
@@ -14,6 +17,7 @@ class OfferRewardDisc extends StatelessWidget {
 
   static const double size = AppSize.s52;
   static const double _glyph = AppSize.s24;
+  static const double _plateSize = AppSize.s28;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +54,10 @@ class OfferRewardDisc extends StatelessWidget {
         height: size,
         alignment: Alignment.center,
         decoration: BoxDecoration(color: plate, shape: BoxShape.circle),
-        child: Icon(icon, size: _glyph, color: ink),
+        child: switch (OfferPlate.assetFor(type)) {
+          final String asset => OfferPlate(asset: asset, size: _plateSize),
+          null => Icon(icon, size: _glyph, color: ink),
+        },
       ),
     );
   }

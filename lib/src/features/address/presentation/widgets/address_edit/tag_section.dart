@@ -21,22 +21,22 @@ class TagSection extends StatelessWidget {
         (
           label: AddressLabel.home,
           textKey: 'addr.tag.home',
-          icon: HeroAssets.labelHome,
+          icon: HeroAssets.addressLabelHome,
         ),
         (
           label: AddressLabel.work,
           textKey: 'addr.tag.work',
-          icon: HeroAssets.labelOffice,
+          icon: HeroAssets.addressLabelOffice,
         ),
         (
           label: AddressLabel.gathering,
           textKey: 'addr.tag.gathering',
-          icon: HeroAssets.labelGathering,
+          icon: HeroAssets.addressLabelGathering,
         ),
         (
           label: AddressLabel.other,
           textKey: 'addr.tag.other',
-          icon: HeroAssets.labelOther,
+          icon: HeroAssets.addressLabelOther,
         ),
       ];
 

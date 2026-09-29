@@ -37,10 +37,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_host(active: false));
 
-    expect(
-      tester.getSize(find.byType(HeroMarkIcon)),
-      const Size.square(_side),
-    );
+    expect(tester.getSize(find.byType(HeroMarkIcon)), const Size.square(_side));
     expect(_painter(tester).ink, _ink);
     expect(_painter(tester).progress, 0);
   });
@@ -50,7 +47,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_host(active: false));
     await tester.pumpWidget(_host(active: true));
-    await tester.pump(AppMotion.popup ~/ 2);
+    await tester.pump(AppMotion.medium ~/ 2);
 
     final midway = _painter(tester);
     expect(midway.progress, inExclusiveRange(0, 1));
@@ -61,7 +58,7 @@ void main() {
 
     // Back to rest without a hop.
     await tester.pumpWidget(_host(active: false));
-    await tester.pump(AppMotion.popup ~/ 2);
+    await tester.pump(AppMotion.medium ~/ 2);
     expect(_painter(tester).hop, isFalse);
     await tester.pumpAndSettle();
     expect(_painter(tester).progress, 0);

@@ -42,12 +42,16 @@
 //   Cart / orders knobs live in routes_commerce.js (see its header):
 //   POST /__admin/cart/out-of-stock/:productId, /__admin/cart/stock/:id/:n,
 //   /__admin/cart/delay/:ms, /__admin/cart/closed/:0|1, /__admin/cart/capacity/:0|1,
-//   /__admin/orders/advance/:orderId, /__admin/orders/fail/:orderId, GET /__admin/orders
+//   /__admin/orders/advance/:orderId, /__admin/orders/fail/:orderId, /__admin/orders/picking-changes/:orderId, GET /__admin/orders
+//   Support (order help) routes + knobs live in routes_support.js (see its header):
+//   GET /v1/support/categories, POST /v1/support/tickets,
+//   POST /__admin/support/fail/:status/:n, /__admin/support/delay/:ms, GET /__admin/support/tickets
 const http = require('http');
 const url = require('url');
 const crypto = require('crypto');
 const { handleCatalog } = require('./catalog.js');
 const { handleAdmin, handleCommerce } = require('./routes_commerce.js');
+const { handleSupport, handleSupportAdmin } = require('./routes_support.js');
 const PORT = Number(process.env.MOCK_API_PORT || 5055);
 const OTP = process.env.OTP || '1234';
 
@@ -292,6 +296,10 @@ http.createServer((req, res) => {
       const answered = handleAdmin(pathname, (results) => ok(res, results));
       if (answered !== false) return answered;
     }
+    if (pathname.startsWith('/__admin/support/')) {
+      const answered = handleSupportAdmin(pathname, (results) => ok(res, results));
+      if (answered !== false) return answered;
+    }
     if (require('./assistant.js').handleAssistant({ req, res, pathname, query, body, customer, otp: OTP, authed: authed(req), lang: localized(req, 'en', 'ar'), takeRateLimit: () => state.rateLimit > 0 && state.rateLimit-- > 0, ok: (results, statusMessage) => ok(res, results, statusMessage), fail: (status, statusMessage, message, data, headers) => fail(res, status, statusMessage, message, data, headers) })) return; // assistant routes + knobs: see assistant.js
     if (state.rateLimit > 0) { state.rateLimit--; return fail(res, 429, 'RATE_LIMITED', localized(req, 'Too many requests', 'طلبات كثيرة جدًا'), [], { 'Retry-After': '1' }); }
 
@@ -391,6 +399,20 @@ http.createServer((req, res) => {
       if (!customer.pushTokens.includes(body.token)) customer.pushTokens.push(body.token);
       return ok(res, { message: 'Registered' });
     }
+
+    // support: the order help page's taxonomy and tickets
+    if (handleSupport({
+      req, pathname, body,
+      lang: (req.headers['accept-language'] || 'en').startsWith('ar') ? 'ar' : 'en',
+      authed: authed(req),
+      ok: (results, statusMessage) => ok(res, results, statusMessage),
+      fail: (status, statusMessage, message, data) => fail(res, status, statusMessage, message, data),
+      notify: ({ type, title, body: text, data }) => {
+        const now = new Date().toISOString();
+        const n = { _id: oid(), recipientType: 'customer', recipientId: customer._id, type, status: 'unread', title, body: text, data, readAt: null, createdAt: now, updatedAt: now };
+        notifications.unshift(n); pushSse(n);
+      },
+    })) return;
 
     // cart, delivery, orders and reviews
     if (handleCommerce({

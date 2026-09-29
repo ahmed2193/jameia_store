@@ -21,7 +21,11 @@ class AssistantLocationTile extends StatelessWidget {
     Haptics.selection();
     await Clipboard.setData(ClipboardData(text: phone));
     if (!context.mounted) return;
-    showHeroSnackBar(context, 'assistant.phone_copied'.tr());
+    showHeroSnackBar(
+      context,
+      'assistant.phone_copied'.tr(),
+      tone: HeroSnackTone.success,
+    );
   }
 
   @override

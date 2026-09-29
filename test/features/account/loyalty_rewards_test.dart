@@ -51,6 +51,7 @@ import 'package:hero_mart/src/features/cart/domain/usecases/watch_cart_usecase.d
 import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/motion/rolling_test_finders.dart';
 import '../cart/cart_test_fixtures.dart';
 import '../cart/fake_cart_repository.dart';
 
@@ -327,6 +328,29 @@ void main() {
       },
     );
 
+    test('a returning connection loads a failed screen again — never a '
+        'sign-in prompt or tiers on screen', () async {
+      final useCase = _FakeGetLoyaltyRewardsUseCase(
+        () async => const Left(NetworkFailure()),
+      );
+      final cubit = LoyaltyRewardsCubit(useCase);
+      await cubit.load();
+      useCase.handler = () async => Right(loaded);
+      await cubit.onReconnected();
+      expect(useCase.calls, 2);
+      expect(cubit.state.status, LoyaltyRewardsStatus.loaded);
+      await cubit.onReconnected();
+      expect(useCase.calls, 2, reason: 'the tiers are on screen');
+      await cubit.close();
+
+      useCase.handler = () async => const Left(UnauthorizedFailure());
+      final guest = LoyaltyRewardsCubit(useCase);
+      await guest.load();
+      await guest.onReconnected();
+      expect(useCase.calls, 3, reason: 'a sign-in prompt stays');
+      await guest.close();
+    });
+
     test('a failed refresh keeps the tiers on screen', () async {
       final useCase = _FakeGetLoyaltyRewardsUseCase(() async => Right(loaded));
       final cubit = LoyaltyRewardsCubit(useCase);
@@ -531,7 +555,7 @@ void main() {
 
       expect(find.text('Rewards'), findsOneWidget);
       expect(find.text('Your points'), findsOneWidget);
-      expect(find.text('320 pts'), findsOneWidget);
+      expect(findRolled('320 pts'), findsOneWidget);
       expect(find.text('Worth KD 0.320'), findsOneWidget);
       expect(find.text('Points history'), findsOneWidget);
       expect(find.text('Ready to redeem'), findsOneWidget);
@@ -561,7 +585,7 @@ void main() {
           Right(LoyaltyRewards.from(_liveProgram, 1000));
       await pump(tester);
 
-      expect(find.text('1000 pts'), findsOneWidget);
+      expect(findRolled('1000 pts'), findsOneWidget);
       expect(find.textContaining('to unlock'), findsNothing);
       expect(find.text('Keep earning'), findsNothing);
       expect(find.byIcon(Icons.lock_rounded), findsNothing);
@@ -590,38 +614,39 @@ void main() {
       expect(find.text('Applied'), findsNothing);
     });
 
-    testWidgets('with motion: the balance counts up, a redeem bursts once', (
-      tester,
-    ) async {
-      await startCartWithBasket(tester);
-      await pump(tester, reducedMotion: false);
+    testWidgets(
+      'with motion: the balance is there at once, a redeem bursts once',
+      (tester) async {
+        await startCartWithBasket(tester);
+        await pump(tester, reducedMotion: false);
 
-      expect(find.text('320 pts'), findsOneWidget);
-      expect(
-        find.text('180 more points to unlock KD 0.500 off'),
-        findsOneWidget,
-      );
-      expect(
-        tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).playKey,
-        isNull,
-      );
+        expect(findRolled('320 pts'), findsOneWidget);
+        expect(
+          find.text('180 more points to unlock KD 0.500 off'),
+          findsOneWidget,
+        );
+        expect(
+          tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).playKey,
+          isNull,
+        );
 
-      await tester.tap(find.text('KD 0.200 off your basket'));
-      for (var i = 0; i < 5; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
+        await tester.tap(find.text('KD 0.200 off your basket'));
+        for (var i = 0; i < 5; i++) {
+          await tester.pump(const Duration(milliseconds: 100));
+        }
 
-      expect(cartRepository.calls, contains('applyLoyalty:200'));
-      expect(find.text('200 points applied to your basket'), findsOneWidget);
-      expect(
-        tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).playKey,
-        1,
-      );
+        expect(cartRepository.calls, contains('applyLoyalty:200'));
+        expect(find.text('200 points applied to your basket'), findsOneWidget);
+        expect(
+          tester.widget<ConfettiBurst>(find.byType(ConfettiBurst)).playKey,
+          1,
+        );
 
-      // Loops never settle: unmount, then let the one-shot timers run out.
-      await tester.pumpWidget(const SizedBox());
-      await tester.pump(const Duration(seconds: 5));
-    });
+        // Loops never settle: unmount, then let the one-shot timers run out.
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(seconds: 5));
+      },
+    );
 
     testWidgets('the applied tier: a tap neither re-sends nor re-celebrates', (
       tester,

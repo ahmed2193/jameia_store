@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/constants/app_constants.dart';
+import 'package:hero_mart/src/core/design/hero_assets.dart';
 import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/navigation/hero_snack_bar.dart';
@@ -27,6 +28,7 @@ import 'package:hero_mart/src/core/widgets/hero_state_view.dart';
 import 'package:hero_mart/src/core/widgets/reconnect_refresh.dart';
 import 'package:hero_mart/src/core/widgets/stale_age_pill.dart';
 import 'package:hero_mart/src/core/widgets/stale_data_notice.dart';
+import 'package:hero_mart/src/core/widgets/state_art.dart';
 import 'package:hero_mart/src/core/domain/entities/data_freshness.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -269,7 +271,9 @@ void main() {
       await tester.pumpWidget(scoped(fromCache, offline: true));
       await tester.pumpAndSettle();
       expect(find.byType(StaleAgePill), findsOneWidget);
+      // Fresh data: the note folds away (height + fade), then is gone.
       await tester.pumpWidget(scoped(fromNetwork, offline: true));
+      await tester.pumpAndSettle();
       expect(find.byType(StaleAgePill), findsNothing);
       await tester.pumpWidget(const SizedBox());
     });
@@ -335,7 +339,15 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.wifi_off_rounded), findsOneWidget);
+    // The offline plate, not a Material glyph.
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is StateArt && widget.asset == HeroAssets.stateOffline,
+      ),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.wifi_off_rounded), findsNothing);
     await tester.tap(find.text('Retry'));
     expect(retries, 1);
   });
@@ -558,7 +570,8 @@ void main() {
         offline: false,
         recheck: recheck,
       );
-      await tester.pump();
+      // The verdict swap cross-fades.
+      await tester.pumpAndSettle();
       expect(find.text(noConnection), findsNothing);
       expect(find.text(checking), findsNothing);
       expect(checks, 0);

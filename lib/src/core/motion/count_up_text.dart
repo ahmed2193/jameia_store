@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'motion.dart';
 
 /// COUNT-UP — renders [value] through [format], rolling from the previously
-/// shown value to the new one over [AppMotion.countUp] (a points balance that
+/// shown value to the new one over [AppMotion.slow] (a points balance that
 /// lands, a per-month price that changes with the picked plan). The first
 /// build counts up from [from] when given, else shows [value] at once.
 /// Reduced motion → the final text immediately.
@@ -59,7 +59,7 @@ class _CountUpTextState extends State<CountUpText> {
               // [_begin] only seeds the first count: a new target while one
               // is running continues from the number on screen.
               tween: Tween<double>(begin: _begin, end: widget.value),
-              duration: AppMotion.countUp,
+              duration: AppMotion.slow,
               curve: AppMotion.emphasizedDecelerate,
               builder: (context, value, _) => Text(
                 widget.format(value),

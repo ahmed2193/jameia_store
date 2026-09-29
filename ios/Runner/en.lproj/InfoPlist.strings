@@ -1,0 +1,4 @@
+/* Permission prompts shown by iOS (English). Keys mirror Runner/Info.plist. */
+"NSLocationWhenInUseUsageDescription" = "Hero uses your location to pin your delivery address on the map.";
+"NSMicrophoneUsageDescription" = "Hero uses the microphone so you can talk to the shopping assistant by voice.";
+"NSSpeechRecognitionUsageDescription" = "Hero turns your voice into text on your device so you can send voice messages to the shopping assistant.";

@@ -48,7 +48,11 @@ class CheckoutPlaceButton extends StatelessWidget {
         !await ConnectivityScope.confirmOnline(context)) {
       if (!context.mounted) return;
       ConnectivityScope.nudge(context);
-      showHeroSnackBar(context, 'connectivity.action_needs_internet'.tr());
+      showHeroSnackBar(
+        context,
+        'connectivity.action_needs_internet'.tr(),
+        tone: HeroSnackTone.offline,
+      );
       return;
     }
     if (!context.mounted) return;
@@ -64,7 +68,7 @@ class CheckoutPlaceButton extends StatelessWidget {
 
   void _onBlocked(BuildContext context, CheckoutBlockReason? reason) {
     if (reason == null || reason == CheckoutBlockReason.empty) return;
-    Haptics.warning();
+    Haptics.refuse();
     final ui = context.read<CheckoutUiController>();
     switch (reason) {
       case CheckoutBlockReason.destination:
@@ -96,6 +100,9 @@ class CheckoutPlaceButton extends StatelessWidget {
                 .shortfallKd,
             pickup: context.read<CheckoutCubit>().state.draft.isPickup,
           ),
+          tone: reason == CheckoutBlockReason.offline
+              ? HeroSnackTone.offline
+              : HeroSnackTone.warning,
         );
     }
   }

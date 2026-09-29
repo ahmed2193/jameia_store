@@ -29,8 +29,12 @@ class Formatters {
   /// Price with the localized currency label. Arabic places the label AFTER the
   /// amount (`12.500 د.ك`); English before (`KD 12.500`). For the digit-font
   /// pill use [PriceText], which localizes the symbol and mirrors under RTL.
-  static String price(double v) =>
-      _isAr ? '${amount(v)} $currency' : '$currency ${amount(v)}';
+  static String price(double v) => priceOf(amount(v));
+
+  /// [price] around an amount already written out (e.g. the number slot of a
+  /// `RollingNumberText`).
+  static String priceOf(String amount) =>
+      _isAr ? '$amount $currency' : '$currency $amount';
 
   /// Price for a run laid out in `Directionality.ltr` (tabular money): the
   /// label always leads, so it reads `KD 12.500` / `د.ك 12.500` and lands in

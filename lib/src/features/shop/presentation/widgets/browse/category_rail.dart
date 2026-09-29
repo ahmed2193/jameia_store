@@ -65,12 +65,13 @@ class _CategoryRailState extends State<CategoryRail> {
                   _itemWidth / 2 -
                   position.viewportDimension / 2)
               .clamp(position.minScrollExtent, position.maxScrollExtent);
-      if (first || MotionGuard.reduced(context)) {
+      if (first) {
         _rail.jumpTo(target);
       } else {
-        _rail.animateTo(
+        MotionGuard.scrollTo(
+          context,
+          position,
           target,
-          duration: AppMotion.page,
           curve: AppMotion.emphasizedDecelerate,
         );
       }
@@ -121,7 +122,8 @@ class _CategoryRailState extends State<CategoryRail> {
               if (index == 0) {
                 return CategoryRailItem(
                   label: 'shop.all'.tr(),
-                  image: parent?.image ?? '',
+                  image: '',
+                  all: true,
                   selected: selected == null,
                   onTap: () => cubit.select(level, null),
                 );

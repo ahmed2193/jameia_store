@@ -38,7 +38,6 @@ class StickerButton extends StatelessWidget {
 
   static const double defaultHeight = AppSize.s56;
   static const double compactHeight = AppSize.s36;
-  static const double _pressedScale = 0.97;
 
   final String label;
   final VoidCallback onPressed;
@@ -86,7 +85,6 @@ class StickerButton extends StatelessWidget {
       child: PressScale(
         onTap: active ? onPressed : null,
         enabled: active,
-        pressedScale: _pressedScale,
         child: AnimatedContainer(
           duration: MotionGuard.duration(context, AppMotion.fast),
           curve: AppMotion.signature,

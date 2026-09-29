@@ -47,7 +47,7 @@ class HomeCategoryEntrance extends StatelessWidget {
     // The overshooting curve lands the pop with a small bounce.
     final pop = animation.drive(
       Tween<double>(begin: _popFrom, end: 1).chain(
-        CurveTween(curve: Interval(start, end, curve: AppMotion.emphasized)),
+        CurveTween(curve: Interval(start, end, curve: AppSprings.snappy)),
       ),
     );
     return FadeTransition(

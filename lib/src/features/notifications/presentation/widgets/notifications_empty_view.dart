@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/motion/motion_widgets.dart';
-import '../../../../core/responsive/app_size.dart';
+import '../../../../core/design/hero_assets.dart';
+import '../../../../core/widgets/state_art.dart';
 
 /// Nothing in the inbox yet: title + hint about what will land here.
 class NotificationsEmptyView extends StatelessWidget {
@@ -19,13 +19,7 @@ class NotificationsEmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const PopScale.onMount(
-              child: Icon(
-                Icons.notifications_none_rounded,
-                size: AppSize.s56,
-                color: AppColors.disabledText,
-              ),
-            ),
+            const StateArt(asset: HeroAssets.emptyNotifications),
             const SizedBox(height: AppSpacing.s12),
             Text(
               'notifications.empty_title'.tr(),

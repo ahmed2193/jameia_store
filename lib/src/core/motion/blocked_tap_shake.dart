@@ -26,7 +26,7 @@ class _BlockedTapShakeState extends State<BlockedTapShake> {
   int _refusals = 0;
 
   void _refuse() {
-    Haptics.warning();
+    Haptics.refuse();
     setState(() => _refusals++);
   }
 

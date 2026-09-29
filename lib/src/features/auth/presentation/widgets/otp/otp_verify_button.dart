@@ -9,9 +9,12 @@ import '../../cubit/otp_state.dart';
 /// Primary Verify CTA. Grey until the code is complete, then the green wipes
 /// in once; it holds that green (no taps) while the code is checked and once
 /// it is accepted — the page's busy disc is the one loader, and its check
-/// the success.
+/// the success. A tap while it is grey reports [onBlocked] so the page can
+/// point at the code (the same "no" as login's Continue).
 class OtpVerifyButton extends StatelessWidget {
-  const OtpVerifyButton({super.key});
+  const OtpVerifyButton({super.key, required this.onBlocked});
+
+  final VoidCallback onBlocked;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +28,7 @@ class OtpVerifyButton extends StatelessWidget {
         holding: state.isLocked,
         readyFlourish: true,
         onPressed: context.read<OtpCubit>().verify,
+        onBlocked: onBlocked,
       ),
     );
   }

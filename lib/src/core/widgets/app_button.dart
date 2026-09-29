@@ -25,6 +25,7 @@ class AppButton extends StatelessWidget {
     this.foreground,
     this.trailing,
     this.radius,
+    this.haptic = HapticKind.tap,
   });
 
   final String label;
@@ -42,6 +43,12 @@ class AppButton extends StatelessWidget {
   /// 16dp, order-list/help use 24dp — so callers override per the bundle.
   final double? radius;
 
+  /// The §9.5 haptic of a press: a commit's `tap` by default ([Haptics.commit]),
+  /// `warning` on a destructive confirm (delete, cancel, log out), `selection`
+  /// for an add to cart, null for none. One haptic per press: the caller
+  /// fires nothing of its own.
+  final HapticKind? haptic;
+
   @override
   Widget build(BuildContext context) {
     final bg = color ?? AppColors.primary;
@@ -56,7 +63,8 @@ class AppButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(r),
         onTap: active
             ? () {
-                Haptics.tap();
+                final kind = haptic;
+                if (kind != null) Haptics.fire(kind);
                 onPressed!();
               }
             : null,

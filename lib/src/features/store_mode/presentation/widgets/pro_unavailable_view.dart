@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/widgets/branded_refresh.dart';
 import '../../../../core/widgets/empty_state_view.dart';
 
@@ -22,7 +23,7 @@ class ProUnavailableView extends StatelessWidget {
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: EmptyStateView(
               message: 'pro.unavailable'.tr(),
-              icon: Icons.workspace_premium_outlined,
+              art: HeroAssets.stateUnavailable,
             ),
           ),
         ),

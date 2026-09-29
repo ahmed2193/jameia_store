@@ -94,7 +94,6 @@ class AssistantOnboardingPhone extends StatelessWidget {
                             size: _launcher,
                             mood: AssistantMascotMood.happy,
                             outlined: true,
-                            alive: false,
                             cheer: hop,
                           ),
                         ),

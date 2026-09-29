@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/offer_reward_entity.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/offer_plate.dart';
 import '../../../domain/entities/checkout_offer_card.dart';
 import 'checkout_offer_expiry.dart';
 import 'checkout_offer_status.dart';
@@ -56,7 +58,12 @@ class CheckoutOfferTicket extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CheckoutTicketHeadline(text: _headline(card)),
+          CheckoutTicketHeadline(
+            text: _headline(card),
+            asset:
+                OfferPlate.assetFor(card.rewardType) ??
+                HeroAssets.checkoutTicket,
+          ),
           CheckoutOfferTerms(card: card),
           const SizedBox(height: AppSpacing.s12),
           Row(

@@ -11,7 +11,9 @@ import 'im_chat_quick_reply_row.dart';
 
 /// The thread, the quick replies and the composer. Offline: the thread is a
 /// scripted conversation in this state; a sent message appends and the rider
-/// "echoes" an acknowledgement so the chat feels live.
+/// "echoes" an acknowledgement so the chat feels live. The opening thread
+/// cascades in once ([EntranceCascade]); a new bubble rises in at once, and
+/// a bubble scrolled back to never replays.
 class ImChatBody extends StatefulWidget {
   const ImChatBody({super.key});
 
@@ -54,6 +56,10 @@ class _ImChatBodyState extends State<ImChatBody> {
     ),
   ];
 
+  /// Sent this visit and not built yet: each plays its entrance on its first
+  /// build only (a lazy list drops and rebuilds rows on scroll-back).
+  final Set<SupportChatMessage> _unseen = <SupportChatMessage>{};
+
   @override
   void dispose() {
     _input.dispose();
@@ -65,17 +71,16 @@ class _ImChatBodyState extends State<ImChatBody> {
     final text = raw.trim();
     if (text.isEmpty) return;
     final now = 'support.time_now'.tr();
+    final sent = SupportChatMessage(text: text, mine: true, time: now);
+    // Scripted rider acknowledgement so the thread feels live offline.
+    final echo = SupportChatMessage(
+      text: 'support.msg_got_it'.tr(),
+      mine: false,
+      time: now,
+    );
     setState(() {
-      _messages
-        ..add(SupportChatMessage(text: text, mine: true, time: now))
-        // Scripted rider acknowledgement so the thread feels live offline.
-        ..add(
-          SupportChatMessage(
-            text: 'support.msg_got_it'.tr(),
-            mine: false,
-            time: now,
-          ),
-        );
+      _messages.addAll([sent, echo]);
+      _unseen.addAll([sent, echo]);
       _input.clear();
     });
     _jumpToEnd();
@@ -84,10 +89,12 @@ class _ImChatBodyState extends State<ImChatBody> {
   void _jumpToEnd() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scroll.hasClients) return;
-      _scroll.animateTo(
-        _scroll.position.maxScrollExtent,
-        duration: MotionGuard.duration(context, AppMotion.medium),
-        curve: AppMotion.standard,
+      final position = _scroll.position;
+      MotionGuard.scrollTo(
+        context,
+        position,
+        position.maxScrollExtent,
+        duration: AppMotion.medium,
       );
     });
   }
@@ -97,18 +104,28 @@ class _ImChatBodyState extends State<ImChatBody> {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
-            controller: _scroll,
-            padding: const EdgeInsets.all(AppSpacing.s12),
-            itemCount: _messages.length,
-            // Each bubble fades / slides in once: keyed by the message, the
-            // settled bubbles stay put when a new one is appended.
-            itemBuilder: (_, i) => RepaintBoundary(
-              child: StaggerEntrance(
-                key: ObjectKey(_messages[i]),
-                index: i,
-                child: ImChatBubble(message: _messages[i]),
-              ),
+          child: EntranceCascade(
+            child: ListView.builder(
+              controller: _scroll,
+              padding: const EdgeInsets.all(AppSpacing.s12),
+              itemCount: _messages.length,
+              // Keyed by the message: the settled bubbles stay put when a new
+              // one is appended.
+              itemBuilder: (_, i) {
+                final message = _messages[i];
+                final key = ObjectKey(message);
+                if (_unseen.remove(message)) {
+                  return EntranceCascadeItem.single(
+                    key: key,
+                    child: ImChatBubble(message: message),
+                  );
+                }
+                return EntranceCascadeItem(
+                  key: key,
+                  index: i,
+                  child: ImChatBubble(message: message),
+                );
+              },
             ),
           ),
         ),

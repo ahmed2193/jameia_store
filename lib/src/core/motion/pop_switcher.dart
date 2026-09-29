@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'motion.dart';
-import 'spring_curve.dart';
 
 /// POP SWITCH — swaps [child] when [stateKey] changes: the new child pops in
 /// from [alignment] (scale [from] → 1 on `AppSprings.snappy`, fading in over
@@ -23,6 +22,11 @@ class PopSwitcher extends StatelessWidget {
 
   /// The scale the incoming child starts from.
   static const double defaultFrom = 0.6;
+
+  /// The one start scale of the "Add" → stepper swap on every add surface
+  /// (a card's "+", the quick look, the product page buy bar; docs/motion
+  /// BX-09): the stepper grows out of the button it replaces.
+  static const double cartFrom = 0.8;
 
   /// Share of the pop over which the incoming child fades in.
   static const double _fadeShare = 0.5;

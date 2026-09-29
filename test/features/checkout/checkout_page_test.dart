@@ -22,7 +22,8 @@ import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/order_status.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
-import 'package:hero_mart/src/core/navigation/hero_shared_axis_page.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/navigation/navigation.dart';
 import 'package:hero_mart/src/core/usecase/usecase.dart';
 import 'package:hero_mart/src/core/widgets/app_loader.dart';
 import 'package:hero_mart/src/core/widgets/hero_state_view.dart';
@@ -204,7 +205,7 @@ void main() {
         GoRoute(
           path: Routes.checkout,
           // The app's transition (a `builder:` page would not animate).
-          pageBuilder: (_, state) => HeroSharedAxisPage<Object?>(
+          pageBuilder: (_, state) => HeroTransitionPage<Object?>(
             key: state.pageKey,
             name: state.uri.path,
             child: const CheckoutPage(),
@@ -380,6 +381,9 @@ void main() {
           tester,
           const CartSnapshot(cart: CartEntity.empty, isRestored: true),
         );
+        // The check draws and holds (SuccessBeat), then tracking replaces
+        // the page.
+        await tester.pump(AppMotion.slow + AppMotion.successHold);
         await tester.pump(const Duration(seconds: 10));
 
         expect(

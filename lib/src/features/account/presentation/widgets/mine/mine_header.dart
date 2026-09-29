@@ -5,11 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/domain/entities/auth_customer_entity.dart';
+import '../../../../../core/motion/press_scale.dart';
 import 'mine_docking_avatar.dart';
 import 'mine_header_background.dart';
 import 'mine_header_compact_title.dart';
 import 'mine_header_details.dart';
 import 'mine_header_metrics.dart';
+import 'mine_header_press_dip.dart';
 import 'mine_scan_action.dart';
 
 /// The Mine header at one point of its collapse ([shrinkOffset]):
@@ -21,9 +23,11 @@ import 'mine_scan_action.dart';
 ///     (first half);
 ///   * the compact name fades in beside the docked avatar (last 30%).
 ///
-/// The whole header opens the profile editor (a guest: the login page); the
-/// scan action opens the delivery code.
-class MineHeader extends StatelessWidget {
+/// The whole header opens the profile editor (a guest: the login page) and
+/// answers a finger with its avatar and name dipping ([MineHeaderPressDip];
+/// the backdrop holds still); the scan action opens the delivery code and
+/// presses by itself (the header then stays still).
+class MineHeader extends StatefulWidget {
   const MineHeader({
     super.key,
     required this.customer,
@@ -40,7 +44,23 @@ class MineHeader extends StatelessWidget {
   final double shrinkOffset;
 
   @override
+  State<MineHeader> createState() => _MineHeaderState();
+}
+
+class _MineHeaderState extends State<MineHeader> {
+  final ValueNotifier<bool> _pressed = ValueNotifier<bool>(false);
+
+  @override
+  void dispose() {
+    _pressed.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final customer = widget.customer;
+    final metrics = widget.metrics;
+    final shrinkOffset = widget.shrinkOffset;
     final progress = metrics.progress(shrinkOffset);
     final signedIn = customer != null;
     final clipTop = metrics.topInset + MineHeaderMetrics.toolbar;
@@ -49,8 +69,10 @@ class MineHeader extends StatelessWidget {
       child: Semantics(
         button: true,
         hint: (signedIn ? 'account.edit_profile' : 'account.sign_in').tr(),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
+        // The press dips the avatar and the name, never the whole header.
+        child: PressScale(
+          pressedScale: 1,
+          onPressChanged: (down) => _pressed.value = down,
           onTap: () =>
               context.push(signedIn ? Routes.profileEdit : Routes.login),
           child: Stack(
@@ -70,9 +92,13 @@ class MineHeader extends StatelessWidget {
                         top: metrics.detailsTop - shrinkOffset - clipTop,
                         start: MineHeaderMetrics.sideMargin,
                         end: MineHeaderMetrics.sideMargin,
-                        child: MineHeaderDetails(
-                          customer: customer,
-                          fade: 1 - _detailsOut.transform(progress),
+                        child: MineHeaderPressDip(
+                          pressed: _pressed,
+                          child: MineHeaderDetails(
+                            customer: customer,
+                            fade:
+                                1 - MineHeader._detailsOut.transform(progress),
+                          ),
                         ),
                       ),
                     ],
@@ -86,16 +112,19 @@ class MineHeader extends StatelessWidget {
                 height: MineHeaderMetrics.toolbar,
                 child: MineHeaderCompactTitle(
                   customer: customer,
-                  reveal: _compactIn.transform(progress),
+                  reveal: MineHeader._compactIn.transform(progress),
                 ),
               ),
               PositionedDirectional(
                 top: metrics.topInset + MineHeaderMetrics.avatarTop,
                 start: MineHeaderMetrics.sideMargin,
                 end: MineHeaderMetrics.sideMargin,
-                child: MineDockingAvatar(
-                  customer: customer,
-                  dock: _dock.transform(progress),
+                child: MineHeaderPressDip(
+                  pressed: _pressed,
+                  child: MineDockingAvatar(
+                    customer: customer,
+                    dock: MineHeader._dock.transform(progress),
+                  ),
                 ),
               ),
               PositionedDirectional(

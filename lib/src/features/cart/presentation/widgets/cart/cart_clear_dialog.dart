@@ -22,16 +22,28 @@ class CartClearDialog extends StatelessWidget {
   );
   static const Size _minActionSize = Size(0, AppSize.s44);
 
-  /// Asks, then clears the cart on a yes.
+  /// Asks, then clears the cart on a yes. A clear that went through is
+  /// said with an "Undo" (docs/motion B3-03) that puts every line back in
+  /// one request — read before the await: once cleared, this widget is
+  /// gone (the cart turns into its empty state).
   static Future<void> confirmAndClear(BuildContext context) async {
     final confirmed = await showHeroDialog<bool>(
       context,
       barrierLabel: 'cart.clear'.tr(),
       pageBuilder: (_) => const CartClearDialog(),
     );
-    if (confirmed == true && context.mounted) {
-      await context.read<CartCubit>().clear();
-    }
+    if (confirmed != true || !context.mounted) return;
+    final cart = context.read<CartCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+    final lines = cart.state.cart.restoreItems;
+    if (!await cart.clear() || lines.isEmpty) return;
+    showHeroSnackBarOn(
+      messenger,
+      'cart.cleared'.tr(),
+      tone: HeroSnackTone.success,
+      actionLabel: 'core.undo'.tr(),
+      onAction: () => cart.addItems(lines),
+    );
   }
 
   @override
@@ -64,7 +76,7 @@ class CartClearDialog extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {
-            Haptics.warning();
+            Haptics.destructive();
             context.pop(true);
           },
           style: TextButton.styleFrom(

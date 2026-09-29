@@ -18,6 +18,7 @@ class AuthSessionState extends Equatable {
     this.expired = false,
     this.isSigningOut = false,
     this.failure,
+    this.signIns = 0,
   });
 
   final AuthSessionStatus status;
@@ -35,6 +36,11 @@ class AuthSessionState extends Equatable {
   /// Transient — cleared on every [copyWith]; the UI localizes it.
   final Failure? failure;
 
+  /// How many times the customer signed in during this run (the OTP page's
+  /// `signedIn`), never the launch restore: a new value is a new session,
+  /// even one that lands while the restore is still unknown.
+  final int signIns;
+
   bool get isSignedIn => status == AuthSessionStatus.signedIn;
 
   AuthSessionState copyWith({
@@ -45,6 +51,7 @@ class AuthSessionState extends Equatable {
     bool? expired,
     bool? isSigningOut,
     Failure? failure,
+    int? signIns,
   }) => AuthSessionState(
     status: status ?? this.status,
     customer: clearCustomer ? null : (customer ?? this.customer),
@@ -52,6 +59,7 @@ class AuthSessionState extends Equatable {
     expired: expired ?? this.expired,
     isSigningOut: isSigningOut ?? this.isSigningOut,
     failure: failure,
+    signIns: signIns ?? this.signIns,
   );
 
   @override
@@ -62,5 +70,6 @@ class AuthSessionState extends Equatable {
     expired,
     isSigningOut,
     failure,
+    signIns,
   ];
 }

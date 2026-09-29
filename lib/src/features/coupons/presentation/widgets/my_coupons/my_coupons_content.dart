@@ -26,7 +26,9 @@ class MyCouponsContent extends StatefulWidget {
 
 class _MyCouponsContentState extends State<MyCouponsContent>
     with SingleTickerProviderStateMixin {
-  static const Offset _dropIn = Offset(0, -0.2);
+  /// The summary and the tab bar enter first; the open tab's tickets
+  /// follow.
+  static const int _listEntrance = 2;
 
   /// Built once the motion setting is known: under reduced motion the lists
   /// switch without sliding.
@@ -53,72 +55,73 @@ class _MyCouponsContentState extends State<MyCouponsContent>
   @override
   Widget build(BuildContext context) {
     final buckets = widget.buckets;
-    return ContentClamp(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppSpacing.s16,
-              AppSpacing.s8,
-              AppSpacing.s16,
-              0,
+    return EntranceCascade(
+      child: ContentClamp(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.s16,
+                AppSpacing.s8,
+                AppSpacing.s16,
+                0,
+              ),
+              child: EntranceCascadeItem(
+                index: 0,
+                child: CouponsSummaryCard(buckets: buckets),
+              ),
             ),
-            child: StaggerEntrance(
-              index: 0,
-              child: CouponsSummaryCard(buckets: buckets),
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.s16,
+                AppSpacing.s20,
+                AppSpacing.s16,
+                AppSpacing.s12,
+              ),
+              child: EntranceCascadeItem(
+                index: 1,
+                child: CouponsTabBar(
+                  controller: _tabs,
+                  labels: [
+                    'coupons.available'.tr(),
+                    'coupons.used'.tr(),
+                    'coupons.expired'.tr(),
+                  ],
+                  counts: [
+                    buckets.available.length,
+                    buckets.used.length,
+                    buckets.expired.length,
+                  ],
+                ),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppSpacing.s16,
-              AppSpacing.s20,
-              AppSpacing.s16,
-              AppSpacing.s12,
-            ),
-            child: StaggerEntrance(
-              index: 2,
-              beginOffset: _dropIn,
-              child: CouponsTabBar(
+            Expanded(
+              child: TabBarView(
                 controller: _tabs,
-                labels: [
-                  'coupons.available'.tr(),
-                  'coupons.used'.tr(),
-                  'coupons.expired'.tr(),
-                ],
-                counts: [
-                  buckets.available.length,
-                  buckets.used.length,
-                  buckets.expired.length,
+                children: [
+                  CouponsTabList(
+                    coupons: buckets.available,
+                    status: CouponStatus.available,
+                    emptyMessage: 'coupons.none_available'.tr(),
+                    firstEntranceIndex: _listEntrance,
+                  ),
+                  CouponsTabList(
+                    coupons: buckets.used,
+                    status: CouponStatus.used,
+                    emptyMessage: 'coupons.none_used'.tr(),
+                    firstEntranceIndex: _listEntrance,
+                  ),
+                  CouponsTabList(
+                    coupons: buckets.expired,
+                    status: CouponStatus.expired,
+                    emptyMessage: 'coupons.none_expired'.tr(),
+                    firstEntranceIndex: _listEntrance,
+                  ),
                 ],
               ),
             ),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabs,
-              children: [
-                CouponsTabList(
-                  coupons: buckets.available,
-                  status: CouponStatus.available,
-                  emptyMessage: 'coupons.none_available'.tr(),
-                  emptyIcon: Icons.confirmation_number_outlined,
-                ),
-                CouponsTabList(
-                  coupons: buckets.used,
-                  status: CouponStatus.used,
-                  emptyMessage: 'coupons.none_used'.tr(),
-                  emptyIcon: Icons.task_alt_rounded,
-                ),
-                CouponsTabList(
-                  coupons: buckets.expired,
-                  status: CouponStatus.expired,
-                  emptyMessage: 'coupons.none_expired'.tr(),
-                  emptyIcon: Icons.hourglass_empty_rounded,
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

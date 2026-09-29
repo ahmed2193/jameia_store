@@ -22,7 +22,9 @@ import 'search_state.dart';
 /// The search tab: recent terms (device), discover blocks (the device copy
 /// first, then the backend) and live product suggestions (backend). Typing
 /// is debounced here and a reply for text the customer has already changed
-/// is dropped. A discover block that cannot load simply does not show; a
+/// is dropped. A discover block that cannot load simply does not show — but
+/// while neither has anything yet the screen shows their skeleton, and when
+/// both failed with nothing saved it keeps the reason (the failure view); a
 /// suggestions request that fails keeps its reason for the list.
 class SearchCubit extends Cubit<SearchState>
     with SafeCubitMixin<SearchState>, SnapshotLoaderMixin<SearchState> {
@@ -50,6 +52,9 @@ class SearchCubit extends Cubit<SearchState>
 
   /// Bumped by every keystroke; a suggestions reply of an older one is stale.
   int _generation = 0;
+
+  /// Bumped by every discover read; only the newest one settles the state.
+  int _discoverGeneration = 0;
 
   /// The discover blocks showing a saved copy, or none after a failure: the
   /// ones a reconnect refreshes.
@@ -79,7 +84,31 @@ class SearchCubit extends Cubit<SearchState>
     );
   }
 
-  Future<void> _readDiscover(WatchParams params) => Future.wait([
+  Future<void> _readDiscover(WatchParams params) async {
+    final generation = ++_discoverGeneration;
+    Failure? failed;
+    safeEmit(
+      state.copyWith(
+        isDiscoverLoading: state.discover.isEmpty,
+        clearDiscoverFailure: true,
+      ),
+    );
+    await _followDiscover(params, onFailure: (failure) => failed = failure);
+    if (generation != _discoverGeneration) return;
+    final nothing = state.discover.isEmpty;
+    safeEmit(
+      state.copyWith(
+        isDiscoverLoading: false,
+        discoverFailure: nothing ? failed : null,
+        clearDiscoverFailure: !nothing || failed == null,
+      ),
+    );
+  }
+
+  Future<void> _followDiscover(
+    WatchParams params, {
+    required void Function(Failure failure) onFailure,
+  }) => Future.wait([
     followSnapshots(
       _watchCategories(params),
       channel: _categoriesChannel,
@@ -88,10 +117,14 @@ class SearchCubit extends Cubit<SearchState>
         safeEmit(
           state.copyWith(
             discover: state.discover.copyWith(categories: snapshot.data),
+            isDiscoverLoading: false,
           ),
         );
       },
-      onFailure: (failure) => _blockFailed(_categoriesChannel, failure),
+      onFailure: (failure) {
+        onFailure(failure);
+        _blockFailed(_categoriesChannel, failure);
+      },
     ),
     followSnapshots(
       _watchBrands(params),
@@ -101,10 +134,14 @@ class SearchCubit extends Cubit<SearchState>
         safeEmit(
           state.copyWith(
             discover: state.discover.copyWith(brands: snapshot.data),
+            isDiscoverLoading: false,
           ),
         );
       },
-      onFailure: (failure) => _blockFailed(_brandsChannel, failure),
+      onFailure: (failure) {
+        onFailure(failure);
+        _blockFailed(_brandsChannel, failure);
+      },
     ),
   ]);
 

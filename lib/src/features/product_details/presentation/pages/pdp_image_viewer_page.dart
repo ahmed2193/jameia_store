@@ -5,10 +5,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/widgets/round_outlined_button.dart';
 import '../widgets/pdp_dots_pill.dart';
 import '../widgets/pdp_thumbnail_strip.dart';
+import '../widgets/pdp_viewer_dismiss_drag.dart';
 import '../widgets/pdp_zoomable_photo.dart';
 
 /// Full-screen viewer of a product's photos on light grey, Hero
@@ -17,7 +19,9 @@ import '../widgets/pdp_zoomable_photo.dart';
 /// pill and a strip of thumbnails that brings a photo up — its lone
 /// thumbnail too when there is one photo. The photo flies in from the
 /// product page's gallery and back to the page it was left on (close button
-/// or system back), so the gallery follows.
+/// or system back), so the gallery follows. A drag down on a photo at rest
+/// pulls the viewer away with the finger and closes it the same way
+/// ([PdpViewerDismissDrag]).
 class PdpImageViewerPage extends StatefulWidget {
   const PdpImageViewerPage({
     super.key,
@@ -39,6 +43,11 @@ class PdpImageViewerPage extends StatefulWidget {
 class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
   late final PageController _controller;
   late int _page;
+
+  /// Drag down on a photo at rest to close the viewer.
+  late final PdpViewerDismissDrag _dismiss = PdpViewerDismissDrag(
+    onDismiss: _close,
+  );
 
   /// The photo shown is zoomed in: the pager holds still.
   bool _zoomed = false;
@@ -63,16 +72,7 @@ class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
   /// Brings photo [index] up from the strip; instant under reduced motion.
   void _show(int index) {
     if (index == _page || !_controller.hasClients) return;
-    final duration = MotionGuard.duration(context, AppMotion.page);
-    if (duration == Duration.zero) {
-      _controller.jumpToPage(index);
-      return;
-    }
-    _controller.animateToPage(
-      index,
-      duration: duration,
-      curve: AppMotion.signature,
-    );
+    MotionGuard.pageTo(context, _controller, index);
   }
 
   void _onZoomChanged(bool zoomed) {
@@ -122,6 +122,10 @@ class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
                           index: index,
                           productSlug: widget.productSlug,
                           onZoomChanged: _onZoomChanged,
+                          onPullDown: (dy) => _dismiss.update(context, dy),
+                          onPullEnd: (velocity) =>
+                              _dismiss.end(context, velocity),
+                          onPullCancel: () => _dismiss.cancel(context),
                         ),
                       ),
                     ),
@@ -133,7 +137,7 @@ class _PdpImageViewerPageState extends State<PdpImageViewerPage> {
                         child: Padding(
                           padding: const EdgeInsets.all(AppSpacing.s16),
                           child: RoundOutlinedButton(
-                            icon: Icons.close_rounded,
+                            icon: HeroIcons.close,
                             label: 'product.close'.tr(),
                             onTap: _close,
                           ),

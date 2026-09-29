@@ -5,14 +5,15 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/press_row.dart';
 import 'settings_icon_badge.dart';
 import 'settings_tone.dart';
 
 /// One settings row: tinted icon badge, title (+ optional subtitle), an
 /// optional full-width control [below] them, and a trailing control — or,
-/// for a row that opens something, a chevron that mirrors under RTL. A tap
-/// only highlights the row (no scale): rows are tapped often and must stay
-/// still.
+/// for a row that opens something, a chevron that mirrors under RTL. A row
+/// with [onTap] presses like every row in the app ([PressRow]: a dip and the
+/// flat brand tint); a row without one stays still.
 class SettingsTile extends StatelessWidget {
   const SettingsTile({
     super.key,
@@ -49,7 +50,7 @@ class SettingsTile extends StatelessWidget {
     final end = trailing;
     final detail = subtitle;
     final control = below;
-    return InkWell(
+    return PressRow(
       onTap: onTap,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: _minHeight),

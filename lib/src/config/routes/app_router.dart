@@ -25,9 +25,9 @@ import 'placeholder_page.dart';
 import 'routes.dart';
 
 /// Every top-level route (Hero Mach Pro page router equivalent), grouped per
-/// feature under `feature_routes/`. Each [GoRoute] builds its page through
-/// [HeroTransitionPage] / [HeroSlideUpTransitionPage] and reads its arguments
-/// from `state.extra`.
+/// feature under `feature_routes/`. Each [GoRoute] builds its page through one
+/// of the [HeroPage] types (forward, modal, top-level swap, same-flow step;
+/// docs/motion §9.4) and reads its arguments from `state.extra`.
 final List<RouteBase> appRoutes = <RouteBase>[
   ...splashRoutes,
   ...shellRoutes,

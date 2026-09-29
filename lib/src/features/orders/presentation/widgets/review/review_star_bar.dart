@@ -58,7 +58,7 @@ class _ReviewStarBarState extends State<ReviewStarBar> {
               delaySteps: math.max(0, star - _from - 1),
               enabled: widget.enabled,
               onTap: () {
-                Haptics.selection();
+                Haptics.pick();
                 widget.onRate(star);
               },
             ),

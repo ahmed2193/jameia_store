@@ -4,7 +4,6 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../domain/entities/home_section_entity.dart';
@@ -12,7 +11,6 @@ import 'home_accent_palette.dart';
 import 'home_category_tile.dart';
 import 'home_icon_view.dart';
 import 'home_layout.dart';
-import 'home_loop.dart';
 import 'home_tile_backdrop.dart';
 
 /// One card of a "Shop by occasion" row, as a storefront tile: the card's
@@ -83,17 +81,9 @@ class HomePromoCardTile extends StatelessWidget {
                   hill: strong,
                   badge: Align(
                     alignment: _discAlignment,
-                    child: HomeLoop(
-                      period: AppMotion.floatLoop,
-                      reverse: true,
+                    child: FloatLoop(
+                      amplitude: _float,
                       phase: (index * _phaseStep) % 1,
-                      builder: (context, t, disc) => Transform.translate(
-                        offset: Offset(
-                          0,
-                          -_float * AppMotion.machEaseInOut.transform(t),
-                        ),
-                        child: disc,
-                      ),
                       child: Container(
                         width: _disc,
                         height: _disc,

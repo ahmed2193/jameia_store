@@ -27,7 +27,7 @@ class SettingsFeedbackListener extends StatelessWidget {
           failure != null
               ? failure.localizedMessage
               : 'settings.cache_cleared'.tr(),
-          behavior: SnackBarBehavior.floating,
+          tone: failure != null ? HeroSnackTone.error : HeroSnackTone.success,
         );
       },
       child: child,

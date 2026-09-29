@@ -107,6 +107,7 @@ class _SearchBodyState extends State<SearchBody> {
                             state: state,
                             onTerm: _submit,
                             onClearRecents: cubit.clearRecents,
+                            onRetry: cubit.loadDiscover,
                           ),
                   ),
                 ),

@@ -37,7 +37,7 @@ class DeliveryCodeSaveBar extends StatelessWidget {
               showHeroSnackBar(
                 context,
                 'account.code_updated'.tr(),
-                behavior: SnackBarBehavior.floating,
+                tone: HeroSnackTone.success,
               );
             },
             buildWhen: (previous, current) =>

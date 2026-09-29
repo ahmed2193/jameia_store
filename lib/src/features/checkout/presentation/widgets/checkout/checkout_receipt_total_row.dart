@@ -6,13 +6,22 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
+import '../../../../../core/motion/deferred_value.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
+import '../../../../../core/motion/motion_beat.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_receipt.dart';
 import 'checkout_receipt_row.dart';
+
+typedef _Total = ({
+  bool updating,
+  double totalKd,
+  bool saves,
+  double savingsKd,
+});
 
 /// What the total shows.
 enum _TotalPhase {
@@ -43,65 +52,76 @@ class CheckoutReceiptTotalRow extends StatelessWidget {
             quotedFee: cubit.state.selection?.deliveryFeeFils,
           ),
         );
-    final total = context
-        .select<
-          CartCubit,
-          ({bool updating, double totalKd, bool saves, double savingsKd})
-        >((cubit) {
-          final state = cubit.state;
-          final savings = CartSavings.of(
-            state.cart,
-            quotedDeliveryFeeFils: checkout.quotedFee,
-          );
-          return (
-            updating: state.isUpdating,
-            totalKd: state.cart.totals.totalKd,
-            saves: savings.hasSavings,
-            savingsKd: savings.totalSavingsKd,
-          );
-        });
-    final phase = !checkout.quoted
+    final liveTotal = context.select<CartCubit, _Total>((cubit) {
+      final state = cubit.state;
+      final savings = CartSavings.of(
+        state.cart,
+        quotedDeliveryFeeFils: checkout.quotedFee,
+      );
+      return (
+        updating: state.isUpdating,
+        totalKd: state.cart.totals.totalKd,
+        saves: savings.hasSavings,
+        savingsKd: savings.totalSavingsKd,
+      );
+    });
+    final livePhase = !checkout.quoted
         ? _TotalPhase.unquoted
-        : total.updating
+        : liveTotal.updating
         ? _TotalPhase.updating
         : _TotalPhase.amount;
-    return CheckoutReceiptRow(
-      label: 'checkout.summary_total'.tr(),
-      emphasized: true,
-      value: FadeThroughSwitcher(
-        stateKey: phase,
-        alignment: AlignmentDirectional.topEnd,
-        child: switch (phase) {
-          _TotalPhase.unquoted => const Text(CheckoutReceipt.unquoted),
-          _TotalPhase.updating => Text(
-            'checkout.updating'.tr(),
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: AppColors.secondaryText,
-            ),
-          ),
-          _TotalPhase.amount => Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              HeroMoneyText(kd: total.totalKd),
-              if (total.saves)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(top: AppSpacing.s4),
-                  child: Text(
-                    'checkout.receipt_off_applied'.tr(
-                      namedArgs: {'amount': Formatters.price(total.savingsKd)},
-                    ),
-                    textAlign: TextAlign.end,
-                    // 12 sp regular: the deep red passes AA on the fill.
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.errorDeep,
-                    ),
-                  ),
+    // The settled amount lands a beat after the receipt lines (B2-03);
+    // "Updating…" and "—" show at once, so no stale amount ever does.
+    return DeferredValue<(_TotalPhase, _Total)>(
+      value: (livePhase, liveTotal),
+      delay: MotionBeat.third,
+      deferWhen: (shown, next) =>
+          shown.$1 == _TotalPhase.updating && next.$1 == _TotalPhase.amount,
+      builder: (context, shown) {
+        final (phase, total) = shown;
+        return CheckoutReceiptRow(
+          label: 'checkout.summary_total'.tr(),
+          emphasized: true,
+          value: FadeThroughSwitcher(
+            stateKey: phase,
+            alignment: AlignmentDirectional.topEnd,
+            child: switch (phase) {
+              _TotalPhase.unquoted => const Text(CheckoutReceipt.unquoted),
+              _TotalPhase.updating => Text(
+                'checkout.updating'.tr(),
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.secondaryText,
                 ),
-            ],
+              ),
+              _TotalPhase.amount => Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HeroMoneyText(kd: total.totalKd),
+                  if (total.saves)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        top: AppSpacing.s4,
+                      ),
+                      child: Text(
+                        'checkout.receipt_off_applied'.tr(
+                          namedArgs: {
+                            'amount': Formatters.price(total.savingsKd),
+                          },
+                        ),
+                        textAlign: TextAlign.end,
+                        // 12 sp regular: the deep red passes AA on the fill.
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.errorDeep,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            },
           ),
-        },
-      ),
+        );
+      },
     );
   }
 }

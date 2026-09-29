@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
+import '../motion/ambient_loop.dart';
 import '../motion/motion.dart';
 import 'light_sweep_band.dart';
 
@@ -11,9 +10,16 @@ import 'light_sweep_band.dart';
 /// fractional translation of one gradient box in its own `RepaintBoundary`,
 /// no image decoding — clipped to the child's box (or [borderRadius]),
 /// ignores touches and mirrors in RTL. Only the sweep ticks: the rest is a
-/// timer, so no frame is drawn between sweeps. Off while ![active]; nothing
-/// at all under reduced motion.
-class LightSweep extends StatefulWidget {
+/// timer, so no frame is drawn between sweeps.
+///
+/// An [AmbientLoop] preset (docs/motion §9.4 #22, D19): at most
+/// [maxPasses] passes within [AppMotion.ambientBudget] each time it comes on
+/// screen, and at most one sweep per screen (another one on the same route
+/// stays still while it plays). Off while ![active], off screen, on a hidden
+/// tab, in the background and with a screen reader; nothing at all under
+/// reduced motion. [LightSweep.progress] is the exempt kind: a shimmer that
+/// shows work in progress keeps sweeping while it is seen.
+class LightSweep extends StatelessWidget {
   const LightSweep({
     super.key,
     required this.child,
@@ -22,10 +28,27 @@ class LightSweep extends StatefulWidget {
     this.sweepShare = defaultSweepShare,
     this.peakAlpha = LightSweepBand.defaultPeakAlpha,
     this.borderRadius,
-  });
+  }) : progress = false;
 
-  /// Share of each [period] the sweep takes; the rest is a pause.
-  static const double defaultSweepShare = 0.4;
+  /// A shimmer over work in progress (a "redeeming…" veil): unbounded,
+  /// shared with no other sweep. Still gated off screen and when reduced.
+  const LightSweep.progress({
+    super.key,
+    required this.child,
+    this.period = AppMotion.shimmer,
+    this.sweepShare = 1,
+    this.peakAlpha = LightSweepBand.defaultPeakAlpha,
+    this.borderRadius,
+  }) : active = true,
+       progress = true;
+
+  /// Share of each [period] the sweep takes; the rest is a pause. Two
+  /// passes of the default [AppMotion.sheen] fit the ambient budget
+  /// (1.37 s + 2.23 s + 1.37 s < 5 s).
+  static const double defaultSweepShare = 0.38;
+
+  /// Most passes per appearance.
+  static const int maxPasses = 2;
 
   final Widget child;
   final bool active;
@@ -35,101 +58,36 @@ class LightSweep extends StatefulWidget {
   /// Brightness of the band's centre (white at this opacity).
   final double peakAlpha;
   final BorderRadius? borderRadius;
-
-  @override
-  State<LightSweep> createState() => _LightSweepState();
-}
-
-class _LightSweepState extends State<LightSweep>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: _sweepDuration,
-  )..addStatusListener(_onStatus);
-  late final Animation<double> _sweep = CurvedAnimation(
-    parent: _controller,
-    curve: AppMotion.machEaseInOut,
-  );
-
-  /// The pause before the next sweep; `null` while sweeping or stopped.
-  Timer? _rest;
-
-  Duration get _sweepDuration => widget.period * widget.sweepShare;
-  Duration get _restDuration => widget.period * (1 - widget.sweepShare);
-
-  bool get _runs => widget.active && !MotionGuard.reduced(context);
-
-  /// A finished sweep leaves the band parked off the end edge and waits
-  /// out the rest of the period before the next one.
-  void _onStatus(AnimationStatus status) {
-    if (status != AnimationStatus.completed) return;
-    _rest?.cancel();
-    _rest = Timer(_restDuration, () {
-      _rest = null;
-      if (mounted && _runs) _controller.forward(from: 0);
-    });
-  }
-
-  void _stop() {
-    _rest?.cancel();
-    _rest = null;
-    _controller
-      ..stop()
-      ..value = 0;
-  }
-
-  void _sync() {
-    if (_runs) {
-      if (!_controller.isAnimating && _rest == null) {
-        _controller.forward(from: 0);
-      }
-    } else {
-      _stop();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _sync();
-  }
-
-  @override
-  void didUpdateWidget(LightSweep oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.period != widget.period ||
-        oldWidget.sweepShare != widget.sweepShare) {
-      // A new rhythm starts over from a fresh sweep.
-      _controller.duration = _sweepDuration;
-      _stop();
-    }
-    _sync();
-  }
-
-  @override
-  void dispose() {
-    _rest?.cancel();
-    _controller.dispose();
-    super.dispose();
-  }
+  final bool progress;
 
   @override
   Widget build(BuildContext context) {
+    final sweep = period * sweepShare;
     // The child keeps its place in the tree whether the sweep runs or not,
-    // so toggling [LightSweep.active] never rebuilds its state.
-    return Stack(
-      fit: StackFit.passthrough,
-      children: [
-        widget.child,
-        if (_runs)
-          Positioned.fill(
-            child: LightSweepBand(
-              sweep: _sweep,
-              peakAlpha: widget.peakAlpha,
-              borderRadius: widget.borderRadius,
+    // so toggling [active] never rebuilds its state.
+    return AmbientLoop(
+      period: sweep,
+      rest: period - sweep,
+      curve: AppMotion.machEaseInOut,
+      maxLaps: progress ? null : maxPasses,
+      budget: progress ? null : AppMotion.ambientBudget,
+      exclusive: !progress,
+      active: active,
+      child: child,
+      builder: (context, loop, child) => Stack(
+        fit: StackFit.passthrough,
+        children: [
+          child!,
+          if (active && !MotionGuard.reduced(context))
+            Positioned.fill(
+              child: LightSweepBand(
+                sweep: loop,
+                peakAlpha: peakAlpha,
+                borderRadius: borderRadius,
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

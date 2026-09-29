@@ -13,7 +13,8 @@ import 'wallet_balance_face.dart';
 /// balance is simply there. When a pull-to-refresh moves it
 /// ([LedgerState.changeSerial] ticks with the balance delta the cubit worked
 /// out), the delta chip fades in rising into place, the digits roll a beat
-/// later with a success haptic, and the chip fades away after a hold — all
+/// later — with a success haptic only when the balance went UP (a drop is
+/// never a success, §9.5) — and the chip fades away after a hold — all
 /// on one timeline. Reduced motion: the chip only fades, the digits swap at
 /// once; the haptic stays.
 class WalletBalanceCard extends StatefulWidget {
@@ -116,7 +117,7 @@ class _WalletBalanceCardState extends State<WalletBalanceCard>
   void _maybeRoll() {
     if (!_holding || _chip.value < _rollAt) return;
     setState(() => _holding = false);
-    Haptics.success();
+    if (_delta > 0) Haptics.done();
   }
 
   @override

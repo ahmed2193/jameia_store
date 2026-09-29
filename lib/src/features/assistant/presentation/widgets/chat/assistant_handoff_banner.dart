@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../cubit/assistant_chat_cubit.dart';
@@ -31,7 +32,7 @@ class AssistantHandoffBanner extends StatelessWidget {
         child: Row(
           children: [
             const Icon(
-              Icons.support_agent_rounded,
+              HeroIcons.customerService,
               size: AppSize.s20,
               color: AppColors.primaryDark,
             ),

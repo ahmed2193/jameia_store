@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
 import 'coupons_ready_pill.dart';
 
-/// Text side of the savings card: "Save up to", the total counting up from 0
-/// and how many coupons are ready.
+/// Text side of the savings card: "Save up to", the total (there at once on
+/// open, rolling only on a real change) and how many coupons are ready.
 class CouponsSummarySavings extends StatelessWidget {
   const CouponsSummarySavings({
     super.key,
@@ -38,11 +37,9 @@ class CouponsSummarySavings extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: AlignmentDirectional.centerStart,
-          child: CountUpText(
-            value: savings,
-            from: 0,
-            maxLines: 1,
-            format: Formatters.price,
+          child: HeroMoneyText(
+            kd: savings,
+            rolling: true,
             style: AppTextStyles.displayLarge.copyWith(
               fontSize: AppSize.font30,
               height: AppSize.lh1_2,

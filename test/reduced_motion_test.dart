@@ -95,12 +95,16 @@ void main() {
     });
   });
 
-  group('StaggerEntrance', () {
+  group('EntranceCascade', () {
     testWidgets('reduced → child visible immediately, no transition/delay', (
       tester,
     ) async {
       await tester.pumpWidget(
-        reduced(const StaggerEntrance(index: 5, child: Text('row'))),
+        reduced(
+          const EntranceCascade(
+            child: EntranceCascadeItem(index: 5, child: Text('row')),
+          ),
+        ),
       );
       // No initial frame delay and no Fade/Slide wrapper under reduced motion.
       expect(find.text('row'), findsOneWidget);

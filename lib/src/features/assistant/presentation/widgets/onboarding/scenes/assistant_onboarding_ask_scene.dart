@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_spacing.dart';
-import '../../../../../../core/motion/spring_curve.dart';
+import '../../../../../../core/motion/motion.dart';
 import '../assistant_onboarding_cue.dart';
 import '../assistant_onboarding_timeline.dart';
 import 'assistant_onboarding_item.dart';
@@ -19,10 +19,14 @@ class AssistantOnboardingAskScene extends StatelessWidget {
   const AssistantOnboardingAskScene({
     super.key,
     required this.active,
+    this.played = false,
     required this.onCue,
   });
 
   final bool active;
+
+  /// Its demo already played in this opening of the tour: its end, at once.
+  final bool played;
   final ValueChanged<AssistantOnboardingCue> onCue;
 
   static const Duration _length = Duration(milliseconds: 3600);
@@ -49,6 +53,7 @@ class AssistantOnboardingAskScene extends StatelessWidget {
     final question = 'assistant.onboarding_demo_ask'.tr();
     return AssistantOnboardingTimeline(
       active: active,
+      played: played,
       length: _length,
       beats: _beats,
       onCue: onCue,
@@ -65,7 +70,7 @@ class AssistantOnboardingAskScene extends StatelessWidget {
                       alignment: AlignmentDirectional.centerEnd,
                       child: AssistantOnboardingTypedBubble(
                         text: question,
-                        typed: t.span(_typeFrom, _typeTo, Curves.linear),
+                        typed: t.span(_typeFrom, _typeTo, AppMotion.linear),
                         appear: t.span(0, _askIn, AppSprings.snappy),
                       ),
                     ),

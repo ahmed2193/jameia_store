@@ -186,21 +186,21 @@ void main() {
     );
     expect(find.text('New address'), findsNothing);
 
-    await tester.tap(find.text('Log in or sign up'));
+    await tester.tap(find.text('Sign in'));
     await settle(tester);
     expect(router.state.uri.path, Routes.login);
 
     await teardownApp(tester);
   });
 
-  testWidgets('offline with nothing cached: error with retry', (tester) async {
+  testWidgets('offline with nothing cached: "No connection" with retry', (
+    tester,
+  ) async {
     getAddresses.result = const Left(NetworkFailure());
     await pumpList(tester);
 
-    expect(
-      find.text('No internet connection. Check your network and try again.'),
-      findsOneWidget,
-    );
+    // The offline contract (FailureView), not a raw error.
+    expect(find.text('No connection'), findsOneWidget);
     getAddresses.result = Right(AddressBook.of([home]));
     await tester.tap(find.text('Retry'));
     await settle(tester);
@@ -209,9 +209,11 @@ void main() {
     await teardownApp(tester);
   });
 
-  testWidgets('delete asks first, waits for the server, removes the row', (
-    tester,
-  ) async {
+  /// The Undo window: the snack rises in, then dwells.
+  const undoWindow = Duration(milliseconds: 4250);
+
+  testWidgets('delete asks first, removes the row at once (no busy scrim), '
+      'then deletes on the server (B1-17)', (tester) async {
     await book.start();
     await pumpList(tester);
 
@@ -224,9 +226,86 @@ void main() {
     await tester.tap(find.text('Confirm'));
     await settle(tester);
 
+    expect(find.byType(AddressRowTile), findsOneWidget, reason: 'at once');
+    expect(find.text('Address deleted'), findsOneWidget);
+    expect(find.text('Undo'), findsOneWidget);
+    expect(deleteAddress.calls, isEmpty, reason: 'the Undo window is open');
+
+    await tester.pump(undoWindow);
+    await settle(tester);
     expect(deleteAddress.calls.single.id, work.id);
     expect(find.byType(AddressRowTile), findsOneWidget);
-    expect(find.text('Address deleted'), findsOneWidget);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('Undo puts the row back and sends nothing', (tester) async {
+    await book.start();
+    await pumpList(tester);
+
+    await tester.tap(find.byTooltip('Delete').last);
+    await settle(tester);
+    await tester.tap(find.text('Confirm'));
+    await settle(tester);
+    expect(find.byType(AddressRowTile), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await settle(tester);
+    expect(find.byType(AddressRowTile), findsNWidgets(2));
+
+    await tester.pump(undoWindow);
+    await settle(tester);
+    expect(deleteAddress.calls, isEmpty);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a refused delete brings the row back with the reason', (
+    tester,
+  ) async {
+    deleteAddress.result = const Left(
+      ServerFailure('Try later', statusCode: 500),
+    );
+    await book.start();
+    await pumpList(tester);
+
+    await tester.tap(find.byTooltip('Delete').last);
+    await settle(tester);
+    await tester.tap(find.text('Confirm'));
+    await settle(tester);
+    expect(find.byType(AddressRowTile), findsOneWidget);
+
+    await tester.pump(undoWindow);
+    await settle(tester);
+    expect(deleteAddress.calls, hasLength(1));
+    expect(find.byType(AddressRowTile), findsNWidgets(2));
+    expect(find.text('Try later'), findsOneWidget);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a delete refused after the customer left the list is still '
+      'told (the row is back in the book)', (tester) async {
+    deleteAddress.result = const Left(
+      ServerFailure('Try later', statusCode: 500),
+    );
+    await book.start();
+    final router = await pumpList(tester);
+
+    await tester.tap(find.byTooltip('Delete').last);
+    await settle(tester);
+    await tester.tap(find.text('Confirm'));
+    await settle(tester);
+    // Leaves while the Undo window is still open.
+    router.pop();
+    await settle(tester);
+    expect(find.byType(AddressListPage), findsNothing);
+
+    await tester.pump(undoWindow);
+    await settle(tester);
+    expect(deleteAddress.calls, hasLength(1));
+    expect(book.state.book.addresses, hasLength(2));
+    expect(find.text('Try later'), findsOneWidget);
 
     await teardownApp(tester);
   });

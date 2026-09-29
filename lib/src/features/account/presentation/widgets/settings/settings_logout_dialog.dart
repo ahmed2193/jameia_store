@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
 import 'settings_icon_badge.dart';
@@ -70,6 +71,8 @@ class SettingsLogoutDialog extends StatelessWidget {
                       label: 'settings.logout'.tr(),
                       color: AppColors.logoutRed,
                       foreground: AppColors.white,
+                      // A destructive confirm: the one warning haptic.
+                      haptic: HapticKind.warning,
                       onPressed: () => context.pop(true),
                     ),
                     const SizedBox(height: AppSpacing.s8),

@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-/// **core/motion/haptics.dart** — the single TACTILE-feedback policy. Hero fires
-/// `performHapticFeedback` pervasively (verified in the apk: Compose
-/// `performHapticFeedback`, `android/os/Vibrator`, `isPremiumVibratorEnabled` —
-/// see docs/hero_motion_reference.md §6). Feature code routes haptics ONLY
-/// through here so the whole app shares one tactile language and a global mute
-/// lives in one place.
+/// **core/motion/haptics.dart** — the single TACTILE-feedback policy
+/// (docs/motion §9.5 Haptics map). Feature code routes haptics ONLY through
+/// here — preferably through the intent helpers ([Haptics.cartAdd],
+/// [Haptics.commit], [Haptics.refuse] …) — so the whole app shares one tactile
+/// language and the customer's mute (Settings → Vibration, [Haptics.enabled])
+/// lives in one place. Never from a cubit; one haptic per gesture; fire when
+/// the visual confirms (tap-up, or the landing of a flight).
 ///
 /// NOTE: haptics are INDEPENDENT of the visual reduced-motion gate
 /// ([MotionGuard]) — "remove animations" silences on-screen movement, not touch
@@ -28,8 +30,23 @@ enum HapticKind {
 class Haptics {
   Haptics._();
 
-  /// Global mute. Wire to a user setting if/when one exists; defaults on.
+  /// Global mute: the customer's Settings choice, applied by the app root at
+  /// launch and on every change. Defaults on.
   static bool enabled = true;
+
+  /// A refusal buzzes at most once in this window, however fast the taps.
+  /// [INFERENCE].
+  static const Duration refuseGap = Duration(milliseconds: 500);
+
+  static DateTime? _lastRefusal;
+
+  /// Forgets the last refusal (and unmutes): the throttle reads the real
+  /// clock, so tests that refuse one after another reset it between them.
+  @visibleForTesting
+  static void debugReset() {
+    _lastRefusal = null;
+    enabled = true;
+  }
 
   /// Fire a haptic of [kind]. Fire-and-forget (the platform call is async and
   /// a no-op on devices/platforms without a vibrator).
@@ -47,9 +64,46 @@ class Haptics {
     }
   }
 
-  // Convenience shorthands.
+  // Kind shorthands.
   static void tap() => fire(HapticKind.tap);
   static void selection() => fire(HapticKind.selection);
   static void success() => fire(HapticKind.success);
   static void warning() => fire(HapticKind.warning);
+
+  // ── Intent helpers (§9.5): name what happened, the map picks the kind ──────
+  /// Add to cart / "+" / increment: a click. The first add of a session on
+  /// Home ([first]) is a success instead.
+  static void cartAdd({bool first = false}) =>
+      fire(first ? HapticKind.success : HapticKind.selection);
+
+  /// Remove / "−" / delete a line: a light tap.
+  static void cartRemove() => fire(HapticKind.tap);
+
+  /// A primary commit button pressed (Add, Save, Continue, Place order).
+  static void commit() => fire(HapticKind.tap);
+
+  /// A chip, segment, radio, option row or sort pick; pull-to-refresh armed.
+  static void pick() => fire(HapticKind.selection);
+
+  /// A blocked tap, an invalid submit, an action that needs the internet:
+  /// a warning, at most once per [refuseGap].
+  static void refuse() {
+    final now = DateTime.now();
+    final last = _lastRefusal;
+    if (last != null && now.difference(last) < refuseGap) return;
+    _lastRefusal = now;
+    fire(HapticKind.warning);
+  }
+
+  /// A destructive action confirmed (delete an address, cancel an order, log
+  /// out) — on the confirm, never on opening the dialog.
+  static void destructive() => fire(HapticKind.warning);
+
+  /// A discard the customer chose outside the cart (a voice recording binned,
+  /// an assistant proposal turned down): a light tap, like a cart remove.
+  static void discard() => fire(HapticKind.tap);
+
+  /// A real accomplishment: order placed, Pro subscribed, profile saved,
+  /// reward earned, language switched. Never for a routine save.
+  static void done() => fire(HapticKind.success);
 }

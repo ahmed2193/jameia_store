@@ -2,13 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_svg_glyph.dart';
 import 'home_notifications_bell.dart';
 
 /// The assistant entry of the home header: a brand-tinted disc with the
-/// sparkle, the bell's size so the two sit as a pair, inside a 48 dp touch
-/// box ([hitSize]; it overhangs the disc by [inset] on every side).
+/// Hero assistant glyph (the mascot's gumdrop + sparkle), the bell's size so
+/// the two sit as a pair, inside a 48 dp touch box ([hitSize]; it overhangs
+/// the disc by [inset] on every side).
 class HomeAssistantButton extends StatelessWidget {
   const HomeAssistantButton({super.key, required this.onTap});
 
@@ -44,8 +47,8 @@ class HomeAssistantButton extends StatelessWidget {
                     ),
                   ),
                   child: Center(
-                    child: Icon(
-                      Icons.auto_awesome_rounded,
+                    child: HeroSvgGlyph.mono(
+                      HeroAssets.assistantAi,
                       size: AppSize.s20,
                       color: AppColors.primaryDark,
                     ),

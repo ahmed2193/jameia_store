@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
+import 'app_spacing.dart';
 import 'app_text_styles.dart';
 
 /// Builds the Hero [ThemeData] for both brightnesses, carrying the [HeroColors]
@@ -53,7 +55,31 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
       ),
+      // Every snack floats on the calm dark surface the offline banner uses;
+      // the tone glyphs (`HeroSnackGlyph`) are tinted for it (docs/motion
+      // §9.4 #15). The action sits at the trailing edge in the brand tint.
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.offlineSurface,
+        contentTextStyle: AppTextStyles.bodyLarge.copyWith(
+          color: AppColors.white,
+        ),
+        actionTextColor: AppColors.brandDarkBg,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.card)),
+        ),
+      ),
       splashFactory: InkSparkle.splashFactory,
+      // The app's own pages are `HeroPage`s with their own transitions and
+      // back gestures (core/navigation); this only reaches the framework's
+      // routes (the licenses page): predictive back on Android, the edge
+      // swipe on iOS.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
     );
   }
 }

@@ -106,14 +106,9 @@ flutter:
     # Real Hero rasters extracted from the decoded APK (Mach UI bundles),
     # grouped by screen. Referenced by name via HeroAssets (core/design).
     - assets/images/hero/osg_home/
-    - assets/images/hero/shop/
-    - assets/images/hero/order_confirm/
-    - assets/images/hero/mine/
     - assets/images/hero/login/
     # Home popup close button from the mkt_resources_* bundles.
     - assets/images/hero/popup/
-    # Real Hero animations (brand loader GIF).
-    - assets/animations/
 
   # Real Hero fonts extracted from the APK (assets/fonts/).
   # Brand body face = Noto Sans (+ NotoSansArabicUI for RTL); digits = MT Digital Display;

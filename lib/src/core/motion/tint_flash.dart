@@ -16,7 +16,9 @@ import 'motion.dart';
 /// [RepaintBoundary] and ignores touches and semantics; it is dropped when
 /// the run ends.
 ///
-/// Reduced motion → never plays (the colour of the child is the message).
+/// Reduced motion → never plays (the colour of the child is the message),
+/// unless [reducedOnly]: then it plays only there, as the stand-in for a
+/// movement the owner drops.
 /// Inside a muted `TickerMode` (a covered page) a change waits and plays when
 /// the page is revealed.
 class TintFlash<T> extends StatefulWidget {
@@ -30,6 +32,8 @@ class TintFlash<T> extends StatefulWidget {
     this.peakAlpha = defaultPeakAlpha,
     this.borderRadius = BorderRadius.zero,
     this.inflate = 0,
+    this.duration = AppMotion.breathe,
+    this.reducedOnly = false,
   });
 
   static const double defaultPeakAlpha = 1;
@@ -53,6 +57,14 @@ class TintFlash<T> extends StatefulWidget {
   /// How far the wash reaches past the child's box on every side.
   final double inflate;
 
+  /// One whole wash (rise + fade).
+  final Duration duration;
+
+  /// The wash stands in for motion: it plays ONLY under reduced motion (not
+  /// when animations are off), where the owner shows no movement — a badge
+  /// that tints instead of bumping (docs/motion §9.4 #2).
+  final bool reducedOnly;
+
   @override
   State<TintFlash<T>> createState() => _TintFlashState<T>();
 }
@@ -75,7 +87,7 @@ class _TintFlashState<T> extends State<TintFlash<T>>
     if (existing != null) return existing;
     return _controller = AnimationController(
       vsync: this,
-      duration: AppMotion.breathe,
+      duration: widget.duration,
     )..addStatusListener(_onStatus);
   }
 
@@ -115,7 +127,11 @@ class _TintFlashState<T> extends State<TintFlash<T>>
 
   void _play() {
     _pending = false;
-    if (MotionGuard.reduced(context)) return;
+    final reduced = MotionGuard.reduced(context);
+    final plays = widget.reducedOnly
+        ? reduced && !MotionGuard.off(context)
+        : !reduced;
+    if (!plays) return;
     if (!TickerMode.valuesOf(context).enabled) {
       _pending = true;
       return;

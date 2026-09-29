@@ -21,7 +21,6 @@ import 'mine_gift_badge.dart';
 class MineInviteBanner extends StatelessWidget {
   const MineInviteBanner({super.key});
 
-  static const double _pressedScale = 0.98;
   static const double _chevron = AppSize.s16;
   static final BorderRadius _radius = BorderRadius.circular(AppRadius.r3);
 
@@ -38,11 +37,9 @@ class MineInviteBanner extends StatelessWidget {
       child: Semantics(
         button: true,
         child: PressScale(
-          pressedScale: _pressedScale,
-          haptic: null,
           onTap: () => context.push(Routes.inviteFriends),
           child: LightSweep(
-            active: !isPro && Visibility.of(context),
+            active: !isPro,
             borderRadius: _radius,
             child: DecoratedBox(
               decoration: BoxDecoration(

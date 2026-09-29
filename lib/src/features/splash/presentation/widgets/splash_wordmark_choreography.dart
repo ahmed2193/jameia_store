@@ -1,10 +1,10 @@
 import 'package:flutter/animation.dart';
 
-import '../../../../core/motion/motion.dart';
 import 'splash_assembly.dart';
 import 'splash_choreography.dart';
 import 'splash_frame.dart';
 import 'splash_layout.dart';
+import 'splash_motion.dart';
 import 'splash_wordmark.dart';
 
 /// The hero intro, white on Hero green: straight from the launch frame the
@@ -16,7 +16,7 @@ class SplashWordmarkChoreography extends SplashChoreography {
   static const SplashAssembly assembly = SplashAssembly(0);
 
   @override
-  Duration get duration => AppMotion.splashWordmark;
+  Duration get duration => SplashMotion.wordmark;
 
   @override
   Interval tagline(SplashWordmark wordmark) =>
@@ -28,5 +28,6 @@ class SplashWordmarkChoreography extends SplashChoreography {
     layout,
     fromCenter: layout.nativeMarkCenter,
     fromUnit: SplashLayout.nativeUnit,
+    total: duration.inMilliseconds.toDouble(),
   );
 }

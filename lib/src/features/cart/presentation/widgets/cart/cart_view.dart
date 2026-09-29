@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
@@ -62,12 +63,16 @@ class CartView extends StatelessWidget {
   static bool _clearing(CartState state) =>
       state.busyAction == CartAction.clear;
 
+  static bool _clearFailed(CartState state) =>
+      state.failedAction == CartAction.clear && state.failure != null;
+
   @override
   Widget build(BuildContext context) {
     return TickerMode(
       enabled: Visibility.of(context),
       child: CubitBusyOverlay<CartCubit, CartState>(
         busyOf: _clearing,
+        failOf: _clearFailed,
         child: BlocListener<CartCubit, CartState>(
           listenWhen: (previous, current) =>
               current.failure != null && previous != current,
@@ -89,7 +94,7 @@ class CartView extends StatelessWidget {
                   _CartBucket.loading => const AppLoader(),
                   _CartBucket.empty => HeroStateView(
                     message: 'cart.empty'.tr(),
-                    icon: Icons.shopping_cart_outlined,
+                    art: HeroAssets.emptyBasket,
                     actionLabel: 'cart.start_shopping'.tr(),
                     onAction: onBrowse,
                   ),

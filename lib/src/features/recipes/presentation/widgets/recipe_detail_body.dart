@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/navigation/screen_failure_listener.dart';
+import '../../../../core/widgets/poppable_state_frame.dart';
 import '../../../../core/widgets/reconnect_refresh.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../cubit/recipe_detail_cubit.dart';
@@ -15,7 +17,8 @@ import 'recipe_detail_view.dart';
 /// saved one at once, offline too), "not found" for an unknown slug, error +
 /// retry or "No connection" when nothing is saved. A failed reload keeps the
 /// recipe and shows a snack bar (never offline: the banner speaks); a
-/// returning connection refreshes a saved or failed recipe.
+/// returning connection refreshes a saved or failed recipe. Every state
+/// without the recipe keeps a way back ([PoppableStateFrame]).
 class RecipeDetailBody extends StatelessWidget {
   const RecipeDetailBody({super.key});
 
@@ -32,24 +35,24 @@ class RecipeDetailBody extends StatelessWidget {
             final detail = state.detail;
             if (detail != null) return RecipeDetailView(detail: detail);
             if (state.isNotFound) {
-              return SafeArea(
+              return PoppableStateFrame(
                 child: EmptyStateView(
                   message: 'recipes.not_found'.tr(),
-                  icon: Icons.soup_kitchen_outlined,
+                  art: HeroAssets.stateNotFound,
                   actionLabel: 'common.back'.tr(),
                   onAction: () => context.pop(),
                 ),
               );
             }
             if (state.status == LoadPhase.error) {
-              return SafeArea(
+              return PoppableStateFrame(
                 child: FailureView(
                   failure: state.failure,
                   onRetry: context.read<RecipeDetailCubit>().load,
                 ),
               );
             }
-            return const SafeArea(child: AppLoader());
+            return const PoppableStateFrame(child: AppLoader());
           },
         ),
       ),

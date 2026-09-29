@@ -4,26 +4,29 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/motion/spring_curve.dart';
 import '../../../domain/entities/assistant_thought.dart';
+import '../assistant_motion.dart';
 import 'assistant_buddy_thought_cloud.dart';
-import 'assistant_buddy_thought_face.dart';
 import 'assistant_buddy_thought_line.dart';
 import 'assistant_buddy_thought_phase.dart';
 import 'assistant_buddy_thought_trail.dart';
 
 /// What the launcher's mascot thinks out loud, in a thought bubble over its
-/// head. The thought rises out of the mascot — the small circle, the big
-/// one, then the bubble — and floats gently while it is up: a few dots
-/// while the mascot thinks, the line typing itself out at a natural pace,
-/// then a moment to read it ([onSaid]). A new [thought] arriving then takes
-/// over in place — the line lifts away, the dots come back, the next one
-/// types; otherwise the bubble sinks back into the mascot ([onDone]).
+/// head (docs/motion §9.6 §3.1 row 9). The thought rises out of the mascot
+/// over [AppMotion.slow] — the small circle, the big one, then the bubble,
+/// each on the snappy spring — and its words start at once, word by word
+/// (no dots: nothing real is being worked out). Then a moment to read it
+/// (`thoughtReadBase` + `thoughtReadPerLetter`), [onSaid]; a new [thought]
+/// arriving then takes over in place, otherwise the bubble sinks back into
+/// the mascot over [AppMotion.medium] / `exit` ([onDone]). A line sent away
+/// before it was out (the customer acted) sinks in [AppMotion.fast]. It
+/// holds still while it is up: no bob, no rocking badge.
 ///
-/// [onPhase] lets the mascot react along; a playful line ends with a little
-/// bump. The bubble squishes while the mascot is [pressed] and when it is
-/// tapped itself ([onTap], the chat). Screen readers hear each line once.
-/// Reduced motion: lines show whole, stay as long, and go.
+/// [onPhase] lets the mascot react along. The bubble dips while the mascot
+/// is [pressed] and when it is tapped itself ([onTap], the chat). Screen
+/// readers hear each line once. Off stage (its tab hidden, a page on top)
+/// it goes at once and its timer with it. Reduced motion: the line fades in
+/// whole over [AppMotion.fast], stays as long, and fades out.
 class AssistantBuddyThoughtBubble extends StatefulWidget {
   const AssistantBuddyThoughtBubble({
     super.key,
@@ -55,22 +58,18 @@ class AssistantBuddyThoughtBubble extends StatefulWidget {
 class _AssistantBuddyThoughtBubbleState
     extends State<AssistantBuddyThoughtBubble>
     with SingleTickerProviderStateMixin {
-  static const Duration _thinkFor = Duration(milliseconds: 1100);
-  static const Duration _thinkAgainFor = Duration(milliseconds: 700);
-  static const Duration _readFor = Duration(milliseconds: 1800);
-  static const Duration _readPerLetter = Duration(milliseconds: 35);
-
   // Out of the mascot: the small circle over its head, the big one, then
   // the bubble — and back down the other way.
   static const double _smallUntil = 0.45;
   static const double _bigFrom = 0.15;
   static const double _bigUntil = 0.65;
   static const double _cloudFrom = 0.3;
+  static const Animation<double> _whole = AlwaysStoppedAnimation<double>(1);
 
   late final AnimationController _presence = AnimationController(
     vsync: this,
     duration: AppMotion.slow,
-    reverseDuration: AppMotion.page,
+    reverseDuration: AppMotion.medium,
   );
   late final CurvedAnimation _small = _stage(0, _smallUntil);
   late final CurvedAnimation _big = _stage(_bigFrom, _bigUntil);
@@ -81,8 +80,8 @@ class _AssistantBuddyThoughtBubbleState
   AssistantBuddyThoughtPhase? _phase;
   bool _leaving = false;
   bool _ready = false;
-  int _bumps = 0;
-  Timer? _next;
+  bool _reduced = false;
+  Timer? _read;
 
   CurvedAnimation _stage(double from, double until) => CurvedAnimation(
     parent: _presence,
@@ -93,10 +92,15 @@ class _AssistantBuddyThoughtBubbleState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_ready) return;
-    _ready = true;
-    final thought = widget.thought;
-    if (thought != null) _begin(thought);
+    _reduced = MotionGuard.reduced(context);
+    final onStage = TickerMode.valuesOf(context).enabled;
+    if (!_ready) {
+      _ready = true;
+      final thought = widget.thought;
+      if (thought != null && onStage) _begin(thought);
+      return;
+    }
+    if (!onStage) _dropOffStage();
   }
 
   @override
@@ -124,43 +128,37 @@ class _AssistantBuddyThoughtBubbleState
   }
 
   void _begin(AssistantThought thought) {
-    _next?.cancel();
+    _read?.cancel();
     // A line still up hands over in place; otherwise the bubble rises.
     final handOver = _shown != null && !_leaving;
     _shown = thought;
     _leaving = false;
-    if (MotionGuard.reduced(context)) {
-      _phase = AssistantBuddyThoughtPhase.said;
-      _presence.value = 1;
-      _report();
-      _next = Timer(_readTime(thought), () => _said(thought));
-      return;
-    }
-    _phase = AssistantBuddyThoughtPhase.thinking;
+    _phase = AssistantBuddyThoughtPhase.speaking;
     _report();
-    if (!handOver) _presence.forward(from: _presence.value);
-    _next = Timer(handOver ? _thinkAgainFor : _thinkFor, () {
-      if (!mounted || _shown != thought) return;
-      setState(() => _phase = AssistantBuddyThoughtPhase.typing);
-      _report();
-    });
+    if (handOver) return;
+    if (_reduced) {
+      _presence.animateTo(1, duration: AppMotion.fast);
+    } else {
+      _presence.forward(from: _presence.value);
+    }
   }
 
-  /// Typed out: a moment to read it (a playful line bumps).
-  void _onTyped(AssistantThought thought) {
-    if (_shown != thought || _phase != AssistantBuddyThoughtPhase.typing) {
+  /// Every word is in: a moment to read it.
+  void _onRevealed(AssistantThought thought) {
+    if (_shown != thought ||
+        _leaving ||
+        _phase != AssistantBuddyThoughtPhase.speaking) {
       return;
     }
-    setState(() {
-      _phase = AssistantBuddyThoughtPhase.said;
-      if (thought.playful) _bumps++;
-    });
+    setState(() => _phase = AssistantBuddyThoughtPhase.said);
     _report();
-    _next = Timer(_readTime(thought), () => _said(thought));
+    _read = Timer(_readTime(thought), () => _said(thought));
   }
 
   Duration _readTime(AssistantThought thought) =>
-      _readFor + _readPerLetter * thought.textKey.tr().characters.length;
+      AssistantMotion.thoughtReadBase +
+      AssistantMotion.thoughtReadPerLetter *
+          thought.textKey.tr().characters.length;
 
   /// Read. The parent may hand over the next line; if it has not by the
   /// next frame, the bubble goes.
@@ -175,17 +173,17 @@ class _AssistantBuddyThoughtBubbleState
   }
 
   void _leave() {
-    _next?.cancel();
+    _read?.cancel();
     final leaving = _shown;
     if (leaving == null || _leaving) return;
+    // Sent away before it was out (the customer acted): a quick exit.
+    final cut = _phase != AssistantBuddyThoughtPhase.said;
     _leaving = true;
     _report();
-    if (MotionGuard.reduced(context)) {
-      _presence.value = 0;
-      _gone(leaving);
-      return;
-    }
-    _presence.reverse().then((_) => _gone(leaving));
+    final TickerFuture gone = _reduced || cut
+        ? _presence.animateBack(0, duration: AppMotion.fast)
+        : _presence.reverse();
+    gone.then((_) => _gone(leaving));
   }
 
   void _gone(AssistantThought leaving) {
@@ -198,9 +196,26 @@ class _AssistantBuddyThoughtBubbleState
     widget.onDone(leaving);
   }
 
+  /// Its tab went out of view or a page covers it: the line goes now (a
+  /// muted ticker would finish it later, out of the blue), timer and all.
+  void _dropOffStage() {
+    _read?.cancel();
+    final shown = _shown;
+    if (shown == null) return;
+    _presence.value = 0;
+    _shown = null;
+    _phase = null;
+    _leaving = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      widget.onPhase(null);
+      widget.onDone(shown);
+    });
+  }
+
   @override
   void dispose() {
-    _next?.cancel();
+    _read?.cancel();
     _small.dispose();
     _big.dispose();
     _cloud.dispose();
@@ -215,6 +230,33 @@ class _AssistantBuddyThoughtBubbleState
     final corner = widget.towardsRight
         ? Alignment.bottomRight
         : Alignment.bottomLeft;
+    final Widget bubble = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: widget.towardsRight
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
+      children: [
+        ScaleTransition(
+          scale: _reduced ? _whole : _cloud,
+          alignment: corner,
+          child: AssistantBuddyThoughtCloud(
+            pressed: widget.pressed,
+            alignment: corner,
+            onTap: () => widget.onTap(shown),
+            child: AssistantBuddyThoughtLine(
+              thought: shown,
+              alignment: corner,
+              onRevealed: _onRevealed,
+            ),
+          ),
+        ),
+        AssistantBuddyThoughtTrail(
+          towardsRight: widget.towardsRight,
+          big: _reduced ? _whole : _big,
+          small: _reduced ? _whole : _small,
+        ),
+      ],
+    );
     return Semantics(
       container: true,
       liveRegion: true,
@@ -222,35 +264,9 @@ class _AssistantBuddyThoughtBubbleState
       label: shown.textKey.tr(),
       onTap: () => widget.onTap(shown),
       child: ExcludeSemantics(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: widget.towardsRight
-              ? CrossAxisAlignment.end
-              : CrossAxisAlignment.start,
-          children: [
-            ScaleTransition(
-              scale: _cloud,
-              alignment: corner,
-              child: AssistantBuddyThoughtCloud(
-                pressed: widget.pressed,
-                bumps: _bumps,
-                alignment: corner,
-                onTap: () => widget.onTap(shown),
-                child: AssistantBuddyThoughtLine(
-                  thought: shown,
-                  thinking: _phase == AssistantBuddyThoughtPhase.thinking,
-                  alignment: corner,
-                  onTyped: _onTyped,
-                ),
-              ),
-            ),
-            AssistantBuddyThoughtTrail(
-              towardsRight: widget.towardsRight,
-              big: _big,
-              small: _small,
-            ),
-          ],
-        ),
+        child: _reduced
+            ? FadeTransition(opacity: _presence, child: bubble)
+            : bubble,
       ),
     );
   }

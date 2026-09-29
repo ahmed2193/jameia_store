@@ -150,6 +150,11 @@ class AssistantChatCubit extends Cubit<AssistantChatState>
     if (id != null) await loadThread(id);
   }
 
+  /// The connection came back: a thread whose load failed loads again.
+  Future<void> onReconnected() async {
+    if (state.status == AssistantChatStatus.error) await retryLoad();
+  }
+
   /// "Continue your last chat".
   Future<void> resume() async {
     final resumable = state.resumable;
@@ -200,15 +205,21 @@ class AssistantChatCubit extends Cubit<AssistantChatState>
   }
 
   /// Answers the same question again after a failed or stopped reply: the
-  /// kept reply goes and a new one answers the SAME bubble. Only the last
-  /// row can be retried.
+  /// kept reply goes and a new one answers the SAME bubble, under the same
+  /// row key (the row turns back into the thinking bubble in place). Only
+  /// the last row can be retried.
   void retryTurn(String turnKey) {
     final thread = state.thread;
     final last = thread.entries.isEmpty ? null : thread.entries.last;
     if (last is! AssistantTurnEntry || last.key != turnKey) return;
     final prompt = AssistantPrompt.validate(last.turn.prompt);
     if (prompt == null || !state.canSend) return;
-    _startTurn(prompt, last.turn.userMessageKey, thread.remove(turnKey));
+    _startTurn(
+      prompt,
+      last.turn.userMessageKey,
+      thread.remove(turnKey),
+      turnKey: turnKey,
+    );
   }
 
   /// Sends an unsent bubble (the last row) again.
@@ -247,13 +258,14 @@ class AssistantChatCubit extends Cubit<AssistantChatState>
   void _startTurn(
     AssistantPrompt prompt,
     String userMessageKey,
-    AssistantThread thread,
-  ) {
+    AssistantThread thread, {
+    String? turnKey,
+  }) {
     ++_threadGeneration; // a thread read in flight must not replace this turn
     _accepted = false;
     _pendingText.clear();
     final turn = AssistantLiveTurn(
-      key: _nextKey(_turnPrefix),
+      key: turnKey ?? _nextKey(_turnPrefix),
       prompt: prompt.text,
       userMessageKey: userMessageKey,
     );
@@ -448,6 +460,7 @@ class AssistantChatCubit extends Cubit<AssistantChatState>
     safeEmit(
       state.copyWith(
         confirmingActionIds: {...state.confirmingActionIds, actionId},
+        actionFailures: _withoutFailure(actionId),
       ),
     );
     final result = await _confirm(ConfirmAssistantActionParams(actionId));
@@ -472,6 +485,7 @@ class AssistantChatCubit extends Cubit<AssistantChatState>
         ),
         _ => state.copyWith(
           confirmingActionIds: confirming,
+          actionFailures: {...state.actionFailures, actionId: failure},
           failure: failure,
           failedAction: AssistantChatAction.confirm,
         ),
@@ -486,6 +500,11 @@ class AssistantChatCubit extends Cubit<AssistantChatState>
       ),
     );
   }
+
+  Map<String, Failure> _withoutFailure(String actionId) =>
+      state.actionFailures.containsKey(actionId)
+      ? ({...state.actionFailures}..remove(actionId))
+      : state.actionFailures;
 
   // ------------------------------------------------------------------ thumbs
 

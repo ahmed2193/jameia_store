@@ -4,35 +4,41 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
-import '../../../../core/motion/haptics.dart';
 import '../../../../core/navigation/app_keys.dart';
 import '../../../../core/usecase/usecase.dart';
 import '../../../../core/utils/data_refresh_coordinator.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../../language/presentation/cubit/localization_cubit.dart';
 import '../../domain/usecases/clear_app_cache_usecase.dart';
+import '../../domain/usecases/get_haptics_enabled_usecase.dart';
 import '../../domain/usecases/get_notifications_enabled_usecase.dart';
+import '../../domain/usecases/set_haptics_enabled_usecase.dart';
 import '../../domain/usecases/set_notifications_enabled_usecase.dart';
 import 'setting_state.dart';
 
 /// App-root Settings cubit: the user-initiated language switch (models
-/// khayool's `SettingCubit.changeLanguage`), the push-notification choice and
-/// the cache clean-up.
+/// khayool's `SettingCubit.changeLanguage`), the push-notification and
+/// vibration choices and the cache clean-up.
 ///
-/// The app root injects the three use cases (`AppGlobalCubits.setting`); a
-/// test may leave them out, and then the choice lives in memory for the run
-/// and the clean-up has nothing to empty.
+/// The app root injects the use cases (`AppGlobalCubits.setting`), reads the
+/// stored choices at launch and applies [SettingState.hapticsEnabled] to the
+/// haptics mute; a test may leave the use cases out, and then the choices
+/// live in memory for the run and the clean-up has nothing to empty.
 class SettingCubit extends Cubit<SettingState>
     with SafeCubitMixin<SettingState> {
   SettingCubit({
     this._getNotificationsEnabled,
     this._setNotificationsEnabled,
     this._clearAppCache,
+    this._getHapticsEnabled,
+    this._setHapticsEnabled,
   }) : super(const SettingState());
 
   final GetNotificationsEnabledUseCase? _getNotificationsEnabled;
   final SetNotificationsEnabledUseCase? _setNotificationsEnabled;
   final ClearAppCacheUseCase? _clearAppCache;
+  final GetHapticsEnabledUseCase? _getHapticsEnabled;
+  final SetHapticsEnabledUseCase? _setHapticsEnabled;
 
   /// Lets the locale rebuild settle before the post-switch refresh.
   static const Duration _refreshDelay = Duration(milliseconds: 200);
@@ -40,14 +46,26 @@ class SettingCubit extends Cubit<SettingState>
   /// Bumped by every notifications write: only the latest one may roll back.
   int _notificationsWrite = 0;
 
-  /// Reads the stored push-notification choice (a sync device read).
+  /// Bumped by every vibration write: only the latest one may roll back.
+  int _hapticsWrite = 0;
+
+  /// Reads the stored push-notification and vibration choices (sync device
+  /// reads).
   void loadPreferences() {
-    final read = _getNotificationsEnabled;
-    if (read == null) return;
-    read(const NoParams()).fold(
-      (failure) => safeEmit(state.copyWith(failure: failure)),
-      (enabled) => safeEmit(state.copyWith(notificationsEnabled: enabled)),
-    );
+    final notifications = _getNotificationsEnabled;
+    if (notifications != null) {
+      notifications(const NoParams()).fold(
+        (failure) => safeEmit(state.copyWith(failure: failure)),
+        (enabled) => safeEmit(state.copyWith(notificationsEnabled: enabled)),
+      );
+    }
+    final haptics = _getHapticsEnabled;
+    if (haptics != null) {
+      haptics(const NoParams()).fold(
+        (failure) => safeEmit(state.copyWith(failure: failure)),
+        (enabled) => safeEmit(state.copyWith(hapticsEnabled: enabled)),
+      );
+    }
   }
 
   /// Flips the switch at once, then stores the choice; a failed write puts
@@ -65,6 +83,24 @@ class SettingCubit extends Cubit<SettingState>
       (failure) => safeEmit(
         state.copyWith(notificationsEnabled: previous, failure: failure),
       ),
+      (_) {},
+    );
+  }
+
+  /// Flips the vibration switch at once, then stores the choice; a failed
+  /// write puts the switch back and reports the failure.
+  Future<void> setHapticsEnabled(bool enabled) async {
+    final previous = state.hapticsEnabled;
+    if (enabled == previous) return;
+    final write = ++_hapticsWrite;
+    safeEmit(state.copyWith(hapticsEnabled: enabled));
+    final store = _setHapticsEnabled;
+    if (store == null) return;
+    final result = await store(SetHapticsEnabledParams(enabled: enabled));
+    if (write != _hapticsWrite) return; // a newer tap owns the switch
+    result.fold(
+      (failure) =>
+          safeEmit(state.copyWith(hapticsEnabled: previous, failure: failure)),
       (_) {},
     );
   }
@@ -88,18 +124,19 @@ class SettingCubit extends Cubit<SettingState>
   }
 
   /// Switches the app language through [LocalizationCubit] (which needs the
-  /// widget tree for `context.setLocale`), fires the success haptic and
-  /// schedules the post-switch refresh on the global navigator context,
-  /// which survives the rebuild. Completes once the new locale is applied,
-  /// so a caller can hold a veil over exactly the switch.
+  /// widget tree for `context.setLocale`) and schedules the post-switch
+  /// refresh on the global navigator context, which survives the rebuild.
+  /// Completes once the new locale is applied, so a caller can hold a veil
+  /// over exactly the switch — with `true` when the language did switch (the
+  /// widget that owns the gesture fires the success haptic, never this cubit).
   ///
   /// Known debt (§12): the `BuildContext` parameter, inherited from
   /// [LocalizationCubit.changeLanguageAndWait].
-  Future<void> changeLanguage(BuildContext context, String languageCode) async {
-    if (state.isChangingLanguage) return;
+  Future<bool> changeLanguage(BuildContext context, String languageCode) async {
+    if (state.isChangingLanguage) return false;
 
     final localizationCubit = context.read<LocalizationCubit>();
-    if (localizationCubit.state.languageCode == languageCode) return;
+    if (localizationCubit.state.languageCode == languageCode) return false;
 
     safeEmit(state.copyWith(isChangingLanguage: true));
     try {
@@ -114,11 +151,11 @@ class SettingCubit extends Cubit<SettingState>
             failure: const UnexpectedFailure('Language change failed'),
           ),
         );
-        return;
+        return false;
       }
-      Haptics.success();
       safeEmit(state.copyWith(isChangingLanguage: false));
       unawaited(_refreshAfterLanguageChange());
+      return true;
     } on Object catch (e) {
       safeEmit(
         state.copyWith(
@@ -126,6 +163,7 @@ class SettingCubit extends Cubit<SettingState>
           failure: UnexpectedFailure(e.toString()),
         ),
       );
+      return false;
     }
   }
 

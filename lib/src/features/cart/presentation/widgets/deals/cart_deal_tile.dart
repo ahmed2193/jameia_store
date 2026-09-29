@@ -4,13 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/route_args/product_detail_args.dart';
 import '../../../../../config/routes/routes.dart';
-import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/catalog_product_entity.dart';
-import '../../../../../core/motion/fly_to_cart.dart';
-import '../../../../../core/motion/haptics.dart';
-import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/catalog_cart_gestures.dart';
 import '../../../../../core/widgets/catalog_product_card.dart';
-import '../../../../../core/widgets/hero_card_image.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../cubit/cart_cubit.dart';
 import '../../cubit/cart_state.dart';
@@ -25,24 +21,15 @@ class CartDealTile extends StatelessWidget {
   final CatalogProductEntity product;
   final double width;
 
-  void _add(BuildContext context) {
-    Haptics.selection();
-    FlyToCart.flyFrom(
-      context,
-      thumbnail: HeroCardImage(
-        url: product.image,
-        width: AppSize.s56,
-        height: AppSize.s56,
-        radius: AppRadius.r4,
-      ),
-    );
-    context.read<CartCubit>().addCatalogProduct(product);
-  }
+  void _add(BuildContext context) => CatalogCartGestures.add(
+    context,
+    image: product.image,
+    commit: () => context.read<CartCubit>().addCatalogProduct(product),
+  );
 
-  void _remove(BuildContext context) {
-    Haptics.tap();
-    context.read<CartCubit>().removeProduct(product.id);
-  }
+  void _remove(BuildContext context) => CatalogCartGestures.remove(
+    commit: () => context.read<CartCubit>().removeProduct(product.id),
+  );
 
   @override
   Widget build(BuildContext context) {

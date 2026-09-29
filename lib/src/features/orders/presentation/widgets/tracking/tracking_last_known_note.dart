@@ -43,12 +43,8 @@ class TrackingLastKnownNote extends StatelessWidget {
       child: at == null
           ? const SizedBox.shrink()
           : Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AppSpacing.gutter,
-                AppSpacing.s12,
-                AppSpacing.gutter,
-                0,
-              ),
+              // Inside the status panel, which owns the side gutters.
+              padding: const EdgeInsetsDirectional.only(top: AppSpacing.s12),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: InfoPill(

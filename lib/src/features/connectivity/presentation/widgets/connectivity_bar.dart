@@ -59,7 +59,7 @@ class ConnectivityBar extends StatelessWidget {
           over: true,
           child: AnimatedContainer(
             duration: MotionGuard.duration(context, AppMotion.medium),
-            curve: AppMotion.standard,
+            curve: AppMotion.signature,
             color: surface,
             // The bar sits above the navigator, outside every page's
             // Scaffold. Its own Material gives the text the app theme's

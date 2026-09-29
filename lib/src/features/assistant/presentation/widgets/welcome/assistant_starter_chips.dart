@@ -3,24 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/motion/motion.dart';
+import '../../../../../core/motion/entrance_cascade.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/assistant_day_part.dart';
 import '../../../domain/entities/assistant_starter.dart';
 import '../../cubit/assistant_chat_cubit.dart';
-import '../chat/assistant_entrance.dart';
 import '../chat/assistant_suggestion_chip.dart';
 import 'assistant_starter_icons.dart';
 
 /// Four ways to start, picked for this moment ("Complete my cart" when the
 /// cart has something, breakfast in the morning, dinner in the evening,
 /// then offers / orders / delivery). Each chip shows a short label and
-/// sends a full question; they enter one after another from the start edge.
+/// sends a full question; they rise in one after another ([EntranceCascade]).
 class AssistantStarterChips extends StatelessWidget {
   const AssistantStarterChips({super.key});
-
-  static const Duration _stagger = Duration(milliseconds: 40);
-  static const Offset _fromStart = Offset(-0.06, 0);
 
   @override
   Widget build(BuildContext context) {
@@ -34,28 +31,28 @@ class AssistantStarterChips extends StatelessWidget {
       dayPart: AssistantDayPart.of(DateTime.now()),
       hasCartItems: hasCartItems,
     );
-    return Wrap(
-      spacing: AppSpacing.s8,
-      runSpacing: AppSpacing.s8,
-      alignment: WrapAlignment.center,
-      children: [
-        for (final (index, starter) in starters.indexed)
-          AssistantEntrance(
-            key: ValueKey<AssistantStarter>(starter),
-            delay: _stagger * index,
-            beginOffset: _fromStart,
-            curve: AppMotion.signature,
-            child: AssistantSuggestionChip(
-              label: starter.labelKey.tr(),
-              icon: starter.icon,
-              onTap: canSend
-                  ? () => context.read<AssistantChatCubit>().send(
-                      starter.promptKey.tr(),
-                    )
-                  : null,
+    return EntranceCascade(
+      child: Wrap(
+        spacing: AppSpacing.s8,
+        runSpacing: AppSpacing.s8,
+        alignment: WrapAlignment.center,
+        children: [
+          for (final (index, starter) in starters.indexed)
+            EntranceCascadeItem(
+              key: ValueKey<AssistantStarter>(starter),
+              index: index,
+              child: AssistantSuggestionChip(
+                label: starter.labelKey.tr(),
+                icon: starter.icon,
+                onTap: canSend
+                    ? () => context.read<AssistantChatCubit>().send(
+                        starter.promptKey.tr(),
+                      )
+                    : null,
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

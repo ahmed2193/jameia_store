@@ -5,12 +5,13 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// The red mic that blinks while recording (WhatsApp's "on air" light).
-/// Its own layer; still under reduced motion.
+/// A real-state light (like a loader), so it is exempt from the ambient
+/// budget; its own layer; steady under reduced motion.
 class AssistantVoiceBlinkDot extends StatefulWidget {
   const AssistantVoiceBlinkDot({super.key});
 
   /// One fade out and back in.
-  static const Duration period = Duration(milliseconds: 1000);
+  static const Duration period = AppMotion.blinkPeriod;
 
   /// The dimmest point of a blink.
   static const double _dim = 0.15;

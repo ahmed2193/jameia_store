@@ -39,7 +39,6 @@ class ViewCartPill extends StatelessWidget {
 
   /// The card's least height (a larger text scale grows it).
   static const double height = AppSize.s72;
-  static const double _pressedScale = 0.98;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +51,6 @@ class ViewCartPill extends StatelessWidget {
       onTap: onTap,
       child: PressScale(
         onTap: onTap,
-        pressedScale: _pressedScale,
         child: Container(
           constraints: const BoxConstraints(minHeight: height),
           padding: const EdgeInsetsDirectional.fromSTEB(

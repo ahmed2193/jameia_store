@@ -27,7 +27,8 @@ import 'address_book_state.dart';
 ///   * [stop] when the session ends (sign-out, expiry, or a launch without a
 ///     session): the book is dropped from memory and from the device;
 ///   * [applySaved] after the edit page saved an address (POST / PATCH reply)
-///     and [delete] from the list: both update memory and the device copy;
+///     and [delete] from the list (optimistic, with an Undo window —
+///     [undoDelete]): both update memory and the device copy;
 ///   * [refresh] / [ensureSynced] from the list page.
 ///
 /// The device copy is written only while a session is open and records its
@@ -92,6 +93,11 @@ class AddressBookCubit extends Cubit<AddressBookState>
   /// The server's default as far as the book knows: read from the book when
   /// a choice starts with none unsettled, moved by every confirmed choice.
   String? _serverDefaultId;
+
+  /// Addresses out of the book whose delete is in its Undo window or in
+  /// flight ([delete]).
+  final Map<String, _PendingDelete> _pendingDeletes =
+      <String, _PendingDelete>{};
 
   Future<void> start({String? customerId}) async {
     final call = ++_calls;
@@ -233,37 +239,100 @@ class AddressBookCubit extends Cubit<AddressBookState>
     }
   }
 
-  /// Irreversible, so never optimistic: the row stays (disabled) until the
-  /// server confirms, and stays untouched when it refuses.
-  Future<void> delete(String id) async {
-    if (state.isDeleting(id) || state.book.byId(id) == null) return;
+  /// Optimistic (B1-17, like the cart): the address leaves the book at once
+  /// ([AddressBookState.deletedId] — the page offers Undo), and the DELETE
+  /// goes out after [undoWindow]; [undoDelete] puts it back in place until
+  /// then, with no request at all (a re-created address would get a new
+  /// id). A refused delete puts the row back where it was and reports the
+  /// failure. A second call for the same address (a double tap) does
+  /// nothing. While it waits, a sync never brings the row back. The device
+  /// copy changes only once the server confirmed. Completes when the server
+  /// answered, the delete was undone, or the session ended (a delete still
+  /// in its window is then never sent).
+  Future<void> delete(String id, {Duration undoWindow = Duration.zero}) async {
+    final address = state.book.byId(id);
+    if (address == null || _pendingDeletes.containsKey(id)) return;
     final session = _session;
-    safeEmit(state.copyWith(deletingIds: {...state.deletingIds, id}));
+    final pending = _PendingDelete(
+      address,
+      state.book.addresses.indexOf(address),
+    );
+    _pendingDeletes[id] = pending;
+    _revision++;
+    safeEmit(
+      state.copyWith(
+        book: state.book.remove(id),
+        deletingIds: {...state.deletingIds, id},
+        deletedId: id,
+      ),
+    );
+    if (undoWindow > Duration.zero) {
+      pending.timer = Timer(undoWindow, () => pending.decide(send: true));
+      final send = await pending.decision.future;
+      if (!send || session != _session) return;
+    }
+    pending.sent = true;
     final result = await _deleteAddress(DeleteAddressParams(id: id));
     if (session != _session) return;
+    _pendingDeletes.remove(id);
+    _revision++;
     final deletingIds = {...state.deletingIds}..remove(id);
     result.fold(
-      (failure) => safeEmit(
+      (failure) => _commit(
         state.copyWith(
+          book: state.book.restore(pending.address, pending.index),
           deletingIds: deletingIds,
           failure: failure,
           failedAction: AddressBookAction.delete,
         ),
       ),
-      (_) {
-        _revision++;
-        _commit(
-          state.copyWith(
-            deletingIds: deletingIds,
-            book: state.book.remove(id),
-            deleted: true,
-          ),
-        );
-      },
+      (_) => _commit(state.copyWith(deletingIds: deletingIds)),
     );
   }
 
+  /// Puts [id] back where it was while its delete waits in the Undo window.
+  /// `false` when there is nothing to undo (unknown, or already sent).
+  bool undoDelete(String id) {
+    final pending = _pendingDeletes[id];
+    if (pending == null || pending.sent) return false;
+    _pendingDeletes.remove(id);
+    pending.decide(send: false);
+    _revision++;
+    safeEmit(
+      state.copyWith(
+        book: state.book.restore(pending.address, pending.index),
+        deletingIds: {...state.deletingIds}..remove(id),
+      ),
+    );
+    return true;
+  }
+
+  /// [book] without the addresses whose delete is waiting or in flight: a
+  /// sync that still lists them must not bring their rows back.
+  AddressBook _withoutPendingDeletes(AddressBook book) {
+    var shown = book;
+    for (final id in _pendingDeletes.keys) {
+      shown = shown.remove(id);
+    }
+    return shown;
+  }
+
+  @override
+  Future<void> close() {
+    _dropPendingDeletes();
+    return super.close();
+  }
+
+  /// A session ends: deletes still in their window are never sent.
+  void _dropPendingDeletes() {
+    for (final pending in _pendingDeletes.values) {
+      pending.decide(send: false);
+    }
+    _pendingDeletes.clear();
+  }
+
   int _beginSession() {
+    _dropPendingDeletes();
     _revision++;
     _syncing = null;
     _savingDefault = null;
@@ -321,7 +390,7 @@ class AddressBookCubit extends Cubit<AddressBookState>
       (book) => _commit(
         state.copyWith(
           status: AddressBookStatus.loaded,
-          book: book,
+          book: _withoutPendingDeletes(book),
           isSyncing: false,
           isSynced: true,
           clearLoadFailure: true,
@@ -363,5 +432,26 @@ class AddressBookCubit extends Cubit<AddressBookState>
           log('device copy not cleared', name: _logName, error: failure),
       (_) {},
     );
+  }
+}
+
+/// One address out of the book while its delete waits (see
+/// [AddressBookCubit.delete]): where it was, to put it back in place.
+class _PendingDelete {
+  _PendingDelete(this.address, this.index);
+
+  final HeroAddressEntity address;
+  final int index;
+
+  /// Ends the Undo window: `true` sends the DELETE.
+  final Completer<bool> decision = Completer<bool>();
+  Timer? timer;
+
+  /// The DELETE went out: too late to undo.
+  bool sent = false;
+
+  void decide({required bool send}) {
+    timer?.cancel();
+    if (!decision.isCompleted) decision.complete(send);
   }
 }

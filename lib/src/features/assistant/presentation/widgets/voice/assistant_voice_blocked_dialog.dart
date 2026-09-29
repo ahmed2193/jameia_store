@@ -5,10 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
 import '../../cubit/assistant_voice_cubit.dart';
+import '../mascot/assistant_mascot_mood.dart';
+import '../mascot/assistant_prop_scene.dart';
 
 /// The microphone is blocked (WhatsApp's "allow access" prompt): why it is
 /// needed and a way to the system settings, where only the customer can
@@ -49,10 +52,9 @@ class AssistantVoiceBlockedDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.mic_off_rounded,
-                  size: AppSize.s40,
-                  color: AppColors.primaryDark,
+                const AssistantPropScene(
+                  prop: HeroAssets.assistantPropMic,
+                  mood: AssistantMascotMood.curious,
                 ),
                 const SizedBox(height: AppSpacing.s12),
                 Semantics(

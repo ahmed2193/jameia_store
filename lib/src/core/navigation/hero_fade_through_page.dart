@@ -1,37 +1,31 @@
-import 'package:flutter/widgets.dart';
-import 'package:go_router/go_router.dart';
+import 'hero_page.dart';
+import 'hero_through_transition.dart';
 
-import '../motion/motion.dart';
-
-/// GoRouter page that fades in while settling from a slight zoom — the
-/// incoming half of Material's fade-through. For a hand-off between two whole
-/// surfaces (splash → app), where a slide would read as a sheet.
-class HeroFadeThroughPage<T> extends CustomTransitionPage<T> {
-  HeroFadeThroughPage({
+/// A top-level swap between unrelated roots (docs/motion §9.4 #11): splash →
+/// shell, sign-in → shell, sign-out / expiry → login, order placed →
+/// tracking. The page below fades out over the first 30 %, then this one
+/// fades in while settling from [zoomFrom] — no slide, so no false
+/// hierarchy.
+///
+/// The shell always arrives on this page type, so a later
+/// `go(Routes.shell)` finds the same page (same type, same key) and keeps
+/// the shell and its tabs instead of building a new one.
+class HeroFadeThroughPage<T> extends HeroPage<T> {
+  const HeroFadeThroughPage({
     required super.child,
     super.key,
     super.name,
     super.arguments,
-  }) : super(
-         transitionDuration: AppMotion.page,
-         reverseTransitionDuration: AppMotion.medium,
-         transitionsBuilder: (context, animation, _, child) {
-           if (MotionGuard.reduced(context)) return child;
-           // drive(): this builder runs every tick; a CurvedAnimation here
-           // would add a listener to the route animation each time.
-           final eased = animation.drive(
-             CurveTween(curve: AppMotion.signature),
-           );
-           return FadeTransition(
-             opacity: eased,
-             child: ScaleTransition(
-               scale: eased.drive(Tween<double>(begin: zoomFrom, end: 1)),
-               child: child,
-             ),
-           );
-         },
-       );
+  });
 
-  /// Scale the page starts at before settling to 1.
-  static const double zoomFrom = 0.96;
+  /// Scale the page settles from.
+  static const double zoomFrom = 0.92;
+
+  @override
+  HeroEnterBuilder get enter =>
+      (context, animation, child) => HeroThroughTransition(
+        animation: animation,
+        zoomFrom: zoomFrom,
+        child: child,
+      );
 }

@@ -16,6 +16,7 @@ class CartQtyStepButton extends StatelessWidget {
     required this.tooltip,
     required this.onTap,
     this.animateIcon = true,
+    this.removes = false,
   });
 
   /// One style for every step button: built once, not per build.
@@ -31,6 +32,9 @@ class CartQtyStepButton extends StatelessWidget {
   final VoidCallback? onTap;
   final bool animateIcon;
 
+  /// The − / delete side: a remove's tap instead of an add's click (§9.5).
+  final bool removes;
+
   @override
   Widget build(BuildContext context) {
     final tap = onTap;
@@ -40,7 +44,7 @@ class CartQtyStepButton extends StatelessWidget {
       onPressed: tap == null
           ? null
           : () {
-              Haptics.selection();
+              removes ? Haptics.cartRemove() : Haptics.cartAdd();
               tap();
             },
       style: _style,

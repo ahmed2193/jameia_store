@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/entrance_cascade.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/widgets/brand_sheet_fold.dart';
 import '../../cubit/login_cubit.dart';
-import '../auth_cascade_item.dart';
 import 'login_continue_button.dart';
 import 'login_expired_banner.dart';
 import 'login_guest_button.dart';
@@ -64,7 +65,7 @@ class _LoginBodyState extends State<LoginBody> {
 
   /// Continue was refused: say why, shake the number, keep the keyboard up.
   void _nudge() {
-    Haptics.warning();
+    Haptics.refuse();
     _errorRevealed.value = true;
     _nudges.value++;
     _phoneFocus.requestFocus();
@@ -91,77 +92,87 @@ class _LoginBodyState extends State<LoginBody> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppSpacing.s24,
-              AppSpacing.s24,
-              AppSpacing.s24,
-              0,
-            ),
-            sliver: SliverList.list(
-              children: [
-                BrandSheetFold(
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      bottom: AppSpacing.s24,
-                    ),
-                    child: AuthCascadeItem(
-                      index: 0,
-                      child: widget.sessionExpired
-                          ? const LoginExpiredBanner()
-                          : const LoginOfferCard(),
-                    ),
-                  ),
-                ),
-                const AuthCascadeItem(index: 1, child: LoginWelcomeHeading()),
-                const SizedBox(height: AppSpacing.s24),
-                AuthCascadeItem(
-                  index: 2,
-                  child: LoginPhoneRow(
-                    controller: _phone,
-                    focusNode: _phoneFocus,
-                    errorRevealed: _errorRevealed,
-                    nudges: _nudges,
-                    onSubmitted: _submit,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.s20),
-                AuthCascadeItem(
-                  index: 3,
-                  child: LoginContinueButton(onBlocked: _nudge),
-                ),
-                const SizedBox(height: AppSpacing.s4),
-                const AuthCascadeItem(index: 4, child: LoginGuestButton()),
-              ],
-            ),
-          ),
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(
+    // The route (and the sheet rising in it) is the entrance: the cascade
+    // only plays when this page is already in place.
+    return EntranceCascade(
+      child: SafeArea(
+        top: false,
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
                 AppSpacing.s24,
-                AppSpacing.s12,
                 AppSpacing.s24,
-                AppSpacing.s16,
+                AppSpacing.s24,
+                0,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              sliver: SliverList.list(
                 children: [
-                  AuthCascadeItem(index: 5, child: LoginOrDivider()),
-                  SizedBox(height: AppSpacing.s16),
-                  LoginSocialSection(firstCascadeIndex: 6),
-                  Spacer(),
-                  SizedBox(height: AppSpacing.s24),
-                  AuthCascadeItem(index: 8, child: LoginTermsText()),
+                  BrandSheetFold(
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        bottom: AppSpacing.s24,
+                      ),
+                      child: EntranceCascadeItem(
+                        index: 0,
+                        child: widget.sessionExpired
+                            ? const LoginExpiredBanner()
+                            : const LoginOfferCard(),
+                      ),
+                    ),
+                  ),
+                  const EntranceCascadeItem(
+                    index: 1,
+                    child: LoginWelcomeHeading(),
+                  ),
+                  const SizedBox(height: AppSpacing.s24),
+                  EntranceCascadeItem(
+                    index: 2,
+                    child: LoginPhoneRow(
+                      controller: _phone,
+                      focusNode: _phoneFocus,
+                      errorRevealed: _errorRevealed,
+                      nudges: _nudges,
+                      onSubmitted: _submit,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.s20),
+                  EntranceCascadeItem(
+                    index: 3,
+                    child: LoginContinueButton(onBlocked: _nudge),
+                  ),
+                  const SizedBox(height: AppSpacing.s4),
+                  const EntranceCascadeItem(
+                    index: 4,
+                    child: LoginGuestButton(),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Padding(
+                padding: EdgeInsetsDirectional.fromSTEB(
+                  AppSpacing.s24,
+                  AppSpacing.s12,
+                  AppSpacing.s24,
+                  AppSpacing.s16,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    EntranceCascadeItem(index: 5, child: LoginOrDivider()),
+                    SizedBox(height: AppSpacing.s16),
+                    LoginSocialSection(firstCascadeIndex: 6),
+                    Spacer(),
+                    SizedBox(height: AppSpacing.s24),
+                    EntranceCascadeItem(index: 8, child: LoginTermsText()),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

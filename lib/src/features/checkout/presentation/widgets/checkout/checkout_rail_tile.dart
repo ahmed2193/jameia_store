@@ -5,8 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/route_args/product_detail_args.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/domain/entities/catalog_product_entity.dart';
-import '../../../../../core/motion/fly_to_cart.dart';
-import '../../../../../core/motion/haptics.dart';
+import '../../../../../core/widgets/catalog_cart_gestures.dart';
 import '../../../../../core/widgets/catalog_product_card.dart';
 import '../../../../../core/widgets/hero_image.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
@@ -24,23 +23,20 @@ class CheckoutRailTile extends StatelessWidget {
 
   final CatalogProductEntity product;
 
-  void _add(BuildContext context) {
-    Haptics.selection();
-    FlyToCart.flyFrom(
-      context,
-      thumbnail: HeroImage(
-        url: product.image,
-        width: CatalogProductCard.defaultWidth,
-        height: CatalogProductCard.defaultWidth,
-      ),
-    );
-    context.read<CartCubit>().addCatalogProduct(product);
-  }
+  void _add(BuildContext context) => CatalogCartGestures.add(
+    context,
+    image: product.image,
+    thumbnail: HeroImage(
+      url: product.image,
+      width: CatalogProductCard.defaultWidth,
+      height: CatalogProductCard.defaultWidth,
+    ),
+    commit: () => context.read<CartCubit>().addCatalogProduct(product),
+  );
 
-  void _remove(BuildContext context) {
-    Haptics.selection();
-    context.read<CartCubit>().removeProduct(product.id);
-  }
+  void _remove(BuildContext context) => CatalogCartGestures.remove(
+    commit: () => context.read<CartCubit>().removeProduct(product.id),
+  );
 
   @override
   Widget build(BuildContext context) {

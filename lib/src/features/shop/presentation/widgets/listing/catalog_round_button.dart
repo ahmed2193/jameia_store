@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
@@ -20,7 +21,6 @@ class CatalogRoundButton extends StatelessWidget {
 
   static const double size = AppSize.s44;
   static const double _glyph = AppSize.s22;
-  static const double _pressedScale = 0.92;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class CatalogRoundButton extends StatelessWidget {
       onTap: onTap,
       child: PressScale(
         onTap: onTap,
-        pressedScale: _pressedScale,
+        pressedScale: AppMotion.pressedScaleSmall,
         child: Container(
           width: size,
           height: size,

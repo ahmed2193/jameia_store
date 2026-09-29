@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../motion/motion.dart';
-import '../motion/spring_curve.dart';
 import '../responsive/app_size.dart';
 
 /// The radio at the end of a choice row: a 20 dp ring whose dot springs in

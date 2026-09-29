@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/motion/motion.dart';
-import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/press_row.dart';
 import 'shell_nav_badge.dart';
 
 /// One bottom-nav destination: icon (scaled up a touch when selected), label,
-/// and an optional count badge. The [icon] takes its size and colour from
+/// and an optional count badge. It presses like every tappable (a dip, no
+/// ripple, no haptic — a tab switch is navigation, §9.5). The [icon] takes its size and colour from
 /// the item, so pass a plain `const Icon(...)` (or a `HeroMarkIcon`).
 class ShellNavItem extends StatelessWidget {
   const ShellNavItem({
@@ -43,51 +44,50 @@ class ShellNavItem extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
-      child: PressScale(
-        child: InkWell(
-          onTap: onTap,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // Reduced-motion safe: MotionGuard collapses the duration.
-                  AnimatedScale(
-                    scale: selected ? _selectedScale : _restScale,
-                    duration: MotionGuard.duration(context, AppMotion.fast),
-                    curve: MotionGuard.curve(context, AppMotion.signature),
-                    child: SizedBox.square(
-                      key: iconKey,
-                      dimension: AppSize.s24,
-                      child: IconTheme.merge(
-                        data: IconThemeData(size: AppSize.s24, color: color),
-                        child: icon,
-                      ),
+      child: PressRow(
+        onTap: onTap,
+        tint: false,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Reduced-motion safe: MotionGuard collapses the duration.
+                AnimatedScale(
+                  scale: selected ? _selectedScale : _restScale,
+                  duration: MotionGuard.duration(context, AppMotion.fast),
+                  curve: MotionGuard.curve(context, AppMotion.signature),
+                  child: SizedBox.square(
+                    key: iconKey,
+                    dimension: AppSize.s24,
+                    child: IconTheme.merge(
+                      data: IconThemeData(size: AppSize.s24, color: color),
+                      child: icon,
                     ),
                   ),
-                  if (badge > 0)
-                    PositionedDirectional(
-                      end: _badgeEnd,
-                      top: _badgeTop,
-                      child: ShellNavBadge(count: badge),
-                    ),
-                ],
-              ),
-              const SizedBox(height: AppSize.s2),
-              AnimatedDefaultTextStyle(
-                duration: MotionGuard.duration(context, AppMotion.fast),
-                curve: MotionGuard.curve(context, AppMotion.signature),
-                style: AppTextStyles.captionSmall.copyWith(
-                  color: color,
-                  fontWeight: selected
-                      ? AppTextStyles.bold
-                      : AppTextStyles.regular,
                 ),
-                child: Text(label),
+                // Always mounted: it fades out at zero instead of cutting.
+                PositionedDirectional(
+                  end: _badgeEnd,
+                  top: _badgeTop,
+                  child: ShellNavBadge(count: badge),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSize.s2),
+            AnimatedDefaultTextStyle(
+              duration: MotionGuard.duration(context, AppMotion.fast),
+              curve: MotionGuard.curve(context, AppMotion.signature),
+              style: AppTextStyles.captionSmall.copyWith(
+                color: color,
+                fontWeight: selected
+                    ? AppTextStyles.bold
+                    : AppTextStyles.regular,
               ),
-            ],
-          ),
+              child: Text(label),
+            ),
+          ],
         ),
       ),
     );

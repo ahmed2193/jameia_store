@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/routes/routes.dart';
+import '../../../../core/motion/second_clock_scope.dart';
 import '../../../../core/widgets/collection_frame.dart';
 import '../../../language/presentation/cubit/localization_cubit.dart';
 import '../../../language/presentation/cubit/localization_state.dart';
@@ -16,7 +17,8 @@ import '../widgets/offers_cart_bar.dart';
 /// backend applies to the cart — as a Hero collection page: the store's
 /// name in a top bar over a cream hero, the offers as flat cards, and the
 /// "View cart" pill once the basket has items. Offer text arrives resolved
-/// for the request language, so a language switch reloads.
+/// for the request language, so a language switch reloads. Every offer
+/// clock on the page ticks on ONE [SecondClockScope].
 class OffersPage extends StatelessWidget {
   const OffersPage({super.key});
 
@@ -29,16 +31,18 @@ class OffersPage extends StatelessWidget {
       child: BlocListener<LocalizationCubit, LocalizationState>(
         listenWhen: (previous, current) => previous.locale != current.locale,
         listener: (context, _) => context.read<OffersCubit>().load(),
-        child: CollectionFrame(
-          storeName: 'core.store_name'.tr(),
-          heading: 'offers.hero_title'.tr(),
-          emoji: _emoji,
-          subtitle: 'offers.hero_subtitle'.tr(),
-          onBack: context.canPop() ? context.pop : null,
-          onSearch: () => context.push(Routes.search),
-          bottomBar: const OffersCartBar(),
-          bodyBuilder: (context, headerSlivers) =>
-              OffersBody(headerSlivers: headerSlivers),
+        child: SecondClockScope(
+          child: CollectionFrame(
+            storeName: 'core.store_name'.tr(),
+            heading: 'offers.hero_title'.tr(),
+            emoji: _emoji,
+            subtitle: 'offers.hero_subtitle'.tr(),
+            onBack: context.canPop() ? context.pop : null,
+            onSearch: () => context.push(Routes.search),
+            bottomBar: const OffersCartBar(),
+            bodyBuilder: (context, headerSlivers) =>
+                OffersBody(headerSlivers: headerSlivers),
+          ),
         ),
       ),
     );

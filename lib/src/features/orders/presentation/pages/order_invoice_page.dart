@@ -55,6 +55,7 @@ class OrderInvoicePage extends StatelessWidget {
                       content: state.isLoaded && order != null
                           ? Column(
                               children: [
+                                // Folds by itself (CollapseReveal, fast).
                                 const ScreenStaleNotice<
                                   OrderInvoiceCubit,
                                   OrderInvoiceState

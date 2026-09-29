@@ -20,7 +20,11 @@ class AssistantCouponChip extends StatelessWidget {
     Haptics.selection();
     await Clipboard.setData(ClipboardData(text: code));
     if (!context.mounted) return;
-    showHeroSnackBar(context, 'assistant.coupon_copied'.tr());
+    showHeroSnackBar(
+      context,
+      'assistant.coupon_copied'.tr(),
+      tone: HeroSnackTone.success,
+    );
   }
 
   @override

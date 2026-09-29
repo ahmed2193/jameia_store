@@ -60,6 +60,7 @@ class Routes {
   static const String assistantHistory = '/assistant/history';
   static const String customerService = '/customer-service';
   static const String customerServiceQuestion = '/customer-service-question';
+  static const String orderHelp = '/order-help'; // arg: OrderEntity
   static const String imChat = '/im-chat';
 
   // Address & location

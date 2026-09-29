@@ -2,27 +2,30 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'ledger_entry_tile.dart';
 import 'ledger_fresh_flash.dart';
-import 'ledger_row_entrance.dart';
 
 /// One history row as the list lays it out: the tile, a hairline under it
 /// (aligned with the text, not the icon) unless it closes its day, the
-/// first-load entrance when it is one of the first rows, and the fresh-line
+/// list's first-load entrance ([EntranceCascadeItem] at [entranceIndex]),
+/// and the fresh-line
 /// tint after a refresh brought it in.
 class LedgerHistoryRow extends StatelessWidget {
   const LedgerHistoryRow({
     super.key,
     required this.child,
     required this.showDivider,
-    this.entrance,
+    required this.entranceIndex,
     this.flash,
   });
 
   final Widget child;
   final bool showDivider;
-  final Animation<double>? entrance;
+
+  /// The row's place in the list's entrance cascade.
+  final int entranceIndex;
 
   /// Set only while this row is new from a refresh.
   final Animation<Color?>? flash;
@@ -44,8 +47,8 @@ class LedgerHistoryRow extends StatelessWidget {
       ],
     );
     final tint = flash;
-    return LedgerRowEntrance(
-      animation: entrance,
+    return EntranceCascadeItem(
+      index: entranceIndex,
       child: tint == null ? rows : LedgerFreshFlash(color: tint, child: rows),
     );
   }

@@ -7,11 +7,12 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/motion/motion_widgets.dart';
-import '../../../../../core/motion/size_fade_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../store_mode/presentation/cubit/pro_status_cubit.dart';
 import '../../cubit/cart_cubit.dart';
 
@@ -23,7 +24,7 @@ import '../../cubit/cart_cubit.dart';
 class CartProNudge extends StatelessWidget {
   const CartProNudge({super.key});
 
-  static const double _crown = AppSize.s16;
+  static const double _crown = AppSize.s20;
   static const double _chevron = AppSize.s16;
 
   @override
@@ -57,10 +58,9 @@ class CartProNudge extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.workspace_premium_rounded,
+                        const HeroSvgGlyph.art(
+                          HeroAssets.proCrown,
                           size: _crown,
-                          color: AppColors.accentViolet,
                         ),
                         const SizedBox(width: AppSpacing.s8),
                         Expanded(

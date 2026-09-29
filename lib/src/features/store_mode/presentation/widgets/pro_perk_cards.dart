@@ -7,6 +7,7 @@ import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../domain/entities/pro_membership.dart';
 import '../cubit/pro_membership_cubit.dart';
@@ -20,8 +21,6 @@ import 'pro_perk_card.dart';
 /// time they scroll on screen.
 class ProPerkCards extends StatelessWidget {
   const ProPerkCards({super.key});
-
-  static const Duration _stagger = Duration(milliseconds: 60);
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +88,12 @@ class ProPerkCards extends StatelessWidget {
                   ),
                 ),
               for (var i = 0; i < cards.length; i++)
-                ScrollReveal(delay: _stagger * i, child: cards[i]),
+                ScrollReveal(
+                  delay:
+                      AppMotion.staggerStep *
+                      i.clamp(0, AppMotion.staggerMaxItems),
+                  child: cards[i],
+                ),
             ],
           ),
         );

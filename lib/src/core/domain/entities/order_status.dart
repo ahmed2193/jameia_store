@@ -77,7 +77,20 @@ enum OrderCancellationReason {
   outOfStock,
   customerUnreachable,
   paymentFailed,
-  other,
+  other;
+
+  /// i18n key of the reason on the order page; `null` for [other] (the
+  /// note, when there is one, says it).
+  String? get labelKey => switch (this) {
+    changedMind => 'orders.cancel_reason_changed_mind',
+    orderedByMistake => 'orders.cancel_reason_ordered_by_mistake',
+    tooSlow => 'orders.cancel_reason_too_slow',
+    foundElsewhere => 'orders.cancel_reason_found_elsewhere',
+    outOfStock => 'orders.cancel_reason_out_of_stock',
+    customerUnreachable => 'orders.cancel_reason_customer_unreachable',
+    paymentFailed => 'orders.cancel_reason_payment_failed',
+    other => null,
+  };
 }
 
 enum OrderCancelledBy { customer, staff, other }

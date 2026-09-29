@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
+import '../../../domain/entities/order_line_changes.dart';
 import '../order_lines_sliver.dart';
 import 'invoice_header.dart';
 import 'invoice_totals.dart';
@@ -24,6 +25,8 @@ class InvoiceBody extends StatelessWidget {
           lines: order.lines,
           offerLines: order.offerLines,
           totalKd: order.totalKd,
+          // The receipt says what the picker changed, like the order page.
+          changes: OrderLineChanges.of(order.picking),
           showInvoiceLink: false,
         ),
         SliverToBoxAdapter(child: InvoiceTotals(order: order)),

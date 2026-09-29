@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
-import '../../../../core/widgets/cubit_busy_overlay.dart';
+import '../../../../core/widgets/connectivity_scope.dart';
 import '../cubit/address_book_cubit.dart';
 import '../cubit/address_book_state.dart';
 import '../widgets/address_list/address_add_bar.dart';
@@ -21,6 +21,11 @@ import '../widgets/address_list/address_list_body.dart';
 /// (device copy + a sync on sign-in), so the list is instant. Opening the
 /// page syncs only when this session has not reached the server yet (launch
 /// offline, a guest → sign-in prompt).
+///
+/// A confirmed delete is optimistic (B1-17): the row folds away at once and
+/// "Address deleted · Undo" offers it back while the delete waits; a
+/// refused delete brings the row back in place with the reason — told on
+/// the app's messenger even when the customer has left the list by then.
 class AddressListPage extends StatefulWidget {
   const AddressListPage({super.key});
 
@@ -39,12 +44,29 @@ class _AddressListPageState extends State<AddressListPage> {
     AddressBookState previous,
     AddressBookState current,
   ) =>
-      current.deleted ||
+      current.deletedId != null ||
       (current.failure != null && previous.failure != current.failure);
 
   void _onState(BuildContext context, AddressBookState state) {
-    if (state.deleted) {
-      showHeroSnackBar(context, 'addr.deleted'.tr());
+    final deletedId = state.deletedId;
+    if (deletedId != null) {
+      // App-global: Undo still works once this page is gone.
+      final book = context.read<AddressBookCubit>();
+      showHeroSnackBar(
+        context,
+        'addr.deleted'.tr(),
+        tone: HeroSnackTone.success,
+        actionLabel: 'core.undo'.tr(),
+        onAction: () => book.undoDelete(deletedId),
+      );
+      unawaited(
+        _tellRefusalAfterLeaving(
+          book,
+          deletedId,
+          ScaffoldMessenger.of(context),
+          offline: ConnectivityScope.readIsOffline(context),
+        ),
+      );
       return;
     }
     final failure = state.failure;
@@ -58,23 +80,42 @@ class _AddressListPageState extends State<AddressListPage> {
     );
   }
 
+  /// The delete of [id] answers after the Undo window. While this page is up
+  /// its listener tells a refusal; once the customer has left, nobody would
+  /// — the row just comes back — so it is told here, on the app's
+  /// [messenger] read at the delete.
+  Future<void> _tellRefusalAfterLeaving(
+    AddressBookCubit book,
+    String id,
+    ScaffoldMessengerState messenger, {
+    required bool offline,
+  }) async {
+    final outcome = await book.stream.firstWhere(
+      (state) => !state.deletingIds.contains(id),
+      orElse: () => book.state,
+    );
+    final failure = outcome.failure;
+    if (mounted ||
+        failure == null ||
+        outcome.failedAction != AddressBookAction.delete) {
+      return;
+    }
+    showActionFailureSnackBarOn(messenger, failure, offline: offline);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AddressBookCubit, AddressBookState>(
       listenWhen: _listenWhen,
       listener: _onState,
-      // A confirmed delete holds the screen until the server answers.
-      child: CubitBusyOverlay<AddressBookCubit, AddressBookState>(
-        busyOf: (state) => state.deletingIds.isNotEmpty,
-        child: const Scaffold(
-          backgroundColor: AppColors.mediumBackground,
-          appBar: AddressListAppBar(),
-          body: SafeArea(
-            top: false,
-            child: ContentClamp(child: AddressListBody()),
-          ),
-          bottomNavigationBar: AddressAddBar(),
+      child: const Scaffold(
+        backgroundColor: AppColors.mediumBackground,
+        appBar: AddressListAppBar(),
+        body: SafeArea(
+          top: false,
+          child: ContentClamp(child: AddressListBody()),
         ),
+        bottomNavigationBar: AddressAddBar(),
       ),
     );
   }

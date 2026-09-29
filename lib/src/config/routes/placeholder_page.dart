@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/hero_assets.dart';
+import '../../core/widgets/state_art.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_text_styles.dart';
 
@@ -25,11 +27,7 @@ class PlaceholderPage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.construction_rounded,
-              size: 56,
-              color: AppColors.primary,
-            ),
+            const StateArt(asset: HeroAssets.stateNotFound),
             const SizedBox(height: 12),
             Text(
               '$title\ncoming soon',

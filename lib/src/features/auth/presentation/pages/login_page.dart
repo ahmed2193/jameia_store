@@ -8,7 +8,6 @@ import '../../../../config/routes/route_args/otp_verify_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/motion/haptics.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/brand_sheet_scaffold.dart';
@@ -37,6 +36,9 @@ class LoginPage extends StatelessWidget {
 
   static bool _sending(LoginState state) => state.isSending;
 
+  /// The code could not be asked for: the busy disc's × (docs/motion B3-05).
+  static bool _failed(LoginState state) => state.status == LoginStatus.error;
+
   void _onStatus(BuildContext context, LoginState state) {
     switch (state.status) {
       case LoginStatus.codeSent:
@@ -53,7 +55,11 @@ class LoginPage extends StatelessWidget {
       case LoginStatus.error:
         final failure = state.failure;
         if (failure == null) {
-          showHeroSnackBar(context, 'core.something_went_wrong'.tr());
+          showHeroSnackBar(
+            context,
+            'core.something_went_wrong'.tr(),
+            tone: HeroSnackTone.error,
+          );
         } else {
           // Asking for a code: offline it says so, the number stays typed.
           showFailureSnackBar(context, failure, action: true);
@@ -75,15 +81,10 @@ class LoginPage extends StatelessWidget {
                 previous.status != current.status,
             listener: _onStatus,
           ),
-          // One click as the eighth digit makes the number valid.
-          BlocListener<LoginCubit, LoginState>(
-            listenWhen: (previous, current) =>
-                !previous.phone.isValid && current.phone.isValid,
-            listener: (_, _) => Haptics.selection(),
-          ),
         ],
         child: CubitBusyOverlay<LoginCubit, LoginState>(
           busyOf: _sending,
+          failOf: _failed,
           child: Scaffold(
             backgroundColor: AppColors.primary,
             body: BrandSheetScaffold(

@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/press_row.dart';
 
 /// One brand of the listing filter sheet.
 class ListingBrandRow extends StatelessWidget {
@@ -20,7 +21,7 @@ class ListingBrandRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return PressRow(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(

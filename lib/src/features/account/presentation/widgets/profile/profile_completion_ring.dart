@@ -5,7 +5,6 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
-import '../../../../../core/motion/spring_curve.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/profile_completion.dart';
@@ -77,6 +76,7 @@ class _ProfileCompletionRingState extends State<ProfileCompletionRing> {
                   color: AppColors.white,
                   trackColor: ProfileCompletionRing._track,
                   strokeWidth: ProfileCompletionRing._stroke,
+                  textDirection: Directionality.of(context),
                 ),
                 child: Center(
                   child: check == null

@@ -4,16 +4,17 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_svg_glyph.dart';
 import 'home_layout.dart';
-import 'home_loop.dart';
 
-/// The minimum-order bar under the feed: a bag, how much to start adding
-/// ("Start adding KD 2.500 to place your order!"), an info button that
+/// The minimum-order bar under the feed: the Hero basket, how much to start
+/// adding ("Start adding KD 2.500 to place your order!"), an info button that
 /// explains the minimum, and the empty track the basket fills towards it.
-/// The bag wiggles now and then, as if asking to be filled.
+/// The basket wiggles now and then, as if asking to be filled.
 class HomeMinOrderBar extends StatelessWidget {
   const HomeMinOrderBar({
     super.key,
@@ -26,6 +27,10 @@ class HomeMinOrderBar extends StatelessWidget {
 
   static const double _glyph = AppSize.s22;
   static const double _track = AppSize.s4;
+
+  /// One wiggle of the bag, then a long still rest.
+  static const Duration _wiggleLength = Duration(milliseconds: 900);
+  static const Duration _wiggleRest = Duration(milliseconds: 3600);
 
   /// A wiggle on the bag's handles: left, right, smaller, still.
   static final Animatable<double> _wiggle = TweenSequence<double>([
@@ -59,18 +64,17 @@ class HomeMinOrderBar extends StatelessWidget {
                 children: [
                   // Pops in as the bar arrives, then wiggles now and then.
                   PopScale.onMount(
-                    child: HomeLoop(
-                      period: AppMotion.sheen ~/ 4,
-                      rest: AppMotion.sheen,
-                      builder: (context, t, child) => Transform.rotate(
+                    child: AmbientLoop.value(
+                      period: _wiggleLength,
+                      rest: _wiggleRest,
+                      valueBuilder: (context, t, child) => Transform.rotate(
                         angle: _wiggle.transform(t),
                         alignment: Alignment.topCenter,
                         child: child,
                       ),
-                      child: const Icon(
-                        Icons.shopping_bag_outlined,
+                      child: const HeroSvgGlyph.art(
+                        HeroAssets.cartBasket,
                         size: _glyph,
-                        color: AppColors.primaryText,
                       ),
                     ),
                   ),

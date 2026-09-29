@@ -60,7 +60,7 @@ class _BrandedRefreshState extends State<BrandedRefresh> {
         _pull.value = 0;
         _phase.value = RefreshDiscPhase.pulling;
       case RefreshIndicatorStatus.armed:
-        Haptics.selection();
+        Haptics.pick();
         _phase.value = RefreshDiscPhase.armed;
       case RefreshIndicatorStatus.snap || RefreshIndicatorStatus.refresh:
         _phase.value = RefreshDiscPhase.refreshing;

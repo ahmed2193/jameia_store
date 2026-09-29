@@ -17,7 +17,7 @@ class SupportFaqChevron extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedRotation(
       duration: MotionGuard.duration(context, AppMotion.fast),
-      curve: AppMotion.standard,
+      curve: AppMotion.signature,
       turns: open ? _openTurns : 0,
       child: const Icon(
         HeroIcons.arrowDownSmall,

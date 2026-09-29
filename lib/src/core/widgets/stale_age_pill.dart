@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../motion/motion.dart';
+import '../design/hero_assets.dart';
 import '../motion/second_clock.dart';
 import '../utils/relative_age.dart';
 import 'info_pill.dart';
 
 /// The small "Updated 12 minutes ago" pill over data that did not come from
 /// the server just now ([StaleDataNotice] decides when a screen shows it).
-/// It fades in once when it appears and re-reads the age once a minute —
+/// Its host reveals it (the notice opens by height + fade); the pill itself
+/// only re-reads the age once a minute —
 /// aligned to the minute, only while its page is on stage — rebuilding only
 /// itself.
 class StaleAgePill extends StatefulWidget {
@@ -56,17 +57,10 @@ class _StaleAgePillState extends State<StaleAgePill> {
   @override
   Widget build(BuildContext context) {
     final now = (widget.clock ?? DateTime.now)();
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0, end: 1),
-      duration: MotionGuard.duration(context, AppMotion.fast),
-      curve: AppMotion.standard,
-      builder: (context, opacity, child) =>
-          Opacity(opacity: opacity, child: child),
-      child: Center(
-        child: InfoPill(
-          icon: Icons.schedule_rounded,
-          text: RelativeAge.updated(widget.savedAt, now: now),
-        ),
+    return Center(
+      child: InfoPill(
+        asset: HeroAssets.sharedClock,
+        text: RelativeAge.updated(widget.savedAt, now: now),
       ),
     );
   }

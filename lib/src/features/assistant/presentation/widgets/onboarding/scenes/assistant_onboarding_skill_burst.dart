@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../../../core/motion/motion.dart';
-import '../../../../../../core/motion/spring_curve.dart';
 import '../../../../../../core/responsive/app_size.dart';
 import '../assistant_onboarding_timeline.dart';
 import 'assistant_onboarding_skill.dart';
@@ -49,7 +48,7 @@ class AssistantOnboardingSkillBurst extends StatelessWidget {
       AppMotion.emphasizedDecelerate,
     );
     final pop = progress.span(start, start + _length, AppSprings.snappy);
-    final float = progress.span(_floatFrom, 1, Curves.linear);
+    final float = progress.span(_floatFrom, 1, AppMotion.linear);
     final phase = order / AssistantOnboardingSkill.values.length;
     final bob =
         math.sin((float * _bobs + phase) * 2 * math.pi) *

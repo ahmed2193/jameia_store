@@ -12,6 +12,8 @@ import '../../../domain/entities/assistant_prompt.dart';
 import '../../../domain/entities/assistant_thread.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 import '../../cubit/assistant_chat_state.dart';
+import '../chat/assistant_typing_scope.dart';
+import '../chat/assistant_typing_signal.dart';
 import '../voice/assistant_voice_drag.dart';
 import '../voice/assistant_voice_lifecycle.dart';
 import '../voice/assistant_voice_listener.dart';
@@ -43,8 +45,34 @@ class _AssistantComposerState extends State<AssistantComposer> {
   int _bins = 0;
   bool _binning = false;
 
+  /// Where the chat hears that the customer types (none outside a chat).
+  AssistantTypingSignal? _typing;
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(_reportTyping);
+    _controller.addListener(_reportTyping);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _typing = AssistantTypingScope.maybeOf(context);
+  }
+
+  /// Typing = the box has focus or holds a draft.
+  void _reportTyping() =>
+      _typing?.report(_focus.hasFocus || _controller.text.trim().isNotEmpty);
+
   @override
   void dispose() {
+    // The box is gone (the chat ended, the page left): after this frame,
+    // nobody is typing.
+    final typing = _typing;
+    if (typing != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => typing.report(false));
+    }
     _drag.dispose();
     _focus.dispose();
     _controller.dispose();
@@ -61,18 +89,19 @@ class _AssistantComposerState extends State<AssistantComposer> {
       case AssistantPromptStatus.empty:
         return false;
       case AssistantPromptStatus.tooLong:
-        Haptics.warning();
+        Haptics.refuse();
         setState(() => _shakes++);
         showHeroSnackBar(
           context,
           'assistant.too_long'.tr(
             namedArgs: {'max': '${AssistantPrompt.maxLength}'},
           ),
+          tone: HeroSnackTone.warning,
         );
         return false;
       case AssistantPromptStatus.valid:
         final sent = context.read<AssistantChatCubit>().send(text);
-        if (sent) Haptics.tap();
+        if (sent) Haptics.commit();
         return sent;
     }
   }

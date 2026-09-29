@@ -2849,7 +2849,7 @@
     {
       "id": "o1",
       "shopName": "Shawarma House",
-      "shopLogo": "https://picsum.photos/seed/jameia_s5logo/120/120",
+      "shopLogo": "https://picsum.photos/seed/hero_s5logo/120/120",
       "status": "delivering",
       "statusStep": 3,
       "total": 4.85,
@@ -2879,7 +2879,7 @@
     {
       "id": "o2",
       "shopName": "Burger Boutique",
-      "shopLogo": "https://picsum.photos/seed/jameia_s1logo/120/120",
+      "shopLogo": "https://picsum.photos/seed/hero_s1logo/120/120",
       "status": "completed",
       "statusStep": 5,
       "total": 7.2,

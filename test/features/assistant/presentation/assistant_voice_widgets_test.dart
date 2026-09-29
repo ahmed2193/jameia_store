@@ -190,7 +190,10 @@ void main() {
     expect(find.text('Slide to cancel'), findsOneWidget);
     expect(find.text('Listening…'), findsOneWidget);
     expect(find.text('0:00'), findsOneWidget);
-    expect(find.text('Hold to record, release to send'), findsNothing);
+    expect(
+      find.textContaining('Hold to record, release to send'),
+      findsNothing,
+    );
     expect(voiceRepo.languages, ['en']);
 
     voiceRepo.take.add(const AssistantVoiceHeard('milk and eggs'));
@@ -433,7 +436,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     expect(voice.state.notice, AssistantVoiceNotice.tooShort);
-    expect(find.text('Hold to record, release to send'), findsOneWidget);
+    expect(
+      find.textContaining('Hold to record, release to send'),
+      findsOneWidget,
+    );
     expect(voiceRepo.cancels, 1);
     await tester.pump(const Duration(seconds: 3));
     await unmount(tester);
@@ -515,5 +521,99 @@ void main() {
     expect(chatRepo.sends.single.message, 'olive oil');
     semantics.dispose();
     await unmount(tester);
+  });
+
+  group('motion (docs/motion §9.6 §2.9)', () {
+    List<String?> recordHaptics(WidgetTester tester) {
+      final calls = <String?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'HapticFeedback.vibrate') {
+            calls.add(call.arguments as String?);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      return calls;
+    }
+
+    testWidgets('the hold ticks once, at touch-down, before the mic opens', (
+      tester,
+    ) async {
+      await pump(tester);
+      final haptics = recordHaptics(tester);
+      final gesture = await tester.startGesture(tester.getCenter(mic()));
+      expect(haptics, ['HapticFeedbackType.selectionClick']);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(voice.state.phase, AssistantVoicePhase.holding);
+      expect(haptics, hasLength(1), reason: 'nothing while it records');
+      await gesture.moveBy(const Offset(-140, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pump(AssistantVoiceDiscard.duration);
+      await settle(tester);
+      await unmount(tester);
+    });
+
+    testWidgets('a cancel bins in 400 ms over a field that takes input at '
+        'once', (tester) async {
+      await pump(tester);
+      final gesture = await hold(tester);
+      await gesture.moveBy(const Offset(-140, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pump(const Duration(milliseconds: 16));
+      expect(find.byType(AssistantVoiceDiscard), findsOneWidget);
+      expect(AssistantVoiceDiscard.duration, const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(find.byType(TextField).hitTestable(), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'milk');
+      await tester.pump();
+      expect(find.byType(AssistantVoiceDiscard), findsOneWidget);
+      await tester.pump(AssistantVoiceDiscard.duration);
+      expect(find.byType(AssistantVoiceDiscard), findsNothing);
+      expect(
+        tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        'milk',
+      );
+      await settle(tester);
+      await unmount(tester);
+    });
+
+    testWidgets('reduced motion: the held mic only darkens; lock and cancel '
+        'swap at once, with no bin', (tester) async {
+      await pump(tester, reducedMotion: true);
+      final gesture = await hold(tester);
+      final scale = tester.widget<AnimatedScale>(
+        find.descendant(of: mic(), matching: find.byType(AnimatedScale)),
+      );
+      expect(scale.scale, 1, reason: 'no growth under reduced motion');
+      expect(find.byType(AssistantVoiceHoldBar), findsOneWidget);
+
+      await gesture.moveBy(const Offset(0, -100));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(AssistantVoiceLockedControls), findsOneWidget);
+      expect(find.byType(AssistantVoiceHoldBar), findsNothing);
+      expect(tester.hasRunningAnimations, isFalse);
+      await gesture.up();
+      await tester.pump();
+
+      await tester.tap(find.byTooltip('Delete recording'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.byType(AssistantVoiceDiscard), findsNothing);
+      expect(find.byType(AssistantVoiceLockedControls), findsNothing);
+      expect(tester.hasRunningAnimations, isFalse);
+      await unmount(tester);
+    });
   });
 }

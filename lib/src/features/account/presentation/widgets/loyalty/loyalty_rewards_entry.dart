@@ -30,11 +30,10 @@ class LoyaltyRewardsEntry extends StatelessWidget {
   /// White on cream reads faint: a brighter band than the default.
   static const double _shineAlpha = 0.8;
 
-  /// One sweep ([AppMotion.shineSweep]) every [_shinePeriod]; the rest of
-  /// the period the tile is still.
+  /// One sweep at the default [AppMotion.sheen] pace every [_shinePeriod]
+  /// (two sheens); the rest of the period the tile is still.
   static final Duration _shinePeriod = AppMotion.sheen * 2;
-  static final double _shineShare =
-      AppMotion.shineSweep.inMilliseconds / _shinePeriod.inMilliseconds;
+  static const double _shineShare = LightSweep.defaultSweepShare / 2;
 
   @override
   Widget build(BuildContext context) {

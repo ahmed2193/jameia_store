@@ -73,9 +73,13 @@ class _OrderTrackingViewState extends State<OrderTrackingView>
     onReconnected: () => context.read<OrderTrackingCubit>().onReconnected(),
     child: const CubitBusyOverlay<OrderTrackingCubit, OrderTrackingState>(
       busyOf: _cancelling,
+      failOf: _cancelFailed,
       child: TrackingScaffold(),
     ),
   );
 
   static bool _cancelling(OrderTrackingState state) => state.isCancelling;
+
+  static bool _cancelFailed(OrderTrackingState state) =>
+      state.load.failedOnAction && state.load.toldFailure != null;
 }

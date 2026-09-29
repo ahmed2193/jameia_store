@@ -8,10 +8,15 @@ import '../../../../../core/constants/app_constants.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../domain/entities/assistant_text_direction.dart';
+import '../assistant_word_reveal.dart';
 
 /// The live words, shaped like the customer's own bubble (end side, brand
 /// tint) with a live mark: "Listening…" until the first word, then the
-/// latest lines, scrolled to the newest; dimmed while the message goes.
+/// latest lines, scrolled to the newest (docs/motion §9.6 §2.9). New
+/// trailing words fade in by the word reveal's local pace, append-only — a
+/// word the recogniser rewrites swaps without a fade, so corrections never
+/// flicker — and the card's height eases over `medium`. While the message
+/// goes, the words dim by a colour tween (no opacity layer).
 class AssistantVoiceTranscriptCard extends StatelessWidget {
   const AssistantVoiceTranscriptCard({
     super.key,
@@ -30,7 +35,6 @@ class AssistantVoiceTranscriptCard extends StatelessWidget {
   static const double _maxHeight = AppSize.s110;
 
   static const double _borderAlpha = 0.35;
-  static const double _finishingOpacity = 0.6;
 
   static const BorderRadiusDirectional _shape = BorderRadiusDirectional.only(
     topStart: Radius.circular(SuiRadius.bubble),
@@ -45,59 +49,70 @@ class AssistantVoiceTranscriptCard extends StatelessWidget {
     final rtl =
         AssistantTextDirection.isRtl(transcript) ??
         Directionality.of(context) == TextDirection.rtl;
-    return AnimatedOpacity(
-      duration: MotionGuard.duration(context, AppMotion.fast),
-      opacity: finishing ? _finishingOpacity : 1,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width * _maxWidthFactor,
-          maxHeight: _maxHeight,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.brandLightBg,
-            borderRadius: _shape,
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: _borderAlpha),
+    final base = AppTextStyles.bodyLarge.copyWith(height: AppSize.lh1_5);
+    final Widget words = waiting
+        ? Text(
+            'assistant.voice.listening'.tr(),
+            style: base.copyWith(color: AppColors.secondaryText),
+          )
+        : AnimatedDefaultTextStyle(
+            duration: MotionGuard.duration(context, AppMotion.fast),
+            style: base.copyWith(
+              color: finishing ? AppColors.labelGrey : AppColors.primaryText,
             ),
+            child: AssistantWordReveal(
+              text: transcript,
+              // Colour from the dimming style above.
+              style: const TextStyle(),
+              appendOnly: true,
+              textDirection: rtl ? TextDirection.rtl : TextDirection.ltr,
+            ),
+          );
+    final card = ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.sizeOf(context).width * _maxWidthFactor,
+        maxHeight: _maxHeight,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppColors.brandLightBg,
+          borderRadius: _shape,
+          border: Border.all(
+            color: AppColors.primary.withValues(alpha: _borderAlpha),
           ),
-          child: Padding(
-            padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppSpacing.s12,
-              vertical: AppSpacing.s10,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Icon(
-                  Icons.graphic_eq_rounded,
-                  size: AppSize.s18,
-                  color: AppColors.primaryDark,
-                ),
-                const SizedBox(width: AppSpacing.s8),
-                Flexible(
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    child: Text(
-                      waiting ? 'assistant.voice.listening'.tr() : transcript,
-                      textDirection: waiting
-                          ? null
-                          : (rtl ? TextDirection.rtl : TextDirection.ltr),
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        height: AppSize.lh1_5,
-                        color: waiting
-                            ? AppColors.secondaryText
-                            : AppColors.primaryText,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        ),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.symmetric(
+            horizontal: AppSpacing.s12,
+            vertical: AppSpacing.s10,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              const Icon(
+                Icons.graphic_eq_rounded,
+                size: AppSize.s18,
+                color: AppColors.primaryDark,
+              ),
+              const SizedBox(width: AppSpacing.s8),
+              Flexible(
+                child: SingleChildScrollView(reverse: true, child: words),
+              ),
+            ],
           ),
         ),
       ),
+    );
+    // An AnimatedSize with no duration re-dirties itself in its own layout:
+    // under reduced motion the card simply takes its new size.
+    final grow = MotionGuard.duration(context, AppMotion.medium);
+    if (grow == Duration.zero) return card;
+    return AnimatedSize(
+      duration: grow,
+      curve: AppMotion.signature,
+      alignment: AlignmentDirectional.bottomEnd,
+      child: card,
     );
   }
 }

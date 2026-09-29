@@ -23,9 +23,12 @@ class _HomeBellRingState extends State<HomeBellRing>
   static const double _swing = 0.35;
   static const int _swings = 3;
 
+  /// The whole ring, first swing to rest.
+  static const Duration _ringOut = Duration(milliseconds: 700);
+
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: AppMotion.drawOn,
+    duration: _ringOut,
   );
   bool _shown = false;
 

@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 
 import '../motion/motion.dart';
+import '../motion/on_screen_gate.dart';
+import 'brand_backdrop_base_painter.dart';
 import 'brand_backdrop_clock.dart';
 import 'brand_backdrop_painter.dart';
 import 'brand_backdrop_ring.dart';
@@ -14,11 +18,15 @@ import 'brand_backdrop_ring.dart';
 ///
 /// The spread fades and settles in on mount when [reveal] is set (the first
 /// page of a flow; the next page shows it at once). It turns while
-/// [animate] — hosts stop it while the keyboard is up — and never under
-/// reduced motion. One ticker drives only this backdrop's repaint (its own
-/// repaint boundary, no rebuilds); it stops with the route (`TickerMode`),
-/// and the turn is shared ([BrandBackdropClock]) so pages hand the spread on
-/// without a jump.
+/// [animate] — hosts stop it while the keyboard is up — for at most
+/// [AppMotion.ambientBudget] each time it starts again (D19), and only
+/// while it can be seen: on screen, in the foreground, its route in front
+/// (`TickerMode`), no screen reader, never under reduced motion.
+///
+/// Two layers (BX-02): the green and the light are painted once in a
+/// `RepaintBoundary` of their own; one ticker repaints only the turning
+/// spread above them (no rebuilds). The turn is shared
+/// ([BrandBackdropClock]) so pages hand the spread on without a jump.
 class BrandBackdrop extends StatefulWidget {
   const BrandBackdrop({
     super.key,
@@ -39,7 +47,7 @@ class BrandBackdrop extends StatefulWidget {
 }
 
 class _BrandBackdropState extends State<BrandBackdrop>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, OnScreenGate<BrandBackdrop> {
   late final Ticker _ticker = createTicker(_onTick);
   late final ValueNotifier<Duration> _time = ValueNotifier<Duration>(
     BrandBackdropClock.elapsed,
@@ -55,11 +63,17 @@ class _BrandBackdropState extends State<BrandBackdrop>
   );
   final BrandBackdropRing _ring = BrandBackdropRing();
   bool _reduced = false;
+  bool _allowed = false;
+
+  /// Ends this run of the turn once the ambient budget is spent.
+  Timer? _budget;
+  bool _running = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _reduced = MotionGuard.reduced(context);
+    _allowed = MotionGuard.ambientAllowed(context);
     if (_reduced) {
       _reveal.value = 1;
     } else if (!_reveal.isCompleted && !_reveal.isAnimating) {
@@ -74,11 +88,23 @@ class _BrandBackdropState extends State<BrandBackdrop>
     if (oldWidget.animate != widget.animate) _syncTicker();
   }
 
+  @override
+  void onScreenChanged() => _syncTicker();
+
+  /// A new run (the backdrop comes on screen, the keyboard goes down)
+  /// turns for one ambient budget, then holds still until the next one.
   void _syncTicker() {
-    final run = widget.animate && !_reduced;
-    if (run && !_ticker.isActive) {
-      _ticker.start();
-    } else if (!run && _ticker.isActive) {
+    final run = widget.animate && _allowed && onScreen;
+    if (run == _running) return;
+    _running = run;
+    _budget?.cancel();
+    if (run) {
+      _budget = Timer(AppMotion.ambientBudget, () {
+        _budget = null;
+        if (_ticker.isActive) _ticker.stop();
+      });
+      if (!_ticker.isActive) _ticker.start();
+    } else if (_ticker.isActive) {
       _ticker.stop();
     }
   }
@@ -91,6 +117,7 @@ class _BrandBackdropState extends State<BrandBackdrop>
 
   @override
   void dispose() {
+    _budget?.cancel();
     _ticker.dispose();
     _revealCurve.dispose();
     _reveal.dispose();
@@ -101,16 +128,27 @@ class _BrandBackdropState extends State<BrandBackdrop>
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: CustomPaint(
-        size: Size.infinite,
-        painter: BrandBackdropPainter(
-          ring: _ring,
-          band: widget.band,
-          time: _time,
-          reveal: _revealCurve,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        RepaintBoundary(
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: BrandBackdropBasePainter(band: widget.band),
+          ),
         ),
-      ),
+        RepaintBoundary(
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: BrandBackdropPainter(
+              ring: _ring,
+              band: widget.band,
+              time: _time,
+              reveal: _revealCurve,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

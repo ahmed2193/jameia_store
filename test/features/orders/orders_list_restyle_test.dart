@@ -15,6 +15,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/core/widgets/app_button.dart';
 import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
 import 'package:hero_mart/src/core/widgets/hero_secondary_button.dart';
@@ -245,8 +246,10 @@ void main() {
       expect(find.byType(OrdersPage, skipOffstage: false), findsOneWidget);
       expect(SchedulerBinding.instance.transientCallbackCount, 0);
 
-      // The history tab comes back on screen: the shimmer runs again.
+      // The history tab comes back on screen: the shimmer runs again (it
+      // starts once the skeleton's own loaderDelay wait is over).
       shown.value = 0;
+      await tester.pump(AppMotion.loaderDelay);
       await tester.pump();
       expect(SchedulerBinding.instance.transientCallbackCount, greaterThan(0));
 

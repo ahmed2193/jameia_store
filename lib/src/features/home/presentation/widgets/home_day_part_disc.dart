@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/motion/ambient_loop.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../domain/entities/home_greeting.dart';
-import 'home_loop.dart';
 
 /// The round sky beside the greeting — a sun in the morning and afternoon, a
 /// setting sun in the evening, a moon at night — that sways now and then, as
@@ -16,6 +16,10 @@ class HomeDayPartDisc extends StatelessWidget {
 
   static const double size = AppSize.s40;
   static const double _glyph = AppSize.s22;
+
+  /// One sway of the glyph, then a still rest twice as long.
+  static const Duration _swayLength = Duration(milliseconds: 1800);
+  static const Duration _swayRest = Duration(milliseconds: 3600);
 
   /// One sway to either side and back.
   static final Animatable<double> _sway = TweenSequence<double>([
@@ -54,10 +58,10 @@ class HomeDayPartDisc extends StatelessWidget {
         height: size,
         alignment: Alignment.center,
         decoration: BoxDecoration(color: plate, shape: BoxShape.circle),
-        child: HomeLoop(
-          period: AppMotion.sheen ~/ 2,
-          rest: AppMotion.sheen,
-          builder: (context, t, child) =>
+        child: AmbientLoop.value(
+          period: _swayLength,
+          rest: _swayRest,
+          valueBuilder: (context, t, child) =>
               Transform.rotate(angle: _sway.transform(t), child: child),
           child: Icon(icon, size: _glyph, color: ink),
         ),

@@ -16,8 +16,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/data/hero_repository.dart';
 import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/change_bump.dart';
 import 'package:hero_mart/src/core/motion/rolling_number.dart';
 import 'package:hero_mart/src/core/usecase/usecase.dart';
 import 'package:hero_mart/src/core/widgets/light_sweep_band.dart';
@@ -29,6 +31,7 @@ import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_pr
 import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_scan_action.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_stats_card.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_unread_badge.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_wallet_stat.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_availability.dart';
 import 'package:hero_mart/src/features/assistant/domain/usecases/get_assistant_availability_usecase.dart';
 import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
@@ -41,6 +44,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../auth/auth_test_fakes.dart';
 import '../notifications/notifications_test_fakes.dart';
 import '../store_mode/pro_status_fakes.dart';
+import '../../core/motion/rolling_test_finders.dart';
 import '../../core/network/network_test_fakes.dart';
 
 class _Availability implements GetAssistantAvailabilityUseCase {
@@ -106,6 +110,9 @@ void main() {
     await initializeDateFormatting('en');
     registerFakeNetworkInfo();
     await setupServiceLocator();
+    // BX-05: the favourites count is read off the start-up path; the app
+    // warms it after the first frame, which a test binding never reports.
+    await sl<HeroRepository>().shopCount();
   });
 
   setUp(() {
@@ -231,6 +238,17 @@ void main() {
     matching: find.text(text),
   );
 
+  /// A number in the stats card (they roll, one Text per digit).
+  Finder rolledInStats(String text) => find.descendant(
+    of: find.byType(MineStatsCard),
+    matching: findRolled(text),
+  );
+
+  final wallet = find.descendant(
+    of: find.byType(MineWalletStat),
+    matching: find.byType(RollingNumber),
+  );
+
   testWidgets('guest: the sign-in header opens login; no assistant row', (
     tester,
   ) async {
@@ -249,7 +267,7 @@ void main() {
     // Pro is on offer: the Pro row invites the guest in.
     expect(find.text('Join'), findsOneWidget);
     // A guest's balances are zero; the overview counts still show.
-    expect(tester.widget<RollingNumber>(find.byType(RollingNumber)).value, 0);
+    expect(tester.widget<RollingNumber>(wallet).value, 0);
     expect(
       find.descendant(
         of: find.byType(MinePointsStat),
@@ -287,11 +305,8 @@ void main() {
     expect(find.text('Active'), findsOneWidget);
     expect(find.text('Join'), findsNothing);
     expect(find.text('Hero Assistant'), findsOneWidget);
-    expect(
-      tester.widget<RollingNumber>(find.byType(RollingNumber)).value,
-      12.5,
-    );
-    expect(inStats('340'), findsOneWidget);
+    expect(tester.widget<RollingNumber>(wallet).value, 12.5);
+    expect(rolledInStats('340'), findsOneWidget);
 
     await tester.tap(find.text('+96550001122'));
     await frames(tester, 5);
@@ -380,7 +395,7 @@ void main() {
     await teardownApp(tester);
   });
 
-  testWidgets('balances change in place; the badge pops only on a change', (
+  testWidgets('balances change in place; the badge bumps only on a change', (
     tester,
   ) async {
     session.signedIn(_regular);
@@ -391,7 +406,16 @@ void main() {
     ScaleTransition badgeScale() => tester.widget<ScaleTransition>(
       find
           .descendant(
-            of: find.byType(MineUnreadBadge).first,
+            of: find
+                .descendant(
+                  of: find
+                      .byWidgetPredicate(
+                        (w) => w is MineUnreadBadge && w.count > 0,
+                      )
+                      .first,
+                  matching: find.byType(ChangeBump),
+                )
+                .first,
             matching: find.byType(ScaleTransition),
           )
           .first,
@@ -402,10 +426,11 @@ void main() {
     unread.set(120);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 16));
-    expect(badgeScale().scale.value, lessThan(1));
+    // One bump (1 → 1.15 → 1), never a regrow from nothing.
+    expect(badgeScale().scale.value, greaterThan(1));
     await frames(tester, 5);
     expect(badgeScale().scale.value, 1);
-    expect(find.text('99+'), findsOneWidget);
+    expect(findRolled('99+'), findsOneWidget);
 
     session.updateCustomer(
       const AuthCustomerEntity(
@@ -417,11 +442,8 @@ void main() {
       ),
     );
     await frames(tester);
-    expect(
-      tester.widget<RollingNumber>(find.byType(RollingNumber)).value,
-      4.75,
-    );
-    expect(inStats('60'), findsOneWidget);
+    expect(tester.widget<RollingNumber>(wallet).value, 4.75);
+    expect(rolledInStats('60'), findsOneWidget);
 
     await teardownApp(tester);
   });
@@ -550,7 +572,7 @@ void main() {
       textScale: 1.3,
     );
     expect(tester.takeException(), isNull);
-    expect(find.text('99+'), findsOneWidget);
+    expect(findRolled('99+'), findsOneWidget);
     expect(find.text('مفعّلة'), findsOneWidget);
 
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -900));

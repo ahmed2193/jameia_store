@@ -52,7 +52,7 @@ class AssistantOnboardingGhostFinger extends StatelessWidget {
     final press =
         progress.span(_pressFrom, tapAt) -
         progress.span(_releaseFrom, _releaseTo);
-    final ring = progress.span(tapAt, 1, Curves.linear);
+    final ring = progress.span(tapAt, 1, AppMotion.linear);
     final alpha =
         progress.span(0, _fadeInTo) * (1 - progress.span(_fadeFrom, 1));
     return PositionedDirectional(

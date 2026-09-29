@@ -64,7 +64,9 @@ class _LocaleSwapVeilViewState extends State<LocaleSwapVeilView>
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
+    // Taps wait while the veil is up: the tree under it is not the one
+    // the customer can see.
+    return AbsorbPointer(
       child: FadeTransition(
         opacity: _controller,
         child: ColoredBox(color: widget.color, child: const SizedBox.expand()),

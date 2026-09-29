@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../auth_cascade_item.dart';
 import 'login_other_methods_toggle.dart';
 import 'login_social_button.dart';
 
@@ -43,7 +43,7 @@ class _LoginSocialSectionState extends State<LoginSocialSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        AuthCascadeItem(
+        EntranceCascadeItem(
           index: first,
           child: LoginSocialButton(
             icon: _google.$1,
@@ -52,7 +52,7 @@ class _LoginSocialSectionState extends State<LoginSocialSection> {
           ),
         ),
         const SizedBox(height: AppSpacing.s8),
-        AuthCascadeItem(
+        EntranceCascadeItem(
           index: first + 1,
           child: Center(
             child: LoginOtherMethodsToggle(expanded: _expanded, onTap: _toggle),

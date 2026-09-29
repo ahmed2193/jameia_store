@@ -8,23 +8,23 @@ import 'pro_hero_tone.dart';
 
 /// A hero's two big centred lines; the second carries the tone's accent
 /// colour. The lines rise and fade in one after the other when this widget
-/// mounts — key it by what it says so new words re-play the stagger.
+/// mounts ([EntranceCascadeItem.single], one step apart) unless [entrance]
+/// is false (new words cross-fading in over the old ones).
 class ProHeroLines extends StatelessWidget {
   const ProHeroLines({
     super.key,
     required this.lineOne,
     required this.lineTwo,
     required this.tone,
+    this.entrance = true,
   });
-
-  static const Duration _lineStagger = Duration(milliseconds: 80);
-
-  /// Each line rises by this share of its own height.
-  static const Offset _rise = Offset(0, 0.35);
 
   final String lineOne;
   final String lineTwo;
   final ProHeroTone tone;
+
+  /// The lines rise in on mount.
+  final bool entrance;
 
   @override
   Widget build(BuildContext context) {
@@ -39,20 +39,18 @@ class ProHeroLines extends StatelessWidget {
       ),
       child: Column(
         children: [
-          StaggerEntrance(
+          EntranceCascadeItem.single(
+            play: entrance,
             index: 0,
-            stagger: _lineStagger,
-            beginOffset: _rise,
             child: Text(
               lineOne,
               textAlign: TextAlign.center,
               style: style.copyWith(color: tone.lineOne),
             ),
           ),
-          StaggerEntrance(
+          EntranceCascadeItem.single(
+            play: entrance,
             index: 1,
-            stagger: _lineStagger,
-            beginOffset: _rise,
             child: Text(
               lineTwo,
               textAlign: TextAlign.center,

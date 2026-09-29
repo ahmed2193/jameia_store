@@ -17,8 +17,8 @@ import 'pro_underlined_link.dart';
 /// Pro-gradient strip above the CTA, its rounded top floating over the
 /// content: a guest is invited to sign in (`go`, so the page is rebuilt for
 /// the new session, then reopened once signed in); a customer sees their
-/// points (counting up the first time) and a link to the rewards they can
-/// redeem them for.
+/// points (at once on open; only the number rolls on a real change) and a
+/// link to the rewards they can redeem them for.
 class ProAccountStrip extends StatelessWidget {
   const ProAccountStrip({super.key});
 
@@ -57,12 +57,10 @@ class ProAccountStrip extends StatelessWidget {
           const SizedBox(width: AppSpacing.s12),
           Expanded(
             child: signedIn
-                ? CountUpText(
-                    value: points.toDouble(),
-                    from: 0,
-                    format: (value) => 'pro.strip_points'.tr(
-                      namedArgs: {'points': '${value.round()}'},
-                    ),
+                ? RollingNumberText(
+                    value: points,
+                    text: (number) =>
+                        'pro.strip_points'.tr(namedArgs: {'points': number}),
                     style: style,
                   )
                 : Text('pro.strip_guest'.tr(), style: style),

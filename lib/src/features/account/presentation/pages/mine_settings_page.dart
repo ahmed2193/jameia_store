@@ -37,6 +37,7 @@ class _MineSettingsPageState extends State<MineSettingsPage> {
     // Logging out holds the screen until the stack is replaced by login.
     return CubitBusyOverlay<AuthSessionCubit, AuthSessionState>(
       busyOf: (state) => state.isSigningOut,
+      failOf: (state) => !state.isSigningOut && state.failure != null,
       child: Scaffold(
         backgroundColor: AppColors.mediumBackground,
         appBar: SettingsAppBar(title: 'settings.title'.tr()),

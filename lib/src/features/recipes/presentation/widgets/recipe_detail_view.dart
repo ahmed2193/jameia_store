@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -36,16 +35,21 @@ class RecipeDetailView extends StatelessWidget {
   void _addAll(BuildContext context) {
     final cart = context.read<CartCubit>();
     final purchasable = detail.purchasableIngredients;
-    HapticFeedback.selectionClick();
+    // The button's own commit tap is the one haptic of this press.
     for (final ingredient in purchasable) {
       cart.addCatalogProduct(
         ingredient.product,
         quantity: ingredient.purchaseQuantity,
       );
     }
+    // No cart on this page: the snack's "View cart" opens it (B3-03).
+    final router = GoRouter.of(context);
     showHeroSnackBar(
       context,
       'recipes.added_all'.tr(namedArgs: {'count': '${purchasable.length}'}),
+      tone: HeroSnackTone.success,
+      actionLabel: 'core.view_cart'.tr(),
+      onAction: () => router.push(Routes.cartPreview),
     );
   }
 

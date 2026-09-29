@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/pro_membership_entity.dart';
 import '../../../../../core/motion/motion_widgets.dart';
@@ -62,9 +63,9 @@ class MineMenuGroup extends StatelessWidget {
         route: Routes.addressList,
         tone: MineTone.sky,
       ),
-      // No Hero coupon glyph in wm_c_iconfont — keep Material.
       MineMenuEntry(
-        icon: Icons.confirmation_num_outlined,
+        asset: HeroAssets.checkoutTicket,
+        plate: true,
         label: 'account.coupons'.tr(),
         route: Routes.myCoupons,
         tone: MineTone.orange,
@@ -73,19 +74,22 @@ class MineMenuGroup extends StatelessWidget {
     final pro = proMembership;
     final rewards = <MineMenuEntry>[
       MineMenuEntry(
-        icon: Icons.account_balance_wallet_outlined,
+        asset: HeroAssets.checkoutWallet,
+        plate: true,
         label: 'account.wallet'.tr(),
         route: Routes.wallet,
         tone: MineTone.brand,
       ),
       MineMenuEntry(
-        icon: Icons.stars_outlined,
+        asset: HeroAssets.checkoutPoints,
+        plate: true,
         label: 'account.loyalty_points'.tr(),
         route: Routes.loyalty,
         tone: MineTone.amber,
       ),
       MineMenuEntry(
-        icon: Icons.workspace_premium_outlined,
+        asset: HeroAssets.proCrown,
+        plate: true,
         label: 'pro.title'.tr(),
         route: Routes.proMembership,
         tone: MineTone.pro,
@@ -93,9 +97,9 @@ class MineMenuGroup extends StatelessWidget {
             ? null
             : MineProStatusChip(membership: pro, offered: proOffered),
       ),
-      // Referral gift — wm_c_iconfont has no reward glyph, only the word 賞.
       MineMenuEntry(
-        icon: Icons.card_giftcard_rounded,
+        asset: HeroAssets.offerGift,
+        plate: true,
         label: 'account.invite_friends'.tr(),
         route: Routes.inviteFriends,
         tone: MineTone.rose,
@@ -110,7 +114,7 @@ class MineMenuGroup extends StatelessWidget {
       ),
       if (showAssistant)
         MineMenuEntry(
-          icon: Icons.auto_awesome_outlined,
+          asset: HeroAssets.assistantAi,
           label: 'assistant.title'.tr(),
           route: Routes.assistant,
           tone: MineTone.pro,
@@ -136,7 +140,7 @@ class MineMenuGroup extends StatelessWidget {
     ];
     return Column(
       children: [
-        StaggerEntrance(
+        EntranceCascadeItem(
           index: firstEntranceIndex,
           child: MineMenuSection(
             title: 'account.section_shopping'.tr(),
@@ -144,7 +148,7 @@ class MineMenuGroup extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.s20),
-        StaggerEntrance(
+        EntranceCascadeItem(
           index: firstEntranceIndex + 1,
           child: MineMenuSection(
             title: 'account.section_rewards'.tr(),
@@ -152,7 +156,7 @@ class MineMenuGroup extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSpacing.s20),
-        StaggerEntrance(
+        EntranceCascadeItem(
           index: firstEntranceIndex + 2,
           child: MineMenuSection(
             title: 'account.section_help'.tr(),

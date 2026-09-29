@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/widgets/hero_image.dart';
 import 'package:hero_mart/src/core/widgets/round_outlined_button.dart';
 import 'package:hero_mart/src/features/product_details/presentation/pages/pdp_image_viewer_page.dart';
@@ -102,7 +103,7 @@ void main() {
     expect(find.byType(AppBar), findsNothing);
     final close = find.byType(RoundOutlinedButton);
     expect(close, findsOneWidget);
-    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
+    expect(find.byIcon(HeroIcons.close), findsOneWidget);
     expect(tester.getCenter(close).dx, lessThan(390 / 2));
     expect(tester.getCenter(close).dy, lessThan(2532 / 3 / 4));
     expect(tester.widget<PdpDotsPill>(find.byType(PdpDotsPill)).count, 5);

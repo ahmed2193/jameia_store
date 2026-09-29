@@ -75,6 +75,28 @@ void main() {
           expect(frame.shine, closeTo(1, 1e-6));
         });
 
+        // B1-14: the burst plays out inside the clock — it never freezes
+        // mid-flight under the fade-through.
+        test('${variant.name} confetti lands and fades before the clock '
+            'completes', () {
+          final landed = SplashAssembly.lastLanding(wordmark);
+          final start = _assemblyOf(choreography).start;
+          final mid = choreography.frameAt(
+            start + landed + SplashAssembly.confettiDelay + 1,
+            layout,
+          );
+          expect(mid.confetti, inExclusiveRange(0, 1), reason: 'it plays');
+          expect(
+            choreography.frameAt(total, layout).confetti,
+            greaterThanOrEqualTo(1),
+            reason: 'nothing left to paint on the last frame',
+          );
+          expect(
+            _assemblyOf(choreography).confettiRunIn(wordmark, total),
+            greaterThan(0),
+          );
+        });
+
         test('${variant.name} settles before its hand-off', () {
           expect(_assemblyOf(choreography).end(wordmark), lessThan(total));
         });

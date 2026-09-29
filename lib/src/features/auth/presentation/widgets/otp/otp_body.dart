@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/entrance_cascade.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../domain/entities/otp_challenge.dart';
 import '../../../domain/entities/phone_number.dart';
 import '../../cubit/otp_cubit.dart';
 import '../../cubit/otp_state.dart';
-import '../auth_cascade_item.dart';
 import 'otp_code_error.dart';
 import 'otp_code_field.dart';
 import 'otp_code_slots.dart';
@@ -26,7 +27,8 @@ import 'otp_verify_button.dart';
 /// keyboard and the route never compete for frames); keeps the caret after
 /// the last digit; submits a code that arrived whole (paste / SMS autofill)
 /// once its cascade has landed; selects a refused code so the next digit
-/// replaces it; and clears the field after a resend.
+/// replaces it; clears the field after a resend; and answers a tap on the
+/// grey Verify with a shake of the digits, a warning haptic and the reason.
 class OtpBody extends StatefulWidget {
   const OtpBody({super.key, required this.phone});
 
@@ -42,6 +44,13 @@ class _OtpBodyState extends State<OtpBody> {
 
   final TextEditingController _code = TextEditingController();
   final FocusNode _codeFocus = FocusNode();
+
+  /// Taps on the disabled Verify; each one shakes the digits.
+  final ValueNotifier<int> _nudges = ValueNotifier<int>(0);
+
+  /// The "code not complete" reason shows once Verify was refused — never
+  /// mid-typing — until the code is complete.
+  final ValueNotifier<bool> _incompleteRevealed = ValueNotifier<bool>(false);
   bool _focusScheduled = false;
   String _lastCode = '';
   Timer? _autoSubmit;
@@ -84,9 +93,10 @@ class _OtpBodyState extends State<OtpBody> {
     final previous = _lastCode;
     _lastCode = code;
     _autoSubmit?.cancel();
-    context.read<OtpCubit>().codeChanged(code);
+    final cubit = context.read<OtpCubit>()..codeChanged(code);
+    if (cubit.state.isCodeComplete) _incompleteRevealed.value = false;
     if (OtpChallenge.arrivedAtOnce(previous: previous, current: code)) {
-      Haptics.tap();
+      // A code that arrives at once is a value change: no haptic (§9.5).
       _autoSubmit = Timer(
         OtpCodeSlots.cascadeStep * code.length + _autoSubmitDelay,
         _submitIfUntouched,
@@ -100,6 +110,17 @@ class _OtpBodyState extends State<OtpBody> {
     if (!mounted) return;
     final cubit = context.read<OtpCubit>();
     if (cubit.state.status == OtpStatus.idle) cubit.verify();
+  }
+
+  /// Verify was refused (grey): say why, shake the digits, keep the
+  /// keyboard up — the same "no" as login's Continue.
+  void _nudge() {
+    Haptics.refuse();
+    if (!context.read<OtpCubit>().state.isCodeComplete) {
+      _incompleteRevealed.value = true;
+    }
+    _nudges.value++;
+    _codeFocus.requestFocus();
   }
 
   /// One controller notification (text + caret together).
@@ -119,12 +140,19 @@ class _OtpBodyState extends State<OtpBody> {
 
   void _onResent(BuildContext context, OtpState state) {
     _code.clear();
-    showHeroSnackBar(context, 'auth.otp_resent'.tr());
+    _incompleteRevealed.value = false;
+    showHeroSnackBar(
+      context,
+      'auth.otp_resent'.tr(),
+      tone: HeroSnackTone.success,
+    );
   }
 
   @override
   void dispose() {
     _autoSubmit?.cancel();
+    _nudges.dispose();
+    _incompleteRevealed.dispose();
     _codeFocus.dispose();
     _code
       ..removeListener(_onCodeValue)
@@ -149,37 +177,49 @@ class _OtpBodyState extends State<OtpBody> {
           listener: _onRefused,
         ),
       ],
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsetsDirectional.fromSTEB(
-            AppSpacing.s24,
-            AppSpacing.s28,
-            AppSpacing.s24,
-            AppSpacing.s24,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AuthCascadeItem(index: 0, child: OtpHeader(phone: widget.phone)),
-              const SizedBox(height: AppSpacing.s28),
-              AuthCascadeItem(
-                index: 1,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    OtpCodeField(controller: _code, focusNode: _codeFocus),
-                    const OtpCodeError(),
-                    const SizedBox(height: AppSpacing.s4),
-                    OtpDevCodeHint(onUseCode: _useCode),
-                  ],
+      child: EntranceCascade(
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.s24,
+              AppSpacing.s28,
+              AppSpacing.s24,
+              AppSpacing.s24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                EntranceCascadeItem(
+                  index: 0,
+                  child: OtpHeader(phone: widget.phone),
                 ),
-              ),
-              const SizedBox(height: AppSpacing.s20),
-              const AuthCascadeItem(index: 2, child: OtpVerifyButton()),
-              const SizedBox(height: AppSpacing.s8),
-              const AuthCascadeItem(index: 3, child: OtpResendRow()),
-            ],
+                const SizedBox(height: AppSpacing.s28),
+                EntranceCascadeItem(
+                  index: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      OtpCodeField(
+                        controller: _code,
+                        focusNode: _codeFocus,
+                        nudges: _nudges,
+                      ),
+                      OtpCodeError(incompleteRevealed: _incompleteRevealed),
+                      const SizedBox(height: AppSpacing.s4),
+                      OtpDevCodeHint(onUseCode: _useCode),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.s20),
+                EntranceCascadeItem(
+                  index: 2,
+                  child: OtpVerifyButton(onBlocked: _nudge),
+                ),
+                const SizedBox(height: AppSpacing.s8),
+                const EntranceCascadeItem(index: 3, child: OtpResendRow()),
+              ],
+            ),
           ),
         ),
       ),

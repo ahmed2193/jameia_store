@@ -4,12 +4,13 @@
 	<dict>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
-		<key>NSMicrophoneUsageDescription</key>
-		<string>Microphone access lets you search by voice.</string>
-		<key>NSSpeechRecognitionUsageDescription</key>
-		<string>Speech recognition turns your voice into a search query.</string>
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleLocalizations</key>
+		<array>
+			<string>en</string>
+			<string>ar</string>
+		</array>
 		<key>CFBundleDisplayName</key>
 		<string>Hero</string>
 		<key>CFBundleExecutable</key>
@@ -28,8 +29,16 @@
 		<string>????</string>
 		<key>CFBundleVersion</key>
 		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Hero uses your location to pin your delivery address on the map.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Hero uses the microphone so you can talk to the shopping assistant by voice.</string>
+		<key>NSSpeechRecognitionUsageDescription</key>
+		<string>Hero turns your voice into text on your device so you can send voice messages to the shopping assistant.</string>
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>

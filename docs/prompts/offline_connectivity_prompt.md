@@ -44,8 +44,8 @@ This task brings the whole app to that standard.
 | `cart.mirror.v1` | Server cart mirror + pending deltas | The only real offline queue. Retries 5 s → 80 s. `cart_sync_banner.dart` shows `cart.unsynced`. `CheckoutBlockReason.offline` exists but is tied to the unsynced cart only |
 | `account.profile.v1` | `CustomerModel` snapshot | `AuthSessionCubit.restore()` paints it first. Offline it stays signed in with `isVerified = false` |
 | `account.addresses.v2` | Address book | Painted first, then synced. Wiped on sign-out |
-| `jameia.search.recents.v1` | Recent search terms | |
-| `jameia.home.popup_shown.*`, `assistant.nudge.v1`, `app_language` | Small local flags | |
+| `hero.search.recents.v1` | Recent search terms | |
+| `hero.home.popup_shown.*`, `assistant.nudge.v1`, `app_language` | Small local flags | |
 
 - In-memory TTL caches only (lost on restart): categories and offers (5 min per language) in
   `core/data/datasources/catalog_remote_data_source.dart`, checkout branches (5 min), checkout rail

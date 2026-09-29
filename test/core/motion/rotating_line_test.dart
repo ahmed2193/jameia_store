@@ -45,7 +45,7 @@ Widget _hostItems(
 /// A swap's flip, plus the frame after it in which the old item is dropped
 /// (an animation reports done on the first frame past its duration).
 Future<void> _land(WidgetTester tester) async {
-  await tester.pump(AppMotion.flip);
+  await tester.pump(AppMotion.medium);
   await tester.pump(_frame);
 }
 
@@ -70,10 +70,13 @@ void main() {
     expect(find.text('fact b'), findsOneWidget);
     expect(find.text('fact a'), findsNothing);
 
-    // The next item rests a full dwell once it has landed, again frameless.
+    // Frameless again once it has landed. A second swap would end past the
+    // ambient budget (dwell + swap + dwell > 5 s), so this appearance is
+    // over: no timer either (BX-08; the budget has its own tests in
+    // feel_unification_test.dart).
     await tester.pumpAndSettle();
     expect(tester.binding.hasScheduledFrame, isFalse);
-    expect(_state(tester).debugResting, isTrue);
+    expect(_state(tester).debugResting, isFalse);
   });
 
   group('CT-T3 stands still', () {
@@ -110,7 +113,7 @@ void main() {
       await tester.pumpWidget(_host(['a', 'b']));
       expect(_state(tester).debugResting, isTrue);
       await tester.pump(AppMotion.carousel);
-      await tester.pump(AppMotion.flip);
+      await tester.pump(AppMotion.medium);
       expect(find.text('fact b'), findsOneWidget);
     });
   });
@@ -158,7 +161,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_host(['a', 'b']));
     await tester.pump(AppMotion.carousel);
-    await tester.pump(AppMotion.flip);
+    await tester.pump(AppMotion.medium);
     expect(find.text('fact b'), findsOneWidget);
 
     await tester.pumpWidget(_host(['a']));

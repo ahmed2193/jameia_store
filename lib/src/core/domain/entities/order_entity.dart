@@ -108,6 +108,9 @@ class OrderEntity extends Equatable {
       ),
   ];
 
+  /// The photo that stands for a reorder (the first paid line's), or `''`.
+  String get reorderImage => lines.isEmpty ? '' : lines.first.image;
+
   /// The step of the tracking progress bar, or `null` (cancelled / failed).
   int? get progressStep => status.progressStep;
 

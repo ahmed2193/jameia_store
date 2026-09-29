@@ -24,15 +24,11 @@ class HeroMarkIcon extends StatelessWidget {
     final ink = theme.color ?? AppColors.primaryText;
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(end: active ? 1 : 0),
-      duration: MotionGuard.duration(context, AppMotion.popup),
+      duration: MotionGuard.duration(context, AppMotion.medium),
       curve: MotionGuard.curve(context, AppMotion.signature),
       builder: (_, progress, _) => CustomPaint(
         size: Size.square(side),
-        painter: HeroMarkIconPainter(
-          progress: progress,
-          ink: ink,
-          hop: active,
-        ),
+        painter: HeroMarkIconPainter(progress: progress, ink: ink, hop: active),
       ),
     );
   }

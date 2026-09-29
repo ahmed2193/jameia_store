@@ -56,6 +56,36 @@ void main() {
     expect(identical(book.remove(addressId(9)), book), isTrue);
   });
 
+  test('restore puts an address back where it was (B1-17)', () {
+    final book = AddressBook.of([address(n: 1), address(n: 2), address(n: 3)]);
+    final without = book.remove(addressId(2));
+
+    expect(without.restore(address(n: 2), 1), book);
+    expect(
+      without.restore(address(n: 2), 9).addresses.last.id,
+      addressId(2),
+      reason: 'clamped to the end',
+    );
+    expect(identical(book.restore(address(n: 2), 0), book), isTrue);
+  });
+
+  test('a restored default gives way to a newer default', () {
+    final book = AddressBook.of([
+      address(n: 1, isDefault: true),
+      address(n: 2),
+    ]);
+    final moved = book.remove(addressId(1)).withDefault(addressId(2));
+
+    final restored = moved.restore(address(n: 1, isDefault: true), 0);
+    expect(restored.addresses.where((a) => a.isDefault), hasLength(1));
+    expect(restored.flaggedDefault?.id, addressId(2));
+    expect(
+      book.remove(addressId(1)).restore(address(n: 1, isDefault: true), 0),
+      book,
+      reason: 'no other default: it keeps its flag',
+    );
+  });
+
   test('books compare by value', () {
     expect(AddressBook.of([address(n: 1)]), AddressBook.of([address(n: 1)]));
   });

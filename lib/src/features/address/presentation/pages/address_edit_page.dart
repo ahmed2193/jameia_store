@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/motion/haptics.dart';
+import '../../../../core/motion/success_beat.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../cubit/address_book_cubit.dart';
 import '../cubit/address_edit_cubit.dart';
@@ -33,15 +37,20 @@ class AddressEditPage extends StatelessWidget {
   void _onState(BuildContext context, AddressEditState state) {
     final saved = state.saved;
     if (state.status == AddressEditStatus.saved && saved != null) {
-      if (saved != state.original) {
-        context.read<AddressBookCubit>().applySaved(saved);
-        showHeroSnackBar(context, 'addr.saved'.tr());
+      if (saved == state.original) {
+        context.pop(saved);
+        return;
       }
-      context.pop(saved);
+      context.read<AddressBookCubit>().applySaved(saved);
+      unawaited(_afterSaved(context, saved));
       return;
     }
     if (state.rejected) {
-      showHeroSnackBar(context, 'addr.fix_errors'.tr());
+      showHeroSnackBar(
+        context,
+        'addr.fix_errors'.tr(),
+        tone: HeroSnackTone.warning,
+      );
       return;
     }
     final failure = state.failure;
@@ -53,6 +62,19 @@ class AddressEditPage extends StatelessWidget {
       context.read<AddressBookCubit>().refresh();
       context.pop();
     }
+  }
+
+  /// The overlay's check draws and holds (docs/motion B2-04), then the
+  /// route pops with the saved address.
+  Future<void> _afterSaved(
+    BuildContext context,
+    HeroAddressEntity saved,
+  ) async {
+    Haptics.done();
+    await SuccessBeat.hold(context);
+    if (!context.mounted) return;
+    showHeroSnackBar(context, 'addr.saved'.tr(), tone: HeroSnackTone.success);
+    context.pop(saved);
   }
 
   static bool _isGone(Failure failure) =>

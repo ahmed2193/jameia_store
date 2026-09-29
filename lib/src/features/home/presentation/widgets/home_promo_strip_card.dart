@@ -9,7 +9,6 @@ import '../../domain/entities/home_section_entity.dart';
 import 'home_accent_palette.dart';
 import 'home_arrow_button.dart';
 import 'home_layout.dart';
-import 'home_reveal_scope.dart';
 import 'home_strip_badge.dart';
 import 'home_strip_countdown.dart';
 
@@ -44,7 +43,6 @@ class HomePromoStripCard extends StatelessWidget {
           color: HomeAccentPalette.stripFill(section.theme),
           child: LightSweep(
             peakAlpha: _shineAlpha,
-            active: HomeRevealScope.onScreenOf(context),
             child: Padding(
               padding: const EdgeInsetsDirectional.symmetric(
                 horizontal: HomeLayout.gutter,

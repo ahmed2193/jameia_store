@@ -56,7 +56,7 @@ class ProCtaButton extends StatelessWidget {
                 child: InkWell(
                   onTap: active
                       ? () {
-                          Haptics.tap();
+                          Haptics.commit();
                           press();
                         }
                       : null,

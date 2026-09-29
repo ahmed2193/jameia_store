@@ -5,11 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_mart/src/config/routes/feature_routes/shell_routes.dart';
 import 'package:hero_mart/src/config/routes/feature_routes/splash_routes.dart';
-import 'package:hero_mart/src/config/routes/route_args/shell_entrance.dart';
+import 'package:hero_mart/src/config/routes/route_args/shell_arrival.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/core/navigation/navigation.dart';
 import 'package:hero_mart/src/features/splash/presentation/pages/splash_page.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_motion.dart';
 import 'package:hero_mart/src/features/splash/presentation/widgets/splash_player.dart';
 import 'package:hero_mart/src/features/splash/presentation/widgets/splash_scene_painter.dart';
 import 'package:hero_mart/src/features/splash/presentation/widgets/splash_variant.dart';
@@ -37,6 +38,7 @@ Future<void> _pumpPlayer(
   WidgetTester tester, {
   required SplashVariant variant,
   required VoidCallback onFinished,
+  VoidCallback? onLaunchFrame,
   bool reducedMotion = false,
 }) => _pumpLocalized(
   tester,
@@ -44,7 +46,11 @@ Future<void> _pumpPlayer(
     data: MediaQueryData(disableAnimations: reducedMotion),
     child: MaterialApp(
       home: Scaffold(
-        body: SplashPlayer(variant: variant, onFinished: onFinished),
+        body: SplashPlayer(
+          variant: variant,
+          onFinished: onFinished,
+          onLaunchFrame: onLaunchFrame,
+        ),
       ),
     ),
   ),
@@ -117,11 +123,61 @@ void main() {
                 .painter!
             as SplashScenePainter;
 
-    await tester.pump(AppMotion.splashFirstFrameWait);
+    await tester.pump(SplashMotion.firstFrameWait);
     expect(painter.clock.value, 0);
-    await tester.pump(AppMotion.splashHandOffHold);
+    await tester.pump(SplashMotion.handOffHold);
     await tester.pump(AppMotion.page);
     expect(painter.clock.value, greaterThan(0));
+  });
+
+  // B1-14: the first screen's data starts loading while the launch frame
+  // holds still — overlapping the intro, not following it.
+  testWidgets('the launch frame starts the prefetch once, before the intro '
+      'moves', (tester) async {
+    var prefetches = 0;
+    var finished = 0;
+    await _pumpPlayer(
+      tester,
+      variant: SplashVariant.wordmark,
+      onFinished: () => finished++,
+      onLaunchFrame: () => prefetches++,
+    );
+    final painter =
+        tester
+                .widget<CustomPaint>(
+                  find.byWidgetPredicate(
+                    (widget) =>
+                        widget is CustomPaint &&
+                        widget.painter is SplashScenePainter,
+                  ),
+                )
+                .painter!
+            as SplashScenePainter;
+
+    await tester.pump(SplashMotion.firstFrameWait);
+    expect(prefetches, 1);
+    expect(painter.clock.value, 0, reason: 'the intro has not moved yet');
+
+    await tester.pump(SplashPlayer.maxStartDelay);
+    await tester.pump(SplashVariant.wordmark.choreography.duration);
+    await tester.pump(AppMotion.page);
+    expect(finished, 1, reason: 'the hand-off is unchanged');
+    expect(prefetches, 1);
+  });
+
+  testWidgets('reduced motion starts the prefetch at once', (tester) async {
+    var prefetches = 0;
+    await _pumpPlayer(
+      tester,
+      variant: SplashVariant.wordmark,
+      onFinished: () {},
+      onLaunchFrame: () => prefetches++,
+      reducedMotion: true,
+    );
+
+    expect(prefetches, 1);
+    await tester.pump(SplashMotion.reducedHold + AppMotion.page);
+    expect(prefetches, 1);
   });
 
   testWidgets('reduced motion shows the lockup, then hands off after a hold', (
@@ -148,7 +204,7 @@ void main() {
             as SplashScenePainter;
     expect(painter.clock.value, 1);
 
-    await tester.pump(AppMotion.splashReducedHold - AppMotion.fast);
+    await tester.pump(SplashMotion.reducedHold - AppMotion.fast);
     expect(finished, 0);
     await tester.pump(AppMotion.page);
     expect(finished, 1);
@@ -176,7 +232,7 @@ void main() {
     );
     await tester.tapAt(tester.getCenter(find.byType(SplashPlayer)));
     await tester.pump(); // the touch clock's first tick
-    await tester.pump(AppMotion.splashMarkHop ~/ 2);
+    await tester.pump(SplashMotion.markHop ~/ 2);
     expect(painter().touch!.markLift, greaterThan(0));
     expect(painter().touch!.capeFlick, greaterThan(0));
     expect(painter().touch!.ripples, isNotEmpty);
@@ -261,7 +317,7 @@ void main() {
     expect(_statusBar(tester).statusBarIconBrightness, Brightness.dark);
   });
 
-  testWidgets('the splash fades into the shell, flagged as a splash entrance', (
+  testWidgets('the splash fades into the shell as a fresh arrival', (
     tester,
   ) async {
     Object? shellExtra;
@@ -288,44 +344,47 @@ void main() {
     await tester.pump(AppMotion.page);
 
     expect(find.text('shell'), findsOneWidget);
-    expect(shellExtra, ShellEntrance.splash);
+    expect(shellExtra, isA<ShellArrival>());
   });
 
-  testWidgets('the shell route fades in only when entered from the splash', (
-    tester,
-  ) async {
-    final router = GoRouter(routes: shellRoutes);
-    addTearDown(router.dispose);
-    final shell = shellRoutes.whereType<GoRoute>().firstWhere(
-      (route) => route.path == Routes.shell,
-    );
-    late BuildContext context;
-    await tester.pumpWidget(
-      Builder(
-        builder: (built) {
-          context = built;
-          return const SizedBox();
-        },
-      ),
-    );
+  testWidgets(
+    'every arrival on the shell route is the same fade-through page',
+    (tester) async {
+      final router = GoRouter(routes: shellRoutes);
+      addTearDown(router.dispose);
+      final shell = shellRoutes.whereType<GoRoute>().firstWhere(
+        (route) => route.path == Routes.shell,
+      );
+      late BuildContext context;
+      await tester.pumpWidget(
+        Builder(
+          builder: (built) {
+            context = built;
+            return const SizedBox();
+          },
+        ),
+      );
 
-    GoRouterState state(Object? extra) => GoRouterState(
-      router.configuration,
-      uri: Uri.parse(Routes.shell),
-      matchedLocation: Routes.shell,
-      fullPath: Routes.shell,
-      pathParameters: const {},
-      pageKey: const ValueKey<String>(Routes.shell),
-      extra: extra,
-    );
+      GoRouterState state(Object? extra) => GoRouterState(
+        router.configuration,
+        uri: Uri.parse(Routes.shell),
+        matchedLocation: Routes.shell,
+        fullPath: Routes.shell,
+        pathParameters: const {},
+        pageKey: const ValueKey<String>(Routes.shell),
+        extra: extra,
+      );
 
-    expect(
-      shell.pageBuilder!(context, state(ShellEntrance.splash)),
-      isA<HeroFadeThroughPage<Object?>>(),
-    );
-    expect(
-      shell.pageBuilder!(context, state(null)),
-      isA<HeroTransitionPage<Object?>>(),
-    );
-  });
+      // Same type (and key) from every entry, so a `go` back to a shell in the
+      // stack keeps it and its tabs.
+      expect(
+        shell.pageBuilder!(context, state(ShellArrival())),
+        isA<HeroFadeThroughPage<Object?>>(),
+      );
+      expect(
+        shell.pageBuilder!(context, state(null)),
+        isA<HeroFadeThroughPage<Object?>>(),
+      );
+    },
+  );
 }

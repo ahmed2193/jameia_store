@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -8,9 +7,10 @@ import '../../../../core/domain/entities/recipe_summary_entity.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/catalog_recipe_tag.dart';
 import '../../../../core/widgets/hero_image.dart';
+import '../../../../core/widgets/recipe_meta_line.dart';
 
 /// One recipe of the recipe list: photo, title, teaser, tags and
-/// "80 min · 6 servings".
+/// "⏱ 80 min · 👤 6 servings" ([RecipeMetaLine]).
 class RecipeListTile extends StatelessWidget {
   const RecipeListTile({super.key, required this.recipe, required this.onTap});
 
@@ -79,16 +79,9 @@ class RecipeListTile extends StatelessWidget {
                         CatalogRecipeTag(label: recipe.cuisineName),
                       if (recipe.dietName.isNotEmpty)
                         CatalogRecipeTag(label: recipe.dietName),
-                      Text(
-                        'catalog.recipe_meta'.tr(
-                          namedArgs: {
-                            'minutes': '${recipe.totalMinutes}',
-                            'servings': '${recipe.servings}',
-                          },
-                        ),
-                        style: AppTextStyles.captionLarge.copyWith(
-                          color: AppColors.secondaryText,
-                        ),
+                      RecipeMetaLine(
+                        minutes: recipe.totalMinutes,
+                        servings: recipe.servings,
                       ),
                     ],
                   ),

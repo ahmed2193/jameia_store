@@ -7,7 +7,6 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/marketing_moments.dart';
 import '../../../domain/entities/faq_item.dart';
 import 'support_faq_answer.dart';
 import 'support_faq_chevron.dart';
@@ -71,12 +70,10 @@ class SupportFaqTile extends StatelessWidget {
                   ),
                 ),
               ),
-              // Hero's FAQ accordion (height + cross-fade), built when open.
-              AnimatedAccordion(
-                expanded: isOpen,
-                alignment: AlignmentDirectional.topStart.resolve(
-                  Directionality.of(context),
-                ),
+              // Opens medium, closes fast; the answer stays drawn while it
+              // closes (§9.4 #20).
+              CollapseReveal(
+                visible: isOpen,
                 child: SupportFaqAnswer(answerKey: faq.answerKey),
               ),
             ],

@@ -15,6 +15,7 @@ import 'package:hero_mart/src/core/domain/entities/cart_offer_progress_entity.da
 import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
+import 'package:hero_mart/src/core/motion/motion_beat.dart';
 import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
@@ -410,6 +411,8 @@ void main() {
           ),
         ),
       );
+      // The lines open on their beat (B2-03).
+      await tester.pump(MotionBeat.second);
       await tester.pumpAndSettle();
 
       expect(find.text('Express delivery fee'), findsOneWidget);
@@ -431,6 +434,7 @@ void main() {
           cart: CartEntity(itemCount: 3, lines: _plainLines, totals: _priced),
         ),
       );
+      await tester.pump(MotionBeat.second);
       await tester.pumpAndSettle();
 
       expect(find.text('Express delivery fee'), findsNothing);
@@ -561,6 +565,8 @@ void main() {
       ),
     );
     await tester.pump();
+    // The line opens on its beat (B2-03), a beat after the saving.
+    await tester.pump(MotionBeat.second);
     await tester.pump(const Duration(milliseconds: 100));
     // Mid-open: the card is taller than before, painted every frame.
     final opening = tester.getSize(find.byType(CheckoutReceipt));

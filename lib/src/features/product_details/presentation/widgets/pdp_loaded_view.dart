@@ -9,8 +9,9 @@ import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/domain/entities/data_freshness.dart';
+import '../../../../core/motion/entrance_cascade.dart';
+import '../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../core/motion/motion.dart';
-import '../../../../core/motion/stagger_entrance.dart';
 import '../../../../core/widgets/cubit_stale_notice.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../domain/entities/product_detail.dart';
@@ -21,6 +22,7 @@ import 'pdp_category_link.dart';
 import 'pdp_info_block.dart';
 import 'pdp_offer_note.dart';
 import 'pdp_product_rail.dart';
+import 'pdp_late_block.dart';
 import 'pdp_recipes_rail.dart';
 import 'pdp_reviews_section.dart';
 import 'pdp_scaffold_view.dart';
@@ -35,7 +37,8 @@ import 'pdp_variant_selector.dart';
 /// category.
 ///
 /// The blocks under the name cascade in once as the page loads (the photo
-/// and the name were already painted by the preview, so they stay put).
+/// and the name were already painted by the preview, so they stay put); a
+/// block that arrives later opens its room ([PdpLateBlock]).
 class PdpLoadedView extends StatefulWidget {
   const PdpLoadedView({
     super.key,
@@ -64,6 +67,11 @@ class _PdpLoadedViewState extends State<PdpLoadedView> {
 
   final GlobalKey _reviewsKey = GlobalKey();
 
+  /// The blocks the page has shown (by id); one not among them after the
+  /// first build is a late arrival.
+  final Set<String> _shownBlocks = <String>{};
+  bool _firstBuildDone = false;
+
   /// Brings the reviews up to just under the solid top bar. The bar is an
   /// overlay, not a pinned sliver, so the viewport's own reveal
   /// ([Scrollable.ensureVisible]) would park the heading behind it.
@@ -77,13 +85,8 @@ class _PdpLoadedViewState extends State<PdpLoadedView> {
       position.minScrollExtent,
       position.maxScrollExtent,
     );
-    final duration = MotionGuard.duration(context, AppMotion.page);
     // A scroll animation needs a real duration: reduced motion jumps.
-    if (duration == Duration.zero) {
-      position.jumpTo(to);
-      return;
-    }
-    position.animateTo(to, duration: duration, curve: AppMotion.signature);
+    MotionGuard.scrollTo(context, position, to);
   }
 
   void _openProduct(CatalogProductEntity product) =>
@@ -165,45 +168,59 @@ class _PdpLoadedViewState extends State<PdpLoadedView> {
           block: PdpCategoryLink(category: category),
         ),
     ];
-    return PdpScaffoldView(
-      productSlug: detail.product.slug,
-      title: detail.product.name,
-      images: detail.gallery,
-      galleryKey: widget.galleryKey,
-      sections: [
-        // Offline, or after a failed reload: the price and stock below are
-        // the saved ones.
-        const CubitStaleNotice<ProductDetailCubit, ProductDetailState>(
-          freshnessOf: _freshnessOf,
-        ),
-        PdpSection(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PdpInfoBlock(
-                product: detail.product,
-                brand: detail.brand,
-                description: detail.description,
-                inStock: detail.stockOf(variant) > 0,
-                lowStockLeft: widget.lowStockLeft,
-                onOpenReviews: _scrollToReviews,
-              ),
-              const PdpOfferNote(),
-            ],
+    // The first blocks cascade in once, when the detail first arrives on a
+    // settled page; a block that lands later opens its room.
+    final lateIds = <String>{
+      if (_firstBuildDone)
+        for (final block in blocks)
+          if (!_shownBlocks.contains(block.id)) block.id,
+    };
+    _shownBlocks.addAll([for (final block in blocks) block.id]);
+    _firstBuildDone = true;
+    return EntranceCascade(
+      child: PdpScaffoldView(
+        productSlug: detail.product.slug,
+        title: detail.product.name,
+        images: detail.gallery,
+        galleryKey: widget.galleryKey,
+        sections: [
+          // Offline, or after a failed reload: the price and stock below are
+          // the saved ones.
+          const CubitStaleNotice<ProductDetailCubit, ProductDetailState>(
+            freshnessOf: _freshnessOf,
           ),
-        ),
-        for (final (index, (:id, :divided, :block)) in blocks.indexed)
-          StaggerEntrance(
-            key: ValueKey<String>(id),
-            // The name block is index 0: the cascade starts after it.
-            index: index + 1,
+          PdpSection(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [if (divided) const PdpSectionDivider(), block],
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                PdpInfoBlock(
+                  product: detail.product,
+                  brand: detail.brand,
+                  description: detail.description,
+                  inStock: detail.stockOf(variant) > 0,
+                  lowStockLeft: widget.lowStockLeft,
+                  onOpenReviews: _scrollToReviews,
+                ),
+                const PdpOfferNote(),
+              ],
             ),
           ),
-        const SizedBox(height: AppSpacing.s24),
-      ],
+          for (final (index, (:id, :divided, :block)) in blocks.indexed)
+            EntranceCascadeItem(
+              key: ValueKey<String>(id),
+              // The name block is index 0: the cascade starts after it.
+              index: index + 1,
+              child: PdpLateBlock(
+                late: lateIds.contains(id),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [if (divided) const PdpSectionDivider(), block],
+                ),
+              ),
+            ),
+          const SizedBox(height: AppSpacing.s24),
+        ],
+      ),
     );
   }
 }

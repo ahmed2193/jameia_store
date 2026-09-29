@@ -42,8 +42,13 @@ class AssistantThreadRow extends StatelessWidget {
       AssistantMessageEntry(:final message)
           when message.role == AssistantRole.other =>
         const SizedBox.shrink(),
-      AssistantDividerEntry() => const AssistantDividerRow(),
-      _ => AssistantReplyRow(rowKey: rowKey, entry: row, isLast: isLast),
+      AssistantDividerEntry() => AssistantDividerRow(animate: animate),
+      _ => AssistantReplyRow(
+        rowKey: rowKey,
+        entry: row,
+        isLast: isLast,
+        animate: animate,
+      ),
     };
   }
 }

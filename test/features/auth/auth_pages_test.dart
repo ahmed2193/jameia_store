@@ -226,6 +226,8 @@ void main() {
     await tester.pump();
     await tester.tap(find.byType(HeroSubmitButton));
     await settle(tester);
+    // The check draws and holds (SuccessBeat) before the stack is replaced.
+    await settle(tester);
     expect(verifyOtp.calls.single.code, '1234');
     expect(session.state.isSignedIn, isTrue);
     expect(session.state.customer, kCustomer);
@@ -252,6 +254,8 @@ void main() {
     await tester.enterText(find.byType(TextField), '1234');
     await tester.pump();
     await tester.tap(find.byType(HeroSubmitButton));
+    await settle(tester);
+    // The check draws and holds (SuccessBeat) before the stack is replaced.
     await settle(tester);
 
     expect(session.state.isSignedIn, isTrue);

@@ -10,14 +10,17 @@ import 'assistant_voice_bin_painter.dart';
 
 /// WhatsApp's goodbye to a cancelled recording: the red mic hops up and
 /// flips, a bin rises under it and opens, the mic drops in, the lid shuts
-/// and the bin sinks away. Played once where the hold bar was, then
-/// [onDone]. The composer skips it under reduced motion.
+/// and the bin sinks away. Played once over the start of the message box,
+/// then [onDone] — in [AppMotion.slow] (docs/motion §9.6 §2.9, approval
+/// #13), and without covering the box: it paints no background and takes no
+/// touch, so the field under it is usable at once. The composer skips it
+/// under reduced motion.
 class AssistantVoiceDiscard extends StatefulWidget {
   const AssistantVoiceDiscard({super.key, required this.onDone});
 
   final VoidCallback onDone;
 
-  static const Duration duration = Duration(milliseconds: 1000);
+  static const Duration duration = AppMotion.slow;
 
   @override
   State<AssistantVoiceDiscard> createState() => _AssistantVoiceDiscardState();
@@ -31,7 +34,7 @@ class _AssistantVoiceDiscardState extends State<AssistantVoiceDiscard>
   );
 
   // The choreography, as shares of [AssistantVoiceDiscard.duration].
-  static const Interval _hop = Interval(0, 0.3, curve: AppMotion.decelerate);
+  static const Interval _hop = Interval(0, 0.3, curve: AppMotion.signature);
   static const Interval _binRise = Interval(
     0.1,
     0.35,
@@ -78,70 +81,63 @@ class _AssistantVoiceDiscardState extends State<AssistantVoiceDiscard>
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.smallBackground,
-        borderRadius: BorderRadius.circular(AppRadius.sheet),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: RepaintBoundary(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            final t = _controller.value;
-            final hop = _hop.transform(t);
-            final fall = _fall.transform(t);
-            final rise = _binRise.transform(t);
-            final sink = _binSink.transform(t);
-            final lid =
-                _openAngle * (_lidOpen.transform(t) - _lidClose.transform(t));
-            return Stack(
-              clipBehavior: Clip.none,
-              alignment: AlignmentDirectional.centerStart,
-              children: [
-                PositionedDirectional(
-                  start: _binStart,
-                  child: Opacity(
-                    opacity: rise * (1 - sink),
-                    child: Transform.translate(
-                      offset: Offset(0, _binTravel * (1 - rise + sink)),
-                      child: CustomPaint(
-                        size: _binSize,
-                        painter: AssistantVoiceBinPainter(
-                          lidAngle: lid,
-                          color: AppColors.secondaryText,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final t = _controller.value;
+          final hop = _hop.transform(t);
+          final fall = _fall.transform(t);
+          final rise = _binRise.transform(t);
+          final sink = _binSink.transform(t);
+          final lid =
+              _openAngle * (_lidOpen.transform(t) - _lidClose.transform(t));
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: AlignmentDirectional.centerStart,
+            children: [
+              PositionedDirectional(
+                start: _binStart,
+                child: Opacity(
+                  opacity: rise * (1 - sink),
+                  child: Transform.translate(
+                    offset: Offset(0, _binTravel * (1 - rise + sink)),
+                    child: CustomPaint(
+                      size: _binSize,
+                      painter: AssistantVoiceBinPainter(
+                        lidAngle: lid,
+                        color: AppColors.secondaryText,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              PositionedDirectional(
+                start: _micStart,
+                child: Opacity(
+                  opacity: 1 - _micFade.transform(t),
+                  child: Transform.translate(
+                    offset: Offset(
+                      0,
+                      -_hopHeight * hop + (_hopHeight + _dropDepth) * fall,
+                    ),
+                    child: Transform.rotate(
+                      angle: math.pi * hop,
+                      child: Transform.scale(
+                        scale: 1 - (1 - _fallenScale) * fall,
+                        child: const Icon(
+                          Icons.mic_rounded,
+                          size: AppSize.s22,
+                          color: AppColors.error,
                         ),
                       ),
                     ),
                   ),
                 ),
-                PositionedDirectional(
-                  start: _micStart,
-                  child: Opacity(
-                    opacity: 1 - _micFade.transform(t),
-                    child: Transform.translate(
-                      offset: Offset(
-                        0,
-                        -_hopHeight * hop + (_hopHeight + _dropDepth) * fall,
-                      ),
-                      child: Transform.rotate(
-                        angle: math.pi * hop,
-                        child: Transform.scale(
-                          scale: 1 - (1 - _fallenScale) * fall,
-                          child: const Icon(
-                            Icons.mic_rounded,
-                            size: AppSize.s22,
-                            color: AppColors.error,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

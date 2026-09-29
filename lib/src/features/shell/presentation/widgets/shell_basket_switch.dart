@@ -5,16 +5,18 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/design/hero_icons.dart';
-import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/segmented_thumb_track.dart';
 import 'shell_basket_segment.dart';
 
 /// The two views of the Cart tab.
 enum ShellBasketView { cart, orderHistory }
 
 /// Pill switch between the cart and the order history: one connected track,
-/// a white thumb that slides under the chosen view (RTL-aware), and the cart's
-/// item count on the cart side so it is visible from the history too.
+/// a white thumb that slides under the chosen view on the app's one thumb
+/// track ([SegmentedThumbTrack]: calm spring, RTL-aware, a selection haptic
+/// on a change), and the cart's item count on the cart side so it is
+/// visible from the history too.
 class ShellBasketSwitch extends StatelessWidget {
   const ShellBasketSwitch({
     super.key,
@@ -27,8 +29,7 @@ class ShellBasketSwitch extends StatelessWidget {
   final int cartCount;
   final ValueChanged<ShellBasketView> onChanged;
 
-  static const double _thumbWidth = 0.5;
-  static const double _thumbHeight = 1;
+  static const List<ShellBasketView> _views = ShellBasketView.values;
 
   @override
   Widget build(BuildContext context) {
@@ -40,50 +41,32 @@ class ShellBasketSwitch extends StatelessWidget {
         color: AppColors.smallBackground,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
-      child: Stack(
-        children: [
-          AnimatedAlign(
-            alignment: onCart
-                ? AlignmentDirectional.centerStart
-                : AlignmentDirectional.centerEnd,
-            duration: MotionGuard.duration(context, AppMotion.medium),
-            curve: MotionGuard.curve(context, AppMotion.signature),
-            child: FractionallySizedBox(
-              widthFactor: _thumbWidth,
-              heightFactor: _thumbHeight,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                  boxShadow: AppShadows.low,
-                ),
+      child: SegmentedThumbTrack(
+        count: _views.length,
+        selected: view.index,
+        thumb: DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            boxShadow: AppShadows.low,
+          ),
+        ),
+        onSelected: (i) => onChanged(_views[i]),
+        segmentBuilder: (context, i, select, _) =>
+            _views[i] == ShellBasketView.cart
+            ? ShellBasketSegment(
+                icon: HeroIcons.cart,
+                label: 'cart.title'.tr(),
+                count: cartCount,
+                selected: onCart,
+                onTap: select,
+              )
+            : ShellBasketSegment(
+                icon: Icons.receipt_long_rounded,
+                label: 'orders.history_title'.tr(),
+                selected: !onCart,
+                onTap: select,
               ),
-            ),
-          ),
-          Positioned.fill(
-            child: Row(
-              children: [
-                Expanded(
-                  child: ShellBasketSegment(
-                    icon: HeroIcons.cart,
-                    label: 'cart.title'.tr(),
-                    count: cartCount,
-                    selected: onCart,
-                    onTap: () => onChanged(ShellBasketView.cart),
-                  ),
-                ),
-                Expanded(
-                  child: ShellBasketSegment(
-                    icon: Icons.receipt_long_rounded,
-                    label: 'orders.history_title'.tr(),
-                    selected: !onCart,
-                    onTap: () => onChanged(ShellBasketView.orderHistory),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

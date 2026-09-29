@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/domain/entities/brand_entity.dart';
+import '../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../domain/entities/home_section_entity.dart';
 import 'home_brand_chip.dart';
 import 'home_layout.dart';
-import 'home_reveal_item.dart';
 import 'home_section_block.dart';
 
 /// "Shop by brand": a lazily built horizontal strip of round brand logos.
@@ -38,7 +38,7 @@ class HomeBrandRail extends StatelessWidget {
           ),
           itemCount: brands.length,
           separatorBuilder: (_, _) => const SizedBox(width: HomeLayout.itemGap),
-          itemBuilder: (context, index) => HomeRevealItem(
+          itemBuilder: (context, index) => EntranceCascadeItem(
             key: ValueKey(brands[index].id),
             index: index,
             child: HomeBrandChip(

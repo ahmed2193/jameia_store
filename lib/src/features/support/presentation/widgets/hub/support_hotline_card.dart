@@ -7,6 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/press_row.dart';
 import 'support_section_card.dart';
 
 /// The hotline row. Hero's `hotlinePhone` calls through `callPhone`; the
@@ -19,7 +20,7 @@ class SupportHotlineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SupportSectionCard(
-      child: InkWell(
+      child: PressRow(
         borderRadius: BorderRadius.circular(AppRadius.card),
         onTap: () => showHeroSnackBar(
           context,

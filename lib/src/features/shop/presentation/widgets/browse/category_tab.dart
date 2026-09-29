@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// One top-level category in the store's tab bar: bold with the near-black
@@ -24,9 +25,8 @@ class CategoryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return PressScale(
       onTap: onTap,
-      behavior: HitTestBehavior.opaque,
       child: Container(
         alignment: AlignmentDirectional.center,
         padding: const EdgeInsetsDirectional.symmetric(

@@ -49,11 +49,11 @@ class _CartCouponSheetState extends State<CartCouponSheet> {
     );
     if (!mounted) return;
     if (applied) {
-      Haptics.success();
+      Haptics.done();
       context.pop();
       return;
     }
-    Haptics.warning();
+    Haptics.refuse();
     setState(() => _refusals++);
   }
 

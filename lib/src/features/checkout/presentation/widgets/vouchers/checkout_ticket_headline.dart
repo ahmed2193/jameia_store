@@ -7,12 +7,21 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
-/// A ticket's first line: the tilted amber ticket glyph and the value in
-/// big bold type ("10% off", a coupon code), one line.
+/// A ticket's first line: the glyph — the offer kind's Hero plate
+/// ([OfferPlate]: "%", voucher, scooter, gift) or, for a coupon code and any
+/// other offer, the tilted amber ticket — and the value in big bold type
+/// ("10% off", a coupon code), one line.
 class CheckoutTicketHeadline extends StatelessWidget {
-  const CheckoutTicketHeadline({super.key, required this.text});
+  const CheckoutTicketHeadline({
+    super.key,
+    required this.text,
+    this.asset = HeroAssets.checkoutTicket,
+  });
 
   final String text;
+
+  /// A `HeroAssets` plate.
+  final String asset;
 
   static const double iconSize = AppSize.s26;
 
@@ -21,7 +30,7 @@ class CheckoutTicketHeadline extends StatelessWidget {
     return Row(
       children: [
         SvgPicture.asset(
-          HeroAssets.checkoutTicket,
+          asset,
           width: iconSize,
           height: iconSize,
           excludeFromSemantics: true,

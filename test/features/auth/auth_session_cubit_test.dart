@@ -225,11 +225,13 @@ void main() {
         restoreSession.gate!.complete();
         await restoring;
       },
+      // The OTP sign-in counts (a new session), the restore does not.
       expect: () => [
         const AuthSessionState(
           status: AuthSessionStatus.signedIn,
           customer: edited,
           isVerified: true,
+          signIns: 1,
         ),
       ],
       verify: (_) => expect(saveCached.saved, [edited]),
@@ -269,7 +271,7 @@ void main() {
       expired: true,
     ),
     act: (cubit) => cubit.signedIn(kCustomer),
-    expect: () => [verified],
+    expect: () => [verified.copyWith(signIns: 1)],
     verify: (_) => expect(saveCached.saved, [kCustomer]),
   );
 

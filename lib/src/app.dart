@@ -8,8 +8,11 @@ import 'config/di/app_global_cubits.dart';
 import 'config/routes/app_router.dart';
 import 'config/routes/routes.dart';
 import 'config/theme/app_theme.dart';
+import 'core/motion/haptics.dart';
+import 'core/motion/locale_swap_veil_host.dart';
 import 'core/widgets/hero_image.dart';
 import 'features/account/presentation/cubit/setting_cubit.dart';
+import 'features/account/presentation/cubit/setting_state.dart';
 import 'features/address/presentation/cubit/address_book_cubit.dart';
 import 'features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'features/auth/presentation/cubit/auth_session_cubit.dart';
@@ -44,6 +47,14 @@ class _HeroAppState extends State<HeroApp> {
   static bool _isOnSplash() {
     final path = appRouter.routerDelegate.currentConfiguration.uri.path;
     return path.isEmpty || path == Routes.splash;
+  }
+
+  /// The stored settings are read at launch, so the vibration mute applies
+  /// from the first tap; a listener below follows every later change.
+  static SettingCubit _setting() {
+    final setting = AppGlobalCubits.setting()..loadPreferences();
+    Haptics.enabled = setting.state.hapticsEnabled;
+    return setting;
   }
 
   void _syncAccountLanguage(BuildContext context) {
@@ -82,7 +93,7 @@ class _HeroAppState extends State<HeroApp> {
         BlocProvider<LocalizationCubit>(
           create: (_) => AppGlobalCubits.localization(),
         ),
-        BlocProvider<SettingCubit>(create: (_) => AppGlobalCubits.setting()),
+        BlocProvider<SettingCubit>(create: (_) => _setting()),
         BlocProvider<AuthSessionCubit>(
           create: (_) => AppGlobalCubits.authSession(),
         ),
@@ -104,6 +115,12 @@ class _HeroAppState extends State<HeroApp> {
       ],
       child: MultiBlocListener(
         listeners: [
+          // The customer's vibration choice mutes every haptic in one place.
+          BlocListener<SettingCubit, SettingState>(
+            listenWhen: (previous, current) =>
+                previous.hapticsEnabled != current.hapticsEnabled,
+            listener: (_, state) => Haptics.enabled = state.hapticsEnabled,
+          ),
           // The saved-address book follows the session: device copy + a sync
           // on sign-in (OTP or launch restore) and whenever the signed-in
           // customer changes; wiped from memory and disk on sign-out / expiry
@@ -243,13 +260,16 @@ class _HeroAppState extends State<HeroApp> {
               supportedLocales: context.supportedLocales,
               locale: context.locale,
               // The connection banner sits above every route (pages, sheets,
-              // dialogs) and pushes them down; never over the splash.
+              // dialogs) and pushes them down; never over the splash. The
+              // language veil goes over both (docs/motion B3-04).
               builder: (context, child) => MediaQuery.withClampedTextScaling(
                 maxScaleFactor: _maxTextScaleFactor,
-                child: ConnectivityBannerHost(
-                  routeChanges: appRouter.routerDelegate,
-                  isOnSplash: _isOnSplash,
-                  child: child!,
+                child: LocaleSwapVeilHost(
+                  child: ConnectivityBannerHost(
+                    routeChanges: appRouter.routerDelegate,
+                    isOnSplash: _isOnSplash,
+                    child: child!,
+                  ),
                 ),
               ),
             );

@@ -34,14 +34,19 @@ import 'package:hero_mart/src/config/routes/placeholder_page.dart';
 import 'package:hero_mart/src/config/routes/route_args/assistant_chat_args.dart';
 import 'package:hero_mart/src/config/routes/route_args/category_args.dart';
 import 'package:hero_mart/src/config/routes/route_args/pdp_image_viewer_args.dart';
+import 'package:hero_mart/src/config/routes/route_args/placed_order_args.dart';
 import 'package:hero_mart/src/config/routes/route_args/product_detail_args.dart';
 import 'package:hero_mart/src/config/routes/route_args/product_listing_args.dart';
+import 'package:hero_mart/src/config/routes/route_args/shell_arrival.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
 import 'package:hero_mart/src/core/data/hero_repository.dart';
+import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_query.dart';
 import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/hero_address_entity.dart';
+import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
+import 'package:hero_mart/src/core/navigation/navigation.dart';
 import 'package:hero_mart/src/features/account/presentation/cubit/setting_cubit.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/loyalty_page.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/loyalty_rewards_page.dart';
@@ -84,6 +89,8 @@ import 'package:hero_mart/src/features/recipes/presentation/pages/recipe_detail_
 import 'package:hero_mart/src/features/recipes/presentation/pages/recipes_page.dart';
 import 'package:hero_mart/src/features/search/presentation/pages/search_page.dart';
 import 'package:hero_mart/src/features/shell/presentation/pages/main_shell_page.dart';
+import 'package:hero_mart/src/features/shell/presentation/widgets/shell_nav_item.dart';
+import 'package:hero_mart/src/features/shell/presentation/widgets/shell_tab_stack.dart';
 import 'package:hero_mart/src/features/shop/presentation/pages/brands_page.dart';
 import 'package:hero_mart/src/features/shop/presentation/pages/categories_page.dart';
 import 'package:hero_mart/src/features/shop/presentation/pages/category_page.dart';
@@ -94,6 +101,7 @@ import 'package:hero_mart/src/features/store_mode/presentation/pages/pro_members
 import 'package:hero_mart/src/features/support/presentation/pages/customer_service_page.dart';
 import 'package:hero_mart/src/features/support/presentation/pages/customer_service_question_page.dart';
 import 'package:hero_mart/src/features/support/presentation/pages/im_chat_page.dart';
+import 'package:hero_mart/src/features/support/presentation/pages/order_help_page.dart';
 
 import 'features/address/address_test_fakes.dart';
 import 'core/network/network_test_fakes.dart';
@@ -207,7 +215,7 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
     Routes.productDetail,
     PlaceholderPage,
     note: 'an offline catalogue DTO is no longer a valid extra',
-    extra: (repo) => repo.shops.first,
+    extra: (repo) => repo.user,
   ),
   _RouteCase(
     Routes.pdpImageViewer,
@@ -307,6 +315,17 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
         expect(_page<CustomerServiceQuestionPage>(t).arg, extra),
   ),
   _RouteCase(Routes.imChat, ImChatPage, extra: (_) => 'o1'),
+  _RouteCase(
+    Routes.orderHelp,
+    OrderHelpPage,
+    extra: (_) => const OrderEntity(id: 'o1', orderNumber: '1001'),
+    verify: (t, extra) => expect(_page<OrderHelpPage>(t).order, extra),
+  ),
+  const _RouteCase(
+    Routes.orderHelp,
+    CustomerServicePage,
+    note: 'no order extra: the help hub',
+  ),
   const _RouteCase(Routes.offers, OffersPage),
   _RouteCase(
     Routes.contentPage,
@@ -341,6 +360,47 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
   ),
   const _RouteCase(Routes.login, LoginPage),
 ];
+
+final Matcher _forward = isA<HeroTransitionPage<Object?>>();
+final Matcher _modal = isA<HeroSlideUpTransitionPage<Object?>>();
+final Matcher _swap = isA<HeroFadeThroughPage<Object?>>();
+
+/// The page type each route presents with (docs/motion §9.4 page map, B2-02):
+/// forward steps on the shared X axis, modal layers slide up, new roots
+/// fade through.
+final Map<String, Matcher> _pageTypes = <String, Matcher>{
+  Routes.shell: _swap,
+  Routes.login: _swap,
+  Routes.otpVerify: isA<HeroCrossFadePage<Object?>>(),
+  Routes.productDetail: _modal,
+  Routes.pdpImageViewer: _modal,
+  Routes.assistant: _modal,
+  Routes.search: _modal,
+  Routes.cartPreview: _modal,
+  Routes.proMembership: _modal,
+  Routes.checkout: _forward,
+  Routes.checkoutVouchers: _forward,
+  Routes.orderTracking: _forward,
+  Routes.orderReview: _forward,
+  Routes.orderInvoice: _forward,
+  Routes.myCoupons: _forward,
+  Routes.historyCoupons: _forward,
+  Routes.contentPage: _forward,
+  Routes.customerService: _forward,
+  Routes.customerServiceQuestion: _forward,
+  Routes.imChat: _forward,
+  Routes.orderHelp: _forward,
+  Routes.mineSettings: _forward,
+  Routes.mineAbout: _forward,
+  Routes.searchShop: _forward,
+  Routes.assistantHistory: _forward,
+  Routes.offers: _forward,
+};
+
+/// The page the top-most [pageType] widget was presented with.
+Page<Object?> _presentedWith(WidgetTester tester, Type pageType) =>
+    ModalRoute.of(tester.element(find.byType(pageType).last))!.settings
+        as Page<Object?>;
 
 /// A trivially cheap base page every case is pushed on top of, so each test
 /// exercises `push` over an existing stack.
@@ -487,6 +547,14 @@ void main() {
         );
         expect(currentPath(router), routeCase.path);
         routeCase.verify?.call(tester, extra);
+        final presented = _pageTypes[routeCase.path];
+        if (presented != null) {
+          expect(
+            _presentedWith(tester, routeCase.pageType),
+            presented,
+            reason: '${routeCase.path} page type',
+          );
+        }
 
         await teardownApp(tester);
       });
@@ -623,6 +691,89 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
     expect(find.byType(MineAboutPage), findsNothing);
     expect(router.canPop(), isFalse);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('tracking right after the order was placed fades through', (
+    tester,
+  ) async {
+    final router = await pumpRouterApp(tester);
+
+    router.push(Routes.orderTracking, extra: const PlacedOrderArgs('o1'));
+    await settleTransition(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(_page<OrderTrackingPage>(tester).orderId, 'o1');
+    expect(_presentedWith(tester, OrderTrackingPage), _swap);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a go back to the shell keeps it and its tabs, on Home', (
+    tester,
+  ) async {
+    final router = await pumpRouterApp(tester, initialLocation: Routes.shell);
+    await settleTransition(tester);
+    final shell = tester.state(find.byType(MainShellPage));
+    IndexedStack tabs() => tester.widget<IndexedStack>(
+      find.descendant(
+        of: find.byType(MainShellPage),
+        matching: find.byType(IndexedStack),
+      ),
+    );
+
+    // On the Search tab, then a sign-in on top (as from the Mine header).
+    await tester.tap(find.byType(ShellNavItem).at(1));
+    await settleTransition(tester);
+    expect(tabs().index, 1);
+    router.push(Routes.login);
+    await settleTransition(tester);
+
+    // Signed in: every arrival is a `go` to the shell.
+    router.go(Routes.shell, extra: ShellArrival());
+    await settleTransition(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(LoginPage), findsNothing);
+    expect(router.canPop(), isFalse);
+    expect(tester.state(find.byType(MainShellPage)), same(shell));
+    expect(tabs().index, 0);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a sign-in over the kept shell rebuilds its tabs for the new '
+      'session; a plain go back keeps them', (tester) async {
+    final router = await pumpRouterApp(tester, initialLocation: Routes.shell);
+    await settleTransition(tester);
+    final session = tester
+        .element(find.byType(MainShellPage))
+        .read<AuthSessionCubit>();
+    await tester.runAsync(session.restore);
+    await settleTransition(tester);
+    expect(session.state.isSignedIn, isFalse, reason: 'a guest');
+    State<StatefulWidget> tabStack() =>
+        tester.state(find.byType(ShellTabStack));
+    final guestTabs = tabStack();
+
+    // A plain go back to the shell: the same tabs.
+    router.push(Routes.login);
+    await settleTransition(tester);
+    router.go(Routes.shell, extra: ShellArrival());
+    await settleTransition(tester);
+    expect(tabStack(), same(guestTabs));
+
+    // A sign-in from a login page pushed over it: the tabs start over.
+    router.push(Routes.login);
+    await settleTransition(tester);
+    session.signedIn(const AuthCustomerEntity(id: 'c1', phone: '+96550001122'));
+    router.go(Routes.shell, extra: ShellArrival());
+    await settleTransition(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(LoginPage), findsNothing);
+    expect(tabStack(), isNot(same(guestTabs)));
 
     await teardownApp(tester);
   });

@@ -21,11 +21,13 @@ class AssistantOnboardingStage extends StatelessWidget {
     super.key,
     required this.step,
     required this.active,
+    this.played = false,
     required this.onCue,
   });
 
   final AssistantOnboardingStep step;
   final bool active;
+  final bool played;
   final ValueChanged<AssistantOnboardingCue> onCue;
 
   static const BorderRadius _corners = BorderRadius.all(
@@ -46,22 +48,27 @@ class AssistantOnboardingStage extends StatelessWidget {
     final scene = switch (step) {
       AssistantOnboardingStep.hello => AssistantOnboardingHelloScene(
         active: active,
+        played: played,
         onCue: onCue,
       ),
       AssistantOnboardingStep.ask => AssistantOnboardingAskScene(
         active: active,
+        played: played,
         onCue: onCue,
       ),
       AssistantOnboardingStep.cart => AssistantOnboardingCartScene(
         active: active,
+        played: played,
         onCue: onCue,
       ),
       AssistantOnboardingStep.more => AssistantOnboardingMoreScene(
         active: active,
+        played: played,
         onCue: onCue,
       ),
       AssistantOnboardingStep.ready => AssistantOnboardingReadyScene(
         active: active,
+        played: played,
         onCue: onCue,
       ),
     };

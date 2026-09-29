@@ -4,11 +4,12 @@ import '../../../core/navigation/navigation.dart';
 import '../../../features/store_mode/presentation/pages/pro_membership_page.dart';
 import '../routes.dart';
 
-/// Pro membership (the backend's replacement of the VIP ⇄ Mart store mode).
+/// Pro membership (the backend's replacement of the VIP ⇄ Mart store mode):
+/// the paywall is a modal layer, so it slides up.
 final List<RouteBase> storeModeRoutes = <RouteBase>[
   GoRoute(
     path: Routes.proMembership,
-    pageBuilder: (_, state) => HeroTransitionPage<Object?>(
+    pageBuilder: (_, state) => HeroSlideUpTransitionPage<Object?>(
       key: state.pageKey,
       name: state.uri.path,
       child: const ProMembershipPage(),

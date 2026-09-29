@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/design/hero_assets.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
@@ -44,7 +45,7 @@ class ContentPageBody extends StatelessWidget {
             if (page.isEmpty) {
               return EmptyStateView(
                 message: 'content.empty'.tr(),
-                icon: Icons.article_outlined,
+                art: HeroAssets.stateNotFound,
               );
             }
             return SingleChildScrollView(

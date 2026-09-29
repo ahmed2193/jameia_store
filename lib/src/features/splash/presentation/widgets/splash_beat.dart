@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/animation.dart';
 
+import '../../../../core/motion/motion.dart';
+
 /// Timeline maths for the splash choreographies: progress of a beat that
 /// starts at [start] ms and lasts [length] ms, and the usual blends.
 abstract final class SplashBeat {
@@ -10,7 +12,7 @@ abstract final class SplashBeat {
     double ms,
     double start,
     double length, [
-    Curve curve = Curves.linear,
+    Curve curve = AppMotion.linear,
   ]) {
     if (length <= 0) return ms >= start ? 1 : 0;
     final t = ((ms - start) / length).clamp(0.0, 1.0);

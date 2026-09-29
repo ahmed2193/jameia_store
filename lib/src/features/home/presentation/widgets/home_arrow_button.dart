@@ -6,7 +6,6 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
-import 'home_loop.dart';
 
 /// The storefront's round "→": opens what a block advertises — its
 /// collection, the campaign behind a banner. A lifted white disc with an ink
@@ -43,6 +42,10 @@ class HomeArrowButton extends StatelessWidget {
   /// How far a push goes.
   static const double _push = AppSpacing.s3;
 
+  /// One nudge, then a still rest twice as long.
+  static const Duration _nudge = Duration(milliseconds: 1200);
+  static const Duration _nudgeRest = Duration(milliseconds: 2400);
+
   /// Two quick pushes: one burst, then the loop rests.
   static final Animatable<double> _pushes = TweenSequence<double>([
     TweenSequenceItem(tween: Tween(begin: 0, end: 1), weight: 1),
@@ -78,10 +81,10 @@ class HomeArrowButton extends StatelessWidget {
             boxShadow: AppShadows.medium,
           ),
           child: nudge
-              ? HomeLoop(
-                  period: AppMotion.sheen ~/ 3,
-                  rest: AppMotion.sheen ~/ 3 * 2,
-                  builder: (context, t, glyph) => Transform.translate(
+              ? AmbientLoop.value(
+                  period: _nudge,
+                  rest: _nudgeRest,
+                  valueBuilder: (context, t, glyph) => Transform.translate(
                     offset: Offset(forward * _push * _pushes.transform(t), 0),
                     child: glyph,
                   ),

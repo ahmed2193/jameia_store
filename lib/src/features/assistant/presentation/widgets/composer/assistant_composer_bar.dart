@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/collapse_reveal.dart';
+import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../domain/entities/assistant_prompt.dart';
 import '../../cubit/assistant_voice_cubit.dart';
@@ -62,10 +64,16 @@ class AssistantComposerBar extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (!phase.isRecording && AssistantPrompt.showsCounter(text))
-              AssistantCharCounter(
+            // Folds in over `fast` near the limit instead of pushing the
+            // box up in one frame (docs/motion §9.6 §2.12).
+            CollapseReveal(
+              visible: !phase.isRecording && AssistantPrompt.showsCounter(text),
+              duration: AppMotion.fast,
+              alignment: AlignmentDirectional.bottomEnd,
+              child: AssistantCharCounter(
                 length: AssistantPrompt.lengthOf(text.trim()),
               ),
+            ),
             AssistantVoiceReveal(
               shown: locked,
               child: const AssistantVoiceLockedPanel(),

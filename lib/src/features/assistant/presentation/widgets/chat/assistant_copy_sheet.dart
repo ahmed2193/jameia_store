@@ -25,7 +25,12 @@ class AssistantCopySheet extends StatelessWidget {
   /// Copies [text] and confirms it.
   static Future<void> copy(BuildContext context, String text) async {
     await Clipboard.setData(ClipboardData(text: text));
-    if (context.mounted) showHeroSnackBar(context, 'assistant.copied'.tr());
+    if (!context.mounted) return;
+    showHeroSnackBar(
+      context,
+      'assistant.copied'.tr(),
+      tone: HeroSnackTone.success,
+    );
   }
 
   @override

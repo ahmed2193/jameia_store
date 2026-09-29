@@ -63,13 +63,11 @@ class _BackToTopOverlayState extends State<BackToTopOverlay> {
   void _toTop() {
     final list = _list;
     if (list == null || !list.hasPixels) return;
-    if (MotionGuard.reduced(context)) {
-      list.jumpTo(0);
-      return;
-    }
-    list.animateTo(
+    MotionGuard.scrollTo(
+      context,
+      list,
       0,
-      duration: AppMotion.sheetLarge,
+      duration: AppMotion.slow,
       curve: AppMotion.emphasizedDecelerate,
     );
   }

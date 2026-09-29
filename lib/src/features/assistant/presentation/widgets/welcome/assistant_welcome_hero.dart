@@ -36,8 +36,10 @@ class AssistantWelcomeHero extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Center(
+              // Settles in once from 0.9, then stays still (§2.12).
               child: PopScale.onMount(
-                child: AssistantAvatar(size: AppSize.s72, alive: true),
+                from: PopScale.artFrom,
+                child: AssistantAvatar(size: AppSize.s72),
               ),
             ),
           ),

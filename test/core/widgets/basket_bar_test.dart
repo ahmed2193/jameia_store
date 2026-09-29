@@ -17,6 +17,8 @@ import 'package:hero_mart/src/core/widgets/sticker_text.dart';
 import 'package:hero_mart/src/core/widgets/view_cart_pill.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../motion/rolling_test_finders.dart';
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -54,7 +56,7 @@ void main() {
       );
 
       expect(find.byType(CartBasketBadge), findsOneWidget);
-      expect(find.text('11'), findsOneWidget);
+      expect(findRolled('11'), findsOneWidget);
       expect(find.text('Free delivery'), findsOneWidget);
       expect(find.text('View cart'), findsOneWidget);
       expect(
@@ -74,7 +76,12 @@ void main() {
         tester,
         const Column(
           children: [
-            ViewCartPill(count: 1, totalKd: 2.25, deliveryKd: 0.65, onTap: _noop),
+            ViewCartPill(
+              count: 1,
+              totalKd: 2.25,
+              deliveryKd: 0.65,
+              onTap: _noop,
+            ),
             ViewCartPill(count: 1, totalKd: 2.25, onTap: _noop),
           ],
         ),

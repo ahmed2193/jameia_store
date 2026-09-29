@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/shelf_product_card.dart';
 import 'listing_product_tile.dart';
-import 'listing_reveal_item.dart';
 
 /// The product grid of a listing as a lazily built sliver: two columns on a
 /// phone, more as the screen widens. The cell height follows the card
 /// ([ShelfProductCard.cellHeight]), so nothing is measured. The first cards
-/// come in one after another as a list arrives ([ListingRevealItem], after
-/// [firstRevealIndex] pieces above the grid).
+/// come in one after another as the listing first arrives
+/// ([EntranceCascadeItem], after [firstRevealIndex] pieces above the grid).
 class ProductGridSliver extends StatelessWidget {
   const ProductGridSliver({
     super.key,
@@ -71,7 +71,7 @@ class ProductGridSliver extends StatelessWidget {
             // Tiles isolate their own repaints (see [ListingProductTile]).
             addRepaintBoundaries: false,
             addAutomaticKeepAlives: false,
-            itemBuilder: (context, index) => ListingRevealItem(
+            itemBuilder: (context, index) => EntranceCascadeItem(
               key: ValueKey<String>(products[index].id),
               index: firstRevealIndex + index,
               child: ListingProductTile(

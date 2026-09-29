@@ -3,31 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/assistant_day_part.dart';
 import '../../../domain/entities/assistant_starter.dart';
-import '../chat/assistant_entrance.dart';
 import '../chat/assistant_suggestion_chip.dart';
 import '../welcome/assistant_starter_icons.dart';
 
 /// The last step's ways to start — picked for this moment like the chat's
-/// welcome — rising in one after another once the step is [active], in one
+/// welcome — rising in one after another once the step first comes in
+/// front ([active]; at rest on a step already [played]), in one
 /// row that scrolls sideways when they do not fit (the demo above keeps its
 /// room). A tap closes the tour and opens the chat with that question.
 class AssistantOnboardingStarters extends StatelessWidget {
   const AssistantOnboardingStarters({
     super.key,
     required this.active,
+    this.played = false,
     required this.onStarter,
   });
 
   final bool active;
+  final bool played;
   final ValueChanged<AssistantStarter> onStarter;
 
   static const int _count = 3;
-  static const Duration _after = Duration(milliseconds: 160);
-  static const Duration _stagger = Duration(milliseconds: 60);
-  static const Offset _rise = Offset(0, 0.4);
+
+  /// The chips follow the caption's two lines.
+  static const int _firstStep = 2;
 
   @override
   Widget build(BuildContext context) {
@@ -45,11 +48,10 @@ class AssistantOnboardingStarters extends StatelessWidget {
           children: [
             for (final (index, starter) in starters.indexed) ...[
               if (index > 0) const SizedBox(width: AppSpacing.s8),
-              AssistantEntrance(
+              EntranceCascadeItem.single(
                 key: ValueKey<(AssistantStarter, bool)>((starter, active)),
-                animate: active,
-                delay: _after + _stagger * index,
-                beginOffset: _rise,
+                play: active && !played,
+                index: _firstStep + index,
                 child: AssistantSuggestionChip(
                   label: starter.labelKey.tr(),
                   icon: starter.icon,

@@ -74,6 +74,23 @@ class AddressBook extends Equatable {
     );
   }
 
+  /// [address] put back at [index] (clamped), e.g. a delete that was undone
+  /// or refused. It keeps its default flag only while no other address holds
+  /// it; an id already in the book leaves the book unchanged.
+  AddressBook restore(HeroAddressEntity address, int index) {
+    if (byId(address.id) != null) return this;
+    final keepsDefault = !address.isDefault || flaggedDefault == null;
+    final restored = keepsDefault
+        ? address
+        : address.copyWith(isDefault: false);
+    final at = index.clamp(0, addresses.length);
+    return AddressBook.of([
+      ...addresses.take(at),
+      restored,
+      ...addresses.skip(at),
+    ]);
+  }
+
   static List<HeroAddressEntity> _defaultFirst(
     List<HeroAddressEntity> addresses,
   ) {

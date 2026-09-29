@@ -16,7 +16,7 @@ class SearchLocalDataSourceImpl implements SearchLocalDataSource {
   final LocalStorage _storage;
 
   /// Unchanged since the offline search: the customer keeps their history.
-  static const String recentsKey = 'jameia.search.recents.v1';
+  static const String recentsKey = 'hero.search.recents.v1';
 
   @override
   List<String> readRecentSearches() {

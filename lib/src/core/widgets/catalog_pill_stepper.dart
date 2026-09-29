@@ -5,11 +5,14 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_shadows.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../motion/rolling_number.dart';
 import '../responsive/app_size.dart';
 import 'catalog_step_button.dart';
 
 /// The "− qty +" pill a product card shows once the product is in the cart.
-/// The minus turns into a bin at quantity 1.
+/// The minus turns into a bin at quantity 1 (the glyphs cross-fade); the
+/// count rolls up on a + and down on a − ([RollingNumber], static on the
+/// first build); the buttons sink under the finger.
 class CatalogPillStepper extends StatelessWidget {
   const CatalogPillStepper({
     super.key,
@@ -46,8 +49,8 @@ class CatalogPillStepper extends StatelessWidget {
           Container(
             constraints: const BoxConstraints(minWidth: AppSize.s24),
             alignment: Alignment.center,
-            child: Text(
-              '$qty',
+            child: RollingNumber(
+              value: qty,
               style: AppTextStyles.bodyMedium.copyWith(
                 fontWeight: AppTextStyles.bold,
               ),

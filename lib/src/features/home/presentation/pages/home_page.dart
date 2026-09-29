@@ -14,7 +14,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => BlocProvider(
-    create: (_) => sl<HomeCubit>()..load(),
+    // Already reading: the read the splash started (B1-14), else a fresh
+    // one.
+    create: (_) => sl<HomeCubit>(),
     child: const Scaffold(
       backgroundColor: AppColors.white,
       body: HomeBody(),

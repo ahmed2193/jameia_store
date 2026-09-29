@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/after_arrival.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
@@ -11,7 +12,8 @@ import '../../../../core/widgets/light_sweep.dart';
 
 /// Orange "Use" pill of an available coupon: it dips with a tap haptic when
 /// pressed, and while [shimmers] a soft light band glides across it now and
-/// then (a painted gradient, no GIF).
+/// then (a painted gradient, no GIF) — from once its ticket has landed
+/// ([AfterArrival], backlog B2-03).
 class CouponUseButton extends StatelessWidget {
   const CouponUseButton({
     super.key,
@@ -46,30 +48,32 @@ class CouponUseButton extends StatelessWidget {
             child: RepaintBoundary(
               child: ClipRRect(
                 borderRadius: _radius,
-                child: LightSweep(
-                  active: shimmers,
-                  peakAlpha: _glintAlpha,
-                  borderRadius: _radius,
-                  child: DecoratedBox(
-                    decoration: const BoxDecoration(
-                      borderRadius: _radius,
-                      gradient: LinearGradient(
-                        begin: AlignmentDirectional.centerStart,
-                        end: AlignmentDirectional.centerEnd,
-                        colors: [AppColors.accent3, kHeroPillPin],
+                child: AfterArrival(
+                  builder: (context, landed) => LightSweep(
+                    active: shimmers && landed,
+                    peakAlpha: _glintAlpha,
+                    borderRadius: _radius,
+                    child: DecoratedBox(
+                      decoration: const BoxDecoration(
+                        borderRadius: _radius,
+                        gradient: LinearGradient(
+                          begin: AlignmentDirectional.centerStart,
+                          end: AlignmentDirectional.centerEnd,
+                          colors: [AppColors.accent3, kHeroPillPin],
+                        ),
                       ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsetsDirectional.symmetric(
-                        horizontal: AppSpacing.s14,
-                        vertical: AppSpacing.s6,
-                      ),
-                      child: Text(
-                        'coupons.use'.tr(),
-                        maxLines: 1,
-                        style: AppTextStyles.headingSmall.copyWith(
-                          color: AppColors.white,
-                          fontWeight: AppTextStyles.bold,
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.symmetric(
+                          horizontal: AppSpacing.s14,
+                          vertical: AppSpacing.s6,
+                        ),
+                        child: Text(
+                          'coupons.use'.tr(),
+                          maxLines: 1,
+                          style: AppTextStyles.headingSmall.copyWith(
+                            color: AppColors.white,
+                            fontWeight: AppTextStyles.bold,
+                          ),
                         ),
                       ),
                     ),

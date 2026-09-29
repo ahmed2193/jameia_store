@@ -34,7 +34,6 @@ import 'package:hero_mart/src/features/shop/domain/usecases/watch_brands_usecase
 import 'package:hero_mart/src/features/shop/domain/usecases/watch_category_tree_usecase.dart';
 import 'package:hero_mart/src/features/shop/domain/usecases/watch_products_usecase.dart';
 import 'package:hero_mart/src/features/shop/presentation/cubit/brands_cubit.dart';
-import 'package:hero_mart/src/features/shop/presentation/cubit/brands_state.dart';
 import 'package:hero_mart/src/features/shop/presentation/cubit/category_browse_cubit.dart';
 import 'package:hero_mart/src/features/shop/presentation/cubit/category_browse_state.dart';
 import 'package:hero_mart/src/features/shop/presentation/cubit/product_listing_cubit.dart';

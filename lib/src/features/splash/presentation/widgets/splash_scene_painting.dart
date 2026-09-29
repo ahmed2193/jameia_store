@@ -110,11 +110,14 @@ abstract final class SplashScenePainting {
     final ground =
         SplashLayout.groundOf(frame.markCenter, unit) -
         Offset(0, frame.lift * unit);
-    final back = Offset(-math.sin(speedLineSlant), math.cos(speedLineSlant));
+    final back = Offset(
+      -math.sin(speedLineSlant) * frame.forward,
+      math.cos(speedLineSlant),
+    );
     final color = palette.speedLine;
     for (final (across, length) in speedLines) {
       final start = Offset(
-        ground.dx + across * _bagWidth * unit,
+        ground.dx + across * _bagWidth * unit * frame.forward,
         ground.dy + speedLineGap * unit,
       );
       final reach = frame.speedLines * length * HeroMark.bounds.height * unit;

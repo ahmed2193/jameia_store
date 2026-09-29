@@ -13,8 +13,9 @@ import '../cubit/pro_membership_cubit.dart';
 import '../cubit/pro_membership_state.dart';
 
 /// The selected plan's pitch for a non-member: what Pro saves, the price per
-/// month in big violet (counting from the previous plan's figure to the new
-/// one when the customer switches plans), and how it is billed.
+/// month in big violet (only its digits roll, up or down, when the customer
+/// switches plans — the app's one money motion), and how it is billed. A plan
+/// switch lands here a beat after the tabs' thumb moved (backlog B2-03).
 class ProPlanPrice extends StatelessWidget {
   const ProPlanPrice({super.key});
 
@@ -25,11 +26,14 @@ class ProPlanPrice extends StatelessWidget {
       ? plan.priceKd
       : plan.monthlyPriceKd ?? plan.priceKd;
 
-  static String _headline(ProBillingInterval interval, double kd) =>
+  /// The headline around the written-out [amount].
+  static String _headline(ProBillingInterval interval, String amount) =>
       (interval == ProBillingInterval.other
               ? 'pro.per_period'
               : 'pro.per_month')
-          .tr(namedArgs: {'price': Formatters.price(kd)});
+          .tr(namedArgs: {'price': Formatters.priceOf(amount)});
+
+  static String _amount(num kd) => Formatters.amount(kd.toDouble());
 
   /// `null` for an interval the app does not know (no billing cadence to
   /// describe).
@@ -54,47 +58,56 @@ class ProPlanPrice extends StatelessWidget {
           previous.selectedPlan != current.selectedPlan ||
           previous.program.perks.freeDelivery !=
               current.program.perks.freeDelivery,
-      builder: (context, state) {
-        final plan = state.selectedPlan;
-        if (plan == null) return const SizedBox.shrink();
-        final billing = _billing(plan);
-        final interval = plan.interval;
-        return Column(
-          children: [
-            Text(
-              state.program.perks.freeDelivery
-                  ? 'pro.greeting_free_delivery'.tr()
-                  : 'pro.greeting_generic'.tr(),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.subheadingLarge.copyWith(
-                color: AppColors.primaryText,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.s8),
-            CountUpText(
-              value: _headlineKd(plan),
-              format: (kd) => _headline(interval, kd),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.displayLarge.copyWith(
-                fontSize: AppSize.font30,
-                height: AppSize.lh1_2,
-                fontWeight: AppTextStyles.bold,
-                color: AppColors.accentViolet,
-              ),
-            ),
-            if (billing != null) ...[
-              const SizedBox(height: AppSpacing.s4),
+      builder: (context, state) => DeferredValue<ProPlan?>(
+        value: state.selectedPlan,
+        delay: MotionBeat.second,
+        deferWhen: (shown, next) => shown != null && next != null,
+        builder: (context, plan) {
+          if (plan == null) return const SizedBox.shrink();
+          final billing = _billing(plan);
+          final interval = plan.interval;
+          return Column(
+            children: [
               Text(
-                billing,
+                state.program.perks.freeDelivery
+                    ? 'pro.greeting_free_delivery'.tr()
+                    : 'pro.greeting_generic'.tr(),
                 textAlign: TextAlign.center,
-                style: AppTextStyles.captionLarge.copyWith(
-                  color: AppColors.secondaryText,
+                style: AppTextStyles.subheadingLarge.copyWith(
+                  color: AppColors.primaryText,
                 ),
               ),
+              const SizedBox(height: AppSpacing.s8),
+              RollingNumberText(
+                value: _headlineKd(plan),
+                format: _amount,
+                text: (amount) => _headline(interval, amount),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.displayLarge.copyWith(
+                  fontSize: AppSize.font30,
+                  height: AppSize.lh1_2,
+                  fontWeight: AppTextStyles.bold,
+                  color: AppColors.accentViolet,
+                ),
+              ),
+              if (billing != null) ...[
+                const SizedBox(height: AppSpacing.s4),
+                FlipValue(
+                  flipKey: billing,
+                  alignment: AlignmentDirectional.center,
+                  child: Text(
+                    billing,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.captionLarge.copyWith(
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ],
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

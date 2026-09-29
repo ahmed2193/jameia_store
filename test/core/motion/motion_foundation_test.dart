@@ -2,7 +2,7 @@
 // where the M3 tokens say, fade-through ends on the new child only, the money
 // ticker is static on first build and rolls on change, the language veil
 // commits under itself and always clears, the segmented control reports real
-// changes only, and the shared-axis page cuts instantly under reduced motion.
+// changes only, and the through transition fades and shifts mid-way.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/motion/fade_through_switcher.dart';
@@ -11,8 +11,7 @@ import 'package:hero_mart/src/core/motion/locale_swap_veil_view.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/core/motion/rolling_glyph.dart';
 import 'package:hero_mart/src/core/motion/rolling_number.dart';
-import 'package:hero_mart/src/core/motion/spring_curve.dart';
-import 'package:hero_mart/src/core/navigation/hero_shared_axis_transition.dart';
+import 'package:hero_mart/src/core/navigation/hero_through_transition.dart';
 import 'package:hero_mart/src/core/widgets/hero_segmented_control.dart';
 
 Widget _host(Widget child, {bool reduced = false}) => MaterialApp(
@@ -84,7 +83,7 @@ void main() {
       await tester.pumpWidget(
         _host(RollingNumber(value: 1.750, format: format)),
       );
-      await tester.pump(AppMotion.flip ~/ 2);
+      await tester.pump(AppMotion.medium ~/ 2);
       // Only the "2" → "7" slot is mid-roll: both glyphs are on screen.
       expect(find.text('2'), findsOneWidget);
       expect(find.text('7'), findsOneWidget);
@@ -226,35 +225,15 @@ void main() {
     });
   });
 
-  group('HeroSharedAxisTransition', () {
-    testWidgets('reduced motion is an instant cut', (tester) async {
-      await tester.pumpWidget(
-        _host(
-          const HeroSharedAxisTransition(
-            animation: AlwaysStoppedAnimation<double>(0.5),
-            secondaryAnimation: AlwaysStoppedAnimation<double>(0),
-            child: Text('page'),
-          ),
-          reduced: true,
-        ),
-      );
-      expect(
-        find.descendant(
-          of: find.byType(HeroSharedAxisTransition),
-          matching: find.byType(FadeTransition),
-        ),
-        findsNothing,
-      );
-    });
-
+  group('HeroThroughTransition', () {
     testWidgets('mid-transition the page is partly faded and shifted', (
       tester,
     ) async {
       await tester.pumpWidget(
         _host(
-          const HeroSharedAxisTransition(
+          const HeroThroughTransition(
             animation: AlwaysStoppedAnimation<double>(0.5),
-            secondaryAnimation: AlwaysStoppedAnimation<double>(0),
+            shift: AppMotion.slideShift,
             child: Text('page'),
           ),
         ),
@@ -268,12 +247,36 @@ void main() {
           )
           .map((f) => f.opacity.value);
       expect(fades.any((o) => o > 0 && o < 1), isTrue);
-      final shift = tester.widget<Transform>(
-        find
-            .ancestor(of: find.text('page'), matching: find.byType(Transform))
-            .first,
+      final shifts = tester
+          .widgetList<Transform>(
+            find.ancestor(
+              of: find.text('page'),
+              matching: find.byType(Transform),
+            ),
+          )
+          .map((t) => t.transform.getTranslation().x);
+      expect(shifts.any((x) => x > 0), isTrue);
+    });
+
+    testWidgets('at rest nothing is shifted or faded', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          const HeroThroughTransition(
+            animation: kAlwaysCompleteAnimation,
+            shift: AppMotion.slideShift,
+            child: Text('page'),
+          ),
+        ),
       );
-      expect(shift.transform.getTranslation().x, greaterThan(0));
+      final shifts = tester
+          .widgetList<Transform>(
+            find.ancestor(
+              of: find.text('page'),
+              matching: find.byType(Transform),
+            ),
+          )
+          .map((t) => t.transform.getTranslation().x);
+      expect(shifts.every((x) => x == 0), isTrue);
     });
   });
 }

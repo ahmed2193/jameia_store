@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/route_args/product_listing_args.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/screen_load.dart';
+import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/navigation/screen_failure_listener.dart';
 import '../../../../../core/widgets/branded_refresh.dart';
 import '../../../../../core/widgets/reconnect_refresh.dart';
@@ -15,13 +17,17 @@ import '../../../../../core/widgets/state_views.dart';
 import '../../cubit/brands_cubit.dart';
 import '../../cubit/brands_state.dart';
 import 'brand_tile.dart';
+import 'brands_skeleton.dart';
 
-/// Body of the brands page: loader, the lazily built list (the saved one
+/// Body of the brands page: the list's bones (cross-fading into the
+/// list), the lazily built list (the saved one
 /// first, with the "Updated … ago" note at its top while offline), empty,
 /// error + retry or "No connection" when nothing is saved. A returning
 /// connection refreshes a saved list. A brand opens its product listing.
 class BrandsBody extends StatelessWidget {
   const BrandsBody({super.key});
+
+  static const Object _emptyKey = #empty;
 
   @override
   Widget build(BuildContext context) {
@@ -34,14 +40,23 @@ class BrandsBody extends StatelessWidget {
               previous.brands != current.brands,
           builder: (context, state) {
             final cubit = context.read<BrandsCubit>();
-            switch (state.status) {
-              case LoadPhase.initial:
-              case LoadPhase.loading:
-                return const AppLoader();
-              case LoadPhase.error:
-                return FailureView(failure: state.failure, onRetry: cubit.load);
-              case LoadPhase.loaded:
-                return BrandedRefresh(
+            return FadeThroughSwitcher(
+              // initial and loading share the bones. Every swap is the
+              // same-place cross-fade: the bones land as the list.
+              stateKey: switch (state.status) {
+                LoadPhase.initial => LoadPhase.loading,
+                LoadPhase.loaded when state.isEmpty => _emptyKey,
+                final status => status,
+              },
+              crossFade: true,
+              child: switch (state.status) {
+                LoadPhase.initial ||
+                LoadPhase.loading => const BrandsSkeleton(),
+                LoadPhase.error => FailureView(
+                  failure: state.failure,
+                  onRetry: cubit.load,
+                ),
+                LoadPhase.loaded => BrandedRefresh(
                   onRefresh: cubit.refresh,
                   child: state.isEmpty
                       ? CustomScrollView(
@@ -55,7 +70,7 @@ class BrandsBody extends StatelessWidget {
                               hasScrollBody: false,
                               child: EmptyStateView(
                                 message: 'shop.no_brands'.tr(),
-                                icon: Icons.workspace_premium_outlined,
+                                art: HeroAssets.emptyShelf,
                               ),
                             ),
                           ],
@@ -90,8 +105,9 @@ class BrandsBody extends StatelessWidget {
                             );
                           },
                         ),
-                );
-            }
+                ),
+              },
+            );
           },
         ),
       ),

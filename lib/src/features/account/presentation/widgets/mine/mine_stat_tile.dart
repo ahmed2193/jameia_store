@@ -20,8 +20,6 @@ class MineStatTile extends StatelessWidget {
     required this.onTap,
   });
 
-  static const double _pressedScale = 0.97;
-
   /// The value's text style, shared by every stat so the row lines up.
   static TextStyle get valueStyle => AppTextStyles.headingMedium.copyWith(
     fontWeight: AppTextStyles.bold,
@@ -40,8 +38,6 @@ class MineStatTile extends StatelessWidget {
     return Semantics(
       button: true,
       child: PressScale(
-        pressedScale: _pressedScale,
-        haptic: null,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(

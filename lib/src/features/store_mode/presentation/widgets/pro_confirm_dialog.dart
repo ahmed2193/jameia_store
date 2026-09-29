@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/haptics.dart';
 
 /// "Are you sure?" before a money-related Pro action. Pops with `true` when
 /// confirmed.
@@ -47,7 +48,12 @@ class ProConfirmDialog extends StatelessWidget {
           child: Text('common.cancel'.tr()),
         ),
         TextButton(
-          onPressed: () => context.pop(true),
+          onPressed: () {
+            // A destructive confirm (cancel renewal) warns, on the confirm
+            // only — never on opening the dialog.
+            if (isDestructive) Haptics.destructive();
+            context.pop(true);
+          },
           child: Text(
             confirmLabel,
             style: AppTextStyles.bodyMedium.copyWith(

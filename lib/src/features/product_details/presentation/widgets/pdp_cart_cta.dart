@@ -50,11 +50,6 @@ class PdpCartCta extends StatefulWidget {
   /// How long "Added ✓" stays before the stepper takes over.
   static const Duration addedHold = Duration(milliseconds: 1200);
 
-  static const double _pressedScale = 0.98;
-
-  /// A label grows into place from here as it swaps in.
-  static const double _grownFrom = 0.8;
-
   @override
   State<PdpCartCta> createState() => _PdpCartCtaState();
 }
@@ -134,8 +129,6 @@ class _PdpCartCtaState extends State<PdpCartCta> {
       child: PressScale(
         onTap: _add,
         enabled: tappable,
-        haptic: null,
-        pressedScale: PdpCartCta._pressedScale,
         child: AnimatedContainer(
           duration: MotionGuard.duration(context, AppMotion.fast),
           curve: AppMotion.signature,
@@ -149,19 +142,14 @@ class _PdpCartCtaState extends State<PdpCartCta> {
             color: active ? AppColors.primary : AppColors.divider,
             borderRadius: BorderRadius.circular(AppRadius.r3),
           ),
-          child: AnimatedSwitcher(
-            duration: MotionGuard.duration(context, AppMotion.medium),
-            switchInCurve: AppMotion.signature,
-            switchOutCurve: AppMotion.exit,
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: ScaleTransition(
-                scale: animation.drive(
-                  Tween<double>(begin: PdpCartCta._grownFrom, end: 1),
-                ),
-                child: child,
-              ),
-            ),
+          // The one add → stepper swap of every add surface (docs/motion
+          // BX-09): the new content pops in place on the snappy spring.
+          child: PopSwitcher(
+            stateKey: switch (mode) {
+              _CtaMode.disabled => widget.disabledLabel,
+              _ => mode,
+            },
+            from: PopSwitcher.cartFrom,
             child: content,
           ),
         ),

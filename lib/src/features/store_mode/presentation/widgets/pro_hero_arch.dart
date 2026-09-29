@@ -14,9 +14,10 @@ import 'pro_spark_painter.dart';
 /// band's bottom edge.
 ///
 /// On first show the outline draws itself from both feet up to the crown
-/// while the dome fills in, then the spark strokes pop out one by one; a new
-/// [tone] (another plan) redraws the outline in its colour and blends the
-/// fill. A soft glow breathes behind the bag. Reduced motion → drawn at once.
+/// while the dome fills in, then the spark strokes pop out one by one. A new
+/// [tone] (another plan) only recolours the drawn arch — outline and fill
+/// blend into the new colours over [AppMotion.medium] — it never draws
+/// itself again (backlog B2-03: one quiet change per plan switch). A soft glow breathes behind the bag. Reduced motion → drawn at once.
 class ProHeroArch extends StatefulWidget {
   const ProHeroArch({super.key, required this.tone});
 
@@ -27,7 +28,7 @@ class ProHeroArch extends StatefulWidget {
 }
 
 class _ProHeroArchState extends State<ProHeroArch>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const double _height = AppSize.s220;
   static const double _stroke = AppSize.s8;
   static const double _sparkSide = AppSize.s40;
@@ -54,9 +55,23 @@ class _ProHeroArchState extends State<ProHeroArch>
     parent: _controller,
     curve: Interval(0, _drawShare, curve: AppMotion.signature),
   );
-  late final Animation<double> _fillIn = CurvedAnimation(
-    parent: _controller,
-    curve: const Interval(0, _fillShare, curve: AppMotion.standard),
+  late final AnimationController _recolour = AnimationController(
+    vsync: this,
+    duration: AppMotion.medium,
+  );
+
+  late final CurvedAnimation _recolourCurve = CurvedAnimation(
+    parent: _recolour,
+    curve: AppMotion.signature,
+  );
+
+  /// The fill (and, on a recolour, the outline) blend: first with the
+  /// draw, then — for another plan — on its own.
+  late final ProxyAnimation _fillIn = ProxyAnimation(
+    CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0, _fillShare, curve: AppMotion.signature),
+    ),
   );
   late final Animation<double> _sparks = CurvedAnimation(
     parent: _controller,
@@ -66,6 +81,7 @@ class _ProHeroArchState extends State<ProHeroArch>
   /// The fill the dome blends from: nothing on first show, then the
   /// previous tone's.
   Color? _fromFill;
+  Color? _fromStroke;
   bool _started = false;
 
   @override
@@ -81,7 +97,13 @@ class _ProHeroArchState extends State<ProHeroArch>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.tone == widget.tone) return;
     _fromFill = oldWidget.tone.archFill;
-    _play();
+    _fromStroke = oldWidget.tone.stroke;
+    _fillIn.parent = _recolourCurve;
+    if (MotionGuard.reduced(context)) {
+      _recolour.value = 1;
+    } else {
+      _recolour.forward(from: 0);
+    }
   }
 
   void _play() {
@@ -94,6 +116,8 @@ class _ProHeroArchState extends State<ProHeroArch>
 
   @override
   void dispose() {
+    _recolourCurve.dispose();
+    _recolour.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -114,6 +138,7 @@ class _ProHeroArchState extends State<ProHeroArch>
                   fill: tone.archFill,
                   fromFill: _fromFill ?? tone.archFill.withValues(alpha: 0),
                   stroke: tone.stroke,
+                  fromStroke: _fromStroke,
                   strokeWidth: _stroke,
                   sideInset: AppSpacing.s16,
                   draw: _draw,
@@ -127,7 +152,7 @@ class _ProHeroArchState extends State<ProHeroArch>
             child: TweenAnimationBuilder<Color?>(
               tween: ColorTween(end: tone.glow),
               duration: MotionGuard.duration(context, AppMotion.page),
-              builder: (context, color, _) => GlowPulse(
+              builder: (context, color, _) => FloatLoop.glow(
                 color: color ?? tone.glow,
                 diameter: _glow,
                 minOpacity: _glowMinOpacity,

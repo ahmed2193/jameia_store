@@ -469,25 +469,144 @@ void main() {
   });
 
   group('delete', () {
+    test('B1-17: the row leaves at once, the copy is saved once the server '
+        'confirmed', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+      final gate = Completer<void>();
+      deleteAddress.gate = gate;
+      final states = <AddressBookState>[];
+      final sub = cubit.stream.listen(states.add);
+      addTearDown(sub.cancel);
+
+      final deleting = cubit.delete(addressId(2));
+      await flush();
+      expect(cubit.state.book.byId(addressId(2)), isNull, reason: 'at once');
+      expect(cubit.state.isDeleting(addressId(2)), isTrue);
+      expect(states.first.deletedId, addressId(2), reason: 'Undo offered');
+      expect(saveCache.saved, [serverBook], reason: 'not confirmed yet');
+
+      gate.complete();
+      await deleting;
+      expect(cubit.state.isDeleting(addressId(2)), isFalse);
+      expect(cubit.state.book.byId(addressId(2)), isNull);
+      expect(saveCache.saved.last, cubit.state.book);
+      expect(cubit.state.failure, isNull);
+    });
+
+    test('B1-17: Undo inside the window puts the row back in place and '
+        'sends nothing', () async {
+      final three = AddressBook.of([
+        address(n: 1, isDefault: true),
+        address(n: 2),
+        address(n: 3),
+      ]);
+      getAddresses.result = Right(three);
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+
+      final deleting = cubit.delete(
+        addressId(2),
+        undoWindow: const Duration(hours: 1),
+      );
+      await flush();
+      expect(cubit.state.book.addresses.map((a) => a.id), [
+        addressId(1),
+        addressId(3),
+      ]);
+
+      expect(cubit.undoDelete(addressId(2)), isTrue);
+      await deleting;
+
+      expect(cubit.state.book, three, reason: 'back in its place');
+      expect(cubit.state.isDeleting(addressId(2)), isFalse);
+      expect(deleteAddress.calls, isEmpty);
+      expect(cubit.undoDelete(addressId(2)), isFalse, reason: 'nothing left');
+      expect(saveCache.saved, [three]);
+    });
+
+    test('B1-17: the DELETE goes out when the window ends; Undo is too late '
+        'then', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+      deleteAddress.gate = Completer<void>();
+
+      final deleting = cubit.delete(
+        addressId(2),
+        undoWindow: const Duration(milliseconds: 10),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      expect(deleteAddress.calls, hasLength(1));
+      expect(cubit.undoDelete(addressId(2)), isFalse);
+
+      deleteAddress.gate!.complete();
+      await deleting;
+      expect(cubit.state.book.byId(addressId(2)), isNull);
+    });
+
+    test('B1-17: a sync while the delete waits never brings the row back '
+        '(race with a concurrent load)', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+
+      final deleting = cubit.delete(
+        addressId(2),
+        undoWindow: const Duration(hours: 1),
+      );
+      await cubit.refresh(); // the server still lists it
+      expect(getAddresses.calls, 2);
+      expect(cubit.state.book.byId(addressId(2)), isNull);
+
+      expect(cubit.undoDelete(addressId(2)), isTrue);
+      await deleting;
+      expect(cubit.state.book, serverBook);
+    });
+
+    test('B1-17: a refused delete after its window puts the row back in '
+        'place', () async {
+      final three = AddressBook.of([
+        address(n: 1, isDefault: true),
+        address(n: 2),
+        address(n: 3),
+      ]);
+      getAddresses.result = Right(three);
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+      deleteAddress.result = const Left(NetworkFailure());
+
+      await cubit.delete(
+        addressId(2),
+        undoWindow: const Duration(milliseconds: 1),
+      );
+
+      expect(cubit.state.book, three);
+      expect(cubit.state.failure, isA<NetworkFailure>());
+      expect(cubit.state.failedAction, AddressBookAction.delete);
+      expect(cubit.state.isDeleting(addressId(2)), isFalse);
+    });
+
     test(
-      'waits for the server, then removes the row and saves the copy',
+      'B1-17: signed out inside the window: the delete is never sent',
       () async {
         final cubit = build();
         addTearDown(cubit.close);
         await cubit.start(customerId: customerA);
-        final gate = Completer<void>();
-        deleteAddress.gate = gate;
 
-        final deleting = cubit.delete(addressId(2));
+        final deleting = cubit.delete(
+          addressId(2),
+          undoWindow: const Duration(hours: 1),
+        );
         await flush();
-        expect(cubit.state.isDeleting(addressId(2)), isTrue);
-        expect(cubit.state.book.byId(addressId(2)), isNotNull);
-
-        gate.complete();
+        await cubit.stop();
         await deleting;
-        expect(cubit.state.isDeleting(addressId(2)), isFalse);
-        expect(cubit.state.book.byId(addressId(2)), isNull);
-        expect(saveCache.saved.last, cubit.state.book);
+
+        expect(deleteAddress.calls, isEmpty);
+        expect(cubit.state, const AddressBookState());
       },
     );
 
@@ -527,21 +646,51 @@ void main() {
       expect(deleteAddress.calls, hasLength(1));
     });
 
-    test('a refused delete keeps the row and reports the failure', () async {
+    test('B1-17: a double tap inside the Undo window queues one delete and '
+        'one Undo snack', () async {
       final cubit = build();
       addTearDown(cubit.close);
       await cubit.start(customerId: customerA);
-      deleteAddress.result = const Left(
-        ServerFailure('Try later', statusCode: 500),
-      );
+      final offered = <String>[];
+      final sub = cubit.stream.listen((state) {
+        final id = state.deletedId;
+        if (id != null) offered.add(id);
+      });
+      addTearDown(sub.cancel);
 
-      await cubit.delete(addressId(2));
-      expect(cubit.state.book, serverBook);
-      expect(cubit.state.isDeleting(addressId(2)), isFalse);
-      expect(cubit.state.failure, isA<ServerFailure>());
-      expect(cubit.state.failedAction, AddressBookAction.delete);
-      expect(saveCache.saved, [serverBook]); // only the sync saved
+      final first = cubit.delete(
+        addressId(2),
+        undoWindow: const Duration(milliseconds: 5),
+      );
+      final second = cubit.delete(
+        addressId(2),
+        undoWindow: const Duration(milliseconds: 5),
+      );
+      await Future.wait([first, second]);
+
+      expect(offered, [addressId(2)]);
+      expect(deleteAddress.calls, hasLength(1));
+      expect(cubit.state.book.byId(addressId(2)), isNull);
     });
+
+    test(
+      'a refused delete puts the row back and reports the failure',
+      () async {
+        final cubit = build();
+        addTearDown(cubit.close);
+        await cubit.start(customerId: customerA);
+        deleteAddress.result = const Left(
+          ServerFailure('Try later', statusCode: 500),
+        );
+
+        await cubit.delete(addressId(2));
+        expect(cubit.state.book, serverBook);
+        expect(cubit.state.isDeleting(addressId(2)), isFalse);
+        expect(cubit.state.failure, isA<ServerFailure>());
+        expect(cubit.state.failedAction, AddressBookAction.delete);
+        expect(saveCache.saved, [serverBook]); // only the sync saved
+      },
+    );
 
     test('unknown ids are ignored', () async {
       final cubit = build();

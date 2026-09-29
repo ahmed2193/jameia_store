@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
-import '../../../../core/motion/haptics.dart';
+import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
-import 'home_pressable.dart';
 import 'home_search_hint.dart';
 
 /// The search pill of the home header — the same field whether the header is
@@ -32,7 +31,7 @@ class HomeHeroSearchField extends StatelessWidget {
       // The node replaces the child's semantics, its tap action included.
       excludeSemantics: true,
       onTap: onTap,
-      child: HomePressable(
+      child: PressScale(
         child: Material(
           color: AppColors.mediumBackground,
           shape: const StadiumBorder(
@@ -40,10 +39,8 @@ class HomeHeroSearchField extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: () {
-              Haptics.tap();
-              onTap();
-            },
+            // Opening search is navigation: no haptic (§9.5).
+            onTap: onTap,
             child: SizedBox(
               height: height,
               child: Padding(

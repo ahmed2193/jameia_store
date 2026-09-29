@@ -6,16 +6,16 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
-import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/count_badge.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 
-/// The cart in the chat's app bar, with the unit count badge (pops when it
-/// changes). While the chat is open it is where an added product flies to,
-/// since the chat covers the tab bar's cart.
+/// The cart in the chat's app bar, with the unit count badge ([CountBadge]:
+/// it bumps and rolls when an added product lands here). While the chat is
+/// open it is where an added product flies to, since the chat covers the tab
+/// bar's cart.
 class AssistantCartButton extends StatefulWidget {
   const AssistantCartButton({super.key});
 
@@ -53,38 +53,17 @@ class _AssistantCartButtonState extends State<AssistantCartButton> {
             size: AppSize.s22,
             color: AppColors.primaryText,
           ),
-          if (count > 0)
-            PositionedDirectional(
-              top: -AppSpacing.s6,
-              end: -AppSpacing.s8,
-              child: PopScale(
-                popKey: count,
-                child: Container(
-                  constraints: const BoxConstraints(
-                    minWidth: AppSize.s16,
-                    minHeight: AppSize.s16,
-                  ),
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AppSpacing.s4,
-                  ),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: AppColors.accent1Dark,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                    border: const Border.fromBorderSide(
-                      BorderSide(color: AppColors.white, width: AppSize.s1),
-                    ),
-                  ),
-                  child: Text(
-                    '$count',
-                    style: AppTextStyles.captionSmall.copyWith(
-                      color: AppColors.white,
-                      fontWeight: AppTextStyles.bold,
-                    ),
-                  ),
-                ),
-              ),
+          // Always mounted: it fades out at zero instead of cutting.
+          PositionedDirectional(
+            top: -AppSpacing.s6,
+            end: -AppSpacing.s8,
+            child: CountBadge(
+              count: count,
+              color: AppColors.accent1Dark,
+              borderColor: AppColors.white,
+              landsWithFlight: true,
             ),
+          ),
         ],
       ),
     );

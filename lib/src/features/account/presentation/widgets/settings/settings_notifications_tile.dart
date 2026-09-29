@@ -26,7 +26,7 @@ class SettingsNotificationsTile extends StatelessWidget {
       selector: (state) => state.notificationsEnabled,
       builder: (context, enabled) {
         void toggle(bool value) {
-          Haptics.selection();
+          Haptics.pick();
           context.read<SettingCubit>().setNotificationsEnabled(value);
         }
 

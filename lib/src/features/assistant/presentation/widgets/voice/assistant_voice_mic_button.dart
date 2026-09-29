@@ -2,10 +2,12 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../cubit/assistant_voice_cubit.dart';
 import '../../cubit/assistant_voice_state.dart';
+import '../assistant_motion.dart';
 import 'assistant_voice_drag.dart';
 import 'assistant_voice_mic_face.dart';
 import 'assistant_voice_mic_halo.dart';
@@ -25,7 +27,7 @@ class AssistantVoiceMicButton extends StatefulWidget {
   final ValueNotifier<AssistantVoiceDrag> drag;
 
   /// The held mic is this many times its size.
-  static const double heldScale = 1.8;
+  static const double heldScale = AssistantMotion.holdScale;
 
   /// It grows from low in the button, mostly upward: the message box sits
   /// on the screen's bottom edge, which would cut a mic grown from its
@@ -62,6 +64,9 @@ class _AssistantVoiceMicButtonState extends State<AssistantVoiceMicButton> {
     _slid = false;
     if (phase == AssistantVoicePhase.idle) {
       widget.drag.value = AssistantVoiceDrag.none;
+      // The hold's tick now, before the recogniser opens: a vibration
+      // while it listens would be heard (docs/motion §9.6 §2.9).
+      Haptics.pick();
       _voice.hold(context.locale.languageCode);
     }
   }
@@ -111,6 +116,8 @@ class _AssistantVoiceMicButtonState extends State<AssistantVoiceMicButton> {
     );
     final held = phase == AssistantVoicePhase.holding;
     final locked = phase == AssistantVoicePhase.locked;
+    // Reduced motion: the held mic does not grow, it only darkens.
+    final reduced = MotionGuard.reduced(context);
     return Semantics(
       button: true,
       label: (locked ? 'assistant.send' : 'assistant.voice.record').tr(),
@@ -150,11 +157,16 @@ class _AssistantVoiceMicButtonState extends State<AssistantVoiceMicButton> {
                 children: [
                   if (held) const AssistantVoiceMicHalo(),
                   AnimatedScale(
-                    scale: held ? AssistantVoiceMicButton.heldScale : 1,
+                    scale: held && !reduced
+                        ? AssistantVoiceMicButton.heldScale
+                        : 1,
                     alignment: AssistantVoiceMicButton._growFrom,
                     duration: MotionGuard.duration(context, AppMotion.fast),
                     curve: AppMotion.emphasizedDecelerate,
-                    child: AssistantVoiceMicFace(phase: phase),
+                    child: AssistantVoiceMicFace(
+                      phase: phase,
+                      darkened: held && reduced,
+                    ),
                   ),
                 ],
               ),

@@ -69,12 +69,11 @@ class _PdpThumbnailStripState extends State<PdpThumbnailStrip> {
       return;
     }
     final target = to.clamp(position.minScrollExtent, position.maxScrollExtent);
-    final duration = MotionGuard.duration(context, AppMotion.page);
-    if (!animate || duration == Duration.zero) {
+    if (!animate) {
       position.jumpTo(target);
       return;
     }
-    position.animateTo(target, duration: duration, curve: AppMotion.signature);
+    MotionGuard.scrollTo(context, position, target);
   }
 
   @override

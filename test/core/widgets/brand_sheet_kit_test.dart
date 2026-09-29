@@ -10,8 +10,11 @@ import 'package:hero_mart/src/core/design/grocery_doodles.dart';
 import 'package:hero_mart/src/core/design/hero_mark_idle.dart';
 import 'package:hero_mart/src/core/design/hero_mark.dart';
 import 'package:hero_mart/src/core/design/hero_wordmark.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/core/widgets/brand_backdrop.dart';
+import 'package:hero_mart/src/core/widgets/brand_backdrop_base_painter.dart';
 import 'package:hero_mart/src/core/widgets/brand_backdrop_clock.dart';
+import 'package:hero_mart/src/core/widgets/brand_backdrop_painter.dart';
 import 'package:hero_mart/src/core/widgets/brand_backdrop_ring.dart';
 import 'package:hero_mart/src/core/widgets/brand_sheet_fold.dart';
 import 'package:hero_mart/src/core/widgets/brand_sheet_scaffold.dart';
@@ -137,6 +140,53 @@ void main() {
       );
       await tester.pump();
       expect(SchedulerBinding.instance.transientCallbackCount, 0);
+    });
+
+    testWidgets('B1-02 turns for one ambient budget, then rests', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        app(const BrandBackdrop(band: band, reveal: false)),
+      );
+      await tester.pump(AppMotion.ambientBudget - AppMotion.medium);
+      expect(SchedulerBinding.instance.transientCallbackCount, greaterThan(0));
+
+      await tester.pump(AppMotion.medium);
+      await tester.pump();
+      expect(SchedulerBinding.instance.transientCallbackCount, 0);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('BX-02 the green is a still layer; only the spread repaints', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app(const BrandBackdrop(band: band)));
+      CustomPaint layer<T>() => tester.widget<CustomPaint>(
+        find.byWidgetPredicate(
+          (widget) => widget is CustomPaint && widget.painter is T,
+        ),
+      );
+      final base = layer<BrandBackdropBasePainter>();
+      final spread = layer<BrandBackdropPainter>();
+      // Each layer is the direct child of a repaint boundary of its own.
+      for (final paint in [base, spread]) {
+        final boundary = tester.widget<RepaintBoundary>(
+          find
+              .ancestor(
+                of: find.byWidget(paint),
+                matching: find.byType(RepaintBoundary),
+              )
+              .first,
+        );
+        expect(boundary.child, same(paint));
+      }
+      final still = base.painter! as BrandBackdropBasePainter;
+      expect(
+        still.shouldRepaint(const BrandBackdropBasePainter(band: band)),
+        isFalse,
+      );
+      await tester.pumpWidget(const SizedBox());
     });
   });
 

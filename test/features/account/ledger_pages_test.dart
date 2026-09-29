@@ -28,12 +28,14 @@ import 'package:hero_mart/src/features/account/presentation/cubit/loyalty_progra
 import 'package:hero_mart/src/features/account/presentation/cubit/setting_cubit.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/loyalty_page.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/wallet_page.dart';
+import 'package:hero_mart/src/features/account/presentation/widgets/wallet/wallet_balance_amount.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
 import 'package:hero_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/motion/rolling_test_finders.dart';
 import 'account_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';
 
@@ -192,12 +194,28 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
   }
 
+  /// The balance card shows [currency] then [amount]: the amount is a money
+  /// ticker (one Text per character), so `find.text('KD 2.750')` cannot see
+  /// the pair; both are read inside the one balance amount.
+  void expectBalance(String currency, String amount) {
+    final balance = find.byType(WalletBalanceAmount);
+    expect(balance, findsOneWidget);
+    expect(
+      find.descendant(of: balance, matching: find.text(currency)),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: balance, matching: findRolled(amount)),
+      findsOneWidget,
+    );
+  }
+
   group('WalletPage', () {
     testWidgets('balance card + signed transactions', (tester) async {
       await pumpAt(tester, Routes.wallet);
 
       expect(find.byType(WalletPage), findsOneWidget);
-      expect(find.text('KD 2.750'), findsOneWidget);
+      expectBalance('KD', '2.750');
       expect(find.text('Transactions'), findsOneWidget);
       expect(find.text('Refund'), findsOneWidget);
       expect(find.text('Order #1042'), findsOneWidget);
@@ -222,7 +240,7 @@ void main() {
       );
       await pumpAt(tester, Routes.wallet);
 
-      expect(find.text('KD 0.000'), findsOneWidget);
+      expectBalance('KD', '0.000');
       expect(find.text('No wallet activity yet'), findsOneWidget);
 
       await teardownApp(tester);
@@ -233,7 +251,8 @@ void main() {
       await pumpAt(tester, Routes.wallet);
 
       expect(find.text('Sign in to see your wallet'), findsOneWidget);
-      expect(find.text('Log in or sign up'), findsOneWidget);
+      // The shared signed-out state (HeroStateView.signedOut).
+      expect(find.text('Sign in'), findsOneWidget);
 
       await teardownApp(tester);
     });
@@ -264,7 +283,7 @@ void main() {
       await pumpAt(tester, Routes.loyalty);
 
       expect(find.byType(LoyaltyPage), findsOneWidget);
-      expect(find.text('340 pts'), findsOneWidget);
+      expect(findRolled('340 pts'), findsOneWidget);
       expect(find.text('Worth KD 1.700'), findsOneWidget);
       expect(find.text('How it works'), findsOneWidget);
       expect(
@@ -296,7 +315,7 @@ void main() {
         );
       await pumpAt(tester, Routes.loyalty);
 
-      expect(find.text('340 pts'), findsOneWidget);
+      expect(findRolled('340 pts'), findsOneWidget);
       expect(find.textContaining('Worth'), findsNothing);
       expect(find.text('How it works'), findsNothing);
       expect(find.text('Points earned'), findsOneWidget);

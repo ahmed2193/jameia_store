@@ -5,6 +5,8 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_shadows.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../motion/collapse_reveal.dart';
+import '../motion/motion.dart';
 import '../responsive/app_size.dart';
 import 'round_back_button.dart';
 
@@ -14,7 +16,10 @@ import 'round_back_button.dart';
 ///
 /// An optional [subtitle] stacks a grey second line under the title (the
 /// Hero "Checkout / Hero" header); the title then steps down to 16 bold
-/// so both lines sit in the same bar height. Null or empty → one line.
+/// so both lines sit in the same bar height. Null or empty → one line. A
+/// subtitle that arrives late (a name read after the page opened) opens
+/// under the title while the title eases to its smaller size, instead of
+/// snapping the bar's content (docs/motion B2-05).
 class HeroTitleBar extends StatelessWidget implements PreferredSizeWidget {
   const HeroTitleBar({
     super.key,
@@ -51,8 +56,9 @@ class HeroTitleBar extends StatelessWidget implements PreferredSizeWidget {
     final hasSubtitle = second != null && second.isNotEmpty;
     final heading = Semantics(
       header: true,
-      child: Text(
-        title,
+      child: AnimatedDefaultTextStyle(
+        duration: MotionGuard.duration(context, AppMotion.medium),
+        curve: AppMotion.signature,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: hasSubtitle
@@ -60,6 +66,7 @@ class HeroTitleBar extends StatelessWidget implements PreferredSizeWidget {
                 fontWeight: AppTextStyles.bold,
               )
             : AppTextStyles.barTitle,
+        child: Text(title),
       ),
     );
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -85,21 +92,24 @@ class HeroTitleBar extends StatelessWidget implements PreferredSizeWidget {
                   ] else
                     const SizedBox(width: AppSpacing.s4),
                   Expanded(
-                    child: hasSubtitle
-                        ? Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              heading,
-                              Text(
-                                second,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.meta,
-                              ),
-                            ],
-                          )
-                        : heading,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        heading,
+                        CollapseReveal(
+                          visible: hasSubtitle,
+                          child: hasSubtitle
+                              ? Text(
+                                  second,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.meta,
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                    ),
                   ),
                   ...actions,
                 ],

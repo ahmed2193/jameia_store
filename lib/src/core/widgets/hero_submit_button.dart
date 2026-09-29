@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../motion/fade_through_switcher.dart';
 import '../motion/haptics.dart';
 import '../motion/motion.dart';
 import '../motion/motion_widgets.dart';
-import '../motion/spring_curve.dart';
 import '../responsive/app_size.dart';
 import 'branded_loader.dart';
 import 'ready_wipe.dart';
@@ -145,7 +143,7 @@ class HeroSubmitButton extends StatelessWidget {
       child: InkWell(
         onTap: active
             ? () {
-                Haptics.tap();
+                Haptics.commit();
                 press();
               }
             : null,

@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../../core/motion/motion_widgets.dart';
+import '../../../../../core/motion/rolling_number.dart';
 import '../../cubit/account_cubit.dart';
 import 'mine_stat_tile.dart';
 import 'mine_tone.dart';
 
 /// A count stat from the Mine overview (coupons, favourites): the number
-/// flips when it changes and the tile opens [route]. Rebuilds only when its
-/// own count changes ([count] picks it from the state).
+/// rolls when it changes, like the wallet and points beside it
+/// ([RollingNumber]), and the tile opens [route]. Rebuilds only when its own
+/// count changes ([count] picks it from the state).
 class MineCountStat extends StatelessWidget {
   const MineCountStat({
     super.key,
@@ -36,13 +37,7 @@ class MineCountStat extends StatelessWidget {
       tone: tone,
       label: label,
       onTap: () => context.push(route),
-      value: RepaintBoundary(
-        child: FlipValue(
-          flipKey: value,
-          alignment: AlignmentDirectional.center,
-          child: Text('$value', maxLines: 1, style: MineStatTile.valueStyle),
-        ),
-      ),
+      value: RollingNumber(value: value, style: MineStatTile.valueStyle),
     );
   }
 }

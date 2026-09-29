@@ -56,6 +56,7 @@ class AssistantChatState extends Equatable {
     this.resumable,
     this.confirmingActionIds = const <String>{},
     this.actionMessages = const <String, String>{},
+    this.actionFailures = const <String, Failure>{},
     this.isHandingOff = false,
     this.cartRevision = 0,
     this.failure,
@@ -79,6 +80,10 @@ class AssistantChatState extends Equatable {
 
   /// The confirm reply's `message` per confirmed proposal, shown as sent.
   final Map<String, String> actionMessages;
+
+  /// Why the last confirm of a proposal failed, per proposal (cleared when
+  /// it is tried again): shown under its button, next to the source.
+  final Map<String, Failure> actionFailures;
   final bool isHandingOff;
 
   /// Bumped when a confirmed proposal changed the server cart: the page asks
@@ -123,6 +128,7 @@ class AssistantChatState extends Equatable {
     bool clearResumable = false,
     Set<String>? confirmingActionIds,
     Map<String, String>? actionMessages,
+    Map<String, Failure>? actionFailures,
     bool? isHandingOff,
     int? cartRevision,
     Failure? failure,
@@ -136,6 +142,7 @@ class AssistantChatState extends Equatable {
     resumable: clearResumable ? null : resumable ?? this.resumable,
     confirmingActionIds: confirmingActionIds ?? this.confirmingActionIds,
     actionMessages: actionMessages ?? this.actionMessages,
+    actionFailures: actionFailures ?? this.actionFailures,
     isHandingOff: isHandingOff ?? this.isHandingOff,
     cartRevision: cartRevision ?? this.cartRevision,
     failure: failure,
@@ -152,6 +159,7 @@ class AssistantChatState extends Equatable {
     resumable,
     confirmingActionIds,
     actionMessages,
+    actionFailures,
     isHandingOff,
     cartRevision,
     failure,

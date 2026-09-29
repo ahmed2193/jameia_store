@@ -23,6 +23,7 @@ import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/motion_beat.dart';
 import 'package:hero_mart/src/core/utils/formatters.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:hero_mart/src/features/cart/domain/entities/cart_snapshot.dart';
@@ -357,6 +358,10 @@ void main() {
           totals: totals.copyWithDiscounts(freeDelivery: true),
         ),
       );
+      // The tag follows on its beat (B2-03).
+      expect(find.byType(CheckoutRedTag), findsOneWidget);
+      await tester.pump(MotionBeat.second);
+      await tester.pumpAndSettle();
       expect(find.byType(CheckoutRedTag), findsNothing);
     });
 
@@ -389,8 +394,12 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
 
-      expect(tagScales(tester).any((s) => s > 0 && s < 1), isTrue);
+      // In order (B2-03): the saving counts up first, the tag a beat later.
       expect(countUp(), findsOneWidget);
+      expect(tagScales(tester).any((s) => s > 0 && s < 1), isFalse);
+      await tester.pump(MotionBeat.second);
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(tagScales(tester).any((s) => s > 0 && s < 1), isTrue);
 
       await tester.pumpAndSettle();
       expect(find.text('${iso('SAVE')} · saved KD 0.500'), findsOneWidget);
@@ -444,6 +453,8 @@ void main() {
 
       router.pop();
       await tester.pump();
+      // The tag's change lands on its beat (B2-03), then pops in view.
+      await tester.pump(MotionBeat.second);
       await tester.pump(const Duration(milliseconds: 16));
       expect(tagScales(tester).any((s) => s < 1), isTrue);
       await tester.pumpAndSettle();

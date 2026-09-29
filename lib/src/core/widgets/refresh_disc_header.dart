@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
+import 'branded_dot_painter.dart';
 import 'refresh_disc.dart';
 
 /// Where a pull-to-refresh stands, as [BrandedRefresh] reads it off the
@@ -16,6 +17,8 @@ enum RefreshDiscPhase { idle, pulling, armed, refreshing, done, canceled }
 /// nears the threshold — swells a little once a release would refresh,
 /// settles at its rest line and loops while the refresh runs, then shrinks
 /// away; a pull let go too early slides it back up. Taps pass through.
+/// Reduced motion: no travel or swell tweens, and the refresh loop becomes
+/// the dots' opacity breathe (still when motion is off).
 class RefreshDiscHeader extends StatefulWidget {
   const RefreshDiscHeader({super.key, required this.pull, required this.phase});
 
@@ -56,6 +59,16 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
     vsync: this,
     duration: AppMotion.medium,
   );
+
+  /// The reduced-motion breathe (not off) that replaces the loop.
+  late final AnimationController _breath = AnimationController(
+    vsync: this,
+    duration: AppMotion.breathe,
+    value: 1,
+  );
+  late final Animation<double> _breathOpacity = BrandedDotPainter.breatheOf(
+    _breath,
+  );
   late final Animation<double> _pullDots = _travel.drive(
     Tween<double>(begin: 0, end: _dotsPerPull),
   );
@@ -63,6 +76,7 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
   /// What moves the disc frame to frame.
   late final Listenable _frame = Listenable.merge([_travel, _leave]);
   bool _reduced = false;
+  bool _off = false;
 
   @override
   void initState() {
@@ -75,6 +89,7 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _reduced = MotionGuard.reduced(context);
+    _off = MotionGuard.off(context);
   }
 
   @override
@@ -97,6 +112,7 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
     _travel.dispose();
     _loop.dispose();
     _leave.dispose();
+    _breath.dispose();
     super.dispose();
   }
 
@@ -115,6 +131,9 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
     switch (widget.phase.value) {
       case RefreshDiscPhase.pulling:
         _loop.stop();
+        _breath
+          ..stop()
+          ..value = 1;
         _leave.value = 0;
         _travel.value = 0;
       case RefreshDiscPhase.refreshing:
@@ -127,7 +146,11 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
         );
         // The loop picks up where the pull left the dots.
         _loop.value = _pullDots.value % 1;
-        if (!_reduced) unawaited(_loop.repeat());
+        if (!_reduced) {
+          unawaited(_loop.repeat());
+        } else if (!_off) {
+          unawaited(_breath.repeat(reverse: true));
+        }
       case RefreshDiscPhase.done:
         _leave.duration = _motion(AppMotion.medium);
         _leave.forward(from: 0).whenCompleteOrCancel(_reset);
@@ -150,6 +173,9 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
     final phase = widget.phase.value;
     if (phase == RefreshDiscPhase.pulling) return;
     _loop.stop();
+    _breath
+      ..stop()
+      ..value = 1;
     _travel.value = 0;
     _leave.value = 0;
   }
@@ -199,7 +225,7 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
                 child: AnimatedScale(
                   scale: phase == RefreshDiscPhase.armed ? _armedScale : 1,
                   duration: _motion(AppMotion.fast),
-                  curve: AppMotion.emphasized,
+                  curve: AppSprings.snappy,
                   child: RepaintBoundary(
                     child: RefreshDisc(
                       dots:
@@ -207,6 +233,7 @@ class _RefreshDiscHeaderState extends State<RefreshDiscHeader>
                               phase == RefreshDiscPhase.done
                           ? _loop
                           : _pullDots,
+                      opacity: _breathOpacity,
                     ),
                   ),
                 ),

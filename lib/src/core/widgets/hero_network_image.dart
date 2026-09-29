@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../config/theme/app_colors.dart';
 import 'hero_cdn_transform.dart';
+import 'hero_image_placeholder.dart';
 import 'retrying_network_image.dart';
 
 /// Network branch of [HeroImage]: resolves the responsive CDN URL (plus the
@@ -119,8 +119,7 @@ class HeroNetworkImage extends StatelessWidget {
       height: height,
       memCacheWidth: cw,
       memCacheHeight: ch,
-      placeholderBuilder: (_) =>
-          const ColoredBox(color: AppColors.smallBackground),
+      placeholderBuilder: (_) => const HeroImagePlaceholder(),
     );
   }
 

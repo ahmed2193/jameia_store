@@ -26,6 +26,15 @@ class LoyaltyRewardsCubit extends Cubit<LoyaltyRewardsState>
     await refresh();
   }
 
+  /// The connection came back: a screen whose first load failed (not for
+  /// want of a sign-in) loads again. Tiers on screen stay as they are.
+  Future<void> onReconnected() async {
+    if (state.status != LoyaltyRewardsStatus.error || state.isSignedOut) {
+      return;
+    }
+    await load();
+  }
+
   /// Pull-to-refresh: the tiers stay on screen; a failure keeps them.
   Future<void> refresh() async {
     // Drop the last refresh's failure first: the same failure again would

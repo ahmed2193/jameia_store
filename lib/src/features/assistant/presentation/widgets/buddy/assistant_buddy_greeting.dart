@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart' hide TextDirection;
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,22 +8,31 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/route_args/assistant_chat_args.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/motion/spring_curve.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../domain/entities/assistant_nudge.dart';
 import '../../../domain/entities/assistant_nudge_outcome.dart';
 import '../../../domain/entities/assistant_starter.dart';
 import '../../cubit/assistant_buddy_cubit.dart';
 import '../../cubit/assistant_buddy_state.dart';
+import '../assistant_motion.dart';
 import '../mascot/assistant_mascot_mood.dart';
 import 'assistant_buddy_greeting_card.dart';
 
-/// Drops the greeting in from the top on a soft spring, and takes it away:
-/// swiped up or closed ("not now"), tapped (the chat opens), or left alone
-/// for [_showFor] after it finished typing — paused while a finger rests on
-/// it, and never on its own while a screen reader is on. The first greeting
-/// invites to the tour: its card and its first chip ask for [onTour].
+/// Drops the greeting in from the top ([AppMotion.page], `signature`), and
+/// takes it away ([AppMotion.medium], `exit`): swiped up or closed ("not
+/// now"), tapped (the chat opens), or left alone for
+/// `AssistantMotion.greetingShowFor` after its message is out — paused while
+/// a finger rests on it, and never on its own with a screen reader. The
+/// countdown only runs while the greeting is really seen: off stage (a page,
+/// sheet or dialog over it, its tab hidden, the app away) it is cancelled,
+/// and it starts again from full on return — so it never closes, and is
+/// never logged as ignored, behind the customer's back (docs/motion §9.6
+/// §3.4). The first greeting invites to the tour: its card and its first
+/// chip ask for [onTour]. Arriving and leaving never vibrate; a starter
+/// chip is a pick. Reduced motion: it fades in and out in place and its bar
+/// holds still.
 class AssistantBuddyGreeting extends StatefulWidget {
   const AssistantBuddyGreeting({super.key, required this.onTour});
 
@@ -36,7 +45,6 @@ class AssistantBuddyGreeting extends StatefulWidget {
 
 class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
     with TickerProviderStateMixin {
-  static const Duration _showFor = Duration(seconds: 8);
   static const Duration _joyHold = Duration(milliseconds: 1200);
   static const double _hiddenLift = -1.3;
   static const double _enterScale = 0.92;
@@ -44,35 +52,35 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
   static const double _dismissFling = -700;
   static const double _pullResist = 0.25;
   static const double _maxWidth = AppSize.s520;
-  static const Offset _lookAtWords = Offset(0.7, 0.15);
+  static const Animation<double> _opaque = AlwaysStoppedAnimation<double>(1);
 
-  static final SpringCurve _drop = SpringCurve(
-    SpringDescription.withDampingRatio(mass: 1, stiffness: 320, ratio: 0.72),
-  );
-
-  late final AnimationController _presence = AnimationController(
-    vsync: this,
-    duration: _drop.duration,
-    reverseDuration: AppMotion.medium,
-  );
+  late final AnimationController _presence = AnimationController(vsync: this);
   late final CurvedAnimation _travel = CurvedAnimation(
     parent: _presence,
-    curve: _drop,
+    curve: AppMotion.signature,
     reverseCurve: AppMotion.exit,
   );
   late final AnimationController _countdown = AnimationController(
     vsync: this,
-    duration: _showFor,
+    duration: AssistantMotion.greetingShowFor,
   );
   late final AnimationController _settle = AnimationController(
     vsync: this,
-    duration: AppMotion.medium,
+    duration: AppSprings.calm.duration,
   );
+  late final CurvedAnimation _settleCurve = CurvedAnimation(
+    parent: _settle,
+    curve: AppSprings.calm,
+  );
+  late final AppLifecycleListener _lifecycle;
 
   /// The greeting on screen — kept through its exit.
   AssistantNudge? _nudge;
   bool _typed = false;
   bool _closing = false;
+  bool _touching = false;
+  bool _onStage = true;
+  bool _reduced = false;
   AssistantMascotMood _mood = AssistantMascotMood.talking;
   double _pull = 0;
   Timer? _joyTimer;
@@ -80,6 +88,7 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
   @override
   void initState() {
     super.initState();
+    _lifecycle = AppLifecycleListener(onStateChange: (_) => _syncStage());
     _countdown.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _close(AssistantNudgeOutcome.ignored);
@@ -88,6 +97,34 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
     _settle.addStatusListener((status) {
       if (status == AnimationStatus.completed) setState(() => _pull = 0);
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _reduced = MotionGuard.reduced(context);
+    _syncStage();
+  }
+
+  /// Seen or not: in front of every route, its tab shown, the app resumed.
+  void _syncStage() {
+    final resumed =
+        (WidgetsBinding.instance.lifecycleState ?? AppLifecycleState.resumed) ==
+        AppLifecycleState.resumed;
+    final onStage =
+        resumed &&
+        TickerMode.valuesOf(context).enabled &&
+        (ModalRoute.isCurrentOf(context) ?? true);
+    if (onStage == _onStage) return;
+    _onStage = onStage;
+    if (onStage) {
+      _runCountdown();
+    } else {
+      // Cancelled, not paused: a muted ticker would count the time away.
+      _countdown
+        ..stop()
+        ..value = 0;
+    }
   }
 
   void _onBuddy(BuildContext context, AssistantBuddyState state) {
@@ -109,29 +146,22 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
       _mood = AssistantMascotMood.talking;
       _pull = 0;
     });
-    if (MotionGuard.reduced(context)) {
-      _presence.value = 1;
-    } else {
-      _presence.forward(from: 0);
-    }
+    _presence.duration = _reduced ? AppMotion.fast : AppMotion.page;
+    _presence.forward(from: 0);
   }
 
   void _leave() {
     _countdown.stop();
     _joyTimer?.cancel();
-    void gone() {
-      if (mounted && !_presence.isAnimating) setState(() => _nudge = null);
-    }
-
-    if (MotionGuard.reduced(context)) {
-      _presence.value = 0;
-      gone();
-    } else {
-      _presence.reverse().then((_) => gone());
-    }
+    _presence
+        .animateBack(0, duration: _reduced ? AppMotion.fast : AppMotion.medium)
+        .then((_) {
+          if (mounted) setState(() => _nudge = null);
+        });
   }
 
-  /// Typed out: a happy face, the starters unfold, the countdown starts.
+  /// The message is out: a happy face, the starters unfold, the countdown
+  /// starts.
   void _onTyped() {
     setState(() {
       _typed = true;
@@ -144,10 +174,23 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
   }
 
   void _runCountdown() {
-    if (!_typed || _closing || MediaQuery.accessibleNavigationOf(context)) {
+    if (!_typed ||
+        _closing ||
+        _touching ||
+        !_onStage ||
+        MediaQuery.accessibleNavigationOf(context)) {
       return;
     }
     _countdown.forward();
+  }
+
+  void _touch(bool down) {
+    _touching = down;
+    if (down) {
+      _countdown.stop();
+    } else {
+      _runCountdown();
+    }
   }
 
   void _close(AssistantNudgeOutcome outcome) {
@@ -162,6 +205,8 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
       _tour();
       return;
     }
+    // A chip is a pick; the card itself is navigation (none).
+    if (starter != null) Haptics.pick();
     context.push(
       Routes.assistant,
       extra: starter == null
@@ -171,9 +216,11 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
     _close(AssistantNudgeOutcome.opened);
   }
 
-  /// The invitation taken: the tour opens and the greeting goes.
-  void _tour() {
+  /// The invitation taken: the tour opens and the greeting goes. Its chip
+  /// is a [picked] choice (a selection tick); the card is navigation.
+  void _tour({bool picked = false}) {
     if (_closing) return;
+    if (picked) Haptics.pick();
     widget.onTour();
     _close(AssistantNudgeOutcome.opened);
   }
@@ -189,16 +236,22 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
       _close(AssistantNudgeOutcome.dismissed);
       return;
     }
-    _settle.forward(from: 0);
+    if (_reduced) {
+      setState(() => _pull = 0);
+    } else {
+      _settle.forward(from: 0);
+    }
     _runCountdown();
   }
 
   @override
   void dispose() {
     _joyTimer?.cancel();
+    _lifecycle.dispose();
     _travel.dispose();
     _presence.dispose();
     _countdown.dispose();
+    _settleCurve.dispose();
     _settle.dispose();
     super.dispose();
   }
@@ -206,9 +259,6 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
   @override
   Widget build(BuildContext context) {
     final nudge = _nudge;
-    final lookAtWords = Directionality.of(context) == TextDirection.ltr
-        ? _lookAtWords
-        : Offset(-_lookAtWords.dx, _lookAtWords.dy);
     return BlocListener<AssistantBuddyCubit, AssistantBuddyState>(
       listenWhen: (previous, current) => previous.nudge != current.nudge,
       listener: _onBuddy,
@@ -224,50 +274,53 @@ class _AssistantBuddyGreetingState extends State<AssistantBuddyGreeting>
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: _maxWidth),
-                    child: AnimatedBuilder(
-                      animation: Listenable.merge([_travel, _settle]),
-                      builder: (context, card) {
-                        final t = _travel.value;
-                        final pull = _pull * (1 - _settle.value);
-                        return Transform.translate(
-                          offset: Offset(0, pull),
-                          child: FractionalTranslation(
-                            translation: Offset(0, _hiddenLift * (1 - t)),
-                            child: Transform.scale(
-                              scale: _enterScale + (1 - _enterScale) * t,
-                              alignment: Alignment.topCenter,
-                              child: card,
-                            ),
-                          ),
-                        );
-                      },
-                      // Slides in from fully above the screen: no fade (an
-                      // opacity layer each frame) is needed, and the card is
-                      // its own layer, so moving it repaints nothing.
-                      child: RepaintBoundary(
-                        child: Listener(
-                          onPointerDown: (_) => _countdown.stop(),
-                          onPointerUp: (_) => _runCountdown(),
-                          onPointerCancel: (_) => _runCountdown(),
-                          child: GestureDetector(
-                            onVerticalDragStart: (_) => _settle.stop(),
-                            onVerticalDragUpdate: _dragUpdate,
-                            onVerticalDragEnd: _dragEnd,
-                            child: AssistantBuddyGreetingCard(
-                              nudge: nudge,
-                              mood: _mood,
-                              look: _typed ? Offset.zero : lookAtWords,
-                              typed: _typed,
-                              countdown: _countdown,
-                              showCountdown: !MediaQuery.accessibleNavigationOf(
-                                context,
+                    child: FadeTransition(
+                      opacity: _reduced ? _presence : _opaque,
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([_travel, _settle]),
+                        builder: (context, card) {
+                          final t = _reduced ? 1.0 : _travel.value;
+                          final pull = _pull * (1 - _settleCurve.value);
+                          return Transform.translate(
+                            offset: Offset(0, pull),
+                            child: FractionalTranslation(
+                              translation: Offset(0, _hiddenLift * (1 - t)),
+                              child: Transform.scale(
+                                scale: _enterScale + (1 - _enterScale) * t,
+                                alignment: Alignment.topCenter,
+                                child: card,
                               ),
-                              onTyped: _onTyped,
-                              onOpen: _open,
-                              onStarter: _open,
-                              onTour: nudge.invitesTour ? _tour : null,
-                              onClose: () =>
-                                  _close(AssistantNudgeOutcome.dismissed),
+                            ),
+                          );
+                        },
+                        // Slides in from fully above the screen: no fade (an
+                        // opacity layer each frame) is needed, and the card
+                        // is its own layer, so moving it repaints nothing.
+                        child: RepaintBoundary(
+                          child: Listener(
+                            onPointerDown: (_) => _touch(true),
+                            onPointerUp: (_) => _touch(false),
+                            onPointerCancel: (_) => _touch(false),
+                            child: GestureDetector(
+                              onVerticalDragStart: (_) => _settle.stop(),
+                              onVerticalDragUpdate: _dragUpdate,
+                              onVerticalDragEnd: _dragEnd,
+                              child: AssistantBuddyGreetingCard(
+                                nudge: nudge,
+                                mood: _mood,
+                                typed: _typed,
+                                countdown: _countdown,
+                                showCountdown:
+                                    !MediaQuery.accessibleNavigationOf(context),
+                                onTyped: _onTyped,
+                                onOpen: _open,
+                                onStarter: _open,
+                                onTour: nudge.invitesTour
+                                    ? () => _tour(picked: true)
+                                    : null,
+                                onClose: () =>
+                                    _close(AssistantNudgeOutcome.dismissed),
+                              ),
                             ),
                           ),
                         ),

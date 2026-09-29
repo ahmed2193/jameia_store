@@ -59,6 +59,18 @@ class ProfileCubit extends Cubit<ProfileState>
     );
   }
 
+  /// The connection came back: a form that never got its customer (the
+  /// first load failed, not for want of a sign-in) loads again. A form on
+  /// screen is left alone.
+  Future<void> onReconnected() async {
+    if (state.customer != null ||
+        state.status != ProfileStatus.error ||
+        state.isSignedOut) {
+      return;
+    }
+    await load();
+  }
+
   /// A fresh draft from [customer]. The refusal counters live as long as
   /// the form: a counter going back to zero would read as a new refusal.
   ProfileState _reseeded(AuthCustomerEntity customer) =>

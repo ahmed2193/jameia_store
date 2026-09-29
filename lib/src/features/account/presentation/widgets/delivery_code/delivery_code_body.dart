@@ -1,37 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/motion/motion_widgets.dart';
-import '../../../../../core/responsive/content_clamp.dart';
-import 'delivery_code_editor_card.dart';
-import 'delivery_code_hero_card.dart';
-import 'delivery_code_tips_card.dart';
+import '../../../../../core/motion/fade_through_switcher.dart';
+import '../../../../../core/widgets/state_views.dart';
+import '../../cubit/delivery_code_cubit.dart';
+import 'delivery_code_content.dart';
 
-/// The delivery-code screen: the saved code, the editor for a new one and
-/// how the code works. The cards rise in once.
+/// The delivery-code screen: the loader while the saved code is read, its
+/// error + retry when it cannot be, then the cards ([DeliveryCodeContent]) —
+/// fading through from one to the next. Edits and saves never rebuild it.
 class DeliveryCodeBody extends StatelessWidget {
   const DeliveryCodeBody({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const ContentClamp(
-      child: SingleChildScrollView(
-        padding: EdgeInsetsDirectional.fromSTEB(
-          AppSpacing.s16,
-          AppSpacing.s8,
-          AppSpacing.s16,
-          AppSpacing.s24,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            StaggerEntrance(index: 0, child: DeliveryCodeHeroCard()),
-            SizedBox(height: AppSpacing.s16),
-            StaggerEntrance(index: 1, child: DeliveryCodeEditorCard()),
-            SizedBox(height: AppSpacing.s16),
-            StaggerEntrance(index: 2, child: DeliveryCodeTipsCard()),
-          ],
-        ),
+    return BlocBuilder<DeliveryCodeCubit, DeliveryCodeState>(
+      buildWhen: (previous, current) => previous.status != current.status,
+      builder: (context, state) => FadeThroughSwitcher(
+        // initial and loading are one loader.
+        stateKey: state.status == DeliveryCodeStatus.initial
+            ? DeliveryCodeStatus.loading
+            : state.status,
+        child: switch (state.status) {
+          DeliveryCodeStatus.initial ||
+          DeliveryCodeStatus.loading => const AppLoader(),
+          DeliveryCodeStatus.error => FailureView(
+            failure: state.failure,
+            onRetry: context.read<DeliveryCodeCubit>().load,
+          ),
+          DeliveryCodeStatus.loaded => const DeliveryCodeContent(),
+        },
       ),
     );
   }

@@ -20,6 +20,8 @@ import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
 import 'package:hero_mart/src/core/domain/entities/hero_address_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/widgets/loader_done_mark.dart';
 import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
 import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
 import 'package:hero_mart/src/features/address/presentation/cubit/address_edit_cubit.dart';
@@ -184,12 +186,61 @@ void main() {
     await tester.enterText(find.widgetWithText(TextField, '11'), '15');
     await tester.pump();
     await tapSave(tester);
+    // The check draws and holds (SuccessBeat) before the page pops.
+    await settle(tester);
 
     expect(updateAddress.calls.single.id, original.id);
     expect(updateAddress.calls.single.update.street, '15');
     expect(updateAddress.calls.single.update.floor, isNull);
     expect(book.state.book.byId(original.id)?.street, '15');
     expect((popped.single! as HeroAddressEntity).street, '15');
+    expect(find.text('Address saved'), findsOneWidget);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('B2-04: the saved check draws and holds, with a success '
+      'haptic, before the page pops', (tester) async {
+    final haptics = <String>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'HapticFeedback.vibrate') {
+          haptics.add(call.arguments as String);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    final popped = <Object?>[];
+    await pumpEdit(tester, popped: popped);
+    await tester.enterText(find.widgetWithText(TextField, '11'), '15');
+    await tester.pump();
+    final save = find.text('Save address');
+    await tester.dragUntilVisible(
+      save,
+      find.byType(ListView).last,
+      const Offset(0, -300),
+    );
+    await tester.pump();
+    haptics.clear();
+    await tester.tap(save);
+    await tester.pump();
+    await tester.pump(AppMotion.page);
+    await tester.pump(AppMotion.page);
+
+    // Saved: the check is on screen and the page is still here.
+    expect(find.byType(LoaderDoneMark), findsOneWidget);
+    expect(popped, isEmpty);
+    expect(haptics, contains('HapticFeedbackType.mediumImpact'));
+
+    await settle(tester);
+    expect(popped, hasLength(1));
     expect(find.text('Address saved'), findsOneWidget);
 
     await teardownApp(tester);

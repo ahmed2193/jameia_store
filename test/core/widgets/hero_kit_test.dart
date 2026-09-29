@@ -29,6 +29,7 @@ import 'package:hero_mart/src/core/widgets/hero_title_bar.dart';
 import 'package:hero_mart/src/core/widgets/option_row.dart';
 import 'package:hero_mart/src/core/widgets/ready_wipe.dart';
 import 'package:hero_mart/src/core/widgets/round_back_button.dart';
+import 'package:hero_mart/src/core/widgets/segmented_thumb_track.dart';
 import 'package:hero_mart/src/core/widgets/sticker_text.dart';
 
 Widget _host(Widget child) => MaterialApp(
@@ -193,14 +194,10 @@ void main() {
     });
   });
 
-  testWidgets('HeroListCard puts a hairline between rows only', (
-    tester,
-  ) async {
+  testWidgets('HeroListCard puts a hairline between rows only', (tester) async {
     await tester.pumpWidget(
       _host(
-        const HeroListCard(
-          children: [Text('one'), Text('two'), Text('three')],
-        ),
+        const HeroListCard(children: [Text('one'), Text('two'), Text('three')]),
       ),
     );
     expect(find.byType(Divider), findsNWidgets(2));
@@ -251,7 +248,9 @@ void main() {
     expect(bar.height, HeroTitleBar.height);
     expect(subtitle.bottom, lessThanOrEqualTo(bar.bottom));
 
+    // The line folds away (it keeps drawing while it closes).
     await pump('');
+    await tester.pumpAndSettle();
     expect(find.text('Checkout'), findsOneWidget);
     expect(
       find.descendant(
@@ -283,14 +282,13 @@ void main() {
           (widget.decoration as BoxDecoration).border != null,
     );
 
-    HeroListRow row({bool dense = false, bool divider = false}) =>
-        HeroListRow(
-          icon: Icons.place_outlined,
-          title: 'Select a delivery address',
-          dense: dense,
-          divider: divider,
-          onTap: () {},
-        );
+    HeroListRow row({bool dense = false, bool divider = false}) => HeroListRow(
+      icon: Icons.place_outlined,
+      title: 'Select a delivery address',
+      dense: dense,
+      divider: divider,
+      onTap: () {},
+    );
 
     testWidgets('keeps its 56 dp, 24 dp icon look by default', (tester) async {
       await pump(tester, row());
@@ -512,10 +510,14 @@ void main() {
     BoxDecoration thumb(WidgetTester tester) =>
         tester
                 .widget<DecoratedBox>(
-                  find.descendant(
-                    of: find.byType(AnimatedPositionedDirectional),
-                    matching: find.byType(DecoratedBox),
-                  ),
+                  // The thumb is the track's first box (drawn under the
+                  // segments).
+                  find
+                      .descendant(
+                        of: find.byType(SegmentedThumbTrack),
+                        matching: find.byType(DecoratedBox),
+                      )
+                      .first,
                 )
                 .decoration
             as BoxDecoration;
@@ -767,25 +769,19 @@ void main() {
     });
   });
 
-  test(
-    'HeroInputDecoration.outlined(error:) draws a red resting outline',
-    () {
-      OutlineInputBorder border(InputBorder? value) =>
-          value! as OutlineInputBorder;
+  test('HeroInputDecoration.outlined(error:) draws a red resting outline', () {
+    OutlineInputBorder border(InputBorder? value) =>
+        value! as OutlineInputBorder;
 
-      final idle = HeroInputDecoration.outlined(hintText: 'Code');
-      expect(border(idle.enabledBorder).borderSide.color, AppColors.divider);
+    final idle = HeroInputDecoration.outlined(hintText: 'Code');
+    expect(border(idle.enabledBorder).borderSide.color, AppColors.divider);
 
-      final refused = HeroInputDecoration.outlined(
-        hintText: 'Code',
-        error: true,
-      );
-      expect(border(refused.enabledBorder).borderSide.color, AppColors.error);
-      expect(border(refused.border).borderSide.color, AppColors.error);
-      expect(
-        border(refused.focusedBorder).borderSide.color,
-        border(idle.focusedBorder).borderSide.color,
-      );
-    },
-  );
+    final refused = HeroInputDecoration.outlined(hintText: 'Code', error: true);
+    expect(border(refused.enabledBorder).borderSide.color, AppColors.error);
+    expect(border(refused.border).borderSide.color, AppColors.error);
+    expect(
+      border(refused.focusedBorder).borderSide.color,
+      border(idle.focusedBorder).borderSide.color,
+    );
+  });
 }

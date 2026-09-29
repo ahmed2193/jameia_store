@@ -4,6 +4,11 @@
 // a tap — or by the ghost finger — and counts the items); Skip, Maybe later,
 // Start chatting, a question on the last step and a swipe down each close
 // it with their result; reduced motion and right-to-left run every step.
+// Motion (docs/motion §9.6 §2.12): each demo plays once per opening (a step
+// swiped back to shows its end, and the mascot does not react again); the
+// perch leans the drag's way without flipping side half-way; the cart demo
+// flies its items into its cart (no confetti); under reduced motion the
+// perch sits upright in place and the cart counts at once, with no flight.
 import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
@@ -19,6 +24,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/motion/confetti_burst.dart';
+import 'package:hero_mart/src/core/motion/fly_to_cart.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/chat/assistant_suggestion_chip.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_perch.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/onboarding/assistant_onboarding_result.dart';
@@ -26,6 +33,8 @@ import 'package:hero_mart/src/features/assistant/presentation/widgets/onboarding
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/motion/rolling_test_finders.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -267,9 +276,14 @@ void main() {
     expect(find.text(en('onboarding_demo_added')), findsNothing);
 
     await tester.tap(find.text(en('onboarding_demo_confirm')));
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(FlyToCart.inFlight.value, isTrue, reason: 'the items fly in');
+    expect(findRolled('4'), findsNothing, reason: 'the count waits to land');
     await frames(tester, 6);
+    expect(FlyToCart.inFlight.value, isFalse);
     expect(find.text(en('onboarding_demo_added')), findsOneWidget);
-    expect(find.text('4'), findsOneWidget);
+    expect(findRolled('4'), findsOneWidget);
+    expect(find.byType(ConfettiBurst), findsNothing, reason: 'no confetti');
     await unmount(tester);
   });
 
@@ -294,6 +308,90 @@ void main() {
     await next(tester, play: 2);
     expect(find.text(en('onboarding_demo_tap_me')), findsOneWidget);
     expect(tester.takeException(), isNull);
+    await unmount(tester);
+  });
+
+  /// The perch's tilt: the sine of its rotation (> 0 leans clockwise).
+  double lean(WidgetTester tester) {
+    final rotate = tester
+        .widgetList<Transform>(
+          find.descendant(
+            of: find.byType(AssistantOnboardingPerch),
+            matching: find.byType(Transform),
+          ),
+        )
+        .firstWhere(
+          (transform) => transform.alignment == Alignment.bottomCenter,
+        );
+    return rotate.transform.storage[1];
+  }
+
+  /// Drags the pages towards the next step in steps, returning the tilt
+  /// seen at each; the finger stays down.
+  Future<(TestGesture, List<double>)> dragTowardsNext(
+    WidgetTester tester, {
+    double direction = -1,
+  }) async {
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(PageView)),
+    );
+    final tilts = <double>[];
+    for (var step = 0; step < 8; step++) {
+      await gesture.moveBy(Offset(direction * 38, 0));
+      await tester.pump(const Duration(milliseconds: 16));
+      tilts.add(lean(tester));
+    }
+    return (gesture, tilts);
+  }
+
+  testWidgets('each demo plays once per opening: a step swiped back to '
+      'shows its end and the mascot does not react again', (tester) async {
+    await open(tester);
+    AssistantOnboardingPerch perch() => tester.widget<AssistantOnboardingPerch>(
+      find.byType(AssistantOnboardingPerch),
+    );
+    expect(perch().wave, 1, reason: 'the hello: its own painted wave');
+    await next(tester, play: 40);
+    final waved = perch().wave;
+    final cheered = perch().cheer;
+    final mood = perch().mood;
+
+    await tester.drag(find.byType(PageView), const Offset(400, 0));
+    await frames(tester, 10);
+    expect(find.text(en('onboarding_hello_title')), findsOneWidget);
+    expect(find.text(en('onboarding_skill_home')), findsOneWidget);
+    expect(perch().wave, waved, reason: 'no second hello');
+    expect(perch().cheer, cheered);
+    expect(perch().mood, mood);
+    await unmount(tester);
+  });
+
+  testWidgets('the perch leans the way of the drag and never flips side '
+      'half-way', (tester) async {
+    await open(tester);
+    final (gesture, tilts) = await dragTowardsNext(tester);
+    expect(tilts.reduce((a, b) => a > b ? a : b), greaterThan(0.1));
+    for (final tilt in tilts) {
+      expect(tilt, greaterThanOrEqualTo(0), reason: 'one side all the way');
+    }
+    await gesture.up();
+    await frames(tester, 10);
+    expect(lean(tester), closeTo(0, 0.001), reason: 'upright once landed');
+    await unmount(tester);
+  });
+
+  testWidgets('reduced motion: the perch sits upright in place and the cart '
+      'counts at once, with no flight', (tester) async {
+    await open(tester, reducedMotion: true);
+    final (gesture, tilts) = await dragTowardsNext(tester);
+    expect(tilts.every((tilt) => tilt == 0), isTrue);
+    await gesture.up();
+    await frames(tester, 4);
+    await next(tester, play: 2);
+    await tester.tap(find.text(en('onboarding_demo_confirm')));
+    await tester.pump();
+    expect(FlyToCart.inFlight.value, isFalse);
+    expect(findRolled('4'), findsOneWidget);
     await unmount(tester);
   });
 

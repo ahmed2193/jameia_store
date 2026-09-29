@@ -4,9 +4,9 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 
-import '../../../../core/motion/motion.dart';
 import 'splash_beat.dart';
 import 'splash_frame.dart';
+import 'splash_motion.dart';
 
 /// What the finger does to the splash while it plays: a ring of colour where
 /// it touches, the glow leaning towards it, and a happy hop with a flick of
@@ -46,8 +46,8 @@ class SplashTouch extends ChangeNotifier {
   static const double hopWave = 5;
 
   /// A tap ring or a hop is over after this long.
-  static final double _tapMs = AppMotion.splashTapRipple.inMicroseconds / 1000;
-  static final double _hopMs = AppMotion.splashMarkHop.inMicroseconds / 1000;
+  static final double _tapMs = SplashMotion.tapRipple.inMicroseconds / 1000;
+  static final double _hopMs = SplashMotion.markHop.inMicroseconds / 1000;
 
   double get _nowMs => _now.inMicroseconds / 1000;
 

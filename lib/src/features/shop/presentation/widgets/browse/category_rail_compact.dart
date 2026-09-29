@@ -67,7 +67,6 @@ class _CategoryRailCompactState extends State<CategoryRailCompact> {
         final level = widget.level;
         final options = browse.optionsAt(level);
         if (options.isEmpty) return const SizedBox.shrink();
-        final parent = browse.parentAt(level);
         final selected = browse.selectionAt(level);
         final cubit = context.read<CategoryBrowseCubit>();
         void pick(CatalogCategoryEntity? category) {
@@ -92,7 +91,8 @@ class _CategoryRailCompactState extends State<CategoryRailCompact> {
                       ? _selectedChip
                       : ValueKey<int>(index),
                   label: category?.name ?? 'shop.all'.tr(),
-                  image: category?.image ?? parent?.image ?? '',
+                  image: category?.image ?? '',
+                  all: category == null,
                   selected: category?.id == selected?.id,
                   onTap: () => pick(category),
                 ),

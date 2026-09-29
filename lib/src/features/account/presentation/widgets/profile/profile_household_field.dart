@@ -44,20 +44,25 @@ class ProfileHouseholdField extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.s10),
                   Expanded(
+                    // The placeholder ↔ a number flips (a label swap); the
+                    // number itself rolls up / down with the stepper.
                     child: FlipValue(
-                      flipKey: size ?? 0,
-                      child: Text(
-                        size == null
-                            ? 'profile.household_placeholder'.tr()
-                            : '$size',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.headingSmall.copyWith(
-                          color: size == null
-                              ? AppColors.tertiaryText
-                              : AppColors.primaryText,
-                        ),
-                      ),
+                      flipKey: size == null,
+                      child: size == null
+                          ? Text(
+                              'profile.household_placeholder'.tr(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.headingSmall.copyWith(
+                                color: AppColors.tertiaryText,
+                              ),
+                            )
+                          : RollingNumber(
+                              value: size,
+                              style: AppTextStyles.headingSmall.copyWith(
+                                color: AppColors.primaryText,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.s8),

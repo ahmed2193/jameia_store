@@ -6,23 +6,27 @@ import '../../config/routes/routes.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../motion/pop_scale.dart';
+import '../design/hero_assets.dart';
 import 'app_button.dart';
 import 'hero_secondary_button.dart';
+import 'state_art.dart';
+import 'state_art_loader.dart';
 import 'state_icon_plate.dart';
-import 'state_loader_plate.dart';
 
-/// A whole-screen state: a muted icon plate, an optional bold title, the grey
-/// message and one pill action. `.error` retries with a secondary button;
-/// `.signedOut` sends the customer to sign in with `go` (never `push`, so
-/// every page cubit is rebuilt for the new session); `.offline` is the calm
-/// "no connection" state of a screen with nothing saved to show; `.checking`
-/// holds its place while the app checks whether it really is offline.
+/// A whole-screen state: its illustration ([StateArt]; a muted icon plate
+/// when a screen has no [art]), an optional bold title, the grey message and
+/// one pill action. `.error` retries with a secondary button; `.signedOut`
+/// sends the customer to sign in with `go` (never `push`, so every page
+/// cubit is rebuilt for the new session); `.offline` is the calm "no
+/// connection" state of a screen with nothing saved to show; `.checking`
+/// holds its place — the dots where the offline art's disc will be — while
+/// the app checks whether it really is offline.
 class HeroStateView extends StatelessWidget {
   const HeroStateView({
     super.key,
     required this.message,
     this.icon = Icons.inbox_outlined,
+    this.art,
     this.title,
     this.actionLabel,
     this.onAction,
@@ -36,8 +40,9 @@ class HeroStateView extends StatelessWidget {
     super.key,
     String? message,
     required VoidCallback onRetry,
-    this.icon = Icons.error_outline_rounded,
   }) : message = message ?? '',
+       icon = Icons.error_outline_rounded,
+       art = HeroAssets.stateError,
        title = null,
        actionLabel = null,
        onAction = onRetry,
@@ -50,6 +55,7 @@ class HeroStateView extends StatelessWidget {
   /// (e.g. `'orders.sign_in_required'.tr()`) and a sign-in button.
   const HeroStateView.signedOut({super.key, required this.message})
     : icon = Icons.person_outline_rounded,
+      art = HeroAssets.stateSignedOut,
       title = null,
       actionLabel = null,
       onAction = null,
@@ -64,6 +70,7 @@ class HeroStateView extends StatelessWidget {
   const HeroStateView.offline({super.key, required VoidCallback onRetry})
     : message = '',
       icon = Icons.wifi_off_rounded,
+      art = HeroAssets.stateOffline,
       title = null,
       actionLabel = null,
       onAction = onRetry,
@@ -79,6 +86,7 @@ class HeroStateView extends StatelessWidget {
   const HeroStateView.checking({super.key})
     : message = '',
       icon = Icons.wifi_rounded,
+      art = null,
       title = null,
       actionLabel = null,
       onAction = null,
@@ -88,7 +96,12 @@ class HeroStateView extends StatelessWidget {
       _checking = true;
 
   final String message;
+
+  /// The plate's glyph when there is no [art].
   final IconData icon;
+
+  /// A `HeroAssets` state / empty illustration, drawn by [StateArt].
+  final String? art;
   final String? title;
   final String? actionLabel;
   final VoidCallback? onAction;
@@ -115,6 +128,7 @@ class HeroStateView extends StatelessWidget {
     final VoidCallback? action = _signIn
         ? () => context.go(Routes.login)
         : onAction;
+    final asset = art;
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.s24),
@@ -122,9 +136,9 @@ class HeroStateView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (_checking)
-              const StateLoaderPlate()
-            else if (_offline)
-              PopScale.onMount(child: StateIconPlate(icon: icon))
+              const StateArtLoader()
+            else if (asset != null)
+              StateArt(asset: asset)
             else
               StateIconPlate(icon: icon),
             const SizedBox(height: AppSpacing.s16),

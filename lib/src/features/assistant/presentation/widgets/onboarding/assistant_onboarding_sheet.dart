@@ -25,9 +25,12 @@ import 'assistant_onboarding_result.dart';
 /// The assistant's tour: a sheet with the mascot perched on its edge and
 /// five short steps — who it is, asking in your own words, a cart it fills
 /// and you confirm, deals / orders / delivery, and where to find it — each
-/// with a little demo the mascot reacts to. Swipe or tap Next; Skip, Maybe
-/// later, Start chatting or a question on the last step close it with an
-/// [AssistantOnboardingResult] (`null` when swiped / backed away).
+/// with a little demo the mascot reacts to. Each demo plays once per
+/// opening: a step swiped back to shows how it ended (docs/motion §9.6
+/// §2.12). Swipe or tap Next — a swipe ticks like a pick, Next is the
+/// button's own tap. Skip, Maybe later, Start chatting or a question on the
+/// last step close it with an [AssistantOnboardingResult] (`null` when
+/// swiped / backed away).
 class AssistantOnboardingSheet extends StatefulWidget {
   const AssistantOnboardingSheet({super.key});
 
@@ -84,6 +87,14 @@ class _AssistantOnboardingSheetState extends State<AssistantOnboardingSheet> {
   int _step = 0;
   AssistantMascotMood _mood = AssistantMascotMood.happy;
   int _cheers = 0;
+  int _waves = 0;
+
+  /// Steps left behind in this opening: their demos do not play again.
+  final Set<int> _played = <int>{};
+
+  /// The page is changing because Next was tapped (its button already
+  /// ticked): no second haptic for the same gesture.
+  bool _paging = false;
 
   AssistantOnboardingStep get _current => AssistantOnboardingStep.values[_step];
 
@@ -92,8 +103,12 @@ class _AssistantOnboardingSheetState extends State<AssistantOnboardingSheet> {
   );
 
   void _onPage(int index) {
-    Haptics.selection();
-    setState(() => _step = index);
+    if (!_paging) Haptics.pick();
+    _paging = false;
+    setState(() {
+      _played.add(_step);
+      _step = index;
+    });
     final step = AssistantOnboardingStep.values[index];
     unawaited(
       SemanticsService.sendAnnouncement(
@@ -108,21 +123,15 @@ class _AssistantOnboardingSheetState extends State<AssistantOnboardingSheet> {
     setState(() {
       _mood = cue.mood;
       if (cue.hops) _cheers++;
+      if (cue.waves) _waves++;
     });
   }
 
   void _next() {
     final next = _step + 1;
     if (next >= _count) return;
-    if (MotionGuard.reduced(context)) {
-      _pages.jumpToPage(next);
-    } else {
-      _pages.animateToPage(
-        next,
-        duration: AppMotion.slow,
-        curve: AppMotion.signature,
-      );
-    }
+    _paging = true;
+    MotionGuard.pageTo(context, _pages, next, duration: AppMotion.slow);
   }
 
   void _close(AssistantOnboardingExit exit, [AssistantStarter? starter]) =>
@@ -183,6 +192,7 @@ class _AssistantOnboardingSheetState extends State<AssistantOnboardingSheet> {
                               AssistantOnboardingPage(
                                 step: step,
                                 active: index == _step,
+                                played: _played.contains(index),
                                 onCue: _onCue,
                                 onStarter: (starter) => _close(
                                   AssistantOnboardingExit.chat,
@@ -225,6 +235,7 @@ class _AssistantOnboardingSheetState extends State<AssistantOnboardingSheet> {
                 child: AssistantOnboardingPerch(
                   mood: _mood,
                   cheer: _cheers,
+                  wave: _waves,
                   pages: _pages,
                   touches: _touches,
                 ),

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/motion/change_bump.dart';
 import '../../../../core/motion/motion.dart';
-import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/widgets/shelf_pro_price_chip.dart';
 import '../../../../core/widgets/shelf_save_badge.dart';
 import '../../domain/entities/product_price_quote.dart';
@@ -12,7 +12,7 @@ import 'pdp_bar_price.dart';
 import 'pdp_info_chip.dart';
 
 /// The buy bar's price block, Hero style, top to bottom: the lime
-/// "Save N%" of a deal (popping in again for another percent), the bold
+/// "Save N%" of a deal (bumping for another percent), the bold
 /// price with its marker and struck total ([PdpBarPrice]), then the Pro line
 /// — what a member would pay, for a customer who is not one, or "Pro price"
 /// for a member who pays it. It eases to its new height as lines come and go
@@ -47,8 +47,8 @@ class PdpBarPriceBlock extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (save > 0) ...[
-                PopScale(
-                  popKey: save,
+                ChangeBump(
+                  value: save,
                   child: ShelfSaveBadge(percent: save),
                 ),
                 const SizedBox(height: AppSpacing.s4),

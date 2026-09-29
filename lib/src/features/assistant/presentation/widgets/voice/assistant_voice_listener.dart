@@ -66,23 +66,39 @@ class AssistantVoiceListener extends StatelessWidget {
       case AssistantVoiceNotice.review:
         onReview(text);
       case AssistantVoiceNotice.discarded:
-        Haptics.warning();
+        Haptics.discard();
         onDiscarded();
         _announce(context, 'assistant.voice.a11y_deleted'.tr());
       case AssistantVoiceNotice.tooShort:
-        Haptics.selection();
+        Haptics.refuse();
         onTooShort();
       case AssistantVoiceNotice.noSpeech:
-        showHeroSnackBar(context, 'assistant.voice.no_speech'.tr());
+        showHeroSnackBar(
+          context,
+          'assistant.voice.no_speech'.tr(),
+          tone: HeroSnackTone.warning,
+        );
       case AssistantVoiceNotice.failed:
         if (text.isNotEmpty) onReview(text);
-        showHeroSnackBar(context, _problemKey(state.problem).tr());
+        showHeroSnackBar(
+          context,
+          _problemKey(state.problem).tr(),
+          tone: HeroSnackTone.warning,
+        );
       case AssistantVoiceNotice.micDenied:
-        showHeroSnackBar(context, 'assistant.voice.mic_denied'.tr());
+        showHeroSnackBar(
+          context,
+          'assistant.voice.mic_denied'.tr(),
+          tone: HeroSnackTone.warning,
+        );
       case AssistantVoiceNotice.micBlocked:
         unawaited(AssistantVoiceBlockedDialog.show(context));
       case AssistantVoiceNotice.unavailable:
-        showHeroSnackBar(context, 'assistant.voice.unavailable'.tr());
+        showHeroSnackBar(
+          context,
+          'assistant.voice.unavailable'.tr(),
+          tone: HeroSnackTone.warning,
+        );
       case null:
         return;
     }
@@ -92,11 +108,13 @@ class AssistantVoiceListener extends StatelessWidget {
   /// the screen reader and write its words into the message.
   void _onPhase(BuildContext context, AssistantVoiceState state) {
     switch (state.phase) {
+      // The hold's tick fired at touch-down, before the microphone opened
+      // (the mic button; docs/motion §9.6 §2.9): none here, where it would
+      // land in the recording.
       case AssistantVoicePhase.holding:
-        Haptics.success();
         onRecording();
       case AssistantVoicePhase.locked:
-        Haptics.selection();
+        Haptics.pick();
         onRecording();
       case AssistantVoicePhase.idle:
       case AssistantVoicePhase.sending:

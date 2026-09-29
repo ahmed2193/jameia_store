@@ -1,20 +1,27 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/motion/spring_curve.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../mascot/assistant_mascot.dart';
 import '../mascot/assistant_mascot_mood.dart';
 
-/// The mascot sitting on the tour's top edge, alive the whole way: it drops
-/// in with a bounce as the sheet opens, wears the face the demos ask for
-/// ([mood], a hop whenever [cheer] changes), leans the way the pages are
-/// dragged, follows the customer's finger with its eyes ([touches]) and
-/// giggles when tapped. Decorative for screen readers.
+/// The mascot sitting on the tour's top edge: it settles in from above on
+/// the calm spring as the sheet opens, wears the face the demos ask for
+/// ([mood], a hop whenever [cheer] changes, its own sprout wave whenever
+/// [wave] changes), leans the way the pages are dragged, follows the
+/// customer's finger with its eyes ([touches]) and giggles when tapped.
+/// Still otherwise: it never blinks or looks around on its own.
+///
+/// The lean follows the drag continuously — it grows from the page the drag
+/// started on and eases back to upright as the next one lands, never
+/// flipping side half-way (docs/motion §9.6 §2.12) — and mirrors in RTL.
+/// Reduced motion: it is simply there, upright. Decorative for screen
+/// readers.
 class AssistantOnboardingPerch extends StatefulWidget {
   const AssistantOnboardingPerch({
     super.key,
@@ -22,12 +29,14 @@ class AssistantOnboardingPerch extends StatefulWidget {
     required this.cheer,
     required this.pages,
     required this.touches,
+    this.wave,
   });
 
   static const double size = AppSize.s96;
 
   final AssistantMascotMood mood;
   final Object? cheer;
+  final Object? wave;
 
   /// The tour's pages: a drag between two of them tilts the mascot.
   final PageController pages;
@@ -44,29 +53,33 @@ class _AssistantOnboardingPerchState extends State<AssistantOnboardingPerch>
     with SingleTickerProviderStateMixin {
   static const double _dropFrom = -AppSize.s64;
 
-  /// Tilt (radians) and sideways shift at a full page of drag.
-  static const double _tilt = 0.5;
-  static const double _shift = AppSize.s16;
+  /// Tilt (radians) and sideways shift at the height of a page drag.
+  static const double _tilt = 0.25;
+  static const double _shift = AppSize.s8;
   static const double _lookReach = 200;
+
+  /// A page counts as landed this close to a whole page.
+  static const double _landed = 0.001;
 
   /// The gaze moves only for a real change of where to look.
   static const double _lookStep = 0.15;
   static const Duration _lookHold = Duration(milliseconds: 1200);
   static const Duration _giggleHold = Duration(milliseconds: 900);
-  static final SpringCurve _drop = SpringCurve(
-    SpringDescription.withDampingRatio(mass: 1, stiffness: 240, ratio: 0.5),
-  );
 
   late final AnimationController _arrival = AnimationController(
     vsync: this,
-    duration: _drop.duration,
+    duration: AppSprings.calm.duration,
   );
   final GlobalKey _face = GlobalKey();
 
   Offset _look = Offset.zero;
   AssistantMascotMood? _giggle;
   int _giggles = 0;
-  bool _landed = false;
+  bool _landedOnce = false;
+  bool _reduced = false;
+
+  /// The page the current drag started from (the last one landed on).
+  double _anchor = 0;
   Timer? _lookTimer;
   Timer? _giggleTimer;
 
@@ -79,9 +92,10 @@ class _AssistantOnboardingPerchState extends State<AssistantOnboardingPerch>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_landed) return;
-    _landed = true;
-    if (MotionGuard.reduced(context)) {
+    _reduced = MotionGuard.reduced(context);
+    if (_landedOnce) return;
+    _landedOnce = true;
+    if (_reduced) {
       _arrival.value = 1;
     } else {
       _arrival.forward();
@@ -114,6 +128,7 @@ class _AssistantOnboardingPerchState extends State<AssistantOnboardingPerch>
     });
   }
 
+  // A delight tap (not navigation): a light tick, a giggle.
   void _onTap() {
     Haptics.tap();
     _giggleTimer?.cancel();
@@ -124,6 +139,16 @@ class _AssistantOnboardingPerchState extends State<AssistantOnboardingPerch>
     _giggleTimer = Timer(_giggleHold, () {
       if (mounted) setState(() => _giggle = null);
     });
+  }
+
+  /// How far the mascot leans, `-1..1` (> 0 towards the next page): it
+  /// grows from the page the drag started on, peaks half-way and eases back
+  /// as the other page lands — the same side all the way.
+  double _lean(double page) {
+    final nearest = page.roundToDouble();
+    if ((page - nearest).abs() < _landed) _anchor = nearest;
+    final travel = (page - _anchor).clamp(-1.0, 1.0);
+    return math.sin(travel.abs() * math.pi) * travel.sign;
   }
 
   @override
@@ -143,8 +168,8 @@ class _AssistantOnboardingPerchState extends State<AssistantOnboardingPerch>
       builder: (context, mascot) {
         final pages = widget.pages;
         final page = pages.hasClients ? pages.page ?? 0.0 : 0.0;
-        final lean = (page - page.roundToDouble()) * forward;
-        final landed = _drop.transform(_arrival.value);
+        final lean = _reduced ? 0.0 : _lean(page) * forward;
+        final landed = AppSprings.calm.transform(_arrival.value);
         return Transform.translate(
           offset: Offset(lean * _shift, (1 - landed) * _dropFrom),
           child: Transform.rotate(
@@ -164,6 +189,7 @@ class _AssistantOnboardingPerchState extends State<AssistantOnboardingPerch>
           mood: _giggle ?? widget.mood,
           look: _look,
           cheer: (widget.cheer, _giggles),
+          wave: widget.wave,
         ),
       ),
     );

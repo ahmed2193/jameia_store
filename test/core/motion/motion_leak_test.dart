@@ -1,12 +1,12 @@
-// PopScale and StaggerEntrance used to build a CurvedAnimation inside
-// build(): each rebuild hung one more listener on the controller and none was
-// ever disposed. StaggerEntrance also waited with an uncancellable
-// Future.delayed, so an item disposed early left a timer running.
+// PopScale used to build a CurvedAnimation inside build(): each rebuild hung
+// one more listener on the controller and none was ever disposed. The retired
+// StaggerEntrance waited with a timer, so an item disposed early left it
+// running; its replacement delays inside one controller (an Interval).
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/motion/pop_scale.dart';
-import 'package:hero_mart/src/core/motion/stagger_entrance.dart';
+import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
 
 Widget _host(Widget child) => MediaQuery(
   data: const MediaQueryData(),
@@ -39,19 +39,21 @@ void main() {
     expect(disposed, created);
   });
 
-  testWidgets('StaggerEntrance leaves no timer when disposed early', (
+  testWidgets('a delayed entrance leaves no timer when disposed early', (
     tester,
   ) async {
     await tester.pumpWidget(
-      _host(const StaggerEntrance(index: 5, child: Text('late item'))),
+      _host(
+        const EntranceCascadeItem.single(index: 5, child: Text('late item')),
+      ),
     );
     await tester.pumpWidget(const SizedBox());
     // Ending here fails the test if the stagger delay is still pending.
   });
 
-  testWidgets('StaggerEntrance still plays after its delay', (tester) async {
+  testWidgets('a delayed entrance still plays after its delay', (tester) async {
     await tester.pumpWidget(
-      _host(const StaggerEntrance(index: 2, child: Text('item'))),
+      _host(const EntranceCascadeItem.single(index: 2, child: Text('item'))),
     );
     final fade = tester.widget<FadeTransition>(find.byType(FadeTransition));
     expect(fade.opacity.value, 0);

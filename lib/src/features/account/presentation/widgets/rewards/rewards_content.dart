@@ -60,38 +60,43 @@ class _RewardsContentState extends State<RewardsContent> {
       child: BrandedRefresh(
         onRefresh: () => context.read<LoyaltyRewardsCubit>().refresh(),
         child: ContentClamp(
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(child: RewardsBalanceHeader(rewards: rewards)),
-              if (ready.isNotEmpty) ...[
+          child: EntranceCascade(
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
                 SliverToBoxAdapter(
-                  child: RewardsSectionTitle('loyalty.rewards_ready'.tr()),
+                  child: RewardsBalanceHeader(rewards: rewards),
                 ),
-                RewardsGrid(
-                  items: ready,
-                  rewards: rewards,
-                  firstIndex: 0,
-                  onRedeemed: _celebrate,
+                if (ready.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: RewardsSectionTitle('loyalty.rewards_ready'.tr()),
+                  ),
+                  RewardsGrid(
+                    items: ready,
+                    rewards: rewards,
+                    firstIndex: 0,
+                    onRedeemed: _celebrate,
+                  ),
+                ],
+                if (locked.isNotEmpty) ...[
+                  SliverToBoxAdapter(
+                    child: RewardsSectionTitle('loyalty.rewards_locked'.tr()),
+                  ),
+                  RewardsGrid(
+                    items: locked,
+                    rewards: rewards,
+                    firstIndex: ready.length,
+                    onRedeemed: _celebrate,
+                  ),
+                ],
+                SliverPadding(
+                  padding: EdgeInsetsDirectional.only(
+                    bottom:
+                        MediaQuery.paddingOf(context).bottom + AppSpacing.s24,
+                  ),
                 ),
               ],
-              if (locked.isNotEmpty) ...[
-                SliverToBoxAdapter(
-                  child: RewardsSectionTitle('loyalty.rewards_locked'.tr()),
-                ),
-                RewardsGrid(
-                  items: locked,
-                  rewards: rewards,
-                  firstIndex: ready.length,
-                  onRedeemed: _celebrate,
-                ),
-              ],
-              SliverPadding(
-                padding: EdgeInsetsDirectional.only(
-                  bottom: MediaQuery.paddingOf(context).bottom + AppSpacing.s24,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

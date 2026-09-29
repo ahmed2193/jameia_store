@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
@@ -7,16 +9,21 @@ import '../../../../core/motion/confetti_burst.dart';
 /// handful of confetti in the brand's colours bursts up from that card, over
 /// the whole feed (a rail would cut it off at its edges). Used for the first
 /// thing that goes into an empty basket. Nothing under reduced motion
-/// ([ConfettiBurst] rests), and the overlay never takes a touch.
+/// ([ConfettiBurst] rests), and the overlay never takes a touch. [burstFrom]
+/// can wait [after] its turn (the first add: the flight lands first).
 class HomeConfetti extends StatefulWidget {
   const HomeConfetti({super.key, required this.child});
 
   final Widget child;
 
-  /// Bursts from the middle of the top of [card]'s box; nothing when the
-  /// card is not inside a [HomeConfetti].
-  static void burstFrom(BuildContext card) =>
-      card.findAncestorStateOfType<_HomeConfettiState>()?._burstFrom(card);
+  /// Bursts from the middle of the top of [card]'s box, [after] a wait;
+  /// nothing when the card is not inside a [HomeConfetti] (or is gone by
+  /// then).
+  static void burstFrom(BuildContext card, {Duration after = Duration.zero}) =>
+      card.findAncestorStateOfType<_HomeConfettiState>()?._schedule(
+        card,
+        after,
+      );
 
   @override
   State<HomeConfetti> createState() => _HomeConfettiState();
@@ -34,6 +41,22 @@ class _HomeConfettiState extends State<HomeConfetti> {
 
   int _shots = 0;
   Offset _origin = ConfettiBurst.defaultOrigin;
+  Timer? _pending;
+
+  void _schedule(BuildContext card, Duration after) {
+    _pending?.cancel();
+    if (after <= Duration.zero) return _burstFrom(card);
+    _pending = Timer(after, () {
+      _pending = null;
+      if (mounted && card.mounted) _burstFrom(card);
+    });
+  }
+
+  @override
+  void dispose() {
+    _pending?.cancel();
+    super.dispose();
+  }
 
   void _burstFrom(BuildContext card) {
     final cardBox = card.findRenderObject();

@@ -43,8 +43,6 @@ class PdpSizeCard extends StatelessWidget {
   /// Keep the third line's room without one, so a row of cards lines up.
   final bool reservesThirdLine;
 
-  static const double _pressedScale = 0.97;
-
   /// Edge plus padding: where the card's text sits.
   static const double _inset = AppSpacing.s12;
 
@@ -77,11 +75,10 @@ class PdpSizeCard extends StatelessWidget {
         // bought, so the card owns its tap and offers none then.
         child: PressScale(
           enabled: available,
-          pressedScale: _pressedScale,
           child: GestureDetector(
             onTap: available
                 ? () {
-                    Haptics.selection();
+                    Haptics.pick();
                     onTap();
                   }
                 : null,

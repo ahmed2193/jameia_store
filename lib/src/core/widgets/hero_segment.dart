@@ -6,13 +6,15 @@ import '../../config/theme/app_text_styles.dart';
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
 import 'hero_segmented_control.dart';
+import 'press_row.dart';
 
 /// One label of a [HeroSegmentedControl]: see-through, so the control's
 /// sliding thumb shows beneath it. Its label (and the optional [icon] before
 /// it) cross-fades to the chosen colours when the thumb sits under it: white
 /// on the dark thumb, a bold deep-green label and a green icon on the
 /// brand-soft thumb. The colours change even under reduced motion; only the
-/// fade is skipped.
+/// fade is skipped. A tap dips the segment ([PressRow], no tint: the thumb
+/// is the answer).
 class HeroSegment extends StatelessWidget {
   const HeroSegment({
     super.key,
@@ -53,8 +55,9 @@ class HeroSegment extends StatelessWidget {
       enabled: onTap != null,
       selected: selected,
       inMutuallyExclusiveGroup: true,
-      child: InkWell(
+      child: PressRow(
         onTap: onTap,
+        tint: false,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: Center(
           child: Padding(

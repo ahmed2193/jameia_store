@@ -78,7 +78,7 @@ class _CartCouponRowState extends State<CartCouponRow> {
               onPressed: busy
                   ? null
                   : () {
-                      Haptics.selection();
+                      Haptics.cartRemove();
                       context.read<CartCubit>().removeCoupon();
                     },
               icon: const Icon(Icons.close_rounded, size: AppSize.s20),

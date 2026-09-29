@@ -89,7 +89,7 @@ class CheckoutPointsRow extends StatelessWidget {
             },
           );
     void toggle(bool on) {
-      Haptics.selection();
+      Haptics.pick();
       final cart = context.read<CartCubit>();
       if (on) {
         cart.applyLoyalty(redeem.toRedeem);

@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../core/widgets/light_sweep.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import 'home_layout.dart';
 import 'home_pro_perk_chip.dart';
-import 'home_reveal_scope.dart';
 
 /// The Pro offer at the end of the home feed, for everyone without the perks:
 /// the perks the backend configured (`init.store.pro`) on the Pro violet,
@@ -43,7 +44,6 @@ class HomeProOfferBanner extends StatelessWidget {
         onTap: onTap,
         child: LightSweep(
           peakAlpha: _shineAlpha,
-          active: HomeRevealScope.onScreenOf(context),
           // The shine is cut at the rounded corners.
           borderRadius: radius,
           child: Container(
@@ -57,10 +57,9 @@ class HomeProOfferBanner extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(
-                      Icons.workspace_premium_rounded,
+                    const HeroSvgGlyph.art(
+                      HeroAssets.proCrown,
                       size: AppSize.s20,
-                      color: AppColors.accent4,
                     ),
                     const SizedBox(width: AppSpacing.s6),
                     Expanded(

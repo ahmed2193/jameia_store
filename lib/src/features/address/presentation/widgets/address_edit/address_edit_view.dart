@@ -128,7 +128,7 @@ class _AddressEditViewState extends State<AddressEditView> {
     _center = pos;
     final map = _map;
     if (map != null) {
-      await map.animateCamera(CameraUpdate.newLatLngZoom(pos, _pinZoom));
+      await map.glideTo(context, CameraUpdate.newLatLngZoom(pos, _pinZoom));
       return;
     }
     // The controller isn't ready yet: resolve here so the sheet never hangs.
@@ -193,7 +193,13 @@ class _AddressEditViewState extends State<AddressEditView> {
       _outOfFence = !HeroGeocode.insideFence(_center);
     });
     _scheduleNearby();
-    if (_outOfFence) showHeroSnackBar(context, 'addr.out_of_range'.tr());
+    if (_outOfFence) {
+      showHeroSnackBar(
+        context,
+        'addr.out_of_range'.tr(),
+        tone: HeroSnackTone.warning,
+      );
+    }
   }
 
   void _scheduleNearby() {
@@ -215,12 +221,12 @@ class _AddressEditViewState extends State<AddressEditView> {
     _programmatic = true;
     _programmaticRefresh = true;
     _center = point;
-    _map?.animateCamera(CameraUpdate.newLatLng(point));
+    _map?.glideTo(context, CameraUpdate.newLatLng(point));
   }
 
-  void _zoomIn() => _map?.animateCamera(CameraUpdate.zoomIn());
+  void _zoomIn() => _map?.glideTo(context, CameraUpdate.zoomIn());
 
-  void _zoomOut() => _map?.animateCamera(CameraUpdate.zoomOut());
+  void _zoomOut() => _map?.glideTo(context, CameraUpdate.zoomOut());
 
   void _onSelectCandidate(int index) {
     setState(() {
@@ -229,7 +235,7 @@ class _AddressEditViewState extends State<AddressEditView> {
     });
     _programmatic = true;
     _center = _candidates[index].pos;
-    _map?.animateCamera(CameraUpdate.newLatLng(_candidates[index].pos));
+    _map?.glideTo(context, CameraUpdate.newLatLng(_candidates[index].pos));
   }
 
   // ── Search ──────────────────────────────────────────────────────────────────
@@ -263,14 +269,18 @@ class _AddressEditViewState extends State<AddressEditView> {
     _programmatic = true;
     _programmaticRefresh = true;
     _center = hit.pos;
-    _map?.animateCamera(CameraUpdate.newLatLngZoom(hit.pos, _pinZoom));
+    _map?.glideTo(context, CameraUpdate.newLatLngZoom(hit.pos, _pinZoom));
   }
 
   /// SELECT → FORM: gate on serviceability, reverse-geocode the pin and let
   /// the resolved parts pre-fill the form, then grow the sheet.
   Future<void> _onConfirmLocation() async {
     if (!HeroGeocode.isServiceable(_center)) {
-      showHeroSnackBar(context, 'addr.outside_area'.tr());
+      showHeroSnackBar(
+        context,
+        'addr.outside_area'.tr(),
+        tone: HeroSnackTone.warning,
+      );
       return;
     }
     final cubit = context.read<AddressEditCubit>();
@@ -312,7 +322,7 @@ class _AddressEditViewState extends State<AddressEditView> {
     final pos = await HeroLocation.current();
     if (!mounted) return;
     _center = pos;
-    await _map?.animateCamera(CameraUpdate.newLatLngZoom(pos, _pinZoom));
+    await _map?.glideTo(context, CameraUpdate.newLatLngZoom(pos, _pinZoom));
   }
 
   /// Approximate SELECT-sheet height (helper line + 3 candidate rows + CTA).
@@ -332,6 +342,12 @@ class _AddressEditViewState extends State<AddressEditView> {
     // Saving holds the whole screen (map, sheet, back) until the reply.
     return CubitBusyOverlay<AddressEditCubit, AddressEditState>(
       busyOf: (state) => state.isSaving,
+      doneOf: (state) =>
+          state.status == AddressEditStatus.saved &&
+          state.saved != null &&
+          state.saved != state.original,
+      failOf: (state) => !state.isSaving && state.failure != null,
+      doneLabel: 'addr.saved'.tr(),
       child: Scaffold(
         backgroundColor: AppColors.mediumBackground,
         resizeToAvoidBottomInset: false,

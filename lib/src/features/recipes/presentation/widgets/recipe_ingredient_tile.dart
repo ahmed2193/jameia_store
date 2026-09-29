@@ -1,13 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/motion/pop_switcher.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/catalog_cart_gestures.dart';
 import '../../../../core/widgets/catalog_circle_add_button.dart';
 import '../../../../core/widgets/catalog_pill_stepper.dart';
 import '../../../../core/widgets/hero_image.dart';
@@ -105,26 +106,35 @@ class RecipeIngredientTile extends StatelessWidget {
                       onOpenProduct();
                       return;
                     }
-                    HapticFeedback.selectionClick();
-                    context.read<CartCubit>().addCatalogProduct(product);
+                    CatalogCartGestures.add(
+                      context,
+                      image: product.image,
+                      commit: () =>
+                          context.read<CartCubit>().addCatalogProduct(product),
+                    );
                   }
 
-                  return qty <= 0
-                      ? CatalogCircleAddButton(
-                          label: 'catalog.add_to_cart'.tr(),
-                          icon: ingredient.canAddToCart
-                              ? Icons.add_rounded
-                              : Icons.tune_rounded,
-                          onTap: add,
-                        )
-                      : CatalogPillStepper(
-                          qty: qty,
-                          onAdd: add,
-                          onRemove: () {
-                            HapticFeedback.lightImpact();
-                            context.read<CartCubit>().removeProduct(product.id);
-                          },
-                        );
+                  final inCart = qty > 0;
+                  return PopSwitcher(
+                    stateKey: inCart,
+                    alignment: AlignmentDirectional.centerEnd,
+                    from: PopSwitcher.cartFrom,
+                    child: inCart
+                        ? CatalogPillStepper(
+                            qty: qty,
+                            onAdd: add,
+                            onRemove: () => CatalogCartGestures.remove(
+                              commit: () => context
+                                  .read<CartCubit>()
+                                  .removeProduct(product.id),
+                            ),
+                          )
+                        : CatalogCircleAddButton(
+                            label: 'catalog.add_to_cart'.tr(),
+                            options: !ingredient.canAddToCart,
+                            onTap: add,
+                          ),
+                  );
                 },
               ),
           ],

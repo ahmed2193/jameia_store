@@ -45,6 +45,14 @@ enum SplashWordmark {
     for (final piece in HeroGlyphs.arabic) piece.getBounds(),
   ];
 
+  /// The name's reading direction. The hero's flight swoops and trails
+  /// along it, so it mirrors for the Arabic name (docs/motion B1-20:
+  /// horizontal motion mirrors in RTL; the mark itself is never flipped).
+  TextDirection get direction => switch (this) {
+    latin => TextDirection.ltr,
+    arabic => TextDirection.rtl,
+  };
+
   /// The name for an app language.
   static SplashWordmark forLanguage(String languageCode) =>
       languageCode == 'ar' ? arabic : latin;

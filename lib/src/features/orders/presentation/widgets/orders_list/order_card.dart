@@ -9,8 +9,8 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../config/theme/order_status_palette.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/press_scale.dart';
+import '../../../../../core/motion/size_fade_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../cubit/orders_cubit.dart';
@@ -39,9 +39,6 @@ class OrderCard extends StatelessWidget {
   /// Width of the status-coloured edge.
   static const double _edge = AppSize.s4;
 
-  /// Press depth of a full-width card (a tile gives 0.97).
-  static const double _pressedScale = 0.98;
-
   Future<void> _open(BuildContext context) async {
     final cubit = context.read<OrdersCubit>();
     await context.push(Routes.orderTracking, extra: order.id);
@@ -58,7 +55,6 @@ class OrderCard extends StatelessWidget {
     // Passive: the InkWell keeps the tap and the ripple; the press lets go
     // as soon as the finger starts scrolling the list.
     return PressScale(
-      pressedScale: _pressedScale,
       child: Material(
         color: AppColors.white,
         shape: const RoundedRectangleBorder(
@@ -128,13 +124,15 @@ class OrderCard extends StatelessWidget {
                 OrderItemsPreview(order: order),
                 const SizedBox(height: AppSpacing.s12),
                 OrderTotalRow(order: order),
-                // Grows unclipped: the card's own clip already bounds it, so
-                // no second clip layer is pushed while the actions open.
-                AnimatedSize(
-                  duration: MotionGuard.duration(context, AppMotion.medium),
-                  curve: AppMotion.signature,
+                // A new set of actions (a poll moved the order: Cancel →
+                // Reorder) eases the height once while the pills cross-fade.
+                SizeFadeSwitcher(
+                  stateKey: (
+                    order.canCancel,
+                    order.canReview,
+                    order.isTerminal,
+                  ),
                   alignment: AlignmentDirectional.topCenter,
-                  clipBehavior: Clip.none,
                   child: OrderActions(order: order),
                 ),
               ],

@@ -7,12 +7,17 @@ import 'motion.dart';
 /// [AppMotion.page], then the new one fades in while settling from 92% to full
 /// size (the Material "fade through" pattern for two states with no spatial
 /// relation). Reduced motion → a plain [AppMotion.fast] cross-fade.
+///
+/// [crossFade] is the skeleton → content swap (docs/motion §9.4 #6): both
+/// children cross-fade over [AppMotion.fast], no scale and no blank gap —
+/// the content lands where its bones stood. Instant under reduced motion.
 class FadeThroughSwitcher extends StatelessWidget {
   const FadeThroughSwitcher({
     super.key,
     required this.stateKey,
     required this.child,
     this.alignment = AlignmentDirectional.center,
+    this.crossFade = false,
   });
 
   /// Share of the transition the outgoing child fades over.
@@ -24,18 +29,32 @@ class FadeThroughSwitcher extends StatelessWidget {
   final Widget child;
   final AlignmentGeometry alignment;
 
+  /// A same-place swap (skeleton → content): a short cross-fade.
+  final bool crossFade;
+
   @override
   Widget build(BuildContext context) {
     final reduced = MotionGuard.reduced(context);
     final current = ValueKey<Object>(stateKey);
+    final Duration duration;
+    if (crossFade) {
+      duration = reduced ? Duration.zero : AppMotion.fast;
+    } else {
+      duration = reduced ? AppMotion.fast : AppMotion.page;
+    }
     return AnimatedSwitcher(
-      duration: reduced ? AppMotion.fast : AppMotion.page,
+      duration: duration,
+      // The fade-through eases inside its own intervals.
+      switchInCurve: crossFade ? AppMotion.signature : AppMotion.linear,
+      switchOutCurve: crossFade ? AppMotion.exit : AppMotion.linear,
       layoutBuilder: (currentChild, previous) => Stack(
         alignment: alignment,
         children: <Widget>[...previous, ?currentChild],
       ),
       transitionBuilder: (child, animation) {
-        if (reduced) return FadeTransition(opacity: animation, child: child);
+        if (reduced || crossFade) {
+          return FadeTransition(opacity: animation, child: child);
+        }
         final incoming = child.key == current;
         // The outgoing child runs its animation 1 → 0: it is gone once the
         // value passes 1 − _outShare. The incoming one waits for that point.

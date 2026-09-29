@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/motion/entrance_cascade_item.dart';
 import '../../domain/entities/home_link.dart';
 import '../../domain/entities/home_section_entity.dart';
 import 'home_layout.dart';
-import 'home_reveal_item.dart';
 import 'home_promo_card_tile.dart';
 import 'home_section_block.dart';
 
@@ -36,7 +36,7 @@ class HomePromoCards extends StatelessWidget {
           ),
           itemCount: cards.length,
           separatorBuilder: (_, _) => const SizedBox(width: HomeLayout.itemGap),
-          itemBuilder: (context, index) => HomeRevealItem(
+          itemBuilder: (context, index) => EntranceCascadeItem(
             key: ValueKey(cards[index].id),
             index: index,
             child: HomePromoCardTile(

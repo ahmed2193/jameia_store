@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/press_scale.dart';
 import 'coupons_tab_badge.dart';
 
 /// One coupon tab: an outlined, see-through pill whose label turns white as
 /// the sliding thumb (following the tab controller's [animation]) arrives
 /// under it, with the bucket's [count] in an orange bubble when non-zero.
+/// It dips when pressed; the track fires the selection haptic.
 class CouponsTabPill extends StatelessWidget {
   const CouponsTabPill({
     super.key,
@@ -24,7 +24,7 @@ class CouponsTabPill extends StatelessWidget {
   final int count;
   final int index;
   final Animation<double> animation;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   static const double _selectedFrom = 0.5;
 
@@ -41,7 +41,6 @@ class CouponsTabPill extends StatelessWidget {
           selected: selected,
           child: PressScale(
             onTap: onTap,
-            haptic: selected ? null : HapticKind.selection,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -74,10 +73,13 @@ class CouponsTabPill extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (count > 0) ...[
-                        const SizedBox(width: AppSpacing.s6),
-                        CouponsTabBadge(count: count),
-                      ],
+                      // Always mounted: it fades out at zero.
+                      CouponsTabBadge(
+                        count: count,
+                        margin: const EdgeInsetsDirectional.only(
+                          start: AppSpacing.s6,
+                        ),
+                      ),
                     ],
                   ),
                 ),

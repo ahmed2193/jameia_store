@@ -20,6 +20,7 @@ import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
 import 'package:hero_mart/src/core/domain/entities/pro_membership_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/motion_beat.dart';
 import 'package:hero_mart/src/core/widgets/stale_age_pill.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/auth_session_cubit.dart';
 import 'package:hero_mart/src/features/store_mode/domain/entities/pro_membership.dart';
@@ -39,6 +40,7 @@ import 'package:hero_mart/src/features/store_mode/presentation/widgets/pro_statu
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
+import '../../core/motion/rolling_test_finders.dart';
 import '../auth/auth_test_fakes.dart';
 import 'pro_status_fakes.dart';
 
@@ -272,7 +274,7 @@ void main() {
     // Opens on the best value: the annual plan, spread per month.
     expect(find.text('A whole year'), findsOneWidget);
     expect(find.text('Hey there'), findsOneWidget);
-    expect(find.text('KD 2.083 / month'), findsOneWidget);
+    expect(findRolled('KD 2.083 / month'), findsOneWidget);
     expect(find.text('Billed yearly at KD 24.999'), findsOneWidget);
     expect(find.text('Sign in to join'), findsOneWidget);
     expect(find.text('Have an account?'), findsOneWidget);
@@ -290,19 +292,54 @@ void main() {
     await pump(tester);
 
     expect(find.text('Hey, Ahmed'), findsOneWidget);
-    expect(find.text('You have 120 points'), findsOneWidget);
+    expect(findRolled('You have 120 points'), findsOneWidget);
     expect(find.text('Rewards'), findsOneWidget);
     expect(find.text('Join for KD 24.999 / year'), findsOneWidget);
-    expect(find.text('KD 2.083 / month'), findsOneWidget);
+    expect(findRolled('KD 2.083 / month'), findsOneWidget);
 
     await tester.tap(find.text('Monthly'));
     await settle(tester);
 
     expect(membership.state.selectedPlanId, 'monthly');
     expect(find.text('Join for KD 2.999 / month'), findsOneWidget);
-    expect(find.text('KD 2.999 / month'), findsOneWidget);
+    expect(findRolled('KD 2.999 / month'), findsOneWidget);
     expect(find.text('Billed monthly'), findsOneWidget);
     expect(find.text('Every order,'), findsOneWidget);
+
+    await teardownApp(tester);
+  });
+
+  testWidgets('a plan switch moves in order (B2-03): the thumb answers '
+      'the tap, the price and the button a beat later, the hero last', (
+    tester,
+  ) async {
+    session.signedIn(_customer);
+    repository.subscription = const Right(null);
+    await pump(tester);
+    expect(find.text('A whole year'), findsOneWidget);
+
+    await tester.tap(find.text('Monthly'));
+    await tester.pump();
+    expect(membership.state.selectedPlanId, 'monthly');
+    // The thumb is on its way; the price, the button and the hero wait.
+    expect(tester.hasRunningAnimations, isTrue);
+    expect(find.text('Billed yearly at KD 24.999'), findsOneWidget);
+    expect(find.text('Join for KD 24.999 / year'), findsOneWidget);
+    expect(find.text('Every order,'), findsNothing);
+
+    await tester.pump(MotionBeat.second);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.text('Billed monthly'), findsOneWidget);
+    expect(find.text('Join for KD 2.999 / month'), findsOneWidget);
+    expect(find.text('A whole year'), findsOneWidget);
+    expect(find.text('Every order,'), findsNothing);
+
+    await tester.pump(MotionBeat.third - MotionBeat.second);
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(find.text('Every order,'), findsOneWidget);
+    await settle(tester);
+    expect(find.text('A whole year'), findsNothing);
+    expect(findRolled('KD 2.999 / month'), findsOneWidget);
 
     await teardownApp(tester);
   });

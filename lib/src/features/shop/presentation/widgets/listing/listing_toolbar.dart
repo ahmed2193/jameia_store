@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -32,16 +34,20 @@ class ListingToolbar extends StatelessWidget {
   }
 
   /// The brand list is read the first time the filter is opened, so a listing
-  /// nobody filters never asks for it.
+  /// nobody filters never asks for it. The sheet opens at once and fills in
+  /// as the list arrives (B3-02): no silent wait on the pill, and a second
+  /// tap while it opens is absorbed (one sheet at a time) — never a second,
+  /// empty sheet.
   Future<void> _pickBrand(BuildContext context, String? current) async {
     final cubit = context.read<ProductListingCubit>();
-    await cubit.loadBrands();
-    if (!context.mounted) return;
+    unawaited(cubit.loadBrands());
     final picked = await showHeroBottomSheet<({String? slug})>(
       context,
       backgroundColor: AppColors.white,
-      builder: (_) =>
-          ListingBrandSheet(brands: cubit.state.brands, selected: current),
+      builder: (_) => BlocProvider<ProductListingCubit>.value(
+        value: cubit,
+        child: ListingBrandSheet(selected: current),
+      ),
     );
     if (picked != null) await cubit.setBrandSlug(picked.slug);
   }
@@ -50,9 +56,7 @@ class ListingToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ProductListingCubit, ProductListingState>(
       buildWhen: (previous, current) =>
-          previous.query != current.query ||
-          previous.brands != current.brands ||
-          previous.isLoadingBrands != current.isLoadingBrands,
+          previous.query != current.query || previous.brands != current.brands,
       builder: (context, state) {
         final query = state.query;
         final brand = query.brandSlug;

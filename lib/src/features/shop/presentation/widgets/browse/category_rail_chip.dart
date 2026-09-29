@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_image.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 
 /// One sub-category of the folded rail: a pill with the artwork in a small
 /// circle before the name, filled in ink while it is the open one. The rail
@@ -19,6 +21,7 @@ class CategoryRailChip extends StatelessWidget {
     required this.image,
     required this.selected,
     required this.onTap,
+    this.all = false,
   });
 
   final String label;
@@ -28,20 +31,22 @@ class CategoryRailChip extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
+  /// The "All" chip: the Hero category-all glyph
+  /// ([HeroAssets.categoryAll]) instead of an [image].
+  final bool all;
+
   static const double height = AppSize.s36;
   static const double _image = AppSize.s28;
   static const double _glyph = AppSize.s18;
-  static const double _pressedScale = 0.97;
 
   @override
   Widget build(BuildContext context) {
     return PressScale(
       onTap: onTap,
-      pressedScale: _pressedScale,
       haptic: HapticKind.selection,
       child: AnimatedContainer(
         duration: MotionGuard.duration(context, AppMotion.fast),
-        curve: MotionGuard.curve(context, AppMotion.standard),
+        curve: MotionGuard.curve(context, AppMotion.signature),
         height: height,
         padding: const EdgeInsetsDirectional.fromSTEB(
           AppSpacing.s4,
@@ -64,7 +69,13 @@ class CategoryRailChip extends StatelessWidget {
                 color: AppColors.white,
                 child: SizedBox.square(
                   dimension: _image,
-                  child: image.isEmpty
+                  child: all
+                      ? const HeroSvgGlyph.mono(
+                          HeroAssets.categoryAll,
+                          size: _glyph,
+                          color: AppColors.primaryText,
+                        )
+                      : image.isEmpty
                       ? const Icon(
                           Icons.category_outlined,
                           size: _glyph,

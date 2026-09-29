@@ -30,6 +30,10 @@ class ProMembershipPage extends StatelessWidget {
   /// server answers.
   static bool _busy(ProMembershipState state) => state.isBusy;
 
+  /// A subscribe / cancel came back failed: the busy disc's × (B3-05).
+  static bool _actionFailed(ProMembershipState state) =>
+      state.actionFailed && state.failure != null;
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -57,6 +61,7 @@ class ProMembershipPage extends StatelessWidget {
                     ProMembershipState
                   >(
                     busyOf: _busy,
+                    failOf: _actionFailed,
                     child: Scaffold(
                       backgroundColor: AppColors.white,
                       body: ProStatusReporter(

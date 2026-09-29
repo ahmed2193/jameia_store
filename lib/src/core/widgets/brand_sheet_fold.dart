@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../motion/motion.dart';
+import '../motion/size_fade_transition.dart';
 import 'brand_sheet_scope.dart';
 
 /// A block of a brand sheet that makes room for the keyboard with the
@@ -13,14 +15,13 @@ class BrandSheetFold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final open = ReverseAnimation(BrandSheetScope.foldOf(context));
-    return FadeTransition(
-      opacity: open,
-      child: SizeTransition(
-        sizeFactor: open,
-        alignment: AlignmentDirectional.topCenter,
-        child: child,
-      ),
+    return SizeFadeTransition(
+      animation: ReverseAnimation(BrandSheetScope.foldOf(context)),
+      alignment: AlignmentDirectional.topCenter,
+      // The fold carries its own curve; height and fade follow it together.
+      curve: AppMotion.linear,
+      fadeFrom: 0,
+      child: child,
     );
   }
 }

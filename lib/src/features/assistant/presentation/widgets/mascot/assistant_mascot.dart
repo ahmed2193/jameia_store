@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../assistant_motion.dart';
+import '../buddy/buddy_motion_gate.dart';
 import 'assistant_mascot_gesture.dart';
 import 'assistant_mascot_hop.dart';
 import 'assistant_mascot_mood.dart';
@@ -13,13 +15,20 @@ import 'assistant_mascot_pose.dart';
 
 /// The assistant's face: a painted mascot that eases between [mood]s, looks
 /// where it is told ([look]), hops for joy whenever [cheer] changes, waves
-/// its sprout whenever [wave] changes, winks whenever [wink] changes and —
-/// while [alive] — blinks and glances around on its own.
+/// its sprout whenever [wave] changes and winks whenever [wink] changes.
 ///
-/// Nothing loops: each gesture runs a short controller and stops, so a
-/// mascot at rest draws no frames. Timers pause with the route (`TickerMode`)
-/// and reduced motion leaves a still face that only swaps expressions.
-/// Decorative for screen readers: whatever holds it says what it does.
+/// It is STILL by default (docs/motion §9.6 §2.1): it never blinks or
+/// glances on its own. A new [wake] value opens a wake window — one blink
+/// ([AssistantMotion.wakeBlinkDelay] later, now and then a double one), at
+/// most one per [AssistantMotion.wakeBlinkGap] — and that is all.
+///
+/// Every motion asks [BuddyMotionGate.mayMoveOf] before it starts (not
+/// while the customer types, scrolls, reads a streaming answer or records,
+/// not under a covering page, reduced motion or a screen reader): a closed
+/// gate swaps the face in place and plays no gesture. Nothing loops — each
+/// gesture runs a short controller and stops, so a mascot at rest draws no
+/// frames; its only timer (the wake blink) is cancelled whenever it may not
+/// move. Decorative for screen readers: whatever holds it says what it does.
 class AssistantMascot extends StatefulWidget {
   const AssistantMascot({
     super.key,
@@ -27,7 +36,7 @@ class AssistantMascot extends StatefulWidget {
     this.mood = AssistantMascotMood.idle,
     this.look = Offset.zero,
     this.outlined = false,
-    this.alive = true,
+    this.wake,
     this.cheer,
     this.wave,
     this.wink,
@@ -36,14 +45,14 @@ class AssistantMascot extends StatefulWidget {
   final double size;
   final AssistantMascotMood mood;
 
-  /// Where to look, each axis in `-1..1`; zero lets it glance on its own.
+  /// Where to look, each axis in `-1..1`.
   final Offset look;
 
   /// White sticker rim, for a mascot floating over content.
   final bool outlined;
 
-  /// Blinks and glances on its own.
-  final bool alive;
+  /// Every new value opens a wake window (one blink at most).
+  final Object? wake;
 
   /// Every new value plays one happy hop.
   final Object? cheer;
@@ -60,62 +69,40 @@ class AssistantMascot extends StatefulWidget {
 
 class _AssistantMascotState extends State<AssistantMascot>
     with TickerProviderStateMixin {
-  static const Duration _blinkHalf = Duration(milliseconds: 75);
-  static const Duration _moodEase = Duration(milliseconds: 260);
-  static const Duration _mouthFlap = Duration(milliseconds: 150);
-  static const Duration _hopLength = Duration(milliseconds: 720);
-  static const Duration _lookEase = Duration(milliseconds: 240);
-  static const Duration _glanceHold = Duration(milliseconds: 900);
-  static const Duration _waveLength = Duration(milliseconds: 900);
-  static const Duration _winkLength = Duration(milliseconds: 420);
-
-  static const int _blinkMinMs = 3000;
-  static const int _blinkSpreadMs = 4000;
-  static const double _doubleBlinkChance = 0.2;
-  static const int _glanceMinMs = 15000;
-  static const int _glanceSpreadMs = 10000;
-  static const double _glanceReach = 0.85;
-  static const double _glanceLift = 0.25;
   static const double _hopHeightRatio = 0.16;
   static const double _swayWithLook = 0.35;
-  static const double _talkRest = 0.15;
 
   final math.Random _random = math.Random();
 
   late final AnimationController _blink = AnimationController(
     vsync: this,
-    duration: _blinkHalf,
+    duration: AssistantMotion.blinkHalf,
   );
   late final AnimationController _mood = AnimationController(
     vsync: this,
-    duration: _moodEase,
+    duration: AppMotion.medium,
     value: 1,
-  );
-  late final AnimationController _mouth = AnimationController(
-    vsync: this,
-    duration: _mouthFlap,
   );
   late final AnimationController _hop = AnimationController(
     vsync: this,
-    duration: _hopLength,
+    duration: AssistantMotion.hop,
   );
   late final AnimationController _eyes = AnimationController(
     vsync: this,
-    duration: _lookEase,
+    duration: AppMotion.medium,
     value: 1,
   );
   late final AnimationController _wave = AnimationController(
     vsync: this,
-    duration: _waveLength,
+    duration: AssistantMotion.wave,
   );
   late final AnimationController _wink = AnimationController(
     vsync: this,
-    duration: _winkLength,
+    duration: AssistantMotion.wink,
   );
   late final Listenable _frame = Listenable.merge([
     _blink,
     _mood,
-    _mouth,
     _hop,
     _eyes,
     _wave,
@@ -126,19 +113,29 @@ class _AssistantMascotState extends State<AssistantMascot>
   Offset _lookFrom = Offset.zero;
   late Offset _lookTo = widget.look;
 
-  Timer? _blinkTimer;
-  Timer? _glanceTimer;
-  bool _ambient = false;
-  bool _reduced = false;
-  bool _onScreen = true;
+  /// A motion may start now (gate open, motion allowed).
+  bool _mayMove = false;
+  Timer? _wakeBlink;
+
+  /// A blink happened less than [AssistantMotion.wakeBlinkGap] ago.
+  Timer? _blinkRest;
+
+  @override
+  void initState() {
+    super.initState();
+    // A mascot that mounts with a wake (a header on a new page) opens it.
+    if (widget.wake != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _woken();
+      });
+    }
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _reduced = MotionGuard.reduced(context);
-    _onScreen = TickerMode.valuesOf(context).enabled;
-    _syncAmbient(widget.alive && !_reduced && _onScreen);
-    _syncMouth();
+    _mayMove = BuddyMotionGate.mayMoveOf(context);
+    if (!_mayMove) _wakeBlink?.cancel();
   }
 
   @override
@@ -146,16 +143,13 @@ class _AssistantMascotState extends State<AssistantMascot>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.mood != widget.mood) {
       _moodFrom = _currentMood(oldWidget.mood);
-      _run(_mood);
-      _syncMouth();
+      _run(_mood, gesture: false);
     }
     if (oldWidget.look != widget.look) _lookAt(widget.look);
     if (oldWidget.cheer != widget.cheer && widget.cheer != null) _run(_hop);
     if (oldWidget.wave != widget.wave && widget.wave != null) _run(_wave);
     if (oldWidget.wink != widget.wink && widget.wink != null) _run(_wink);
-    if (oldWidget.alive != widget.alive) {
-      _syncAmbient(widget.alive && !_reduced && _onScreen);
-    }
+    if (oldWidget.wake != widget.wake && widget.wake != null) _woken();
   }
 
   /// The mood face as it is on screen right now (mid-ease included).
@@ -166,48 +160,34 @@ class _AssistantMascotState extends State<AssistantMascot>
         AppMotion.signature.transform(_mood.value),
       );
 
-  /// Plays [controller] from the start, or jumps to its end under reduced
-  /// motion (a hop, a wave or a wink then simply does not happen).
-  void _run(AnimationController controller) {
-    if (_reduced) {
-      final gesture =
-          controller == _hop || controller == _wave || controller == _wink;
-      controller.value = gesture ? 0 : 1;
+  /// Plays [controller] from the start. When the mascot may not move a
+  /// [gesture] (hop, wave, wink) simply does not happen and an ease (mood,
+  /// eyes) jumps to its end.
+  void _run(AnimationController controller, {bool gesture = true}) {
+    if (!_mayMove) {
+      controller
+        ..stop()
+        ..value = gesture ? 0 : 1;
       return;
     }
     controller.forward(from: 0);
   }
 
-  void _syncMouth() {
-    if (widget.mood == AssistantMascotMood.talking && !_reduced) {
-      if (!_mouth.isAnimating) _mouth.repeat(reverse: true);
-    } else {
-      _mouth
-        ..stop()
-        ..value = 0;
-    }
-  }
-
-  void _syncAmbient(bool on) {
-    if (on == _ambient) return;
-    _ambient = on;
-    _blinkTimer?.cancel();
-    _glanceTimer?.cancel();
-    if (on) {
-      _scheduleBlink();
-      _scheduleGlance();
-    }
-  }
-
-  void _scheduleBlink() {
-    _blinkTimer = Timer(
-      Duration(milliseconds: _blinkMinMs + _random.nextInt(_blinkSpreadMs)),
-      () async {
+  /// A wake: one blink a moment later, unless one came lately. Whether it
+  /// may move is asked when the blink is due (a gate that opens this frame
+  /// is read after the new wake arrives), and a gate that closes meanwhile
+  /// cancels it.
+  void _woken() {
+    if (_blinkRest != null) return;
+    _wakeBlink?.cancel();
+    _wakeBlink = Timer(AssistantMotion.wakeBlinkDelay, () async {
+      if (!mounted || !_mayMove) return;
+      _blinkRest = Timer(AssistantMotion.wakeBlinkGap, () => _blinkRest = null);
+      await _blinkOnce();
+      if (_random.nextDouble() < AssistantMotion.doubleBlinkChance) {
         await _blinkOnce();
-        if (_random.nextDouble() < _doubleBlinkChance) await _blinkOnce();
-        if (mounted && _ambient) _scheduleBlink();
-      },
-    );
+      }
+    });
   }
 
   Future<void> _blinkOnce() async {
@@ -217,32 +197,10 @@ class _AssistantMascotState extends State<AssistantMascot>
     await _blink.reverse().orCancel.catchError((_) {});
   }
 
-  void _scheduleGlance() {
-    _glanceTimer = Timer(
-      Duration(milliseconds: _glanceMinMs + _random.nextInt(_glanceSpreadMs)),
-      () {
-        if (!mounted || !_ambient) return;
-        final free =
-            widget.look == Offset.zero && widget.mood.pose.look == Offset.zero;
-        if (!free) {
-          _scheduleGlance();
-          return;
-        }
-        final side = _random.nextBool() ? 1.0 : -1.0;
-        _lookAt(Offset(side * _glanceReach, -_glanceLift));
-        _glanceTimer = Timer(_glanceHold, () {
-          if (!mounted) return;
-          _lookAt(widget.look);
-          if (_ambient) _scheduleGlance();
-        });
-      },
-    );
-  }
-
   void _lookAt(Offset target) {
     _lookFrom = _currentLook();
     _lookTo = target;
-    _run(_eyes);
+    _run(_eyes, gesture: false);
   }
 
   Offset _currentLook() => Offset.lerp(
@@ -260,9 +218,7 @@ class _AssistantMascotState extends State<AssistantMascot>
     return AssistantMascotPose(
       blink: _blink.value,
       happy: math.max(mood.happy, joy),
-      talk: widget.mood == AssistantMascotMood.talking
-          ? _talkRest + (1 - _talkRest) * _mouth.value
-          : mood.talk,
+      talk: mood.talk,
       look: look,
       squash: mood.squash + (hopping ? AssistantMascotHop.squash(hop) : 0),
       sway:
@@ -278,11 +234,10 @@ class _AssistantMascotState extends State<AssistantMascot>
 
   @override
   void dispose() {
-    _blinkTimer?.cancel();
-    _glanceTimer?.cancel();
+    _wakeBlink?.cancel();
+    _blinkRest?.cancel();
     _blink.dispose();
     _mood.dispose();
-    _mouth.dispose();
     _hop.dispose();
     _eyes.dispose();
     _wave.dispose();

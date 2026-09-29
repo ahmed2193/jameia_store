@@ -33,13 +33,20 @@ class HeroSummaryLine extends StatelessWidget {
             ),
           ),
           const SizedBox(width: AppSpacing.s12),
+          // The value's half of the line, the value at its end: a short
+          // value sits at the edge (not mid-line after the label's half),
+          // a long one wraps inside its half.
           Flexible(
-            child: DefaultTextStyle.merge(
-              style: emphasized
-                  ? AppTextStyles.groupTitle
-                  : AppTextStyles.label,
-              textAlign: TextAlign.end,
-              child: value,
+            child: Align(
+              alignment: AlignmentDirectional.topEnd,
+              heightFactor: 1,
+              child: DefaultTextStyle.merge(
+                style: emphasized
+                    ? AppTextStyles.groupTitle
+                    : AppTextStyles.label,
+                textAlign: TextAlign.end,
+                child: value,
+              ),
             ),
           ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/features/splash/presentation/widgets/splash_motion.dart';
 import 'package:hero_mart/src/features/splash/presentation/widgets/splash_touch.dart';
 
 const Offset _center = Offset(200, 400);
@@ -11,14 +12,14 @@ void main() {
 
     touch.down(const Offset(80, 120), _center, onMark: false);
     await tester.pump();
-    await tester.pump(AppMotion.splashTapRipple ~/ 2);
+    await tester.pump(SplashMotion.tapRipple ~/ 2);
 
     expect(touch.ripples, hasLength(1));
     expect(touch.ripples.single.ground, isFalse);
     expect(touch.ripples.single.progress, inExclusiveRange(0, 1));
     expect(touch.markLift, 0, reason: 'only a tap on the bag makes it hop');
 
-    await tester.pump(AppMotion.splashTapRipple);
+    await tester.pump(SplashMotion.tapRipple);
     expect(touch.ripples, isEmpty);
   });
 
@@ -30,11 +31,11 @@ void main() {
 
     touch.down(_center, _center, onMark: true);
     await tester.pump();
-    await tester.pump(AppMotion.splashMarkHop ~/ 2);
+    await tester.pump(SplashMotion.markHop ~/ 2);
     expect(touch.markLift, closeTo(SplashTouch.hopHeight, 0.5));
     expect(touch.capeFlick, closeTo(SplashTouch.hopWave, 0.5));
 
-    await tester.pump(AppMotion.splashMarkHop);
+    await tester.pump(SplashMotion.markHop);
     expect(touch.markLift, 0);
     expect(touch.markSquash, 0);
     expect(touch.capeFlick, 0);

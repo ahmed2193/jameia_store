@@ -58,7 +58,7 @@ class ProfileSaveButton extends StatelessWidget {
                     child: InkWell(
                       onTap: active
                           ? () {
-                              Haptics.tap();
+                              Haptics.commit();
                               context.read<ProfileCubit>().save();
                             }
                           : null,

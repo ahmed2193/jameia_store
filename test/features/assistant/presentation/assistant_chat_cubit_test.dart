@@ -102,6 +102,24 @@ void main() {
       expect(cubit.state.status, AssistantChatStatus.ready);
     });
 
+    test('a returning connection loads a thread that failed; a ready '
+        'chat is left alone', () async {
+      final offline = cubit.loadThread('c1');
+      repository.threads.last.open(const Left(NetworkFailure()));
+      await offline;
+      expect(cubit.state.status, AssistantChatStatus.error);
+
+      final reconnected = cubit.onReconnected();
+      expect(repository.threads, hasLength(2));
+      expect(repository.threads.last.args, 'c1');
+      repository.threads.last.open(Right(threadOf(const [])));
+      await reconnected;
+      expect(cubit.state.status, AssistantChatStatus.ready);
+
+      await cubit.onReconnected();
+      expect(repository.threads, hasLength(2));
+    });
+
     test('a thread read that a newer one replaced is dropped', () async {
       final first = cubit.loadThread('c1');
       final second = cubit.loadThread('c2');

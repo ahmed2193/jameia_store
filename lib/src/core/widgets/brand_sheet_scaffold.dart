@@ -67,7 +67,7 @@ class BrandSheetScaffold extends StatefulWidget {
 
   /// The rise waits this long (the page's own fade shows the green first).
   static const Duration riseDelay = Duration(milliseconds: 120);
-  static const Duration riseDuration = AppMotion.sheetLarge;
+  static const Duration riseDuration = AppMotion.slow;
 
   @override
   State<BrandSheetScaffold> createState() => _BrandSheetScaffoldState();

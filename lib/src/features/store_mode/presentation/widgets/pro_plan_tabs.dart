@@ -11,8 +11,8 @@ import 'pro_plan_segments.dart';
 /// The plan tabs at the top of the paywall: one pill per plan, sharing the
 /// row when they fit, scrolling sideways otherwise, with one selection thumb
 /// gliding between them. The best-value plan wears the "Save N%" chip (see
-/// `ProMembershipState.planSavings`). Slides down into place when the paywall
-/// first shows. Inert while a subscribe / cancel is in flight, and for a
+/// `ProMembershipState.planSavings`). Rises into place when the paywall first
+/// shows. Inert while a subscribe / cancel is in flight, and for a
 /// member (on their own plan, no chip).
 class ProPlanTabs extends StatelessWidget {
   const ProPlanTabs({super.key});
@@ -21,9 +21,6 @@ class ProPlanTabs extends StatelessWidget {
   static const int _maxFitted = 3;
   static const double _scrollPillWidth = AppSize.s140;
   static const double _gap = AppSpacing.s12;
-
-  /// The tabs drop in from above by this share of their height.
-  static const Offset _dropIn = Offset(0, -0.3);
 
   /// Room above the pills for the saving chip.
   static const EdgeInsetsDirectional _padding = EdgeInsetsDirectional.fromSTEB(
@@ -35,9 +32,7 @@ class ProPlanTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaggerEntrance(
-      index: 0,
-      beginOffset: _dropIn,
+    return EntranceCascadeItem.single(
       child: BlocBuilder<ProMembershipCubit, ProMembershipState>(
         buildWhen: (previous, current) =>
             previous.program != current.program ||

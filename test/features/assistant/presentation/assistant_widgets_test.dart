@@ -39,6 +39,8 @@ import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_vo
 import 'package:hero_mart/src/features/assistant/presentation/widgets/blocks/assistant_card_list.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/chat/assistant_chat_app_bar.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/chat/assistant_chat_body.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/chat/assistant_typing_scope.dart';
+import 'package:hero_mart/src/features/assistant/presentation/widgets/chat/assistant_typing_signal.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/composer/assistant_composer.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/composer/assistant_send_button.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/history/assistant_history_body.dart';
@@ -340,6 +342,42 @@ void main() {
         hasTapAction: true,
       ),
     );
+    await unmount(tester);
+  });
+
+  testWidgets('composer: tells the chat while the customer types (focus or '
+      'a draft), and not once the box is empty and left', (tester) async {
+    final typing = AssistantTypingSignal();
+    addTearDown(typing.dispose);
+    await pump(
+      tester,
+      AssistantTypingScope(
+        signal: typing,
+        child: const Scaffold(
+          body: Column(
+            children: [
+              Expanded(child: SizedBox()),
+              AssistantComposer(),
+            ],
+          ),
+        ),
+      ),
+    );
+    expect(typing.value, isFalse);
+
+    await tester.enterText(find.byType(TextField), 'Hello');
+    await tester.pump();
+    expect(typing.value, isTrue);
+
+    // A draft left in the box still counts, with the keyboard down.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    expect(typing.value, isTrue);
+
+    await tester.enterText(find.byType(TextField), '');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump();
+    expect(typing.value, isFalse);
     await unmount(tester);
   });
 

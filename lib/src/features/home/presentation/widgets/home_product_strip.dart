@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
+import '../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../core/widgets/catalog_product_card.dart';
 import 'home_layout.dart';
 import 'home_product_tile.dart';
-import 'home_reveal_item.dart';
 
 /// The horizontal row of product cards every home block uses — a plain rail
 /// and the campaign band alike, so the two can never drift apart. The cards
@@ -48,7 +48,7 @@ class HomeProductStrip extends StatelessWidget {
         addAutomaticKeepAlives: false,
         addRepaintBoundaries: false,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.s8),
-        itemBuilder: (context, index) => HomeRevealItem(
+        itemBuilder: (context, index) => EntranceCascadeItem(
           key: ValueKey<String>(products[index].id),
           index: index,
           child: HomeProductTile(

@@ -10,7 +10,7 @@ import 'coupons_summary_empty.dart';
 import 'coupons_summary_savings.dart';
 
 /// Warm amber → orange card at the top of My coupons: how much the available
-/// coupons can save (counting up from 0), how many are ready, and the glowing
+/// coupons can save (at once on open), how many are ready, and the glowing
 /// ticket badge. With nothing available it says new coupons will land here.
 class CouponsSummaryCard extends StatelessWidget {
   const CouponsSummaryCard({super.key, required this.buckets});

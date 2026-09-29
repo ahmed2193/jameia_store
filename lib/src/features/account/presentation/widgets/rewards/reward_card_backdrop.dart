@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 
 /// Background of a reward card's art: the warm amber → orange gradient, a
-/// soft highlight at the top-end corner and a large faded gift overhanging
+/// soft highlight at the top-end corner and a large faded tier medal (the
+/// Hero rewards badge, [HeroAssets.rewardsBadge], tinted white) overhanging
 /// the bottom-end corner, gently floating when [floats]. Decorative only;
-/// the parent clips it to the card's corners.
+/// the parent clips it to the card's corners (a locked tier's veil and lock
+/// sit over it).
 class RewardCardBackdrop extends StatelessWidget {
   const RewardCardBackdrop({super.key, required this.floats});
 
@@ -34,8 +38,8 @@ class RewardCardBackdrop extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gift = Icon(
-      Icons.card_giftcard_rounded,
+    final gift = HeroSvgGlyph.mono(
+      HeroAssets.rewardsBadge,
       size: AppSize.s96,
       color: _giftTint,
     );

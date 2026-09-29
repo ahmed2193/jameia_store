@@ -2,16 +2,25 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_shadows.dart';
+import '../design/hero_assets.dart';
+import '../motion/motion.dart';
+import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
+import 'hero_svg_glyph.dart';
 
 /// The floating round button on a product card: "+" for a product one tap can
-/// add, a tune icon for a product that needs a choice first (variants).
+/// add, the Hero options glyph ([options], three jar sizes —
+/// [HeroAssets.productOptions]) for a product that needs a choice first
+/// (variants). It
+/// sinks under the finger ([PressScale] at the small-button depth); the host
+/// fires the haptic with the add.
 class CatalogCircleAddButton extends StatelessWidget {
   const CatalogCircleAddButton({
     super.key,
     required this.label,
     required this.onTap,
     this.icon = Icons.add_rounded,
+    this.options = false,
   });
 
   /// Accessibility label.
@@ -19,14 +28,17 @@ class CatalogCircleAddButton extends StatelessWidget {
   final VoidCallback onTap;
   final IconData icon;
 
+  /// Draws the options glyph instead of [icon].
+  final bool options;
+
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
       label: label,
-      child: GestureDetector(
+      child: PressScale(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque,
+        pressedScale: AppMotion.pressedScaleSmall,
         child: Container(
           width: AppSize.s34,
           height: AppSize.s34,
@@ -35,11 +47,13 @@ class CatalogCircleAddButton extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: AppShadows.medium,
           ),
-          child: Icon(
-            icon,
-            size: AppSize.s20,
-            color: AppColors.brandForeground,
-          ),
+          child: options
+              ? const HeroSvgGlyph.mono(
+                  HeroAssets.productOptions,
+                  size: AppSize.s20,
+                  color: AppColors.brandForeground,
+                )
+              : Icon(icon, size: AppSize.s20, color: AppColors.brandForeground),
         ),
       ),
     );

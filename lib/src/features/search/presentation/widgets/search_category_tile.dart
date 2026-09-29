@@ -14,8 +14,6 @@ import 'search_tile_image.dart';
 class SearchCategoryTile extends StatelessWidget {
   const SearchCategoryTile({super.key, required this.category});
 
-  static const double _pressedScale = 0.97;
-
   final CatalogCategoryEntity category;
 
   @override
@@ -25,7 +23,6 @@ class SearchCategoryTile extends StatelessWidget {
       label: category.name,
       excludeSemantics: true,
       child: PressScale(
-        pressedScale: _pressedScale,
         onTap: () =>
             context.push(Routes.category, extra: CategoryArgs.of(category)),
         child: Column(

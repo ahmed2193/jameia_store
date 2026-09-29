@@ -9,7 +9,8 @@ import 'pdp_scaffold_view.dart';
 /// double-tap to glide in on the tapped spot (and again to glide back out).
 /// Reports [onZoomChanged] only when it leaves or comes back to its resting
 /// scale, so the pager can hold still while a zoomed photo is panned.
-/// Instant under reduced motion.
+/// Instant under reduced motion. At rest, a one-finger drag is reported as a
+/// pull ([onPullDown] / [onPullEnd]) for the viewer's drag to dismiss.
 ///
 /// The photo is laid out at the product page's own photo size and scaled to
 /// the viewer's, so the page, the flight between them and the viewer show
@@ -21,6 +22,9 @@ class PdpZoomablePhoto extends StatefulWidget {
     required this.index,
     required this.productSlug,
     required this.onZoomChanged,
+    this.onPullDown,
+    this.onPullEnd,
+    this.onPullCancel,
   });
 
   final String url;
@@ -31,6 +35,13 @@ class PdpZoomablePhoto extends StatefulWidget {
   /// The product the photo belongs to (scopes its flight).
   final String productSlug;
   final ValueChanged<bool> onZoomChanged;
+
+  /// A one-finger drag on the photo at rest (drag down to dismiss): each
+  /// vertical move (down is positive), the release velocity (dp/s), and a
+  /// second finger turning it into a pinch.
+  final ValueChanged<double>? onPullDown;
+  final ValueChanged<double>? onPullEnd;
+  final VoidCallback? onPullCancel;
 
   /// How far a double tap zooms in.
   static const double doubleTapScale = 2.5;
@@ -53,6 +64,9 @@ class _PdpZoomablePhotoState extends State<PdpZoomablePhoto>
   Animation<Matrix4>? _glideTo;
   Offset _doubleTapAt = Offset.zero;
   bool _zoomed = false;
+
+  /// A one-finger drag that started at rest is reporting as a pull.
+  bool _pulling = false;
 
   @override
   void initState() {
@@ -77,6 +91,22 @@ class _PdpZoomablePhotoState extends State<PdpZoomablePhoto>
     if (zoomed == _zoomed) return;
     _zoomed = zoomed;
     widget.onZoomChanged(zoomed);
+  }
+
+  void _onInteractionUpdate(ScaleUpdateDetails details) {
+    if (!_pulling) return;
+    if (details.pointerCount > 1) {
+      _pulling = false;
+      widget.onPullCancel?.call();
+      return;
+    }
+    widget.onPullDown?.call(details.focalPointDelta.dy);
+  }
+
+  void _onInteractionEnd(ScaleEndDetails details) {
+    if (!_pulling) return;
+    _pulling = false;
+    widget.onPullEnd?.call(details.velocity.pixelsPerSecond.dy);
   }
 
   /// In on the double-tapped spot, or back out.
@@ -115,7 +145,12 @@ class _PdpZoomablePhotoState extends State<PdpZoomablePhoto>
         transformationController: _transform,
         maxScale: _maxScale,
         // A pinch takes over from a glide.
-        onInteractionStart: (_) => _glide?.stop(),
+        onInteractionStart: (details) {
+          _glide?.stop();
+          _pulling = !_zoomed && details.pointerCount == 1;
+        },
+        onInteractionUpdate: _onInteractionUpdate,
+        onInteractionEnd: _onInteractionEnd,
         // Edge to edge like the page's gallery; clear of the close button
         // and the dots above and below.
         child: Padding(

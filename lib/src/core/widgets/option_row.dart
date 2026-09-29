@@ -8,6 +8,7 @@ import '../motion/motion.dart';
 import '../responsive/app_size.dart';
 import 'hero_list_row.dart';
 import 'hero_radio_mark.dart';
+import 'press_row.dart';
 
 /// How an [OptionRow] sits in its list.
 enum OptionRowLook {
@@ -148,10 +149,10 @@ class OptionRow extends StatelessWidget {
         ),
       ),
     );
-    final ink = InkWell(
+    final ink = PressRow(
       onTap: enabled
           ? () {
-              Haptics.selection();
+              Haptics.pick();
               onTap();
             }
           : null,

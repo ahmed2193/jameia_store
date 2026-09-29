@@ -43,6 +43,7 @@ class ProfileEditPage extends StatelessWidget {
         child: CubitBusyOverlay<ProfileCubit, ProfileState>(
           busyOf: (state) => state.status == ProfileStatus.saving,
           doneOf: (state) => state.status == ProfileStatus.saved,
+          failOf: (state) => state.status == ProfileStatus.error,
           label: 'profile.saving'.tr(),
           doneLabel: 'profile.saved'.tr(),
           child: const Scaffold(

@@ -29,7 +29,10 @@ import 'package:hero_mart/src/features/coupons/presentation/cubit/coupons_state.
 import 'package:hero_mart/src/features/coupons/presentation/widgets/coupon_fade.dart';
 import 'package:hero_mart/src/features/coupons/presentation/widgets/coupon_stub.dart';
 import 'package:hero_mart/src/features/coupons/presentation/widgets/coupon_ticket_clipper.dart';
+import 'package:hero_mart/src/features/coupons/presentation/widgets/my_coupons/coupons_tab_badge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../core/motion/rolling_test_finders.dart';
 
 const CouponEntity _kdOne = CouponEntity(
   id: 'c1',
@@ -471,11 +474,15 @@ void main() {
       expect(find.text('My coupons'), findsOneWidget);
       expect(find.text('History'), findsOneWidget);
       expect(find.text('Save up to'), findsOneWidget);
-      expect(find.text('KD 4.500'), findsOneWidget);
+      expect(findRolled('KD 4.500'), findsOneWidget);
       expect(find.text('Coupons ready: 3'), findsOneWidget);
       expect(find.text('Available'), findsOneWidget);
-      expect(find.text('3'), findsOneWidget);
-      expect(find.text('1'), findsNWidgets(2));
+      Finder tabCount(String count) => find.descendant(
+        of: find.byType(CouponsTabBadge),
+        matching: findRolled(count),
+      );
+      expect(tabCount('3'), findsOneWidget);
+      expect(tabCount('1'), findsNWidgets(2));
       // The available tickets, each with its "Use" pill.
       expect(find.text('KD 1 off'), findsOneWidget);
       expect(find.text('Free delivery'), findsOneWidget);
@@ -603,7 +610,7 @@ void main() {
     ) async {
       await pump(tester, location: Routes.myCoupons, reducedMotion: true);
 
-      expect(find.text('KD 4.500'), findsOneWidget);
+      expect(findRolled('KD 4.500'), findsOneWidget);
       await tester.pump();
       expect(tester.hasRunningAnimations, isFalse);
 

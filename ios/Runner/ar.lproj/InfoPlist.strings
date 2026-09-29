@@ -1,0 +1,4 @@
+/* Permission prompts shown by iOS (Arabic). Keys mirror Runner/Info.plist. */
+"NSLocationWhenInUseUsageDescription" = "يستخدم هيرو موقعك لتحديد عنوان التوصيل على الخريطة.";
+"NSMicrophoneUsageDescription" = "يستخدم هيرو الميكروفون لتتحدث مع مساعد التسوق بصوتك.";
+"NSSpeechRecognitionUsageDescription" = "يحوّل هيرو صوتك إلى نص على جهازك لترسل رسائل صوتية إلى مساعد التسوق.";

@@ -17,6 +17,9 @@ class SearchDiscover extends Equatable {
   final List<CatalogCategoryEntity> categories;
   final List<BrandEntity> brands;
 
+  /// Neither block has anything to show.
+  bool get isEmpty => categories.isEmpty && brands.isEmpty;
+
   /// Each block loads on its own: one arriving keeps the other.
   SearchDiscover copyWith({
     List<CatalogCategoryEntity>? categories,

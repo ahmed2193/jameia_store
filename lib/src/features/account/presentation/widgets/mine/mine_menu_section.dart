@@ -64,6 +64,8 @@ class MineMenuSection extends StatelessWidget {
                     if (i != 0) const MineMenuDivider(),
                     MineMenuCell(
                       icon: entries[i].icon,
+                      asset: entries[i].asset,
+                      plate: entries[i].plate,
                       label: entries[i].label,
                       tone: entries[i].tone,
                       badgeCount: entries[i].badgeCount,

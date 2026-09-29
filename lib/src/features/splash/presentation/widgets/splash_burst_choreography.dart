@@ -6,6 +6,7 @@ import 'splash_beat.dart';
 import 'splash_choreography.dart';
 import 'splash_frame.dart';
 import 'splash_layout.dart';
+import 'splash_motion.dart';
 import 'splash_palette.dart';
 import 'splash_wordmark.dart';
 
@@ -28,7 +29,7 @@ class SplashBurstChoreography extends SplashChoreography {
   static const double statusBarCovered = 0.9;
 
   @override
-  Duration get duration => AppMotion.splashBurst;
+  Duration get duration => SplashMotion.burst;
 
   @override
   Interval tagline(SplashWordmark wordmark) =>
@@ -49,7 +50,7 @@ class SplashBurstChoreography extends SplashChoreography {
         breathDepth *
             SplashBeat.span(ms, 0, breathLength, AppMotion.signature) +
         breathDepth *
-            SplashBeat.span(ms, breathLength, popLength, AppMotion.emphasized);
+            SplashBeat.span(ms, breathLength, popLength, AppSprings.snappy);
     return assembly.frameAt(
       ms,
       layout,
@@ -61,6 +62,7 @@ class SplashBurstChoreography extends SplashChoreography {
         burstLength,
         AppMotion.machEaseInOut,
       ),
+      total: duration.inMilliseconds.toDouble(),
     );
   }
 }

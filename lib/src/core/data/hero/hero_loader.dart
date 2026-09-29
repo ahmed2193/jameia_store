@@ -14,6 +14,16 @@ import 'dart:convert';
 import '../models/models.dart';
 import 'hero_models.dart';
 
+/// How many shops [parseHeroCatalog] would build from [raw] (one per top
+/// category) — without building them. TOP-LEVEL for `compute(...)`: only the
+/// number crosses back from the isolate.
+int countHeroShops(String raw) {
+  final root = json.decode(raw);
+  if (root is! Map) return 0;
+  final categories = root['categories'];
+  return categories is List ? categories.length : 0;
+}
+
 /// Compact product keys (see build_hero_asset.js):
 ///   s=sku n=name a=nameAr p=price v=vip o=old i=img
 ///   av=available(0) hv=hasVariants(1) m=maxQty d=showDiscount(1) f=firstUnitsQty

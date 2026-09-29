@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_status.dart';
+import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
@@ -151,6 +152,8 @@ class _CancelOrderSheetState extends State<CancelOrderSheet> {
                     foreground: AppColors.white,
                     height: AppSize.s52,
                     loading: _checking,
+                    // A destructive confirm: the one warning haptic.
+                    haptic: HapticKind.warning,
                     onPressed: () => unawaited(_confirm()),
                   ),
                 ),

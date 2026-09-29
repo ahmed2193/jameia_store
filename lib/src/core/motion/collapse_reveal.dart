@@ -1,24 +1,36 @@
 import 'package:flutter/widgets.dart';
 
 import 'motion.dart';
+import 'size_fade_transition.dart';
 
-/// Shows / hides an optional block (a banner, a notice, a reason line) by
-/// opening / closing its height while it fades — never on mount. While
-/// closing it keeps drawing the last child it had while [visible], so the
-/// caller may pass an empty child once the data is gone. Closed → the child
-/// is not built. Reduced motion → at once. [onClosed] fires once the block is
-/// fully closed (a host that makes room for it can give the room back then).
+/// THE show / hide of an optional block (docs/motion §9.4 #20): a banner, a
+/// notice, a reason line, a bottom bar, an accordion's answer. It opens its
+/// height while it fades in over [duration] (default [AppMotion.medium],
+/// `signature`) and closes over [reverseDuration] (default [AppMotion.fast],
+/// `exit`) — never on mount. While closing it keeps drawing the last child
+/// it had while [visible], so the caller may pass an empty child once the
+/// data is gone. Closed → the child is not built. Reduced motion → at once.
+/// [onClosed] fires once the block is fully closed (a host that makes room
+/// for it can give the room back then).
 class CollapseReveal extends StatefulWidget {
   const CollapseReveal({
     super.key,
     required this.visible,
     required this.child,
     this.onClosed,
+    this.duration = AppMotion.medium,
+    this.reverseDuration = AppMotion.fast,
+    this.alignment = AlignmentDirectional.topStart,
   });
 
   final bool visible;
   final Widget child;
   final VoidCallback? onClosed;
+  final Duration duration;
+  final Duration reverseDuration;
+
+  /// Where the box opens from (see [SizeTransition]).
+  final AlignmentGeometry alignment;
 
   @override
   State<CollapseReveal> createState() => _CollapseRevealState();
@@ -26,19 +38,19 @@ class CollapseReveal extends StatefulWidget {
 
 class _CollapseRevealState extends State<CollapseReveal>
     with SingleTickerProviderStateMixin {
-  static const double _fadeFrom = 0.5;
   static const double _open = 1;
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: AppMotion.medium,
+    duration: widget.duration,
+    reverseDuration: widget.reverseDuration,
     value: widget.visible ? _open : 0,
   )..addStatusListener(_onStatus);
-  late final Animation<double> _size = _controller.drive(
-    CurveTween(curve: AppMotion.signature),
-  );
-  late final Animation<double> _opacity = _controller.drive(
-    CurveTween(curve: const Interval(_fadeFrom, _open)),
+  // Opens decelerating, closes accelerating (§9.4 #20).
+  late final CurvedAnimation _progress = CurvedAnimation(
+    parent: _controller,
+    curve: AppMotion.signature,
+    reverseCurve: AppMotion.exit.flipped,
   );
   late Widget _shown = widget.child;
 
@@ -57,6 +69,9 @@ class _CollapseRevealState extends State<CollapseReveal>
   @override
   void didUpdateWidget(CollapseReveal oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _controller
+      ..duration = widget.duration
+      ..reverseDuration = widget.reverseDuration;
     if (widget.visible) _shown = widget.child;
     if (widget.visible == oldWidget.visible) return;
     if (MotionGuard.reduced(context)) {
@@ -70,6 +85,7 @@ class _CollapseRevealState extends State<CollapseReveal>
 
   @override
   void dispose() {
+    _progress.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -79,13 +95,11 @@ class _CollapseRevealState extends State<CollapseReveal>
     if (!widget.visible && _controller.isDismissed) {
       return const SizedBox.shrink();
     }
-    return SizeTransition(
-      sizeFactor: _size,
-      alignment: AlignmentDirectional.topStart,
-      child: FadeTransition(
-        opacity: _opacity,
-        child: ExcludeSemantics(excluding: !widget.visible, child: _shown),
-      ),
+    return SizeFadeTransition(
+      animation: _progress,
+      alignment: widget.alignment,
+      curve: AppMotion.linear,
+      child: ExcludeSemantics(excluding: !widget.visible, child: _shown),
     );
   }
 }

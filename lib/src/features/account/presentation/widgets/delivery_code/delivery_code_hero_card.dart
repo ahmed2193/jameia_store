@@ -51,14 +51,20 @@ class DeliveryCodeHeroCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.s20),
-          BlocSelector<DeliveryCodeCubit, DeliveryCodeState, String>(
-            selector: (state) => state.savedCode,
-            builder: (context, code) => Column(
+          BlocSelector<
+            DeliveryCodeCubit,
+            DeliveryCodeState,
+            ({String code, bool changed})
+          >(
+            // The load is not a change: only a save flips the digits.
+            selector: (state) =>
+                (code: state.savedCode, changed: state.savedRevision > 0),
+            builder: (context, saved) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                DeliveryCodeDigits(code: code),
+                DeliveryCodeDigits(code: saved.code, animate: saved.changed),
                 const SizedBox(height: AppSpacing.s16),
-                Center(child: DeliveryCodeCopyButton(code: code)),
+                Center(child: DeliveryCodeCopyButton(code: saved.code)),
               ],
             ),
           ),

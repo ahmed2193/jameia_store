@@ -5,11 +5,20 @@ import '../../cubit/delivery_code_state.dart';
 import 'delivery_code_digit_box.dart';
 
 /// The saved code as four big tiles, always left-to-right (a code reads the
-/// same in Arabic). A screen reader hears the digits one by one.
+/// same in Arabic). A screen reader hears the digits one by one. The first
+/// code to show (the load) appears at once; only a real change ([animate])
+/// flips the digits that differ.
 class DeliveryCodeDigits extends StatelessWidget {
-  const DeliveryCodeDigits({super.key, required this.code});
+  const DeliveryCodeDigits({
+    super.key,
+    required this.code,
+    this.animate = false,
+  });
 
   final String code;
+
+  /// Whether a new [code] is a real change (a save), which flips.
+  final bool animate;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +34,7 @@ class DeliveryCodeDigits extends StatelessWidget {
                 Expanded(
                   child: DeliveryCodeDigitBox(
                     digit: i < code.length ? code[i] : '',
+                    animate: animate,
                   ),
                 ),
               ],

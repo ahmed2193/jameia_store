@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_colors.dart';
+import '../../../../config/theme/app_shadows.dart';
+import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/widgets/segmented_thumb_track.dart';
 import '../../domain/entities/pro_membership.dart';
 import 'pro_plan_pill.dart';
-import 'pro_plan_thumb.dart';
 
-/// The plan tabs laid out as equal slots of [pillWidth] separated by [gap]:
-/// one dark thumb glides under the selected slot and the see-through pills
-/// sit on top. [savings] holds each plan's "Save N%" (0 = no chip);
-/// [onSelect] is `null` while the tabs are inert.
+/// The plan tabs laid out as equal slots of [pillWidth] separated by [gap]
+/// on the app's one thumb track ([SegmentedThumbTrack]): one dark thumb
+/// slides (calm spring, RTL-aware) under the selected slot, the see-through
+/// pills sit on top, and picking another plan fires the selection haptic.
+/// [savings] holds each plan's "Save N%" (0 = no chip); [onSelect] is
+/// `null` while the tabs are inert.
 class ProPlanSegments extends StatelessWidget {
   const ProPlanSegments({
     super.key,
@@ -19,6 +24,14 @@ class ProPlanSegments extends StatelessWidget {
     required this.onSelect,
   });
 
+  static const Widget _thumb = DecoratedBox(
+    decoration: BoxDecoration(
+      color: AppColors.primaryText,
+      borderRadius: BorderRadius.all(Radius.circular(AppRadius.pill)),
+      boxShadow: AppShadows.medium,
+    ),
+  );
+
   final List<ProPlan> plans;
   final List<int> savings;
 
@@ -28,35 +41,26 @@ class ProPlanSegments extends StatelessWidget {
   final double gap;
   final ValueChanged<String>? onSelect;
 
-  double _startOf(int index) => index * (pillWidth + gap);
-
   @override
   Widget build(BuildContext context) {
     final select = onSelect;
-    final count = plans.length;
     return SizedBox(
-      width: count * pillWidth + (count - 1) * gap,
       height: ProPlanPill.height,
-      child: Stack(
+      child: SegmentedThumbTrack(
+        count: plans.length,
+        selected: selectedIndex,
+        slotWidth: pillWidth,
+        gap: gap,
+        // The saving chip rises above the pills' top edge.
         clipBehavior: Clip.none,
-        children: [
-          if (selectedIndex >= 0)
-            ProPlanThumb(start: _startOf(selectedIndex), width: pillWidth),
-          for (var i = 0; i < count; i++)
-            PositionedDirectional(
-              key: ValueKey<String>(plans[i].id),
-              start: _startOf(i),
-              width: pillWidth,
-              top: 0,
-              bottom: 0,
-              child: ProPlanPill(
-                plan: plans[i],
-                selected: i == selectedIndex,
-                savingPercent: savings[i],
-                onTap: select == null ? null : () => select(plans[i].id),
-              ),
-            ),
-        ],
+        thumb: _thumb,
+        onSelected: select == null ? null : (i) => select(plans[i].id),
+        segmentBuilder: (context, i, tap, _) => ProPlanPill(
+          plan: plans[i],
+          selected: i == selectedIndex,
+          savingPercent: savings[i],
+          onTap: tap,
+        ),
       ),
     );
   }

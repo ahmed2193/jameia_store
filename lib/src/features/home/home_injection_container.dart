@@ -13,6 +13,7 @@ import 'domain/usecases/select_due_home_popups_usecase.dart';
 import 'domain/usecases/watch_home_bootstrap_usecase.dart';
 import 'domain/usecases/watch_home_feed_usecase.dart';
 import 'presentation/cubit/home_cubit.dart';
+import 'presentation/cubit/home_launch_prefetch.dart';
 
 /// Home feature DI — the Hero backend (`GET /v1/home`, `GET /v1/init`),
 /// their saved copies (the offline cache), and local popup stamps. Called
@@ -47,13 +48,19 @@ void initHomeFeature() {
     ..registerLazySingleton(
       () => MarkHomePopupsShownUseCase(sl<HomeRepository>()),
     )
-    ..registerFactory(
-      () => HomeCubit(
-        sl<WatchHomeFeedUseCase>(),
-        sl<ComposeHomeFeedUseCase>(),
-        sl<WatchHomeBootstrapUseCase>(),
-        sl<SelectDueHomePopupsUseCase>(),
-        sl<MarkHomePopupsShownUseCase>(),
+    // Home's first read, started by the splash (B1-14): the home page's
+    // cubit is the one already reading, once; later ones are fresh. Either
+    // way it comes out loading (or loaded).
+    ..registerLazySingleton(
+      () => HomeLaunchPrefetch(
+        () => HomeCubit(
+          sl<WatchHomeFeedUseCase>(),
+          sl<ComposeHomeFeedUseCase>(),
+          sl<WatchHomeBootstrapUseCase>(),
+          sl<SelectDueHomePopupsUseCase>(),
+          sl<MarkHomePopupsShownUseCase>(),
+        ),
       ),
-    );
+    )
+    ..registerFactory<HomeCubit>(() => sl<HomeLaunchPrefetch>().adopt());
 }

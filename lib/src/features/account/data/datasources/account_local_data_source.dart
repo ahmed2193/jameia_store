@@ -8,7 +8,9 @@ import '../../../../core/data/models/models.dart';
 abstract class AccountLocalDataSource {
   UserProfile user();
   int couponCount();
-  int favouriteCount();
+
+  /// Counted off the start-up path, on the first call (BX-05).
+  Future<int> favouriteCount();
   int customerServiceUnread();
 }
 
@@ -24,7 +26,7 @@ class AccountLocalDataSourceImpl implements AccountLocalDataSource {
   int couponCount() => catalog.coupons.where((c) => !c.used).length;
 
   @override
-  int favouriteCount() => catalog.shops.length;
+  Future<int> favouriteCount() => catalog.shopCount();
 
   @override
   // Offline stub for `/csapi/chat/message/count` — no live message source.

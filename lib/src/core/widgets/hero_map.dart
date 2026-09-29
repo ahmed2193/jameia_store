@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../motion/motion.dart';
+
 // Re-export the map value types so feature screens import only this widget.
 export 'package:google_maps_flutter/google_maps_flutter.dart'
     show
@@ -94,4 +96,13 @@ class HeroMap extends StatelessWidget {
       style: null,
     );
   }
+}
+
+/// The native map camera never reads Flutter's reduced-motion setting, so
+/// every programmatic camera move goes through here: a glide normally, a
+/// jump ([GoogleMapController.moveCamera]) under reduced motion
+/// ([MotionGuard.reduced]).
+extension HeroMapCamera on GoogleMapController {
+  Future<void> glideTo(BuildContext context, CameraUpdate update) =>
+      MotionGuard.reduced(context) ? moveCamera(update) : animateCamera(update);
 }

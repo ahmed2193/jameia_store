@@ -6,8 +6,9 @@ import '../../../../../core/motion/motion_widgets.dart';
 import '../../../domain/entities/coupon_status.dart';
 import '../coupon_card.dart';
 
-/// Sliver of one history group: faded, stamped tickets that rise in, in
-/// cascade, continuing the screen's order from [firstIndex].
+/// Sliver of one history group: faded, stamped tickets; the first ones rise
+/// in with the screen's first-load cascade, continuing its order from
+/// [firstIndex].
 class HistoryCouponsSection extends StatelessWidget {
   const HistoryCouponsSection({
     super.key,
@@ -29,10 +30,8 @@ class HistoryCouponsSection extends StatelessWidget {
       sliver: SliverList.separated(
         itemCount: coupons.length,
         separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.s12),
-        itemBuilder: (_, i) => ScrollReveal(
-          delay:
-              CouponCard.cascadeStep *
-              (firstIndex + i).clamp(0, CouponCard.maxCascadeSteps),
+        itemBuilder: (_, i) => EntranceCascadeItem(
+          index: firstIndex + i,
           child: CouponCard(coupon: coupons[i], status: status),
         ),
       ),

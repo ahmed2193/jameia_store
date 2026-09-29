@@ -21,7 +21,6 @@ import 'package:hero_mart/src/features/product_details/domain/usecases/watch_pro
 import 'package:hero_mart/src/features/product_details/presentation/cubit/product_detail_cubit.dart';
 import 'package:hero_mart/src/features/product_details/presentation/cubit/product_detail_state.dart';
 import 'package:hero_mart/src/features/product_details/presentation/cubit/product_reviews_cubit.dart';
-import 'package:hero_mart/src/features/product_details/presentation/cubit/product_reviews_state.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 

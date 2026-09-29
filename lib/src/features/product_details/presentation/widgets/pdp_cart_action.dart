@@ -9,16 +9,16 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/fly_to_cart.dart';
-import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/count_badge.dart';
 import '../../../../core/widgets/round_outlined_button.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 
 /// Cart shortcut of the product page's top bar: a round white button with a
-/// small brand-green item-count badge at its top-end corner that pops when
-/// the count changes. While this page is on top it is where the fly-to-cart
-/// thumbnail lands.
+/// small brand-green item-count badge ([CountBadge]) at its top-end corner
+/// that bumps when an added product lands. While this page is on top it is
+/// where the fly-to-cart thumbnail lands.
 class PdpCartAction extends StatefulWidget {
   const PdpCartAction({super.key});
 
@@ -59,37 +59,20 @@ class _PdpCartActionState extends State<PdpCartAction> {
           end: _badgeInset,
           child: BlocSelector<CartCubit, CartState, int>(
             selector: (cart) => cart.totalQty,
-            builder: (context, count) => count <= 0
-                ? const SizedBox.shrink()
-                : PopScale(
-                    popKey: count,
-                    child: ExcludeSemantics(
-                      child: Container(
-                        constraints: const BoxConstraints(
-                          minWidth: AppSize.s18,
-                          minHeight: AppSize.s18,
-                        ),
-                        padding: const EdgeInsetsDirectional.symmetric(
-                          horizontal: AppSpacing.s4,
-                        ),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                          border: const Border.fromBorderSide(
-                            BorderSide(color: AppColors.white),
-                          ),
-                        ),
-                        child: Text(
-                          '$count',
-                          style: AppTextStyles.captionMedium.copyWith(
-                            color: AppColors.brandForeground,
-                            fontWeight: AppTextStyles.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+            // Always mounted: it fades out at zero instead of cutting.
+            builder: (context, count) => ExcludeSemantics(
+              child: CountBadge(
+                count: count,
+                color: AppColors.primary,
+                textColor: AppColors.brandForeground,
+                textStyle: AppTextStyles.captionMedium.copyWith(
+                  fontWeight: AppTextStyles.bold,
+                ),
+                borderColor: AppColors.white,
+                minSize: AppSize.s18,
+                landsWithFlight: true,
+              ),
+            ),
           ),
         ),
       ],

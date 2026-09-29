@@ -5,7 +5,6 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
 import '../../../../../core/domain/entities/cart_top_saving.dart';
 import '../../../../../core/motion/float_loop.dart';
-import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/pop_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
@@ -33,9 +32,8 @@ class CheckoutSavingsHint extends StatefulWidget {
 }
 
 class _CheckoutSavingsHintState extends State<CheckoutSavingsHint> {
+  /// Three float cycles (up and back), then rest.
   static const int _floatLegs = 6;
-  static const int _legsPerLoop = 2;
-  static final Duration _floatLeg = AppMotion.floatLoop ~/ _legsPerLoop;
 
   /// How far inside the button's end edge the bubble's end edge sits.
   static const double _endInset = AppSpacing.s4;
@@ -115,7 +113,6 @@ class _CheckoutSavingsHintState extends State<CheckoutSavingsHint> {
                     onTap: () => ui.hintDismissed.value = true,
                     child: FloatLoop(
                       amplitude: AppSize.s3,
-                      period: _floatLeg,
                       count: _floatLegs,
                       // The bubble's picture is recorded once; each float
                       // frame only moves its layer.

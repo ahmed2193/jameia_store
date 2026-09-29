@@ -10,7 +10,7 @@ families live side by side for now:
 
 | New look (`core/widgets/`) | Older widget still used elsewhere |
 |---|---|
-| `HeroStateView` (+ `.error`, `.signedOut`) | `EmptyStateView`, `ErrorView`, `SignedOutView` |
+| `HeroStateView` (+ `.error`, `.signedOut`) | `EmptyStateView`, `ErrorView` |
 | `HeroSecondaryButton` | `AppOutlineButton` |
 | `HeroSectionHeader`, `HeroTextLink` | `SectionHeader` |
 | `HeroSummaryLine` + `HeroMoneyText` | `SummaryRow`, `PriceText` |
@@ -99,9 +99,20 @@ grow in and fold away when added or removed; progress bars that fill to their ne
 short pop and a haptic when a choice lands (radio, star, coupon applied); one celebration
 when an order is placed; a status headline that cross-fades when the status moves.
 
-Not allowed: ambient loops on a settled screen (floating, glowing, shining, pulsing
-forever), count-ups on open, cascades on every rebuild, confetti anywhere but the order-placed
-moment. Animated rows and totals sit in a `RepaintBoundary`.
+Ambient motion (floating, glowing, sheen, rotating lines, the shelf glide) is a budget, not a
+loop: it runs through `AmbientLoop` / `RotatingLine` only while on screen, in the foreground,
+not under reduced motion, and stops after `AppMotion.ambientBudget` (5 s) per appearance.
+
+One press language: cards, tiles, chips and pills = `PressScale` (0.97; round icon controls
+0.92, `AppMotion.pressedScaleSmall`), silent unless the tap is a commit or a pick; list rows =
+`PressRow` (a dip plus the flat brand tint); only the innermost press under a finger dips.
+Segmented controls (`HeroSegmentedControl`, coupons tabs, Pro plans, cart / history) share
+`SegmentedThumbTrack` (one thumb on `AppMotion.thumbSlide`, one selection haptic per change).
+
+Not allowed: endless loops, count-ups on open (a count-up is only for a value the customer
+just earned), cascades on every rebuild (`EntranceCascade` opens once per screen life),
+confetti anywhere but a moment the customer earned (order placed, first add, Pro welcome).
+Animated rows and totals sit in a `RepaintBoundary`. The system: `docs/motion/motion_design_system_2026.md`.
 
 ## 7. Screen recipe
 

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
-import '../../../../../core/motion/spring_curve.dart';
 import 'profile_gender_chip_surface.dart';
 
 /// One option of the gender selector. Selecting it fades the fill to the
@@ -34,10 +33,9 @@ class ProfileGenderChip extends StatelessWidget {
         selected: selected,
         inMutuallyExclusiveGroup: true,
         child: PressScale(
-          haptic: null,
           onTap: () {
             if (selected) return;
-            Haptics.selection();
+            Haptics.pick();
             onSelected();
           },
           child: TweenAnimationBuilder<double>(

@@ -33,6 +33,24 @@ class OrderReviewDraft extends Equatable {
     sent: sent,
   );
 
+  /// [rating] for every product of [productIds] that has none yet (the
+  /// stars the customer tapped on the order page before the review opened);
+  /// a rating outside 1–5 changes nothing.
+  OrderReviewDraft rateUnrated(Iterable<String> productIds, int rating) {
+    if (rating < ProductReviewRequest.minRating ||
+        rating > ProductReviewRequest.maxRating) {
+      return this;
+    }
+    return OrderReviewDraft(
+      ratings: {
+        for (final productId in productIds) productId: rating,
+        ...ratings,
+      },
+      comment: comment,
+      sent: sent,
+    );
+  }
+
   OrderReviewDraft withComment(String comment) =>
       OrderReviewDraft(ratings: ratings, comment: comment, sent: sent);
 

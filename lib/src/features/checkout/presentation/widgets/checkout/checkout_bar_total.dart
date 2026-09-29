@@ -6,6 +6,8 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
+import '../../../../../core/motion/deferred_value.dart';
+import '../../../../../core/motion/motion_beat.dart';
 import '../../../../../core/widgets/hero_bar_total.dart';
 import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
@@ -20,7 +22,9 @@ import 'checkout_receipt.dart';
 /// while cart taps are still on their way (the amount stays mounted under
 /// the placeholder, so the new total rolls from the old one). The struck
 /// total mixes local and server figures, so it only shows next to a settled
-/// total. The whole line scales down rather than overflow (KD has three
+/// total. When the reply lands, the settled amount waits its turn
+/// ([MotionBeat.third], backlog B2-03): after the receipt's lines, with the
+/// receipt's total. The whole line scales down rather than overflow (KD has three
 /// decimals).
 class CheckoutBarTotal extends StatelessWidget {
   const CheckoutBarTotal({super.key});
@@ -43,38 +47,48 @@ class CheckoutBarTotal extends StatelessWidget {
             state.isUpdating,
           );
         });
-    final settled = quoted && !updating;
-    final struck = settled ? struckKd : null;
-    return FittedBox(
-      fit: BoxFit.scaleDown,
-      alignment: AlignmentDirectional.centerStart,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          HeroBarTotal(
-            kd: settled ? totalKd : null,
-            placeholder: quoted
-                ? 'checkout.updating'.tr()
-                : CheckoutReceipt.unquoted,
-            alignment: AlignmentDirectional.centerStart,
-            style: AppTextStyles.sectionTitle,
-            placeholderStyle: quoted
-                ? AppTextStyles.meta
-                : AppTextStyles.sectionTitle.copyWith(
-                    color: AppColors.secondaryText,
-                  ),
+    final liveSettled = quoted && !updating;
+    // The settled total lands with the receipt's, a beat after its lines
+    // (B2-03); "Updating…" and "—" show at once — never a stale amount.
+    return DeferredValue<(bool, bool, double, double?)>(
+      value: (quoted, liveSettled, totalKd, liveSettled ? struckKd : null),
+      delay: MotionBeat.third,
+      // Only "Updating…" → the amount waits.
+      deferWhen: (shown, next) => shown.$1 && !shown.$2 && next.$2,
+      builder: (context, shown) {
+        final (quoted, settled, totalKd, struck) = shown;
+        return FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: AlignmentDirectional.centerStart,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              HeroBarTotal(
+                kd: settled ? totalKd : null,
+                placeholder: quoted
+                    ? 'checkout.updating'.tr()
+                    : CheckoutReceipt.unquoted,
+                alignment: AlignmentDirectional.centerStart,
+                style: AppTextStyles.sectionTitle,
+                placeholderStyle: quoted
+                    ? AppTextStyles.meta
+                    : AppTextStyles.sectionTitle.copyWith(
+                        color: AppColors.secondaryText,
+                      ),
+              ),
+              if (struck != null) ...[
+                const SizedBox(width: AppSpacing.s6),
+                HeroMoneyText(
+                  kd: struck,
+                  strike: true,
+                  color: AppColors.tertiaryText,
+                  style: AppTextStyles.bodyLarge,
+                ),
+              ],
+            ],
           ),
-          if (struck != null) ...[
-            const SizedBox(width: AppSpacing.s6),
-            HeroMoneyText(
-              kd: struck,
-              strike: true,
-              color: AppColors.tertiaryText,
-              style: AppTextStyles.bodyLarge,
-            ),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 }

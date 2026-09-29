@@ -19,8 +19,10 @@ import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/config/theme/app_spacing.dart';
+import 'package:hero_mart/src/core/motion/ambient_loop.dart';
 import 'package:hero_mart/src/core/motion/confetti_burst.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/motion_beat.dart';
 import 'package:hero_mart/src/core/widgets/catalog_product_card.dart';
 import 'package:hero_mart/src/core/widgets/shelf_add_button.dart';
 import 'package:hero_mart/src/core/widgets/shelf_tag_pill.dart';
@@ -47,7 +49,6 @@ import 'package:hero_mart/src/features/home/domain/entities/home_greeting.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_section_entity.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_confetti.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_greeting_strip.dart';
-import 'package:hero_mart/src/features/home/presentation/widgets/home_loop.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_product_rail.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_product_tile.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_quick_look_sheet.dart';
@@ -232,10 +233,10 @@ void main() {
     const rest = Duration(seconds: 1);
     await tester.pumpWidget(
       app(
-        HomeLoop(
+        AmbientLoop.value(
           period: burst,
           rest: rest,
-          builder: (context, t, child) =>
+          valueBuilder: (context, t, child) =>
               Opacity(opacity: 1 - t / 2, child: child),
           child: const SizedBox.square(dimension: _tileWidth),
         ),
@@ -347,7 +348,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(HomeQuickLookSheet), findsOneWidget);
       expect(find.text('Add to cart'), findsOneWidget);
-      expect(haptics, contains('HapticFeedbackType.lightImpact'));
+      // A long press is a pick (selection), never navigation's silence.
+      expect(haptics, ['HapticFeedbackType.selectionClick']);
 
       await tester.tap(find.text('View details'));
       await tester.pumpAndSettle();
@@ -401,6 +403,23 @@ void main() {
       testWidgets('the +1 rises from the round + of the card, $direction', (
         tester,
       ) async {
+        // A later add (the basket already has something): the first one
+        // gets the confetti instead.
+        cartRepository.snapshot = const CartSnapshot(
+          cart: CartEntity(
+            itemCount: 1,
+            lines: [
+              CartLineEntity(
+                key: 'l1',
+                product: _bestSellerRice,
+                quantity: 1,
+                unitPriceFils: 1000,
+                lineTotalFils: 1000,
+              ),
+            ],
+          ),
+          isRestored: true,
+        );
         await pumpTile(tester, textDirection: direction);
         final plusOne = find.text('+1');
         final add = tester.getRect(find.byType(ShelfAddButton));
@@ -428,14 +447,32 @@ void main() {
       });
     }
 
-    testWidgets('the first thing into an empty basket bursts into confetti', (
-      tester,
-    ) async {
+    testWidgets('the first thing into an empty basket bursts into confetti '
+        'once the picture has landed (B2-03), with no +1', (tester) async {
       await pumpTile(tester);
       expect(confettiShot(tester), isNull);
 
       tapAdd(tester);
       await tester.pump();
+      // The add and its flight first; the party waits its beat.
+      expect(confettiShot(tester), isNull);
+      await tester.pump(AppMotion.drawOn ~/ 2);
+      expect(
+        tester
+            .widget<FadeTransition>(
+              find
+                  .ancestor(
+                    of: find.text('+1'),
+                    matching: find.byType(FadeTransition),
+                  )
+                  .first,
+            )
+            .opacity
+            .value,
+        0,
+        reason: 'the first add has no +1: the confetti is its cue',
+      );
+      await tester.pump(MotionBeat.third - AppMotion.drawOn ~/ 2);
       expect(confettiShot(tester), 1);
       expect(haptics, contains('HapticFeedbackType.mediumImpact'));
       expect(cartRepository.calls, isNotEmpty);

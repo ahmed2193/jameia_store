@@ -17,6 +17,7 @@ import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/motion_beat.dart';
 import 'package:hero_mart/src/core/motion/rolling_number.dart';
 import 'package:hero_mart/src/core/motion/rotating_line.dart';
 import 'package:hero_mart/src/core/utils/formatters.dart';
@@ -437,8 +438,21 @@ void main() {
     );
     await tester.pump(const Duration(milliseconds: 50));
 
-    // Mid-flight: the tag pops in, the figure counts up, the coupon row
-    // opens in the receipt.
+    // In order (B2-03): first the saving the customer caused counts up …
+    expect(countUp(), findsOneWidget);
+    expect(
+      scalesUnder(
+        tester,
+        find.byType(CheckoutUnlockTag),
+      ).any((s) => s > 0 && s < 1),
+      isFalse,
+      reason: 'the tag waits its beat',
+    );
+    expect(inReceipt(find.text('Coupon SAVE')), findsNothing);
+
+    // … a beat later the tag pops in and the coupon row opens.
+    await tester.pump(MotionBeat.second);
+    await tester.pump(const Duration(milliseconds: 50));
     expect(
       scalesUnder(
         tester,
@@ -446,7 +460,6 @@ void main() {
       ).any((s) => s > 0 && s < 1),
       isTrue,
     );
-    expect(countUp(), findsOneWidget);
     final opening = tester
         .widgetList<SizeTransition>(
           find.ancestor(

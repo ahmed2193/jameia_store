@@ -5,8 +5,10 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../core/widgets/light_sweep.dart';
 import '../../domain/entities/pro_membership.dart';
 
@@ -81,11 +83,7 @@ class ProMemberCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.workspace_premium_rounded,
-                        size: _crown,
-                        color: AppColors.proAmber,
-                      ),
+                      const HeroSvgGlyph.art(HeroAssets.proCrown, size: _crown),
                       const SizedBox(width: AppSpacing.s8),
                       Expanded(
                         child: Text(

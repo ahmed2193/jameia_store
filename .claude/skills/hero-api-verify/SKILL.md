@@ -112,7 +112,11 @@ Failure knobs (all `POST` unless noted):
 | `/__admin/cart/capacity/1` | no delivery capacity → slots come back unbookable |
 | `/__admin/orders/advance/<orderId>` | pushes the order one status forward (placed → … → delivered) |
 | `/__admin/orders/fail/<orderId>` | marks it `delivery_failed` with a reason |
+| `/__admin/orders/picking-changes/<orderId>` | the picker changed the order: the first line substituted (Jasmine rice), the last one (2+ lines) unavailable → the order page's notice + line marks, the invoice marks |
 | `GET /__admin/orders` | every order as JSON |
+| `/__admin/support/fail/500/1` | the next support request answers 500 (any status; tickets after the Bearer check) → order help: the error view with Retry, or a snackbar on send with every pick kept |
+| `/__admin/support/delay/3000` | support replies wait 3 s → the busy overlay on send; a double tap opens ONE ticket (`0` off) |
+| `GET /__admin/support/tickets` | the tickets opened so far, with the exact bodies the app sent (`orderId`, `subcategory`, `productIds`, `body`) |
 
 Assistant (`scripts/mock_api/assistant.js`; scripted replies by keyword — `butter eggs milk …` →
 products, `add 2 butter` → proposal, `my cart`, `track`, `orders`, `offers`, `recipe`, `faq`,

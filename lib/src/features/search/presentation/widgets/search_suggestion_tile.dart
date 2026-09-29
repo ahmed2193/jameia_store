@@ -4,6 +4,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/hero_image.dart';
+import '../../../../core/widgets/press_row.dart';
 import 'search_highlighted_text.dart';
 import 'search_suggestion_price.dart';
 
@@ -31,7 +32,7 @@ class SearchSuggestionTile extends StatelessWidget {
     return MergeSemantics(
       child: Semantics(
         button: true,
-        child: InkWell(
+        child: PressRow(
           onTap: onTap,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppSize.s64),

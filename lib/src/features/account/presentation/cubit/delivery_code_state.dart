@@ -12,6 +12,7 @@ class DeliveryCodeState extends Equatable {
     this.savedCode = '',
     this.draft = '',
     this.saved = false,
+    this.savedRevision = 0,
     this.failure,
   });
 
@@ -29,6 +30,11 @@ class DeliveryCodeState extends Equatable {
   /// `true` after a successful save, until the draft changes again.
   final bool saved;
 
+  /// How many times a save changed [savedCode] on this visit: 0 after the
+  /// load, so the first code to show is NOT a change (the digits appear at
+  /// once; only a real change flips them).
+  final int savedRevision;
+
   /// Transient: every [copyWith] clears it.
   final Failure? failure;
 
@@ -42,15 +48,24 @@ class DeliveryCodeState extends Equatable {
     String? savedCode,
     String? draft,
     bool? saved,
+    int? savedRevision,
     Failure? failure,
   }) => DeliveryCodeState(
     status: status ?? this.status,
     savedCode: savedCode ?? this.savedCode,
     draft: draft ?? this.draft,
     saved: saved ?? this.saved,
+    savedRevision: savedRevision ?? this.savedRevision,
     failure: failure,
   );
 
   @override
-  List<Object?> get props => [status, savedCode, draft, saved, failure];
+  List<Object?> get props => [
+    status,
+    savedCode,
+    draft,
+    saved,
+    savedRevision,
+    failure,
+  ];
 }

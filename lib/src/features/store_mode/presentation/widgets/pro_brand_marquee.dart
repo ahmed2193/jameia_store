@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/domain/entities/brand_entity.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../core/motion/on_screen_gate.dart';
 import 'pro_brand_tile.dart';
 
 /// An endless row of brand tiles that drifts by itself: [brands] repeat
@@ -29,7 +30,7 @@ class ProBrandMarquee extends StatefulWidget {
 }
 
 class _ProBrandMarqueeState extends State<ProBrandMarquee>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, OnScreenGate<ProBrandMarquee> {
   /// Drift speed in logical pixels per second.
   static const double _speed = 24;
   static const double _gap = AppSpacing.s12;
@@ -68,13 +69,14 @@ class _ProBrandMarqueeState extends State<ProBrandMarquee>
     _sync();
   }
 
-  /// Runs the drift unless motion is reduced, a screen reader is on or the
-  /// row is held.
+  @override
+  void onScreenChanged() => _sync();
+
+  /// Runs the drift unless motion is reduced, a screen reader is on, the
+  /// row is held, or it cannot be seen (scrolled away — the Pro page keeps
+  /// it alive —, the app in the background).
   void _sync() {
-    final run =
-        !MotionGuard.reduced(context) &&
-        !MediaQuery.accessibleNavigationOf(context) &&
-        !_held;
+    final run = MotionGuard.ambientAllowed(context) && !_held && onScreen;
     if (run && !_ticker.isActive) {
       _last = Duration.zero;
       _ticker.start();

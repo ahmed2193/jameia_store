@@ -18,12 +18,16 @@ class AssistantOnboardingPage extends StatelessWidget {
     super.key,
     required this.step,
     required this.active,
+    this.played = false,
     required this.onCue,
     required this.onStarter,
   });
 
   final AssistantOnboardingStep step;
   final bool active;
+
+  /// Seen already in this opening of the tour: no demo, no entrance again.
+  final bool played;
   final ValueChanged<AssistantOnboardingCue> onCue;
   final ValueChanged<AssistantStarter> onStarter;
 
@@ -36,15 +40,20 @@ class AssistantOnboardingPage extends StatelessWidget {
     final stage = AssistantOnboardingStage(
       step: step,
       active: active,
+      played: played,
       onCue: onCue,
     );
     final words = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AssistantOnboardingCaption(step: step, active: active),
+        AssistantOnboardingCaption(step: step, active: active, played: played),
         if (step.isLast) ...[
           const SizedBox(height: AppSpacing.s12),
-          AssistantOnboardingStarters(active: active, onStarter: onStarter),
+          AssistantOnboardingStarters(
+            active: active,
+            played: played,
+            onStarter: onStarter,
+          ),
         ],
       ],
     );

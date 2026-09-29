@@ -8,7 +8,9 @@ import 'address_row_divider.dart';
 import 'address_row_tile.dart';
 
 /// One slot of the grouped card: rounded outer corners on the first / last
-/// row, a hairline divider above every other row.
+/// row, a hairline divider above every other row. The first rows rise in
+/// with the list's first-load cascade ([EntranceCascade]) — never again
+/// on scroll-back or after a delete.
 class AddressRow extends StatelessWidget {
   const AddressRow({
     super.key,
@@ -27,7 +29,7 @@ class AddressRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StaggerEntrance(
+    return EntranceCascadeItem(
       index: index,
       child: Material(
         color: AppColors.white,

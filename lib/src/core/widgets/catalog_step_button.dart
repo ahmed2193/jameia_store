@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
+import '../motion/motion.dart';
+import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
 
-/// One round − / + / delete button of [CatalogPillStepper].
+/// One round − / + / delete button of [CatalogPillStepper]. It sinks under
+/// the finger ([PressScale] at the small-button depth); the host fires the
+/// haptic with the cart change. A new [icon] (minus ↔ bin) cross-fades in.
 class CatalogStepButton extends StatelessWidget {
   const CatalogStepButton({
     super.key,
@@ -23,9 +27,9 @@ class CatalogStepButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: label,
-      child: GestureDetector(
+      child: PressScale(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque,
+        pressedScale: AppMotion.pressedScaleSmall,
         child: Container(
           width: AppSize.s28,
           height: AppSize.s28,
@@ -33,10 +37,14 @@ class CatalogStepButton extends StatelessWidget {
             color: AppColors.primary,
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            size: AppSize.s16,
-            color: AppColors.brandForeground,
+          child: AnimatedSwitcher(
+            duration: MotionGuard.duration(context, AppMotion.fast),
+            child: Icon(
+              icon,
+              key: ValueKey<IconData>(icon),
+              size: AppSize.s16,
+              color: AppColors.brandForeground,
+            ),
           ),
         ),
       ),

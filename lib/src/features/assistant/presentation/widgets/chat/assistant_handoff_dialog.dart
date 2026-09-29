@@ -5,10 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
 import '../../cubit/assistant_chat_cubit.dart';
+import '../mascot/assistant_mascot_mood.dart';
+import '../mascot/assistant_prop_scene.dart';
 
 /// "Talk to a person?": what happens, where the answer comes, what to do
 /// meanwhile. Pops `true` on confirm.
@@ -48,10 +51,10 @@ class AssistantHandoffDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.support_agent_rounded,
-                  size: AppSize.s40,
-                  color: AppColors.primaryDark,
+                const AssistantPropScene(
+                  prop: HeroAssets.assistantPropHandoff,
+                  mood: AssistantMascotMood.handingOver,
+                  directional: true,
                 ),
                 const SizedBox(height: AppSpacing.s12),
                 Semantics(

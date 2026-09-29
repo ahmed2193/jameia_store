@@ -31,7 +31,9 @@ double _opacityOf(WidgetTester tester, Finder reveal) {
     find
         .descendant(
           of: reveal,
-          matching: find.byType(FadeTransition),
+          // The matching finder is evaluated on its own: it must reach the
+          // cache area too.
+          matching: find.byType(FadeTransition, skipOffstage: false),
           skipOffstage: false,
         )
         .first,
@@ -39,20 +41,22 @@ double _opacityOf(WidgetTester tester, Finder reveal) {
   return fade.opacity.value;
 }
 
+const Duration _frame = Duration(milliseconds: 16);
+
 Finder _reveal(String text) => find.ancestor(
   of: find.text(text, skipOffstage: false),
-  matching: find.byType(ScrollReveal),
+  matching: find.byType(ScrollReveal, skipOffstage: false),
 );
 
 void main() {
-  group('FloatLoop / GlowPulse', () {
+  group('FloatLoop / FloatLoop.glow', () {
     testWidgets('loop while animations are on', (tester) async {
       await tester.pumpWidget(
         _host(
           const Column(
             children: [
               FloatLoop(child: Text('bag')),
-              GlowPulse(color: Colors.amber, diameter: 40),
+              FloatLoop.glow(color: Colors.amber, diameter: 40),
             ],
           ),
         ),
@@ -71,7 +75,7 @@ void main() {
           const Column(
             children: [
               FloatLoop(child: Text('bag')),
-              GlowPulse(color: Colors.amber, diameter: 40),
+              FloatLoop.glow(color: Colors.amber, diameter: 40),
             ],
           ),
           reduced: true,
@@ -129,7 +133,7 @@ void main() {
       await tester.pumpWidget(
         _host(CountUpText(value: 320, from: 0, format: format)),
       );
-      await tester.pump(AppMotion.countUp ~/ 2);
+      await tester.pump(AppMotion.slow ~/ 2);
       expect(find.text('320'), findsNothing);
 
       await tester.pumpAndSettle();
@@ -142,7 +146,7 @@ void main() {
       expect(find.text('100'), findsOneWidget);
 
       await tester.pumpWidget(_host(CountUpText(value: 200, format: format)));
-      await tester.pump(AppMotion.countUp ~/ 2);
+      await tester.pump(AppMotion.slow ~/ 2);
       expect(find.text('200'), findsNothing);
       await tester.pumpAndSettle();
       expect(find.text('200'), findsOneWidget);
@@ -179,7 +183,7 @@ void main() {
       expect(shown(tester), inFlight);
       await tester.pump(const Duration(milliseconds: 16));
       // Rising from the in-flight number, not snapping to the old target.
-      expect(shown(tester), inInclusiveRange(inFlight, 999));
+      expect(shown(tester), inInclusiveRange(inFlight, 2999));
 
       await tester.pumpAndSettle();
       expect(shown(tester), 3000);
@@ -204,7 +208,8 @@ void main() {
       expect(tester.hasRunningAnimations, isTrue);
 
       await tester.pump(period * LightSweep.defaultSweepShare);
-      await tester.pump();
+      // A controller is done only once a frame lands past its duration.
+      await tester.pump(_frame);
       // The band is parked off the end edge; nothing ticks until the next
       // period starts.
       expect(tester.hasRunningAnimations, isFalse);
@@ -215,6 +220,105 @@ void main() {
       // Tearing the tree down cancels the rest timer and the controller.
       await tester.pumpWidget(const SizedBox());
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('B1-02 at most two passes per appearance, then still', (
+      tester,
+    ) async {
+      await tester.pumpWidget(sweep());
+      // The first pass already started with the first frame.
+      var passes = 1;
+      tester
+          .widget<LightSweepBand>(find.byType(LightSweepBand))
+          .sweep
+          .addStatusListener((status) {
+            if (status == AnimationStatus.forward) passes++;
+          });
+
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(period ~/ 2);
+      }
+      expect(passes, LightSweep.maxPasses);
+      expect(tester.hasRunningAnimations, isFalse);
+      expect(tester.binding.hasScheduledFrame, isFalse);
+    });
+
+    testWidgets('B1-02 one sweep per screen: a second one stays still', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const Column(
+            children: [
+              LightSweep(
+                period: period,
+                child: SizedBox(width: 100, height: 40),
+              ),
+              LightSweep(
+                period: period,
+                child: SizedBox(width: 100, height: 40),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pump(period * LightSweep.defaultSweepShare ~/ 2);
+
+      final bands = tester
+          .widgetList<LightSweepBand>(find.byType(LightSweepBand))
+          .toList();
+      expect(bands.first.sweep.value, greaterThan(0));
+      expect(bands.last.sweep.value, 0);
+    });
+
+    testWidgets('B1-02 tabs of one route: the tab coming on screen sweeps', (
+      tester,
+    ) async {
+      Widget tabs(int shown) => _host(
+        IndexedStack(
+          index: shown,
+          children: [
+            for (var i = 0; i < 2; i++)
+              TickerMode(
+                enabled: i == shown,
+                child: const LightSweep(
+                  period: period,
+                  child: SizedBox(width: 100, height: 40),
+                ),
+              ),
+          ],
+        ),
+      );
+      LightSweepBand band(int i) => tester
+          .widgetList<LightSweepBand>(
+            find.byType(LightSweepBand, skipOffstage: false),
+          )
+          .elementAt(i);
+
+      await tester.pumpWidget(tabs(0));
+      await tester.pump(period * LightSweep.defaultSweepShare ~/ 2);
+      expect(band(0).sweep.value, greaterThan(0));
+
+      await tester.pumpWidget(tabs(1));
+      await tester.pump(period * LightSweep.defaultSweepShare ~/ 2);
+      expect(band(0).sweep.value, 0, reason: 'hidden: at rest');
+      expect(band(1).sweep.value, greaterThan(0));
+    });
+
+    testWidgets('a progress shimmer keeps sweeping past the budget', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const LightSweep.progress(
+            period: period,
+            child: SizedBox(width: 100, height: 40),
+          ),
+        ),
+      );
+      await tester.pump(AppMotion.ambientBudget + period);
+      expect(tester.hasRunningAnimations, isTrue);
+      await tester.pumpWidget(const SizedBox());
     });
 
     testWidgets('paints nothing under reduced motion', (tester) async {

@@ -1,6 +1,6 @@
 // How the home tab answers the finger: cards sink a touch under it and let go
-// once it drags, an add tap sends up a "+1", and a swiped banner clicks softly
-// as it arrives. (The way back to the top: test/core/widgets/.)
+// once it drags, an add tap sends up a "+1", and a swiped banner arrives
+// silently (a carousel is navigation: no haptic, docs/motion §9.5). (The way back to the top: test/core/widgets/.)
 import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -13,9 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
+import 'package:hero_mart/src/core/motion/press_scale.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_slide_entity.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_add_burst.dart';
-import 'package:hero_mart/src/features/home/presentation/widgets/home_pressable.dart';
 import 'package:hero_mart/src/features/home/presentation/widgets/home_slides_carousel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -61,16 +61,16 @@ void main() {
     ),
   );
 
-  group('HomePressable', () {
+  group('home cards press (PressScale, passive — HomePressable retired)', () {
     double scaleOf(WidgetTester tester) =>
         tester.widget<AnimatedScale>(find.byType(AnimatedScale)).scale;
 
     testWidgets('sinks under the finger and comes back up on release', (
       tester,
     ) async {
-      await pumpApp(tester, const Center(child: HomePressable(child: _Card())));
+      await pumpApp(tester, const Center(child: PressScale(child: _Card())));
       final finger = await tester.startGesture(
-        tester.getCenter(find.byType(HomePressable)),
+        tester.getCenter(find.byType(PressScale)),
       );
       await tester.pump();
       expect(scaleOf(tester), lessThan(1));
@@ -81,9 +81,9 @@ void main() {
     });
 
     testWidgets('lets go as soon as the finger starts to drag', (tester) async {
-      await pumpApp(tester, const Center(child: HomePressable(child: _Card())));
+      await pumpApp(tester, const Center(child: PressScale(child: _Card())));
       final finger = await tester.startGesture(
-        tester.getCenter(find.byType(HomePressable)),
+        tester.getCenter(find.byType(PressScale)),
       );
       await tester.pump();
       expect(scaleOf(tester), lessThan(1));
@@ -142,7 +142,7 @@ void main() {
     });
   });
 
-  testWidgets('a banner carried in by the finger clicks softly', (
+  testWidgets('a banner carried in by the finger arrives without a haptic', (
     tester,
   ) async {
     final haptics = <Object?>[];
@@ -178,8 +178,8 @@ void main() {
       await finger.moveBy(const Offset(-50, 0));
       await tester.pump();
     }
-    expect(haptics, contains('HapticFeedbackType.selectionClick'));
     await finger.up();
     await tester.pumpAndSettle();
+    expect(haptics, isEmpty);
   });
 }

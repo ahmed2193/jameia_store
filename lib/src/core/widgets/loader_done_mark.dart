@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 
 import '../../config/theme/app_colors.dart';
 import '../motion/motion.dart';
-import '../motion/spring_curve.dart';
 import '../responsive/app_size.dart';
 import 'loader_check_painter.dart';
 

@@ -30,9 +30,7 @@ import 'package:hero_mart/src/features/recipes/domain/usecases/get_recipes_useca
 import 'package:hero_mart/src/features/recipes/domain/usecases/watch_recipe_detail_usecase.dart';
 import 'package:hero_mart/src/features/recipes/domain/usecases/watch_recipes_usecase.dart';
 import 'package:hero_mart/src/features/recipes/presentation/cubit/recipe_detail_cubit.dart';
-import 'package:hero_mart/src/features/recipes/presentation/cubit/recipe_detail_state.dart';
 import 'package:hero_mart/src/features/recipes/presentation/cubit/recipes_cubit.dart';
-import 'package:hero_mart/src/features/recipes/presentation/cubit/recipes_state.dart';
 
 import '../../core/data/snapshot_test_fakes.dart';
 import '../../core/network/network_test_fakes.dart';

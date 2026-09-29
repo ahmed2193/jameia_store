@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import 'cart_applied_offer_entity.dart';
 import 'cart_coupon_entity.dart';
+import 'cart_item_request.dart';
 import 'cart_line_entity.dart';
 import 'cart_line_ref.dart';
 import 'cart_loyalty_entity.dart';
@@ -88,6 +89,17 @@ class CartEntity extends Equatable {
   final CartTotalsEntity totals;
 
   bool get isEmpty => lines.isEmpty && offerLines.isEmpty;
+
+  /// The paid lines as one "add these" request — what an undone "Clear
+  /// cart" puts back (gifts of an offer come back with their offer).
+  List<CartItemRequest> get restoreItems => [
+    for (final line in lines)
+      CartItemRequest(
+        productId: line.product.id,
+        variantId: line.variantId,
+        quantity: line.quantity,
+      ),
+  ];
   bool get isNotEmpty => !isEmpty;
   bool get hasBlockingIssue => lines.any((line) => line.blocksCheckout);
   bool get isPickup => fulfillmentMode == FulfillmentMode.pickup;

@@ -7,14 +7,22 @@ import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 
 /// One big digit of the saved delivery code on a warm cream tile. When the
-/// code changes, only the digits that differ flip.
+/// code really changes ([animate]), only the digits that differ flip; the
+/// load is not a change, so the first digits appear at once.
 class DeliveryCodeDigitBox extends StatelessWidget {
-  const DeliveryCodeDigitBox({super.key, required this.digit});
+  const DeliveryCodeDigitBox({
+    super.key,
+    required this.digit,
+    this.animate = false,
+  });
 
   static const double height = AppSize.s72;
 
   /// The digit, or `''` while the code loads.
   final String digit;
+
+  /// Whether a new [digit] is a real change (flips) or the load (does not).
+  final bool animate;
 
   static final TextStyle _style = AppTextStyles.displayLarge.copyWith(
     fontSize: AppSize.font40,
@@ -38,6 +46,7 @@ class DeliveryCodeDigitBox extends StatelessWidget {
           child: RepaintBoundary(
             child: FlipValue(
               flipKey: digit,
+              animate: animate,
               alignment: AlignmentDirectional.center,
               child: Center(child: Text(digit, style: _style)),
             ),

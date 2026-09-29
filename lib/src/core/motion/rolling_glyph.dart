@@ -1,11 +1,15 @@
 import 'package:flutter/widgets.dart';
 
 import 'motion.dart';
+import 'vertical_swap_transition.dart';
 
 /// One character slot of a [RollingNumber]: when [glyph] changes it rolls the
 /// old character out and the new one in vertically, up for a rising number
-/// ([trend] > 0) and down for a falling one, clipped to its own box. An
-/// unchanged glyph never animates. Reduced motion → an instant swap.
+/// ([trend] > 0) and down for a falling one, clipped to its own box — the
+/// app's vertical swap ([VerticalSwapTransition.fraction]) at an odometer's
+/// travel. An unchanged glyph never animates. Reduced motion → the two
+/// characters cross-fade over [AppMotion.fast] in place (no travel);
+/// animations off → an instant swap.
 class RollingGlyph extends StatelessWidget {
   const RollingGlyph({
     super.key,
@@ -25,28 +29,27 @@ class RollingGlyph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final direction = trend < 0 ? -1.0 : 1.0;
+    final off = MotionGuard.off(context);
+    final reduced = MotionGuard.reduced(context);
     final current = ValueKey<String>(glyph);
     return ClipRect(
       child: AnimatedSwitcher(
-        duration: MotionGuard.duration(context, AppMotion.flip),
+        duration: off
+            ? Duration.zero
+            : reduced
+            ? AppMotion.fast
+            : AppMotion.medium,
         switchInCurve: AppMotion.signature,
         switchOutCurve: AppMotion.exit,
-        transitionBuilder: (child, animation) {
-          final incoming = child.key == current;
-          // Incoming rises from below (rising number); outgoing leaves above.
-          final from = Offset(0, (incoming ? _travel : -_travel) * direction);
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: from,
-                end: Offset.zero,
-              ).animate(animation),
-              child: child,
-            ),
-          );
-        },
+        transitionBuilder: (child, animation) => reduced
+            ? FadeTransition(opacity: animation, child: child)
+            : VerticalSwapTransition.fraction(
+                animation: animation,
+                incoming: child.key == current,
+                share: _travel,
+                rising: trend >= 0,
+                child: child,
+              ),
         child: Text(glyph, key: current, style: style),
       ),
     );

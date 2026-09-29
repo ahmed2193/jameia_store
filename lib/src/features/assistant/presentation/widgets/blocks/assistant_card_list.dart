@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../domain/entities/assistant_block.dart';
-import '../chat/assistant_entrance.dart';
 import 'assistant_block_view.dart';
 
 /// The cards of a reply in server order. A card that arrives while the reply
-/// streams enters (fade + rise + scale); stored cards — and the same cards
+/// streams enters ([EntranceCascadeItem.single]: fade + rise); stored cards — and the same cards
 /// after the `message_end` swap — sit still.
 ///
 /// While a reply streams its row rebuilds on every text flush (up to 20 a
@@ -24,8 +24,6 @@ class AssistantCardList extends StatefulWidget {
 }
 
 class _AssistantCardListState extends State<AssistantCardList> {
-  static const double _enterScale = 0.98;
-
   List<AssistantBlock>? _builtFor;
   bool? _builtLive;
   List<Widget> _children = const <Widget>[];
@@ -44,9 +42,8 @@ class _AssistantCardListState extends State<AssistantCardList> {
               top: index == 0 ? 0 : AppSpacing.s8,
             ),
             child: RepaintBoundary(
-              child: AssistantEntrance(
-                animate: live,
-                beginScale: _enterScale,
+              child: EntranceCascadeItem.single(
+                play: live,
                 child: AssistantBlockView(block: card, live: live),
               ),
             ),
