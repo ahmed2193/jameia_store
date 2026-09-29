@@ -24,10 +24,13 @@ workflows:
     #         include: true
     integrations:
       app_store_connect: jameia
+      
     environment:
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.herodelivery.app
+        provisioning_profiles:
+          - herodelivery_app_store
+        certificates:
+          - jameia_app_store
       vars:
         BUNDLE_ID: com.herodelivery.app
         APP_STORE_APP_ID: "6817324787" # Apple ID of Hero in App Store Connect
