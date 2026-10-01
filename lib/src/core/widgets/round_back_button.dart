@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/theme/app_colors.dart';
+import '../design/hero_icons.dart';
 import '../motion/motion.dart';
 import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// Round outlined back button for the white title bars (Rewards, coupons):
 /// it dips on touch ([PressScale] around the button, which keeps its own tap
-/// and ripple) and pops the current route. `Icons.arrow_back` mirrors under
+/// and ripple) and pops the current route. `HeroIcons.back` mirrors under
 /// RTL on its own.
 class RoundBackButton extends StatelessWidget {
   const RoundBackButton({super.key});
@@ -28,7 +30,7 @@ class RoundBackButton extends StatelessWidget {
           foregroundColor: AppColors.primaryText,
           side: const BorderSide(color: AppColors.divider),
         ),
-        icon: const Icon(Icons.arrow_back, size: AppSize.s22),
+        icon: const HeroIcon(HeroIcons.back, size: AppSize.s22),
       ),
     );
   }

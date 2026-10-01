@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/qty_stepper_round_button.dart';
 import '../../cubit/profile_cubit.dart';
 import '../../cubit/profile_state.dart';
@@ -37,8 +39,8 @@ class ProfileHouseholdField extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.people_outline_rounded,
+                  const HeroIcon(
+                    HeroIcons.people,
                     size: AppSize.s20,
                     color: AppColors.secondaryText,
                   ),
@@ -67,7 +69,7 @@ class ProfileHouseholdField extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   QtyStepperRoundButton(
-                    icon: Icons.remove_rounded,
+                    icon: HeroIcons.minus,
                     bg: AppColors.white,
                     fg: AppColors.primaryText,
                     size: AppSize.s36,
@@ -77,7 +79,7 @@ class ProfileHouseholdField extends StatelessWidget {
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   QtyStepperRoundButton(
-                    icon: Icons.add_rounded,
+                    icon: HeroIcons.plus,
                     bg: AppColors.primary,
                     fg: AppColors.brandForeground,
                     size: AppSize.s36,

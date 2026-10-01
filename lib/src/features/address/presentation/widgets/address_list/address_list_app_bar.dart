@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// White centred "My addresses" bar with a back glyph (RE §5).
 class AddressListAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -24,7 +25,7 @@ class AddressListAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: _scrolledUnderElevation,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(HeroIcons.back, size: AppSize.s20),
+        icon: const HeroIcon(HeroIcons.back, size: AppSize.s20),
         onPressed: () => Navigator.maybePop(context),
       ),
       title: Text(

@@ -8,6 +8,7 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'mine_header_metrics.dart';
 
 /// White round scan button at the end of the Mine header (open or
@@ -31,8 +32,8 @@ class MineScanAction extends StatelessWidget {
           backgroundColor: AppColors.white,
           side: const BorderSide(color: AppColors.divider),
         ),
-        icon: const Icon(
-          HeroIcons.confirmReceipt,
+        icon: const HeroIcon(
+          HeroIcons.ordersDone,
           size: _glyph,
           color: AppColors.primaryText,
         ),

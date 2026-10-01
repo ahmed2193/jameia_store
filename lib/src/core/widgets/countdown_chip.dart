@@ -7,9 +7,11 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../motion/second_clock.dart';
 import '../motion/second_clock_scope.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// "Ends in 02:14:33" for a flash sale: an ink chip that ticks every second
 /// until [endsAt], then disappears. The clock reads left to right in Arabic
@@ -125,11 +127,7 @@ class _CountdownChipState extends State<CountdownChip> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.timer_outlined,
-            size: _glyph,
-            color: AppColors.white,
-          ),
+          const HeroIcon(HeroIcons.clock, size: _glyph, color: AppColors.white),
           const SizedBox(width: AppSpacing.s6),
           Flexible(
             child: Text(

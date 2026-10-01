@@ -241,15 +241,21 @@ class AddressBookCubit extends Cubit<AddressBookState>
 
   /// Optimistic (B1-17, like the cart): the address leaves the book at once
   /// ([AddressBookState.deletedId] — the page offers Undo), and the DELETE
-  /// goes out after [undoWindow]; [undoDelete] puts it back in place until
-  /// then, with no request at all (a re-created address would get a new
-  /// id). A refused delete puts the row back where it was and reports the
-  /// failure. A second call for the same address (a double tap) does
+  /// goes out when the Undo window ends: after [undoWindow], or — with
+  /// [holdForUndo] — when [releaseDelete] says the Undo is gone (the page
+  /// ties it to its snack's lifetime). [undoDelete] puts it back in place
+  /// until then, with no request at all (a re-created address would get a
+  /// new id). A refused delete puts the row back where it was and reports
+  /// the failure. A second call for the same address (a double tap) does
   /// nothing. While it waits, a sync never brings the row back. The device
-  /// copy changes only once the server confirmed. Completes when the server
-  /// answered, the delete was undone, or the session ended (a delete still
-  /// in its window is then never sent).
-  Future<void> delete(String id, {Duration undoWindow = Duration.zero}) async {
+  /// copy changes only once the server confirmed (it keeps the row until
+  /// then). Completes when the server answered, the delete was undone, or
+  /// the session ended (a delete still in its window is then never sent).
+  Future<void> delete(
+    String id, {
+    Duration undoWindow = Duration.zero,
+    bool holdForUndo = false,
+  }) async {
     final address = state.book.byId(id);
     if (address == null || _pendingDeletes.containsKey(id)) return;
     final session = _session;
@@ -266,8 +272,10 @@ class AddressBookCubit extends Cubit<AddressBookState>
         deletedId: id,
       ),
     );
-    if (undoWindow > Duration.zero) {
-      pending.timer = Timer(undoWindow, () => pending.decide(send: true));
+    if (holdForUndo || undoWindow > Duration.zero) {
+      if (!holdForUndo) {
+        pending.timer = Timer(undoWindow, () => pending.decide(send: true));
+      }
       final send = await pending.decision.future;
       if (!send || session != _session) return;
     }
@@ -290,6 +298,13 @@ class AddressBookCubit extends Cubit<AddressBookState>
     );
   }
 
+  /// The Undo for [id] is gone (its snack closed without the action): the
+  /// DELETE held by `holdForUndo` goes out now. Nothing when it was undone
+  /// or already sent.
+  void releaseDelete(String id) {
+    _pendingDeletes[id]?.decide(send: true);
+  }
+
   /// Puts [id] back where it was while its delete waits in the Undo window.
   /// `false` when there is nothing to undo (unknown, or already sent).
   bool undoDelete(String id) {
@@ -305,6 +320,21 @@ class AddressBookCubit extends Cubit<AddressBookState>
       ),
     );
     return true;
+  }
+
+  /// [book] with the addresses whose delete the server has not confirmed
+  /// back in place: what the device keeps, so an app killed in the Undo
+  /// window (or mid-request) still has the row at the next launch.
+  AddressBook _withPendingDeletes(AddressBook book) {
+    final waiting = _pendingDeletes.values.toList()
+      ..sort((a, b) => a.index.compareTo(b.index));
+    var kept = book;
+    for (final pending in waiting) {
+      if (kept.byId(pending.address.id) == null) {
+        kept = kept.restore(pending.address, pending.index);
+      }
+    }
+    return kept;
   }
 
   /// [book] without the addresses whose delete is waiting or in flight: a
@@ -407,7 +437,8 @@ class AddressBookCubit extends Cubit<AddressBookState>
   /// Writes [book] for the current owner unless the device already holds
   /// exactly that. The storage write starts synchronously, so a [stop] that
   /// follows always clears after it.
-  void _persist(AddressBook book) {
+  void _persist(AddressBook shown) {
+    final book = _withPendingDeletes(shown);
     if (book == _savedBook && _ownerId == _savedOwnerId) return;
     _savedBook = book;
     _savedOwnerId = _ownerId;

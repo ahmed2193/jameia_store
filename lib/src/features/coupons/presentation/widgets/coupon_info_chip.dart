@@ -4,6 +4,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import 'coupon_fade.dart';
 
 /// Cream pill with a small glyph and a condition of the coupon ("Min KD
@@ -36,7 +37,7 @@ class CouponInfoChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            HeroIcon(
               icon,
               size: AppSize.s12,
               color: CouponFade.of(AppColors.accent3Dark, faded: faded),

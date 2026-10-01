@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/skeleton_bone.dart';
 import '../../../../../core/widgets/skeletonized.dart';
@@ -62,7 +63,7 @@ class LedgerSkeleton extends StatelessWidget {
             ),
             for (var row = 0; row < _rows; row++)
               LedgerEntryTile(
-                icon: Icons.receipt_long_outlined,
+                icon: HeroIcons.receipt,
                 title: BoneMock.title,
                 time: BoneMock.date,
                 amount: BoneMock.chars(_amountChars),

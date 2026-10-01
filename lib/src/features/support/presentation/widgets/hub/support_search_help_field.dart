@@ -8,6 +8,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'support_section_card.dart';
 
 /// Search entry — mirrors Hero's `handleJumpToSearch`: the customer types a
@@ -47,7 +48,7 @@ class _SupportSearchHelpFieldState extends State<SupportSearchHelpField> {
         ),
         child: Row(
           children: [
-            const Icon(
+            const HeroIcon(
               HeroIcons.search,
               size: AppSize.s20,
               color: AppColors.tertiaryText,
@@ -78,8 +79,8 @@ class _SupportSearchHelpFieldState extends State<SupportSearchHelpField> {
               onTap: _submit,
               child: const Padding(
                 padding: EdgeInsetsDirectional.only(start: AppSpacing.s8),
-                child: Icon(
-                  HeroIcons.arrowRight,
+                child: HeroIcon(
+                  HeroIcons.chevronEnd,
                   size: AppSize.s16,
                   color: AppColors.disabledText,
                 ),

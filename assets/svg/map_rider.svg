@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <ellipse cx="24" cy="25.5" rx="11.5" ry="20.5" fill="#0B2E13" fill-opacity="0.16"/>
+  <g stroke="#0B2E13" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="21.4" y="37.6" width="5.2" height="8.6" rx="2.6" fill="#1F2937"/>
+    <rect x="13.8" y="26.6" width="20.4" height="16.4" rx="3.2" fill="#22C55E"/>
+    <rect x="18.8" y="12.4" width="10.4" height="20" rx="5.2" fill="#15803D"/>
+    <rect x="21.4" y="2.8" width="5.2" height="9.4" rx="2.6" fill="#1F2937"/>
+    <rect x="12.6" y="11.2" width="22.8" height="3.8" rx="1.9" fill="#1F2937"/>
+    <path d="M17.2 20.2C16 24 14.6 29 13.8 34.4Q16.6 32.6 19.2 35.6Q21.6 33.2 24 36.4Q26.4 33.2 28.8 35.6Q31.4 32.6 34.2 34.4C33.4 29 32 24 30.8 20.2Z" fill="#FBBF24" stroke="none"/>
+    <path d="M24 21C24.8 26 26.6 31 28.8 35.6Q31.4 32.6 34.2 34.4C33.4 29 32 24 30.8 20.2Z" fill="#F99022" stroke="none"/>
+    <path d="M17.2 20.2C16 24 14.6 29 13.8 34.4Q16.6 32.6 19.2 35.6Q21.6 33.2 24 36.4Q26.4 33.2 28.8 35.6Q31.4 32.6 34.2 34.4C33.4 29 32 24 30.8 20.2Z" fill="none"/>
+    <ellipse cx="24" cy="20.8" rx="8.4" ry="4.4" fill="#15803D"/>
+    <circle cx="24" cy="18" r="5.4" fill="#FFFFFF"/>
+  </g>
+  <path d="M20.5 16.4A4.1 4.1 0 0 1 27.5 16.4" fill="none" stroke="#22C55E" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M20.9 37.4H27.1L27.7 41.6H20.3Z" fill="#FFFFFF"/>
+  <path d="M22.4 37.4V36.6A1.6 1.8 0 0 1 25.6 36.6V37.4" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round"/>
+  <circle cx="24" cy="3.4" r="1.7" fill="#FFEA52" stroke="#0B2E13" stroke-width="0.8"/>
+</svg>

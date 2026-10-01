@@ -1,53 +1,50 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/widgets/hero_icon_plate.dart';
 import '../../../../../core/widgets/hero_svg_glyph.dart';
 import 'mine_tone.dart';
 
-/// A glyph on a soft tinted tile ([tone]): a rounded square in the menu
-/// rows, a disc on the quick-stat tiles ([circle]).
+/// A menu row's mark: the [icon] white on a [HeroIconPlate] in the
+/// [MineTone.plate] colour, beside the art plates of the other rows; on the
+/// quick-stat tiles ([circle]) the sticker [icon] on a soft
+/// [MineTone.background] disc.
 ///
-/// The glyph is an [icon], or a drawn `HeroAssets` SVG ([asset]): a mono
-/// line icon is tinted like the icon; a colour [plate] (wallet, points,
-/// ticket, gift, Pro crown) brings its own tile and fills the slot instead.
+/// A colour [plate] (`HeroAssets` path: wallet, points, ticket, gift, Pro
+/// crown) brings its own tile and fills the slot instead.
 class MineIconTile extends StatelessWidget {
   const MineIconTile({
     super.key,
     this.icon,
-    this.asset,
-    this.plate = false,
+    this.plate,
     required this.tone,
     this.circle = false,
-  }) : assert((icon == null) != (asset == null), 'an icon or an asset');
+  }) : assert((icon == null) != (plate == null), 'an icon or a plate');
 
   static const double size = AppSize.s32;
   static const double _glyph = AppSize.s18;
 
   final IconData? icon;
-  final String? asset;
-  final bool plate;
+  final String? plate;
   final MineTone tone;
   final bool circle;
 
   @override
   Widget build(BuildContext context) {
-    final drawn = asset;
-    if (drawn != null && plate) {
-      return HeroSvgGlyph.art(drawn, size: size);
+    if (plate case final String art) {
+      return HeroSvgGlyph.art(art, size: size);
+    }
+    if (!circle) {
+      return HeroIconPlate(icon!, size: size, color: tone.plate);
     }
     return Container(
       width: size,
       height: size,
       alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: tone.background,
-        shape: circle ? BoxShape.circle : BoxShape.rectangle,
-        borderRadius: circle ? null : BorderRadius.circular(AppRadius.r5),
-      ),
-      child: drawn == null
-          ? Icon(icon, size: _glyph, color: tone.foreground)
-          : HeroSvgGlyph.mono(drawn, size: _glyph, color: tone.foreground),
+      decoration: BoxDecoration(color: tone.background, shape: BoxShape.circle),
+      child: HeroIcon(icon!, size: _glyph, color: AppColors.primaryText),
     );
   }
 }

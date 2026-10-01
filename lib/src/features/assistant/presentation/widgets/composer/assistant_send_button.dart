@@ -2,8 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Send, or Stop while a reply streams — one round 48 dp button, one
 /// accessibility node, the icon cross-fading between the two.
@@ -50,8 +52,8 @@ class AssistantSendButton extends StatelessWidget {
             onTap: action,
             child: AnimatedSwitcher(
               duration: MotionGuard.duration(context, AppMotion.fast),
-              child: Icon(
-                streaming ? Icons.stop_rounded : Icons.arrow_upward_rounded,
+              child: HeroIcon(
+                streaming ? HeroIcons.stop : HeroIcons.arrowUp,
                 key: ValueKey(streaming),
                 size: AppSize.s22,
                 color: active

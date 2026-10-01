@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/assistant_voice_language.dart';
 import '../../cubit/assistant_voice_cubit.dart';
 
@@ -61,8 +63,8 @@ class AssistantVoiceLanguageSwitch extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.translate_rounded,
+                    const HeroIcon(
+                      HeroIcons.language,
                       size: AppSize.s16,
                       color: AppColors.primaryDark,
                     ),

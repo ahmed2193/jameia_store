@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../cubit/profile_cubit.dart';
 import '../../cubit/profile_state.dart';
@@ -36,7 +37,7 @@ class ProfileDateOfBirthField extends StatelessWidget {
         children: [
           ProfileFieldLabel('profile.date_of_birth'.tr()),
           ProfileValueBox(
-            icon: Icons.cake_outlined,
+            icon: HeroIcons.cake,
             value: date == null
                 ? null
                 : (DateFormat.yMMMMd(

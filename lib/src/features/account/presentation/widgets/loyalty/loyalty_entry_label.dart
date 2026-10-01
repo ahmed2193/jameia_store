@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../domain/entities/loyalty_entry_entity.dart';
 
 /// Title key and icon of each points transaction kind.
@@ -16,13 +17,13 @@ abstract final class LoyaltyEntryLabel {
   };
 
   static IconData iconOf(LoyaltyEntryKind kind) => switch (kind) {
-    LoyaltyEntryKind.earn => Icons.add_shopping_cart_rounded,
-    LoyaltyEntryKind.redeem => Icons.redeem_rounded,
-    LoyaltyEntryKind.expire => Icons.hourglass_bottom_rounded,
-    LoyaltyEntryKind.welcomeBonus => Icons.celebration_outlined,
-    LoyaltyEntryKind.profileBonus => Icons.person_outline_rounded,
-    LoyaltyEntryKind.refundRestore => Icons.replay_rounded,
-    LoyaltyEntryKind.adminAdjustment => Icons.tune_rounded,
-    LoyaltyEntryKind.other => Icons.stars_rounded,
+    LoyaltyEntryKind.earn => HeroIcons.cartAdd,
+    LoyaltyEntryKind.redeem => HeroIcons.gift,
+    LoyaltyEntryKind.expire => HeroIcons.hourglass,
+    LoyaltyEntryKind.welcomeBonus => HeroIcons.party,
+    LoyaltyEntryKind.profileBonus => HeroIcons.person,
+    LoyaltyEntryKind.refundRestore => HeroIcons.refresh,
+    LoyaltyEntryKind.adminAdjustment => HeroIcons.filter,
+    LoyaltyEntryKind.other => HeroIcons.points,
   };
 }

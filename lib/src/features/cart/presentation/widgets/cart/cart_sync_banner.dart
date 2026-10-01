@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_surface_card.dart';
 import '../../../../../core/widgets/hero_text_link.dart';
 import '../../cubit/cart_cubit.dart';
@@ -40,8 +42,8 @@ class CartSyncBanner extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.cloud_off_outlined,
+              const HeroIcon(
+                HeroIcons.offline,
                 size: AppSize.s20,
                 color: AppColors.warn,
               ),

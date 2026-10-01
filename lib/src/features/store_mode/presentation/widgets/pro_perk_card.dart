@@ -5,8 +5,11 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icon_tone.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import 'pro_underlined_link.dart';
 
 /// One Pro perk as a softly tinted card (its [color] fading lighter towards
@@ -112,11 +115,7 @@ class ProPerkCard extends StatelessWidget {
                     width: AppSize.s3,
                   ),
                 ),
-                child: Icon(
-                  icon,
-                  size: _iconSize,
-                  color: AppColors.accentViolet,
-                ),
+                child: HeroIcon(icon, tone: HeroIconTone.pro, size: _iconSize),
               ),
             ),
             Padding(
@@ -169,8 +168,8 @@ class ProPerkCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.check_rounded,
+                        const HeroIcon(
+                          HeroIcons.check,
                           size: _check,
                           color: AppColors.brandDeep,
                         ),

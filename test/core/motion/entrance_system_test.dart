@@ -6,6 +6,7 @@
 // CollapseReveal) and the inline field error built on it.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/collapse_reveal.dart';
 import 'package:hero_mart/src/core/motion/entrance_arrival.dart';
 import 'package:hero_mart/src/core/motion/entrance_cascade.dart';
@@ -405,7 +406,7 @@ void main() {
         ),
       );
       await tester.pumpWidget(field(null));
-      expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
+      expect(find.byIcon(HeroIcons.warning), findsNothing);
 
       await tester.pumpWidget(field('Enter a valid number'));
       expect(tester.hasRunningAnimations, isTrue);

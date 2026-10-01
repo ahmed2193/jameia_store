@@ -9,7 +9,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/hero_svg_glyph.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../assistant_motion.dart';
 import 'assistant_tool_glyphs.dart';
 import 'assistant_tool_labels.dart';
@@ -93,18 +93,7 @@ class _AssistantStepLineState extends State<AssistantStepLine> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (glyph.asset case final String asset)
-                HeroSvgGlyph.mono(
-                  asset,
-                  size: AppSize.s16,
-                  color: AppColors.primaryDark,
-                )
-              else
-                Icon(
-                  glyph.icon,
-                  size: AppSize.s16,
-                  color: AppColors.primaryDark,
-                ),
+              HeroIcon(glyph, size: AppSize.s16, color: AppColors.primaryDark),
               const SizedBox(width: AppSpacing.s6),
               Flexible(
                 child: Text(

@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// One star of the "How was your order?" card: a 44 dp target that gives
 /// under the finger and opens the review with [value] stars chosen.
@@ -36,8 +37,8 @@ class TrackingRateStar extends StatelessWidget {
             radius: AppSize.s22,
             child: const SizedBox.square(
               dimension: AppSize.s44,
-              child: Icon(
-                HeroIcons.star,
+              child: HeroIcon(
+                HeroIcons.starFill,
                 size: AppSize.s32,
                 color: AppColors.trackingLineTodo,
               ),

@@ -8,21 +8,21 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/hero_svg_glyph.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
-/// Label tag chip with its drawn Hero glyph (Home | Work | Hangout | Other;
-/// a mono `HeroAssets.addressLabel*` tinted like the words).
+/// Label tag chip with its Hero glyph (Home | Work | Hangout | Other;
+/// `AddressLabelIcon.iconFor`, tinted like the words).
 class LabelChip extends StatelessWidget {
   const LabelChip({
     super.key,
     required this.label,
-    required this.iconAsset,
+    required this.icon,
     required this.selected,
     required this.onTap,
   });
 
   final String label;
-  final String iconAsset;
+  final IconData icon;
   final bool selected;
   final VoidCallback onTap;
 
@@ -55,7 +55,7 @@ class LabelChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              HeroSvgGlyph.mono(iconAsset, size: AppSize.s16, color: fg),
+              HeroIcon(icon, size: AppSize.s16, color: fg),
               const SizedBox(width: AppSpacing.s6),
               Text(
                 label,

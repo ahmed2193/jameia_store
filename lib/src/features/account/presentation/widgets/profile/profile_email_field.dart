@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../domain/entities/profile_field.dart';
 import '../../../domain/entities/profile_update.dart';
 import '../../cubit/profile_cubit.dart';
@@ -29,7 +30,7 @@ class ProfileEmailField extends StatelessWidget {
         label: '${'profile.email'.tr()} · ${'common.optional'.tr()}',
         controller: controller,
         focusNode: focusNode,
-        icon: Icons.mail_outline_rounded,
+        icon: HeroIcons.mail,
         hintText: 'profile.email_hint'.tr(),
         maxLength: ProfileUpdate.maxEmailLength,
         keyboardType: TextInputType.emailAddress,

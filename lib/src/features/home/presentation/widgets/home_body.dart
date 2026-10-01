@@ -21,8 +21,9 @@ import 'home_popup_queue.dart';
 /// connection…", "No connection", or the error + retry) — always under the
 /// one real header of [HomeFrame], which stays put across the swaps; and
 /// runs the one-shot effects: the failed-refresh message told
-/// the shared way (offline: only the banner), the marketing popup queue
-/// (only while Home is the visible shell tab), and one silent refresh when
+/// the shared way (offline: only the banner), the popup queue — the
+/// first-order welcome gift, then the marketing popups — (only while Home is
+/// the visible shell tab), and one silent refresh when
 /// the connection returns.
 class HomeBody extends StatefulWidget {
   const HomeBody({super.key});
@@ -42,10 +43,13 @@ class _HomeBodyState extends State<HomeBody> {
   void _showDuePopups() {
     final cubit = context.read<HomeCubit>();
     if (!_isVisible || !cubit.state.hasPendingPopups) return;
+    final welcome = cubit.state.welcomeDue;
     final due = cubit.state.duePopups;
     cubit.markPopupsShown();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) HomePopupQueue.show(context, due);
+      if (mounted) {
+        HomePopupQueue.show(context, welcome: welcome, popups: due);
+      }
     });
   }
 

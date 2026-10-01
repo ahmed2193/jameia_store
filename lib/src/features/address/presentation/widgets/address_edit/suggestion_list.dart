@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_map.dart';
 
 /// Autocomplete results dropdown floating under the search box.
@@ -42,8 +43,8 @@ class SuggestionList extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      HeroIcons.location,
+                    const HeroIcon(
+                      HeroIcons.pinFill,
                       size: AppSize.s16,
                       color: AppColors.secondaryText,
                     ),

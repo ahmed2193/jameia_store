@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/cart_line_entity.dart';
 import '../../../../../core/widgets/hero_tag.dart';
 
@@ -22,16 +23,16 @@ class CartLineIssueNotice extends StatelessWidget {
         return const SizedBox.shrink();
       case CartLineIssue.outOfStock:
         text = 'cart.issue_out_of_stock'.tr();
-        icon = Icons.error_outline_rounded;
+        icon = HeroIcons.warning;
         tone = HeroTagTone.error;
       case CartLineIssue.quantityReduced:
         text = 'cart.issue_quantity_reduced'.tr();
-        icon = Icons.info_outline_rounded;
+        icon = HeroIcons.info;
         tone = HeroTagTone.neutral;
       case CartLineIssue.unavailable:
       case CartLineIssue.other:
         text = 'cart.issue_unavailable'.tr();
-        icon = Icons.error_outline_rounded;
+        icon = HeroIcons.warning;
         tone = HeroTagTone.error;
     }
     return HeroTag(label: text, icon: icon, tone: tone);

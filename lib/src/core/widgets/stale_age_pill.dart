@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../design/hero_assets.dart';
+import '../design/hero_icons.dart';
 import '../motion/second_clock.dart';
 import '../utils/relative_age.dart';
 import 'info_pill.dart';
@@ -59,7 +59,7 @@ class _StaleAgePillState extends State<StaleAgePill> {
     final now = (widget.clock ?? DateTime.now)();
     return Center(
       child: InfoPill(
-        asset: HeroAssets.sharedClock,
+        icon: HeroIcons.clock,
         text: RelativeAge.updated(widget.savedAt, now: now),
       ),
     );

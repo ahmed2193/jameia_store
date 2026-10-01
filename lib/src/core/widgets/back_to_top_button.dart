@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_shadows.dart';
+import '../design/hero_icons.dart';
 import '../motion/motion.dart';
 import '../motion/motion_widgets.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// The round "back to the top" button: it pops up (scale + fade) while
 /// [shown] and shrinks away otherwise. Hidden, it takes no taps and reads to
@@ -51,8 +53,8 @@ class BackToTopButton extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: AppShadows.medium,
                   ),
-                  child: const Icon(
-                    Icons.keyboard_arrow_up_rounded,
+                  child: const HeroIcon(
+                    HeroIcons.chevronUp,
                     size: _glyph,
                     color: AppColors.primaryText,
                   ),

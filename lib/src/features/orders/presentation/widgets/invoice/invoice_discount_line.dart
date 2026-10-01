@@ -16,11 +16,7 @@ class InvoiceDiscountLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return HeroSummaryLine(
       label: label,
-      value: HeroMoneyText(
-        kd: kd,
-        negative: true,
-        color: AppColors.brandDeep,
-      ),
+      value: HeroMoneyText(kd: kd, negative: true, color: AppColors.brandDeep),
     );
   }
 }

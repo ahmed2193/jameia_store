@@ -5,10 +5,12 @@ import 'package:flutter/widgets.dart';
 
 import 'src/app.dart';
 import 'src/config/di/service_locator.dart';
+import 'src/config/theme/font_licenses.dart';
 import 'src/core/widgets/image_cache_tuner.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  FontLicenses.register(); // OFL texts of the bundled fonts (read lazily)
   await EasyLocalization.ensureInitialized();
   await setupServiceLocator(); // core infra + every feature (config/di)
 

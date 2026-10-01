@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/domain/entities/loyalty_program.dart';
 import 'loyalty_rule_row.dart';
@@ -48,14 +49,14 @@ class LoyaltyRulesCard extends StatelessWidget {
               ),
               if (program.pointsPerKwd > 0)
                 LoyaltyRuleRow(
-                  icon: Icons.shopping_bag_outlined,
+                  icon: HeroIcons.bag,
                   text: 'loyalty.earn_rate'.tr(
                     namedArgs: {'n': '${program.pointsPerKwd}'},
                   ),
                 ),
               if (program.redemptionPerPoint > 0)
                 LoyaltyRuleRow(
-                  icon: Icons.redeem_rounded,
+                  icon: HeroIcons.gift,
                   text: 'loyalty.redeem_rate'.tr(
                     namedArgs: {
                       'amount': Formatters.price(program.pointValueKd),
@@ -64,14 +65,14 @@ class LoyaltyRulesCard extends StatelessWidget {
                 ),
               if (program.minRedeemPoints > 0)
                 LoyaltyRuleRow(
-                  icon: Icons.flag_outlined,
+                  icon: HeroIcons.flag,
                   text: 'loyalty.min_redeem'.tr(
                     namedArgs: {'min': '${program.minRedeemPoints}'},
                   ),
                 ),
               if (program.pointsExpire)
                 LoyaltyRuleRow(
-                  icon: Icons.hourglass_bottom_rounded,
+                  icon: HeroIcons.hourglass,
                   text: 'loyalty.expiry'.tr(
                     namedArgs: {'months': '${program.pointsExpireMonths}'},
                   ),

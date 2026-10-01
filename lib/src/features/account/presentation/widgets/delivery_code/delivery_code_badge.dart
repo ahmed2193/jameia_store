@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Warm amber → orange disc with the rider glyph, heading the code card.
 class DeliveryCodeBadge extends StatelessWidget {
@@ -27,7 +28,7 @@ class DeliveryCodeBadge extends StatelessWidget {
             colors: _gradient,
           ),
         ),
-        child: Icon(
+        child: HeroIcon(
           HeroIcons.delivery,
           size: AppSize.s22,
           color: AppColors.white,

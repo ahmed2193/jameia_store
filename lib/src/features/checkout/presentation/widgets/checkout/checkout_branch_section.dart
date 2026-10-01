@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/branch_entity.dart';
 import '../../cubit/checkout_cubit.dart';
@@ -40,7 +41,7 @@ class CheckoutBranchSection extends StatelessWidget {
             if (branch.phone.isNotEmpty) Formatters.isolate(branch.phone),
           ];
     return CheckoutDestinationRow(
-      icon: Icons.storefront_outlined,
+      icon: HeroIcons.store,
       title: branch?.name ?? 'checkout.branch_choose'.tr(),
       subtitle: details.isEmpty ? null : details.join(Formatters.middot),
       selecting: selecting,

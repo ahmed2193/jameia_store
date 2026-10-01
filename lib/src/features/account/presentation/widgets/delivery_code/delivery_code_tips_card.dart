@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../settings/settings_card.dart';
 import '../settings/settings_tone.dart';
 import 'delivery_code_tip_row.dart';
@@ -27,12 +27,11 @@ class DeliveryCodeTipsCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.s16),
       child: Column(
         children: [
-          SvgPicture.asset(
+          const HeroSvgGlyph.art(
             HeroAssets.deliveryCodeHandover,
-            width: _artWidth,
+            size: _artWidth,
             height: _artHeight,
             matchTextDirection: true,
-            excludeFromSemantics: true,
           ),
           const SizedBox(height: AppSpacing.s12),
           DeliveryCodeTipRow(
@@ -42,13 +41,13 @@ class DeliveryCodeTipsCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.s14),
           DeliveryCodeTipRow(
-            icon: HeroIcons.alert,
+            icon: HeroIcons.bell,
             tone: SettingsTone.danger,
             text: 'account.explain_never_share'.tr(),
           ),
           const SizedBox(height: AppSpacing.s14),
           DeliveryCodeTipRow(
-            icon: HeroIcons.info,
+            icon: HeroIcons.warning,
             tone: SettingsTone.sky,
             text: 'account.explain_change_when_idle'.tr(),
           ),

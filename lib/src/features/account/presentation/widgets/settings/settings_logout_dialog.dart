@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
@@ -45,10 +46,9 @@ class SettingsLogoutDialog extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SettingsIconBadge(
-                      icon: Icons.logout_rounded,
+                      icon: HeroIcons.logout,
                       tone: SettingsTone.danger,
                       dimension: AppSize.s56,
-                      iconSize: AppSize.s28,
                     ),
                     const SizedBox(height: AppSpacing.s16),
                     Text(

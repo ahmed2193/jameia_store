@@ -25,7 +25,13 @@ abstract final class ConfettiOverlay {
       builder: (_) => ConfettiOverlayView(
         pieces: pieces,
         origin: origin,
-        onDone: () => entry.remove(),
+        // Removed and released (leak_tracker): the burst is over.
+        onDone: () {
+          if (!entry.mounted) return;
+          entry
+            ..remove()
+            ..dispose();
+        },
       ),
     );
     overlay.insert(entry);

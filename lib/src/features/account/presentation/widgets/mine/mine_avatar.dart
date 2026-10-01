@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/hero_assets.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/auth_customer_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/hero_svg_glyph.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'mine_avatar_edit_badge.dart';
 import 'mine_header_metrics.dart';
 
@@ -84,8 +84,8 @@ class MineAvatar extends StatelessWidget {
                 ),
                 child: Center(
                   child: initial.isEmpty
-                      ? HeroSvgGlyph.mono(
-                          HeroAssets.tabAccount,
+                      ? HeroIcon(
+                          HeroIcons.account,
                           size: _glyph,
                           color: person == null
                               ? AppColors.brandDeep

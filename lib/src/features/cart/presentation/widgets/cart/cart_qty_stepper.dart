@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/rolling_number.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'cart_qty_step_button.dart';
@@ -44,7 +45,7 @@ class CartQtyStepper extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             CartQtyStepButton(
-              icon: last ? Icons.delete_outline_rounded : Icons.remove_rounded,
+              icon: last ? HeroIcons.trash : HeroIcons.minus,
               tooltip: (last ? 'cart.remove' : 'home.decrease_quantity').tr(),
               onTap: onDecrement,
               removes: true,
@@ -62,7 +63,7 @@ class CartQtyStepper extends StatelessWidget {
             ),
             // Its icon never changes, so it needs no cross-fade.
             CartQtyStepButton(
-              icon: Icons.add_rounded,
+              icon: HeroIcons.plus,
               tooltip: 'home.increase_quantity'.tr(),
               onTap: canIncrement ? onIncrement : null,
               animateIcon: false,

@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/float_loop.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/pop_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'assistant_voice_drag.dart';
 
 /// The lock above the held mic (WhatsApp): an open padlock and a chevron
@@ -77,10 +79,8 @@ class AssistantVoiceLockPill extends StatelessWidget {
                       children: [
                         PopSwitcher(
                           stateKey: climb >= 1,
-                          child: Icon(
-                            climb >= 1
-                                ? Icons.lock_rounded
-                                : Icons.lock_open_rounded,
+                          child: HeroIcon(
+                            climb >= 1 ? HeroIcons.lock : HeroIcons.unlock,
                             size: AppSize.s20,
                             color: climb >= _closing
                                 ? AppColors.primaryDark
@@ -92,8 +92,8 @@ class AssistantVoiceLockPill extends StatelessWidget {
                           child: const FloatLoop(
                             amplitude: AppSize.s3,
                             count: 1,
-                            child: Icon(
-                              Icons.keyboard_arrow_up_rounded,
+                            child: HeroIcon(
+                              HeroIcons.chevronUp,
                               size: AppSize.s20,
                               color: AppColors.secondaryText,
                             ),

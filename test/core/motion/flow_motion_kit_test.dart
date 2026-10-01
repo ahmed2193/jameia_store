@@ -6,6 +6,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/change_bump.dart';
 import 'package:hero_mart/src/core/motion/collapse_reveal.dart';
 import 'package:hero_mart/src/core/motion/confetti_overlay.dart';
@@ -53,12 +54,12 @@ void main() {
 
   testWidgets('ChangeBump plays on a change only', (tester) async {
     await tester.pumpWidget(
-      _host(const ChangeBump(value: 'a', child: Icon(Icons.star))),
+      _host(const ChangeBump(value: 'a', child: Icon(HeroIcons.starFill))),
     );
     expect(tester.hasRunningAnimations, isFalse);
 
     await tester.pumpWidget(
-      _host(const ChangeBump(value: 'b', child: Icon(Icons.star))),
+      _host(const ChangeBump(value: 'b', child: Icon(HeroIcons.starFill))),
     );
     expect(tester.hasRunningAnimations, isTrue);
     await tester.pumpAndSettle();
@@ -162,6 +163,41 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.byType(ConfettiOverlayView), findsNothing);
+  });
+
+  // Review fix O1: the finished burst's overlay entry is disposed, not only
+  // removed (leak_tracker would flag it).
+  testWidgets('ConfettiOverlay disposes its overlay entry', (tester) async {
+    final created = <Object>{};
+    final disposed = <Object>{};
+    void track(ObjectEvent event) {
+      if (event.object is! OverlayEntry) return;
+      if (event is ObjectCreated) created.add(event.object);
+      if (event is ObjectDisposed) disposed.add(event.object);
+    }
+
+    await tester.pumpWidget(
+      _host(
+        Builder(
+          builder: (context) => TextButton(
+            onPressed: () => ConfettiOverlay.play(
+              context,
+              colors: const [Colors.green, Colors.yellow],
+              count: 8,
+            ),
+            child: const Text('place'),
+          ),
+        ),
+      ),
+    );
+    FlutterMemoryAllocations.instance.addListener(track);
+    addTearDown(() => FlutterMemoryAllocations.instance.removeListener(track));
+    await tester.tap(find.text('place'));
+    await tester.pump();
+    expect(created, hasLength(1));
+
+    await tester.pumpAndSettle();
+    expect(disposed, created);
   });
 
   testWidgets('the page transition builds its curve once', (tester) async {

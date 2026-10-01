@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../../../../core/design/hero_assets.dart';
 import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/hero_mark_icon.dart';
-import '../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../cart/presentation/cubit/cart_state.dart';
 import 'shell_nav_item.dart';
@@ -59,7 +58,7 @@ class ShellBottomNav extends StatelessWidget {
               ),
               Expanded(
                 child: ShellNavItem(
-                  icon: const Icon(HeroIcons.search),
+                  icon: const HeroIcon(HeroIcons.search),
                   label: 'tab_search'.tr(),
                   selected: index == searchTab,
                   onTap: () => onTap(searchTab),
@@ -70,7 +69,7 @@ class ShellBottomNav extends StatelessWidget {
                 child: BlocSelector<CartCubit, CartState, int>(
                   selector: (state) => state.totalQty,
                   builder: (context, count) => ShellNavItem(
-                    icon: const Icon(HeroIcons.cart),
+                    icon: const HeroIcon(HeroIcons.cart),
                     label: 'tab_cart'.tr(),
                     selected: index == cartTab,
                     badge: count,
@@ -81,8 +80,7 @@ class ShellBottomNav extends StatelessWidget {
               ),
               Expanded(
                 child: ShellNavItem(
-                  // Mono: it takes the item's selected / idle colour.
-                  icon: const HeroSvgGlyph.mono(HeroAssets.tabAccount),
+                  icon: const HeroIcon(HeroIcons.account),
                   label: 'tab_mine'.tr(),
                   selected: index == mineTab,
                   onTap: () => onTap(mineTab),

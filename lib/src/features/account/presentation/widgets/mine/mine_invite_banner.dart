@@ -10,6 +10,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/light_sweep.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import 'mine_gift_badge.dart';
@@ -80,8 +81,8 @@ class MineInviteBanner extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.s8),
-                    const Icon(
-                      HeroIcons.arrowRight,
+                    const HeroIcon(
+                      HeroIcons.chevronEnd,
                       size: _chevron,
                       color: AppColors.tertiaryText,
                     ),

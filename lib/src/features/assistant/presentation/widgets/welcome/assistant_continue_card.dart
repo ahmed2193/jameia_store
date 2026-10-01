@@ -5,7 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/assistant_conversation_entity.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 
@@ -32,8 +34,8 @@ class AssistantContinueCard extends StatelessWidget {
             padding: const EdgeInsetsDirectional.all(AppSpacing.s12),
             child: Row(
               children: [
-                const Icon(
-                  Icons.forum_outlined,
+                const HeroIcon(
+                  HeroIcons.chat,
                   size: AppSize.s22,
                   color: AppColors.primaryDark,
                 ),
@@ -61,8 +63,8 @@ class AssistantContinueCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
-                  Icons.chevron_right_rounded,
+                const HeroIcon(
+                  HeroIcons.chevronEnd,
                   size: AppSize.s22,
                   color: AppColors.primaryDark,
                 ),

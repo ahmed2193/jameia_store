@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/brand_entity.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_image.dart';
 
 /// One brand of the brands page: logo (or the brand's initial), name and the
@@ -81,8 +83,8 @@ class BrandTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
-              Icons.chevron_right,
+            const HeroIcon(
+              HeroIcons.chevronEnd,
               size: AppSize.s20,
               color: AppColors.secondaryText,
             ),

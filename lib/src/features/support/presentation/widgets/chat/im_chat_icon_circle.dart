@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// A round grey icon button of the composer.
 class ImChatIconCircle extends StatelessWidget {
@@ -23,7 +24,11 @@ class ImChatIconCircle extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
-        child: Icon(icon, size: AppSize.s20, color: AppColors.secondaryText),
+        child: HeroIcon(
+          icon,
+          size: AppSize.s20,
+          color: AppColors.secondaryText,
+        ),
       ),
     );
   }

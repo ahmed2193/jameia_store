@@ -4,7 +4,9 @@ import '../../../../../../config/theme/app_colors.dart';
 import '../../../../../../config/theme/app_shadows.dart';
 import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../config/theme/app_text_styles.dart';
+import '../../../../../../core/design/hero_icons.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 
 /// A note beside the ready demo's phone with an arrow at what it names —
 /// towards the end edge ([pointsToEnd]) or back towards the start. Pops in
@@ -31,8 +33,8 @@ class AssistantOnboardingHintChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Material's forward / back arrows turn with the reading direction.
-    final arrow = Icon(
-      pointsToEnd ? Icons.arrow_forward_rounded : Icons.arrow_back_rounded,
+    final arrow = HeroIcon(
+      pointsToEnd ? HeroIcons.arrowForward : HeroIcons.back,
       size: AppSize.s12,
       color: AppColors.primaryDark,
     );

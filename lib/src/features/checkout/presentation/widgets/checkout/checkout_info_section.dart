@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
 import 'checkout_section.dart';
 
@@ -29,14 +30,14 @@ class CheckoutInfoSection extends StatelessWidget {
           HeroListRow(
             dense: true,
             divider: true,
-            icon: Icons.help_outline_rounded,
+            icon: HeroIcons.help,
             title: 'checkout.info_faq'.tr(),
             subtitle: 'checkout.info_faq_sub'.tr(),
             onTap: () => context.push(Routes.contentPage, extra: faqSlug),
           ),
           HeroListRow(
             dense: true,
-            icon: Icons.description_outlined,
+            icon: HeroIcons.document,
             title: 'checkout.info_terms'.tr(),
             subtitle: 'checkout.info_terms_sub'.tr(),
             onTap: () => context.push(Routes.contentPage, extra: termsSlug),

@@ -29,6 +29,7 @@ import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
 import 'package:hero_mart/src/config/theme/app_shadows.dart';
 import 'package:hero_mart/src/config/theme/app_spacing.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_variant_entity.dart';
@@ -472,7 +473,7 @@ void main() {
       }
       expect(AppMotion.medium, lessThan(step * 3));
       expect(find.text('Added'), findsOneWidget);
-      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+      expect(find.byIcon(HeroIcons.check), findsOneWidget);
       expect(find.text('Add to cart'), findsNothing);
 
       // Still there just before the moment is over…
@@ -651,7 +652,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(PdpTopBar),
-          matching: find.byIcon(Icons.search_rounded),
+          matching: find.byIcon(HeroIcons.search),
         ),
         findsNothing,
       );

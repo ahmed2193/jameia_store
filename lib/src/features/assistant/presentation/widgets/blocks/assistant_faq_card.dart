@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/widgets/thin_divider.dart';
 import '../../../domain/entities/assistant_block.dart';
 import 'assistant_card_frame.dart';
@@ -16,7 +17,7 @@ class AssistantFaqCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AssistantCardFrame(
       title: 'assistant.faq_title'.tr(),
-      icon: Icons.help_outline_rounded,
+      icon: HeroIcons.help,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

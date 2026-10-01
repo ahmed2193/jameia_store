@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/constants/app_constants.dart';
 import 'package:hero_mart/src/core/design/hero_assets.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/navigation/hero_snack_bar.dart';
@@ -347,7 +348,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.wifi_off_rounded), findsNothing);
+    expect(find.byIcon(HeroIcons.offline), findsNothing);
     await tester.tap(find.text('Retry'));
     expect(retries, 1);
   });

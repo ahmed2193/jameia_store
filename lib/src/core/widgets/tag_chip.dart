@@ -4,6 +4,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// Colored promo / tag chip (free delivery, % off, etc.).
 class TagChip extends StatelessWidget {
@@ -35,7 +36,7 @@ class TagChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: AppSize.s11, color: fg),
+            HeroIcon(icon!, size: AppSize.s11, color: fg),
             const SizedBox(width: AppSpacing.s2),
           ],
           Text(

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../config/theme/app_colors.dart';
 import '../motion/motion.dart';
 import 'hero_dialog_route.dart';
 
@@ -28,6 +29,19 @@ ModalRoute<Object?>? _openSheet;
 
 /// The navigator a sheet was asked of that has not built yet.
 NavigatorState? _sheetPendingIn;
+
+/// The sheet the presenter holds on to — none once it has answered (for
+/// tests: a closed sheet must not keep its page alive).
+@visibleForTesting
+ModalRoute<Object?>? get debugHeldSheet => _openSheet;
+
+/// A sheet answered: nothing waits for it any more, and the app lets go of
+/// its route — a closed sheet must not keep the page it was opened from
+/// alive (its captured themes hold that page's elements).
+void _release(ModalRoute<Object?>? sheet) {
+  _sheetPendingIn = null;
+  if (sheet != null && identical(_openSheet, sheet)) _openSheet = null;
+}
 
 /// A sheet is up and not on its way out: another one waits for it.
 bool _sheetIsUp() {
@@ -60,6 +74,7 @@ Future<T?> showHeroBottomSheet<T>(
 }) {
   if (_sheetIsUp()) return Future<T?>.value();
   _sheetPendingIn = Navigator.of(context);
+  ModalRoute<Object?>? mine;
   final base = large ? AppMotion.slow : AppMotion.page;
   final shown = showModalBottomSheet<T>(
     context: context,
@@ -79,17 +94,15 @@ Future<T?> showHeroBottomSheet<T>(
       if (_sheetPendingIn != null &&
           (route?.animation?.isForwardOrCompleted ?? true)) {
         _sheetPendingIn = null;
-        _openSheet = route;
+        _openSheet = mine = route;
       }
       return builder(sheetContext);
     },
   );
-  // Never left pending: the answer (or a failure to show) releases it.
+  // Never left pending or held: the answer (or a failure to show)
+  // releases it.
   unawaited(
-    shown.then(
-      (_) => _sheetPendingIn = null,
-      onError: (Object _) => _sheetPendingIn = null,
-    ),
+    shown.then((_) => _release(mine), onError: (Object _) => _release(mine)),
   );
   return shown;
 }
@@ -114,7 +127,7 @@ Future<T?> showHeroDialog<T>(
       pageBuilder: (ctx, _, _) => pageBuilder(ctx),
       barrierDismissible: barrierDismissible,
       barrierLabel: barrierLabel,
-      barrierColor: barrierColor ?? Colors.black54,
+      barrierColor: barrierColor ?? AppColors.overlayPrimary,
       enter: off
           ? Duration.zero
           : reduced

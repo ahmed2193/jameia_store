@@ -5,6 +5,7 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// Secondary button: a white pill with a hairline border and an ink label
 /// ([destructive] → red label). [compact] is the 44 dp card-action size with
@@ -55,7 +56,7 @@ class HeroSecondaryButton extends StatelessWidget {
         : OutlinedButton.icon(
             onPressed: onPressed,
             style: style,
-            icon: Icon(icon, size: AppSize.s20),
+            icon: HeroIcon(icon!, size: AppSize.s20),
             label: text,
           );
     return PressScale(

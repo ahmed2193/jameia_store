@@ -5,6 +5,8 @@ import '../responsive/app_size.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
+import './hero_icon.dart';
 import 'app_button.dart';
 import 'state_art.dart';
 
@@ -16,7 +18,7 @@ class EmptyStateView extends StatelessWidget {
   const EmptyStateView({
     super.key,
     required this.message,
-    this.icon = Icons.inbox_outlined,
+    this.icon = HeroIcons.inbox,
     this.art,
     this.illustration,
     this.actionLabel,
@@ -50,7 +52,7 @@ class EmptyStateView extends StatelessWidget {
               StateArt(asset: asset)
             else
               PopScale.onMount(
-                child: Icon(
+                child: HeroIcon(
                   icon,
                   size: AppSize.s56,
                   color: AppColors.disabledText,

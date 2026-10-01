@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/catalog_product_query.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'listing_sort_label.dart';
 
 /// Bottom sheet listing the product orderings. Pops with a record so "the
@@ -61,8 +63,8 @@ class ListingSortSheet extends StatelessWidget {
                         ),
                       ),
                       if (option == selected)
-                        const Icon(
-                          Icons.check_rounded,
+                        const HeroIcon(
+                          HeroIcons.check,
                           size: AppSize.s20,
                           color: AppColors.primaryDark,
                         ),

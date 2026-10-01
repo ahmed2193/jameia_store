@@ -2,9 +2,11 @@ import '../../../../core/data/models/json_read.dart';
 import '../../../../core/error/exceptions.dart';
 
 /// The part of `GET /v1/init` → `results` home renders: `store` (name,
-/// Pro programme), `delivery` (mode, branch, zone) and
-/// `content.popups`. The rest of the snapshot (user, wishlist ids, cart offers,
-/// payment, loyalty, feature flags) belongs to the features that own it.
+/// Pro programme, the first-order free-delivery flag), whether `user` is
+/// there (the reply was for a signed-in customer), `delivery` (mode, branch,
+/// zone) and `content.popups`. The rest of the snapshot (the user's fields,
+/// wishlist ids, cart offers, payment, loyalty, the other feature flags)
+/// belongs to the features that own it.
 class HomeInitModel {
   const HomeInitModel({
     this.storeName = '',
@@ -12,6 +14,8 @@ class HomeInitModel {
     this.proFreeDelivery = false,
     this.proPointsMultiplier = 1,
     this.proDiscountPercent = 0,
+    this.firstOrderFreeDelivery = false,
+    this.hasCustomer = false,
     this.delivery,
     this.popups = const <HomePopupModel>[],
   });
@@ -24,6 +28,13 @@ class HomeInitModel {
   static const String freeDeliveryKey = 'freeDelivery';
   static const String pointsMultiplierKey = 'pointsMultiplier';
   static const String discountPercentKey = 'discountPercent';
+  static const String featureFlagsKey = 'featureFlags';
+
+  /// `store.featureFlags.firstOrderFreeDelivery` — the backend's off switch
+  /// for the welcome gift (`featureFlags` is free-form in the spec): the gift
+  /// is on unless the store sends `false`.
+  static const String firstOrderFreeDeliveryFlag = 'firstOrderFreeDelivery';
+  static const String userKey = 'user';
   static const String deliveryKey = 'delivery';
   static const String contentKey = 'content';
   static const String popupsKey = 'popups';
@@ -34,6 +45,8 @@ class HomeInitModel {
     final store = JsonRead.object(json[storeKey]) ?? const <String, dynamic>{};
     final pro = JsonRead.object(store[proKey]) ?? const <String, dynamic>{};
     final perks = JsonRead.object(pro[perksKey]) ?? const <String, dynamic>{};
+    final flags =
+        JsonRead.object(store[featureFlagsKey]) ?? const <String, dynamic>{};
     final content =
         JsonRead.object(json[contentKey]) ?? const <String, dynamic>{};
     return HomeInitModel(
@@ -42,6 +55,11 @@ class HomeInitModel {
       proFreeDelivery: JsonRead.flag(perks[freeDeliveryKey]),
       proPointsMultiplier: JsonRead.integer(perks[pointsMultiplierKey]) ?? 1,
       proDiscountPercent: JsonRead.integer(perks[discountPercentKey]) ?? 0,
+      firstOrderFreeDelivery: JsonRead.flag(
+        flags[firstOrderFreeDeliveryFlag],
+        fallback: true,
+      ),
+      hasCustomer: JsonRead.object(json[userKey]) != null,
       delivery: HomeDeliveryModel.tryParse(json[deliveryKey]),
       popups: JsonRead.rows(
         content[popupsKey],
@@ -56,6 +74,10 @@ class HomeInitModel {
   final bool proFreeDelivery;
   final int proPointsMultiplier;
   final int proDiscountPercent;
+  final bool firstOrderFreeDelivery;
+
+  /// `user` is an object: the request carried a signed-in customer's token.
+  final bool hasCustomer;
   final HomeDeliveryModel? delivery;
   final List<HomePopupModel> popups;
 }

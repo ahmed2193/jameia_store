@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The ticket glyph at the corner of the savings card: a white disc with a
 /// soft breathing glow behind it ([FloatLoop.glow]; a still glow under reduced
@@ -19,8 +21,8 @@ class CouponsSummaryBadge extends StatelessWidget {
     decoration: BoxDecoration(color: AppColors.white, shape: BoxShape.circle),
     child: SizedBox.square(
       dimension: _discDiameter,
-      child: Icon(
-        Icons.confirmation_number_rounded,
+      child: HeroIcon(
+        HeroIcons.voucher,
         size: AppSize.s28,
         color: kHeroPillPin,
       ),

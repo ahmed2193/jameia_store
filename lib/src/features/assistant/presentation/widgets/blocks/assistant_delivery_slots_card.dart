@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/delivery_slot_entity.dart';
 import 'assistant_card_frame.dart';
 import 'assistant_slot_day_row.dart';
@@ -19,7 +20,7 @@ class AssistantDeliverySlotsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AssistantCardFrame(
       title: 'assistant.slots_title'.tr(),
-      icon: Icons.schedule_rounded,
+      icon: HeroIcons.clock,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

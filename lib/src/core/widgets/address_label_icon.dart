@@ -1,13 +1,13 @@
 import 'package:flutter/widgets.dart';
 
 import '../../config/theme/app_colors.dart';
-import '../design/hero_assets.dart';
+import '../design/hero_icons.dart';
 import '../domain/entities/address_label.dart';
 import '../responsive/app_size.dart';
-import 'hero_svg_glyph.dart';
+import './hero_icon.dart';
 
-/// The drawn Hero glyph of an address tag (home, office, gathering, other —
-/// `HeroAssets.addressLabel*`, mono): the address book rows, the label
+/// The Hero glyph of an address tag (home, office, gathering, other —
+/// [iconFor]): the address book rows, the label
 /// chips of the address form, an order's destination. Decorative: the tag's
 /// name is always written beside it.
 class AddressLabelIcon extends StatelessWidget {
@@ -22,14 +22,14 @@ class AddressLabelIcon extends StatelessWidget {
   final double size;
   final Color color;
 
-  static String assetFor(AddressLabel label) => switch (label) {
-    AddressLabel.home => HeroAssets.addressLabelHome,
-    AddressLabel.work => HeroAssets.addressLabelOffice,
-    AddressLabel.gathering => HeroAssets.addressLabelGathering,
-    AddressLabel.other => HeroAssets.addressLabelOther,
+  static IconData iconFor(AddressLabel label) => switch (label) {
+    AddressLabel.home => HeroIcons.home,
+    AddressLabel.work => HeroIcons.office,
+    AddressLabel.gathering => HeroIcons.people,
+    AddressLabel.other => HeroIcons.pin,
   };
 
   @override
   Widget build(BuildContext context) =>
-      HeroSvgGlyph.mono(assetFor(label), size: size, color: color);
+      HeroIcon(iconFor(label), size: size, color: color);
 }

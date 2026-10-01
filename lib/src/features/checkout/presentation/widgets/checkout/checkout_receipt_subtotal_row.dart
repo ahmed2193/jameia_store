@@ -4,9 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/cart_savings.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../cubit/checkout_cubit.dart';
@@ -66,8 +68,8 @@ class CheckoutReceiptSubtotalRow extends StatelessWidget {
           ),
           child: const Padding(
             padding: EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.s4),
-            child: Icon(
-              Icons.info_outline_rounded,
+            child: HeroIcon(
+              HeroIcons.info,
               size: AppSize.s14,
               color: AppColors.secondaryText,
             ),

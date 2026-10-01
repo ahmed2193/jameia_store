@@ -5,9 +5,11 @@ import 'package:flutter/services.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// A coupon code to copy: label, the code in a tinted pill and a copy icon.
 /// The code is read as one unit, left to right, in both languages.
@@ -70,8 +72,8 @@ class AssistantCouponChip extends StatelessWidget {
                   ),
                 ),
               ),
-              const Icon(
-                Icons.copy_rounded,
+              const HeroIcon(
+                HeroIcons.copy,
                 size: AppSize.s18,
                 color: AppColors.promotionTagFgOnLight,
               ),

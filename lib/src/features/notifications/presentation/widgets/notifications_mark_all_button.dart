@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../cubit/notifications_cubit.dart';
 import '../cubit/notifications_state.dart';
 
@@ -17,7 +19,7 @@ class NotificationsMarkAllButton extends StatelessWidget {
       selector: (state) => state.isLoaded && state.feed.hasUnread,
       builder: (context, enabled) => IconButton(
         tooltip: 'notifications.mark_all_read'.tr(),
-        icon: const Icon(Icons.done_all_rounded),
+        icon: const HeroIcon(HeroIcons.checkDouble),
         color: AppColors.primaryText,
         disabledColor: AppColors.disabledText,
         onPressed: enabled

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/blocked_tap_shake.dart';
 import '../../../../core/motion/rolling_number.dart';
 import 'pdp_step_button.dart';
@@ -31,7 +32,7 @@ class PdpCtaStepper extends StatelessWidget {
     return Row(
       children: [
         PdpStepButton(
-          icon: Icons.remove_rounded,
+          icon: HeroIcons.minus,
           label: 'catalog.decrease_quantity'.tr(),
           onTap: onDecrement,
           removes: true,
@@ -53,7 +54,7 @@ class PdpCtaStepper extends StatelessWidget {
         BlockedTapShake(
           blocked: !canIncrement,
           child: PdpStepButton(
-            icon: Icons.add_rounded,
+            icon: HeroIcons.plus,
             label: 'catalog.increase_quantity'.tr(),
             onTap: onIncrement,
             active: canIncrement,

@@ -19,4 +19,13 @@ abstract final class ApiHeaders {
   static const String bearerPrefix = 'Bearer ';
   static const String jsonMediaType = 'application/json';
   static const String eventStreamMediaType = 'text/event-stream';
+
+  // Third-party map services (`ExternalApiConsumer`), never the Hero API.
+  static const String userAgent = 'User-Agent';
+  static const String externalUserAgent = 'HeroMart/1.0 (live order map)';
+
+  /// Google Maps Platform web-service key, and the response fields asked for
+  /// (Routes API bills by what is asked).
+  static const String googleApiKey = 'X-Goog-Api-Key';
+  static const String googleFieldMask = 'X-Goog-FieldMask';
 }

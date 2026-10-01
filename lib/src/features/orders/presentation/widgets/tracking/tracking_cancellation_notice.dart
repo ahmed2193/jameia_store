@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/order_progress_entities.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import 'tracking_notice_card.dart';
@@ -30,7 +31,7 @@ class TrackingCancellationNotice extends StatelessWidget {
                 0,
               ),
               child: TrackingNoticeCard(
-                icon: Icons.cancel_outlined,
+                icon: HeroIcons.closeCircle,
                 iconColor: AppColors.error,
                 title: cancellation.byCustomer
                     ? 'orders.cancelled_by_you'.tr()

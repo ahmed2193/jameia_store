@@ -62,7 +62,7 @@ class ShellBasketSwitch extends StatelessWidget {
                 onTap: select,
               )
             : ShellBasketSegment(
-                icon: Icons.receipt_long_rounded,
+                icon: HeroIcons.receipt,
                 label: 'orders.history_title'.tr(),
                 selected: !onCart,
                 onTap: select,

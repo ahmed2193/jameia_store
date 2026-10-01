@@ -59,13 +59,25 @@ class HeroPageRoute<T> extends PageRoute<T> {
       nextRoute is HeroPageRoute && nextRoute.page.shiftsCoveredPage;
 
   /// A platform back gesture may start: on top, at rest, something below,
-  /// and no `PopScope` in the way ([popGestureEnabled]).
-  bool get canStartBackGesture => isCurrent && popGestureEnabled;
+  /// no `PopScope` in the way ([popGestureEnabled]) and no other gesture
+  /// running ([_gestureFree]).
+  bool get canStartBackGesture =>
+      isCurrent && popGestureEnabled && _gestureFree;
 
   /// A page's own drag to dismiss may start: on top, at rest, something
-  /// below. A `PopScope` does not stop it — the page pops itself.
+  /// below, no other gesture running. A `PopScope` does not stop it — the
+  /// page pops itself.
   bool get canStartDrag =>
-      isCurrent && !isFirst && (animation?.isCompleted ?? false);
+      isCurrent &&
+      !isFirst &&
+      (animation?.isCompleted ?? false) &&
+      _gestureFree;
+
+  /// No back gesture drives this route, and the navigator has no user
+  /// gesture under way (a swipe, a predictive back, a drag elsewhere).
+  bool get _gestureFree =>
+      _backGesture.value == null &&
+      !(navigator?.userGestureInProgress ?? false);
 
   @override
   Widget buildPage(
@@ -88,14 +100,17 @@ class HeroPageRoute<T> extends PageRoute<T> {
     child: child,
   );
 
-  /// The finger went down on a back gesture of [kind].
-  void startBackGesture(HeroBackGestureKind kind, {bool fromLeftEdge = true}) {
-    if (_backGesture.value != null) return;
+  /// The finger went down on a back gesture of [kind]. `false` (nothing
+  /// started) when another gesture already drives this route: the caller
+  /// must not drive or end that one.
+  bool startBackGesture(HeroBackGestureKind kind, {bool fromLeftEdge = true}) {
+    if (_backGesture.value != null) return false;
     _backGesture.value = HeroBackGesture(
       kind: kind,
       fromLeftEdge: fromLeftEdge,
     );
     navigator?.didStartUserGesture();
+    return true;
   }
 
   /// The gesture got [progress] of the way (0 = at rest → 1 = gone).
@@ -147,9 +162,10 @@ class HeroPageRoute<T> extends PageRoute<T> {
           }
         }
       }
-    } else {
+    } else if (isActive) {
       // The edge swipe settles like a page; a pull (predictive, a drag)
-      // springs back.
+      // springs back. Not once something else popped this route under the
+      // finger (I1): its own exit runs, and the route must not come back.
       final swipe = gesture.kind == HeroBackGestureKind.swipe;
       controller.animateTo(
         1,

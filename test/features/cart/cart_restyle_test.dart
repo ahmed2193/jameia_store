@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_coupon_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
@@ -380,7 +381,7 @@ void main() {
     expect(find.byTooltip('Remove'), findsOneWidget);
     expect(find.byTooltip('Decrease quantity'), findsNothing);
     final plus = tester.widget<IconButton>(
-      find.widgetWithIcon(IconButton, Icons.add_rounded),
+      find.widgetWithIcon(IconButton, HeroIcons.plus),
     );
     expect(plus.onPressed, isNull);
     expect(find.text('Max 1'), findsOneWidget);
@@ -637,7 +638,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 80));
       expect(find.text('SAVE5 applied'), findsOneWidget);
-      expect(find.byIcon(Icons.confirmation_number_rounded), findsOneWidget);
+      expect(find.byIcon(HeroIcons.voucher), findsOneWidget);
       expect(
         tester.widget<ScaleTransition>(ticket()).scale.value,
         greaterThan(1),

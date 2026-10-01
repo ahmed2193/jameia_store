@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_colors.dart';
+import '../../../../../../core/design/hero_icons.dart';
 
 /// What the tour's demos shop for: a starter kit for a new home, picked
 /// from different aisles — cleaning, home, groceries — because the store
@@ -8,21 +9,21 @@ import '../../../../../../config/theme/app_colors.dart';
 enum AssistantOnboardingItem {
   cleaner(
     'assistant.onboarding_demo_cleaner',
-    Icons.cleaning_services_rounded,
+    HeroIcons.cleaning,
     AppColors.accentViolet,
     AppColors.accentVioletLight,
     2,
   ),
   bulbs(
     'assistant.onboarding_demo_bulbs',
-    Icons.lightbulb_rounded,
+    HeroIcons.lightbulb,
     AppColors.accent3,
     AppColors.accent3Light,
     1,
   ),
   coffee(
     'assistant.onboarding_demo_coffee',
-    Icons.coffee_rounded,
+    HeroIcons.coffee,
     AppColors.accent4Foreground,
     AppColors.accent4Light,
     1,

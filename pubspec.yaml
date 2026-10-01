@@ -75,6 +75,9 @@ dependencies:
   permission_handler: ^13.0.2
   go_router: ^18.0.1
   flutter_secure_storage: ^11.2.0
+  flutter_local_notifications: ^22.3.1
+  url_launcher: ^6.3.2
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -101,18 +104,22 @@ flutter:
     # (assets/app_icon/) and the native splash mark (assets/splash/) are
     # generator inputs only and are NOT bundled.
     - assets/launcher/
-    # Vector glyphs (offer + checkout glyphs, colour baked in).
+    # Vector glyphs (offer + checkout glyphs, colour baked in; the official
+    # Facebook / Instagram / X marks and Kuwait's flag, never recoloured).
     - assets/svg/
-    # Real Hero rasters extracted from the decoded APK (Mach UI bundles),
-    # grouped by screen. Referenced by name via HeroAssets (core/design).
-    - assets/images/hero/osg_home/
-    - assets/images/hero/login/
-    # Home popup close button from the mkt_resources_* bundles.
+    # Official Google / Apple marks for the sign-in buttons (1x, 2x, 3x).
+    - assets/images/brands/
+    # The home first-order welcome-gift animation (HeroAssets.popup*).
     - assets/images/hero/popup/
+    # Short brand chimes for live order tracking (core/motion/earcons.dart).
+    - assets/sounds/
+    # Font licences (OFL), shown on the licences page (config/theme/font_licenses.dart).
+    - assets/licenses/
 
-  # Real Hero fonts extracted from the APK (assets/fonts/).
-  # Brand body face = Noto Sans (+ NotoSansArabicUI for RTL); digits = MT Digital Display;
-  # display/brand = Hero OTF; iconfont = HeroIcon (wm_c_iconfont glyphs).
+  # Fonts (assets/fonts/), all SIL OFL 1.1 or our own; licences in assets/licenses/.
+  # Body face = Noto Sans (+ NotoSansArabicUI for RTL); price digits = HeroDigits
+  # (Fredoka, the round face of the Hero "h": 0-9 . , : % + - / × only, 400/500/700);
+  # icons = HeroIcons (assets/fonts/hero_icons.ttf, built by tool/icons).
   fonts:
     - family: NotoSans
       fonts:
@@ -134,25 +141,17 @@ flutter:
           weight: 600
         - asset: assets/fonts/NotoSansArabicUI-Bold.ttf
           weight: 700
-    - family: Hero
+    - family: HeroDigits
       fonts:
-        - asset: assets/fonts/Hero-Regular.otf
+        - asset: assets/fonts/HeroDigits-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Hero-Medium.otf
+        - asset: assets/fonts/HeroDigits-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Hero-Bold.otf
+        - asset: assets/fonts/HeroDigits-Bold.ttf
           weight: 700
-    - family: MTDigit
+    - family: HeroIcons
       fonts:
-        - asset: assets/fonts/MTDigitalDisplayKT-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/MTDigitalDisplayKT-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/MTDigitalDisplayKT-Bold.ttf
-          weight: 700
-    - family: HeroIcon
-      fonts:
-        - asset: assets/fonts/wm_c_iconfont.ttf
+        - asset: assets/fonts/hero_icons.ttf
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Hero app icon (flutter_launcher_icons), the same mark as the splash: the

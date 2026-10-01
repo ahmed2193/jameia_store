@@ -5,6 +5,7 @@ import '../../../../../../config/theme/app_shadows.dart';
 import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../config/theme/app_text_styles.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 
 /// One answer card in the "more" demo — a deal, an order on its way, a
 /// delivery slot: its glyph on a tinted disc, a title, a line under it and
@@ -68,7 +69,7 @@ class AssistantOnboardingFeatureRow extends StatelessWidget {
                         color: tint,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(icon, size: AppSize.s18, color: color),
+                      child: HeroIcon(icon, size: AppSize.s18, color: color),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.s10),

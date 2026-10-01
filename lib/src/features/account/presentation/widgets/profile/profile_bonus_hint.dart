@@ -5,10 +5,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/auth_customer_entity.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/domain/entities/loyalty_program.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/loyalty_program_cubit.dart';
 import '../../cubit/profile_cubit.dart';
 import '../../cubit/profile_state.dart';
@@ -56,8 +58,8 @@ class ProfileBonusHint extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
-                                  Icons.stars_rounded,
+                                const HeroIcon(
+                                  HeroIcons.pointsFill,
                                   size: AppSize.s18,
                                   color: AppColors.accent3Dark,
                                 ),

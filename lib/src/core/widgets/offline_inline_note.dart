@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// One calm line saying that something needs the connection — the search
 /// list offline, a list's "load more" footer, a product page whose details
@@ -18,8 +20,8 @@ class OfflineInlineNote extends StatelessWidget {
     this.leading = _offlineMark,
   });
 
-  static const Widget _offlineMark = Icon(
-    Icons.wifi_off_rounded,
+  static const Widget _offlineMark = HeroIcon(
+    HeroIcons.offline,
     size: AppSize.s20,
     color: AppColors.secondaryText,
   );

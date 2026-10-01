@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
+import '../../core/design/hero_icons.dart';
+import '../../core/responsive/app_size.dart';
+import '../../core/widgets/hero_icon.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
 import 'app_text_styles.dart';
@@ -10,8 +13,11 @@ import 'app_text_styles.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get light => _build(Brightness.light, HeroColors.light);
-  static ThemeData get dark => _build(Brightness.dark, HeroColors.dark);
+  // Built once: ThemeData holds closures (the action-icon builders), so a
+  // fresh copy per app rebuild would never equal the last one and
+  // MaterialApp's AnimatedTheme would re-run its lerp on every rebuild.
+  static final ThemeData light = _build(Brightness.light, HeroColors.light);
+  static final ThemeData dark = _build(Brightness.dark, HeroColors.dark);
 
   static ThemeData _build(Brightness brightness, HeroColors c) {
     final scheme =
@@ -37,6 +43,13 @@ class AppTheme {
         displayColor: c.primaryText,
       ),
       dividerColor: c.divider,
+      // Every glyph is a Hero font glyph tinted through the theme: default ink,
+      // 24 dp. The framework's back / close buttons draw the Hero glyphs too.
+      iconTheme: IconThemeData(color: c.primaryText, size: AppSize.s24),
+      actionIconTheme: ActionIconThemeData(
+        backButtonIconBuilder: (_) => const HeroIcon(HeroIcons.back),
+        closeButtonIconBuilder: (_) => const HeroIcon(HeroIcons.close),
+      ),
       extensions: [c],
       appBarTheme: AppBarTheme(
         backgroundColor: c.surface,

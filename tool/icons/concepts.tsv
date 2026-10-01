@@ -1,0 +1,129 @@
+name	dir	draw	replaces (Icons.* material names; H: = old HeroIcons names)	fill
+back	y	arrow pointing to the start side (left in LTR), round head	arrow_back_rounded arrow_back H:back	
+arrowForward	y	arrow pointing to the end side	arrow_forward_rounded	
+arrowUp	n	arrow up	arrow_upward_rounded	
+arrowDown	n	arrow down	arrow_downward_rounded	
+arrowUpStart	y	diagonal arrow toward top-start (search "fill in")	north_west_rounded	
+arrowUpEnd	y	diagonal arrow toward top-end	north_east_rounded	
+chevronEnd	y	disclosure chevron toward the end side	chevron_right_rounded chevron_right H:arrowRight	
+chevronStart	y	chevron toward the start side	chevron_left_rounded	
+chevronDown	n	chevron down	keyboard_arrow_down_rounded expand_more_rounded H:arrowDown H:arrowDownSmall	
+chevronUp	n	chevron up	keyboard_arrow_up_rounded H:arrowUp	
+close	n	x	close_rounded close H:close	
+closeCircle	n	x in a circle (outline)	cancel_outlined	red
+closeCircleFill	n	solid disc, x knocked out	cancel_rounded H:searchClear	
+plus	n	+	add_rounded add	
+minus	n	−	remove_rounded remove	
+minusCircle	n	− in a circle	remove_circle_outline_rounded	mint
+check	n	check mark	check_rounded	
+checkDouble	n	two check marks (read receipt)	done_all_rounded	
+checkCircle	n	check in a circle (outline)	check_circle_outline_rounded	green
+checkCircleFill	n	solid disc, check knocked out	check_circle_rounded	
+info	n	i in a circle	info_outline_rounded	sky
+warning	n	! in a circle	error_outline_rounded H:info	yellow
+exclamation	n	a lone ! (small badge use)	priority_high_rounded	
+help	y	? in a circle	help_outline_rounded H:help	sky
+search	n	magnifier, handle to bottom-end	search_rounded H:search	sky
+filter	n	two slider lines with knobs	tune_rounded	
+sort	n	up + down arrows side by side	swap_vert_rounded	
+swapHorizontal	n	left + right arrows stacked	swap_horiz_rounded	
+moreVertical	n	three dots vertical	more_vert_rounded	
+refresh	n	circular arrow	refresh_rounded replay_rounded	
+history	n	clock face with a back-circling arrow	history_rounded	mint
+copy	n	two overlapping rounded sheets	copy_rounded	cream
+edit	n	pencil with a base line	edit H:edit edit_note_rounded	cream
+trash	n	bin with lid + 2 slots	delete_outline_rounded delete H:delete	cream
+home	n	house, rounded roof (Home tab line)	home_outlined	green
+homeFill	n	solid house, door knocked out	home_rounded	
+bag	n	THE HERO BAG silhouette: rounded bag + arched handle (the mark's bag, no cape, no h)	shopping_bag_outlined	green
+cart	n	shopping cart, two wheels	shopping_cart_outlined H:cart	green
+cartAdd	n	cart with a small + in the basket	add_shopping_cart_rounded	
+basket	n	grocery basket with handle arc	shopping_basket_outlined	green
+store	n	storefront with scalloped awning	storefront_outlined	green
+orders	n	clipboard/receipt sheet with 2 lines	H:orders	mint
+ordersDone	n	clipboard with a check	H:confirmReceipt	mint
+receipt	n	long receipt with zigzag bottom + lines	receipt_long_outlined receipt_long_rounded	mint
+delivery	n	scooter side view carrying a Hero bag box on the back (faces end side when directional)	local_shipping_outlined local_shipping_rounded delivery_dining_outlined delivery_dining_rounded H:delivery	green
+deliveryDirectional	y	same glyph as delivery (matchTextDirection constant)	H:deliveryDirectional	
+pin	n	map pin outline with a round hole	location_on_outlined place_outlined H:locationOutline	green
+pinFill	n	solid pin, hole knocked out	location_on_rounded H:location	
+clock	n	clock face 10:10 hands	schedule_rounded timer_outlined	mint
+hourglass	n	hourglass	hourglass_bottom_rounded	amber
+calendar	n	calendar sheet with 2 rings	event_outlined calendar_today_outlined	mint
+calendarCheck	n	calendar with a check	event_available_rounded	mint
+star	n	5-point star outline, rounded points	star_outline_rounded star_border_rounded H:favorite	amber
+starFill	n	solid star	star_rounded star H:star	
+points	n	star inside a coin circle (loyalty points)	stars_outlined	amber
+pointsFill	n	solid coin, star knocked out	stars_rounded	
+heart	n	heart outline	favorite_border_rounded	red
+heartFill	n	solid heart	(new: wishlist on state)	
+gift	n	gift box with bow	card_giftcard_rounded card_giftcard redeem_rounded	orange
+tag	n	price tag with hole	local_offer_outlined local_offer_rounded sell_outlined sell_rounded	orange
+voucher	n	ticket with side notches + dashed divider	confirmation_number_rounded confirmation_number_outlined confirmation_num_rounded	amber
+percent	n	% sign	percent_rounded	
+discount	n	scalloped badge with %	discount_rounded	red
+wallet	n	wallet with flap + clasp dot	account_balance_wallet_rounded account_balance_wallet_outlined	amber
+savings	n	stacked coins	savings_outlined	amber
+crown	n	3-point crown (Hero Pro)	workspace_premium_rounded workspace_premium_outlined	amber
+bolt	n	lightning bolt	bolt_rounded	yellow
+flame	n	flame outline	local_fire_department_outlined H:flame	orange
+flameFill	n	solid flame	local_fire_department	
+sparkle	n	one big 4-point sparkle + a small one	auto_awesome_rounded auto_awesome_outlined	violet
+rocket	n	rocket	rocket_launch_rounded	orange
+trendingUp	y	zigzag line up with arrow head	trending_up_rounded	
+category	n	2x2 rounded squares, one a circle	category_outlined category_rounded	mint
+person	n	head + shoulders (account)	person_outline_rounded	mint
+people	n	two people	people_outline_rounded	mint
+support	n	headset with mic	H:customerService	mint
+phone	n	phone handset	phone_outlined phone H:phone	green
+chat	n	speech bubble with 3 dots	chat_bubble_outline_rounded forum_outlined H:chat	mint
+chatFill	n	solid speech bubble	chat_bubble_rounded	
+chatAdd	n	speech bubble with +	add_comment_outlined	mint
+mail	n	envelope	mail_outline_rounded alternate_email_rounded	sky
+bell	n	bell	notifications_none_rounded H:alert	yellow
+megaphone	n	megaphone	campaign_outlined H:notice	orange
+inbox	n	tray with a dip	inbox_outlined	sky
+document	n	page with folded corner + lines	description_outlined	sky
+lock	n	padlock closed	lock_rounded lock_outline_rounded	sky
+unlock	n	padlock open	lock_open_rounded	sky
+lockClock	n	padlock with a small clock badge (session expired)	lock_clock_outlined	sky
+shield	n	shield with check	shield_outlined privacy_tip_outlined	mint
+settings	n	gear, 6 rounded teeth	settings_outlined	sky
+logout	y	door + arrow leaving toward the end side	logout_rounded	
+language	n	speech bubble with "A" + Arabic-ish stroke? no letters: globe with meridians	translate_rounded	sky
+offline	n	wifi arcs with a slash	wifi_off_rounded cloud_off_outlined	
+wifi	n	wifi arcs	wifi_rounded	
+mic	n	microphone	mic_rounded	mint
+stop	n	rounded square	stop_rounded	red
+stopCircle	n	rounded square in a circle	stop_circle_outlined	red
+waveform	n	5 vertical bars of varied height	graphic_eq_rounded	
+camera	n	camera body + lens	camera_alt_outlined camera H:camera	sky
+thumbUp	n	thumb up outline	thumb_up_alt_outlined	yellow
+thumbUpFill	n	solid thumb up	thumb_up_alt	
+thumbDown	n	thumb down outline	thumb_down_alt_outlined	yellow
+thumbDownFill	n	solid thumb down	thumb_down_alt	
+tap	n	finger pointer tapping, 2 ripple arcs	touch_app_rounded	sky
+wave	n	waving hand	waving_hand_rounded	yellow
+vibration	n	phone with side vibration lines	vibration_rounded	sky
+lightbulb	n	light bulb	lightbulb_rounded	yellow
+sun	n	sun disc + 8 rays	wb_sunny_rounded light_mode_rounded	yellow
+sunrise	n	half sun on a horizon line + 3 rays	wb_twilight_rounded	orange
+moon	n	crescent moon + small star	nights_stay_rounded	yellow
+flag	n	flag on a pole	flag_outlined	red
+code	n	< / > brackets	code_rounded	
+leaf	n	leaf with a vein	eco_outlined	green
+egg	n	egg + small cut line	egg_alt_outlined	cream
+coffee	n	cup with steam	coffee_rounded coffee_outlined	cream
+cutlery	n	fork + knife	restaurant_rounded restaurant_outlined	
+recipe	n	cooking pot with lid	soup_kitchen_outlined	green
+cake	n	cake with a candle	cake_outlined	cream
+party	n	party popper	celebration_outlined	yellow
+cleaning	n	spray bottle	cleaning_services_rounded cleaning_services_outlined	sky
+assistant	n	the assistant: mascot gumdrop with a sparkle	(svg)	green
+options	n	choose options: three jar sizes	(svg)	cream
+categoryAll	n	all categories: four tiles	(svg)	mint
+account	n	alias of person (aliases.json)	(svg)	
+myLocation	n	crosshair: ring + centre dot + 4 short ticks	my_location_rounded	sky
+office	n	office block: tall rounded building, four window dots, arched door	(svg) address_label_office	sky
+cash	n	banknote: rounded note with a coin circle in the middle	(svg) checkout_cash	green
+medal	n	medal: round disc with a star, ribbon on top	(svg) rewards_badge	amber

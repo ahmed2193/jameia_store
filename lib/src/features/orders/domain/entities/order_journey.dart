@@ -192,6 +192,10 @@ class OrderJourney extends Equatable {
   bool get inProgress =>
       stage != null && !stageComplete && tone == OrderJourneyTone.active;
 
+  /// The rider can be followed on the live map: a delivery on its way, not
+  /// a pickup order, nor one delivered, cancelled or whose delivery failed.
+  bool get tracksRider => !pickup && tone == OrderJourneyTone.active;
+
   /// i18n key of the current stage's name (the bar's semantics).
   String get stageLabelKey => stageLabelKeyOf(stage);
 

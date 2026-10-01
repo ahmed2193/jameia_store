@@ -1,44 +1,42 @@
-// GENERATED-BY-EXTRACTION — real Hero raster assets.
+// Asset paths of the Hero app, grouped by screen so feature code references
+// them by name (e.g. `HeroAssets.brandGoogle`) instead of raw file paths.
 //
-// String paths to the REAL Hero images/animations extracted from the decoded
-// Hero APK (Mach UI bundles + loose APK assets), plus the vector glyphs drawn
-// for this app. Grouped by screen so feature code references them by name
-// (e.g. `HeroAssets.globalRider`) instead of raw, hash-suffixed file paths.
+// Everything here is our own art (the drawn Hero SVGs, the bag, the app icon,
+// the welcome-gift animation) except the official brand marks, taken as is
+// from each owner's brand kit: never redrawn, tinted or recoloured.
 //
 // Folders:
-//   assets/images/hero/osg_home        — the delivery rider
-//   assets/images/hero/login           — passport login
-//   assets/images/hero/popup           — modal close button
-//   assets/svg/                          — offer + checkout glyphs
+//   assets/images/brands     — official Google / Apple marks (1x, 2x, 3x)
+//   assets/images/hero/popup — the first-order welcome-gift animation
+//   assets/svg/              — drawn glyphs, plates, states, the official
+//                              Facebook / Instagram / X marks, Kuwait's flag
 class HeroAssets {
   HeroAssets._();
 
   static const String _img = 'assets/images/hero';
 
-  // ── Hero-store top (ported from the source store screen) ───────────────
-  // Promo-card art (the shopping bag).
-  static const String heroBag = 'assets/images/market_image.png';
+  // ── Hero Pro dome ────────────────────────────────────────────────────────
+  // The Hero shopping bag (brand green, the caped-bag mark + "hero" / "هيرو"
+  // printed on it) beside an orange. 533 × 631: decode it at the size shown.
+  static const String heroBag = 'assets/images/hero_bag.png';
 
   // ── Basket bars + the cart's deals sheet ───────────────────────────────────
-  // The basket is [cartBasket] / [cartBasketFull]; the delivery rider is
-  // [globalRider]. Offer-card glyphs, drawn for the "Buy more, save more"
-  // sheet: a rounded tile each, colour baked in.
+  // The basket is [cartBasket] / [cartBasketFull]. Offer-card glyphs, drawn
+  // for the "Buy more, save more" sheet: a rounded tile each, colour baked in.
   static const String offerDelivery = 'assets/svg/offer_delivery.svg';
   static const String offerVoucher = 'assets/svg/offer_voucher.svg';
   static const String offerGift = 'assets/svg/offer_gift.svg';
 
   // ── Checkout glyphs (drawn for the Hero-style checkout, colour baked in) ──
   // The "Coupons & offers" disc of the Instant-savings card, the offer ticket
-  // of the vouchers page, the "Enter coupon code" tag, the express badge
-  // (19×13), and the payment / points plates (22 dp).
+  // of the vouchers page, the express badge (19×13), and the wallet /
+  // points plates (22 dp).
   static const String checkoutVoucherDisc =
       'assets/svg/checkout_voucher_disc.svg';
   static const String checkoutTicket = 'assets/svg/checkout_ticket.svg';
-  static const String checkoutCodeTag = 'assets/svg/checkout_code_tag.svg';
   static const String checkoutExpressBolt =
       'assets/svg/checkout_express_bolt.svg';
   static const String checkoutWallet = 'assets/svg/checkout_wallet.svg';
-  static const String checkoutCash = 'assets/svg/checkout_cash.svg';
   static const String checkoutPoints = 'assets/svg/checkout_points.svg';
 
   // ── Brand / logo (home) ─────────────────────────────────────────────────────
@@ -47,19 +45,41 @@ class HeroAssets {
   /// tool/splash/render_app_icons_test.dart): decode it at the size shown.
   static const String appLogo = 'assets/launcher/app_icon_square.png';
 
-  // ── OSG home: the delivery rider (the cart's delivery note) ─────────────────
-  static const String globalRider =
-      '$_img/osg_home/icon_global_rider_1iobtvo.png';
+  // ── Sign-in + About: official brand marks (never tinted or recoloured) ───
+  // Drawn with `BrandMark` (core/widgets). The Google and Apple marks are
+  // rasters with 2x / 3x variants (24 dp at 1x); the rest are SVGs.
+  /// Google's "G" (the 2025 gradient mark), transparent.
+  static const String brandGoogle = 'assets/images/brands/google_g.png';
 
-  // ── Login / passport ────────────────────────────────────────────────────────
-  static const String loginGoogle = '$_img/login/login_icon_google_1xvfrhj.png';
-  static const String loginApple = '$_img/login/login_icon_apple_oi0jl5.png';
-  static const String loginFacebook =
-      '$_img/login/login_icon_facebook_eoiu3a.png';
+  /// Apple's logo (black on white, from Apple's sign-in button kit).
+  static const String brandApple = 'assets/images/brands/apple_logo.png';
+
+  /// Facebook's mark: the blue circle with the white "f" (Meta's pack).
+  static const String brandFacebook = 'assets/svg/brand_facebook.svg';
+
+  /// Instagram's glyph (official, black).
+  static const String brandInstagram = 'assets/svg/brand_instagram.svg';
+
+  /// X's logo (official, black).
+  static const String brandX = 'assets/svg/brand_x.svg';
+
+  // ── Flags ────────────────────────────────────────────────────────────────
+  /// Kuwait's flag (2:1, official colours). Never mirrored in RTL.
+  static const String flagKuwait = 'assets/svg/flag_kw.svg';
 
   // ── Home popups / overlays (assets/images/hero/popup) ──────────────────────
-  /// Centered-modal close button (coupon pop / image-text / video pop).
-  static const String popupClose = '$_img/popup/icon_fall_sky_close_monzly.png';
+  /// The first-order free-delivery welcome gift: the badge pops in over the
+  /// ticket, once (no loop), then holds. 640 × 844, transparent, text baked
+  /// in per language. The `…Still` PNGs are the held last frame, for reduced
+  /// motion.
+  static const String popupFirstOrderFreeDeliveryEn =
+      '$_img/popup/popup_first_order_free_delivery_en.gif';
+  static const String popupFirstOrderFreeDeliveryAr =
+      '$_img/popup/popup_first_order_free_delivery_ar.gif';
+  static const String popupFirstOrderFreeDeliveryEnStill =
+      '$_img/popup/popup_first_order_free_delivery_en_still.png';
+  static const String popupFirstOrderFreeDeliveryArStill =
+      '$_img/popup/popup_first_order_free_delivery_ar_still.png';
 
   // ── Order tracking / details (docs/motion/asset_manifest.md rows 30–33) ──
   /// Delivered stage art, the "sent" mark of a review, the order-help thanks.
@@ -68,25 +88,8 @@ class HeroAssets {
   /// An order (or page) that is not there any more.
   static const String stateNotFound = 'assets/svg/state_not_found.svg';
 
-  /// "Paid" / "added" confirmations (small check plate).
-  static const String statusSuccess = 'assets/svg/status_success.svg';
-
-  /// "Needs the internet" (the offline snack bar tone glyph).
-  static const String statusOffline = 'assets/svg/status_offline.svg';
-
-  /// The delivery-time row (ASAP or a booked window).
-  static const String sharedClock = 'assets/svg/shared_clock.svg';
-
   /// A product photo that is missing.
   static const String imagePlaceholder = 'assets/svg/image_placeholder.svg';
-
-  /// Address label glyphs (home / office / gathering / other).
-  static const String addressLabelHome = 'assets/svg/address_label_home.svg';
-  static const String addressLabelOffice =
-      'assets/svg/address_label_office.svg';
-  static const String addressLabelGathering =
-      'assets/svg/address_label_gathering.svg';
-  static const String addressLabelOther = 'assets/svg/address_label_other.svg';
 
   // ── Screen states (docs/motion/asset_manifest.md "Per-screen decisions") ──
   // 160×120 plates: an 88 dp disc (centre 80, 58) over a soft floor shadow,
@@ -150,24 +153,7 @@ class HeroAssets {
   static const String assistantHoldToTalk =
       'assets/svg/assistant_hold_to_talk.svg';
 
-  // ── Mono line icons (24 dp, `#111827`: tint with `HeroSvgGlyph.mono`) ───
-  /// The account person (Mine tab, guest avatar, servings).
-  static const String tabAccount = 'assets/svg/tab_account.svg';
-
-  /// The assistant (mascot gumdrop + sparkle).
-  static const String assistantAi = 'assets/svg/assistant_ai.svg';
-
-  /// Recipes / meals (a pot).
-  static const String recipePot = 'assets/svg/recipe_pot.svg';
-
-  /// "Choose options" (three jar sizes).
-  static const String productOptions = 'assets/svg/product_options.svg';
-
-  /// The "All" entry of the category rail and chips.
-  static const String categoryAll = 'assets/svg/category_all.svg';
-
-  /// A reward tier medal (48 dp; tint per tier).
-  static const String rewardsBadge = 'assets/svg/rewards_badge.svg';
+  // Line icons are Hero font glyphs (`HeroIcons`), never SVGs here.
 
   // ── Colour plates (colours baked in) ────────────────────────────────────
   /// Hero Pro crown plate (24).
@@ -182,4 +168,16 @@ class HeroAssets {
 
   /// The address-map pin (40 × 48, no shadow: the widget paints it).
   static const String mapPin = 'assets/svg/map_pin.svg';
+
+  /// Live rider map markers. The rider is seen from above, riding north (the
+  /// map turns it with the road): white helmet, the Hero cape flowing over
+  /// the green delivery box (48). The pins (48 × 58, shadow included): the
+  /// store holds the Hero mark, home a house on the cape's amber.
+  static const String mapRider = 'assets/svg/map_rider.svg';
+  static const String mapStorePin = 'assets/svg/map_store_pin.svg';
+  static const String mapHomePin = 'assets/svg/map_home_pin.svg';
+
+  /// The order page's live-map card: a Hero map tile, the road from the
+  /// store to home, the rider on it (120 × 88).
+  static const String trackingLiveMap = 'assets/svg/tracking_live_map.svg';
 }

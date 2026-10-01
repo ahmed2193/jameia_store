@@ -80,6 +80,7 @@ import 'package:hero_mart/src/features/marketing/presentation/pages/offers_page.
 import 'package:hero_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
 import 'package:hero_mart/src/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/order_invoice_page.dart';
+import 'package:hero_mart/src/features/orders/presentation/pages/order_live_map_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/order_review_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/order_tracking_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/orders_page.dart';
@@ -326,6 +327,17 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
     CustomerServicePage,
     note: 'no order extra: the help hub',
   ),
+  _RouteCase(
+    Routes.orderLiveMap,
+    OrderLiveMapPage,
+    extra: (_) => const OrderEntity(id: 'o1', orderNumber: '1001'),
+    verify: (t, extra) => expect(_page<OrderLiveMapPage>(t).order, extra),
+  ),
+  const _RouteCase(
+    Routes.orderLiveMap,
+    PlaceholderPage,
+    note: 'missing order extra',
+  ),
   const _RouteCase(Routes.offers, OffersPage),
   _RouteCase(
     Routes.contentPage,
@@ -378,6 +390,7 @@ final Map<String, Matcher> _pageTypes = <String, Matcher>{
   Routes.search: _modal,
   Routes.cartPreview: _modal,
   Routes.proMembership: _modal,
+  Routes.orderLiveMap: _modal,
   Routes.checkout: _forward,
   Routes.checkoutVouchers: _forward,
   Routes.orderTracking: _forward,

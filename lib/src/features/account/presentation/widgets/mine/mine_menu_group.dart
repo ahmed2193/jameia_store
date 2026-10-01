@@ -58,14 +58,13 @@ class MineMenuGroup extends StatelessWidget {
         tone: MineTone.brand,
       ),
       MineMenuEntry(
-        icon: HeroIcons.locationOutline,
+        icon: HeroIcons.pin,
         label: 'account.menu_addresses'.tr(),
         route: Routes.addressList,
         tone: MineTone.sky,
       ),
       MineMenuEntry(
-        asset: HeroAssets.checkoutTicket,
-        plate: true,
+        plate: HeroAssets.offerVoucher,
         label: 'account.coupons'.tr(),
         route: Routes.myCoupons,
         tone: MineTone.orange,
@@ -74,22 +73,19 @@ class MineMenuGroup extends StatelessWidget {
     final pro = proMembership;
     final rewards = <MineMenuEntry>[
       MineMenuEntry(
-        asset: HeroAssets.checkoutWallet,
-        plate: true,
+        plate: HeroAssets.checkoutWallet,
         label: 'account.wallet'.tr(),
         route: Routes.wallet,
         tone: MineTone.brand,
       ),
       MineMenuEntry(
-        asset: HeroAssets.checkoutPoints,
-        plate: true,
+        plate: HeroAssets.checkoutPoints,
         label: 'account.loyalty_points'.tr(),
         route: Routes.loyalty,
         tone: MineTone.amber,
       ),
       MineMenuEntry(
-        asset: HeroAssets.proCrown,
-        plate: true,
+        plate: HeroAssets.proCrown,
         label: 'pro.title'.tr(),
         route: Routes.proMembership,
         tone: MineTone.pro,
@@ -98,8 +94,7 @@ class MineMenuGroup extends StatelessWidget {
             : MineProStatusChip(membership: pro, offered: proOffered),
       ),
       MineMenuEntry(
-        asset: HeroAssets.offerGift,
-        plate: true,
+        plate: HeroAssets.offerGift,
         label: 'account.invite_friends'.tr(),
         route: Routes.inviteFriends,
         tone: MineTone.rose,
@@ -107,35 +102,35 @@ class MineMenuGroup extends StatelessWidget {
     ];
     final help = <MineMenuEntry>[
       MineMenuEntry(
-        icon: Icons.notifications_none_rounded,
+        icon: HeroIcons.bell,
         label: 'notifications.title'.tr(),
         route: Routes.notifications,
         badgeCount: notificationsUnread,
       ),
       if (showAssistant)
         MineMenuEntry(
-          asset: HeroAssets.assistantAi,
+          icon: HeroIcons.assistant,
           label: 'assistant.title'.tr(),
           route: Routes.assistant,
           tone: MineTone.pro,
         ),
       MineMenuEntry(
-        icon: HeroIcons.customerService,
+        icon: HeroIcons.support,
         label: 'account.customer_service'.tr(),
         route: Routes.customerService,
         badgeCount: customerUnreadCount,
       ),
-      // Material: wm_c_iconfont's nearest glyph is a funnel, which reads as
-      // "filter" — it is the one the Discover channel filter uses.
       MineMenuEntry(
-        icon: Icons.settings_outlined,
+        icon: HeroIcons.settings,
         label: 'account.settings'.tr(),
         route: Routes.mineSettings,
       ),
       MineMenuEntry(
-        icon: HeroIcons.info,
+        icon: HeroIcons.warning,
         label: 'account.about'.tr(),
         route: Routes.mineAbout,
+        // The slate plate: the yellow family's red would read as an alert.
+        tone: MineTone.amber,
       ),
     ];
     return Column(

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
 import 'round_outlined_button.dart';
 
@@ -82,7 +83,7 @@ class CollectionAppBarDelegate extends SliverPersistentHeaderDelegate {
               children: [
                 if (onBack != null) ...[
                   RoundOutlinedButton(
-                    icon: Icons.arrow_back_rounded,
+                    icon: HeroIcons.back,
                     label: backLabel,
                     onTap: onBack,
                   ),
@@ -100,7 +101,7 @@ class CollectionAppBarDelegate extends SliverPersistentHeaderDelegate {
                 ),
                 const SizedBox(width: AppSpacing.s12),
                 RoundOutlinedButton(
-                  icon: Icons.search_rounded,
+                  icon: HeroIcons.search,
                   label: searchLabel,
                   onTap: onSearch,
                 ),

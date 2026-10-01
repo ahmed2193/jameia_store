@@ -5,8 +5,10 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/light_sweep.dart';
 
 /// "Take a quick tour" — the first greeting's leading chip: filled brand
@@ -43,8 +45,8 @@ class AssistantBuddyTourChip extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
+                    const HeroIcon(
+                      HeroIcons.sparkle,
                       size: AppSize.s16,
                       color: AppColors.brandForeground,
                     ),

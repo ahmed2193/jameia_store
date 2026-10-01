@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/assistant_block.dart';
 
 /// `error`: part of the answer failed (a tool, a lookup). The server's
@@ -26,8 +28,8 @@ class AssistantErrorCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
-            Icons.info_outline_rounded,
+          const HeroIcon(
+            HeroIcons.info,
             size: AppSize.s18,
             color: AppColors.warn,
           ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// Five stars, [rating] of them filled.
 class PdpRatingStars extends StatelessWidget {
@@ -17,8 +19,8 @@ class PdpRatingStars extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var star = 1; star <= _max; star++)
-          Icon(
-            star <= rating ? Icons.star_rounded : Icons.star_outline_rounded,
+          HeroIcon(
+            star <= rating ? HeroIcons.starFill : HeroIcons.star,
             size: AppSize.s16,
             color: star <= rating ? AppColors.warn : AppColors.disabledText,
           ),

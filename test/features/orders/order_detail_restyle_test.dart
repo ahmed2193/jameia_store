@@ -17,6 +17,7 @@ import 'package:hero_mart/src/config/routes/route_args/order_review_args.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/core/data/mappers/order_mapper.dart';
 import 'package:hero_mart/src/core/data/models/order_model.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/order_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/motion/confetti_burst.dart';
@@ -337,6 +338,7 @@ void main() {
       expect(find.text('JM-1001'), findsOneWidget);
 
       await tester.ensureVisible(find.text('View invoice'));
+      await tester.pump();
       await tester.tap(find.text('View invoice'));
       await tester.pumpAndSettle();
       expect(find.text('invoice:o1'), findsOneWidget);
@@ -932,7 +934,7 @@ void main() {
         tester.widget<HeroSubmitButton>(find.byType(HeroSubmitButton)).holding,
         isTrue,
       );
-      expect(find.byIcon(Icons.check_rounded), findsNothing);
+      expect(find.byIcon(HeroIcons.check), findsNothing);
     });
 
     testWidgets('a multi-star fill cascades from the previous rating', (

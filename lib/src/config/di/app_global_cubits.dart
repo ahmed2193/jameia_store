@@ -49,10 +49,28 @@ abstract final class AppGlobalCubits {
 
   /// Starts home's first read while the splash intro plays (B1-14), so the
   /// home page adopts a cubit that is already reading — or done. Nothing
-  /// when home is not registered (a router test without DI).
+  /// when home is not registered (a router test without DI). The read itself
+  /// waits for [homeLocaleReady]: the catalogue answers in the request's
+  /// language.
   static void prefetchHome() {
     if (sl.isRegistered<HomeLaunchPrefetch>()) {
       sl<HomeLaunchPrefetch>().start();
+    }
+  }
+
+  /// The customer's saved language is restored (the app root, once): the
+  /// home prefetch may read now, in it.
+  static void homeLocaleReady() {
+    if (sl.isRegistered<HomeLaunchPrefetch>()) {
+      sl<HomeLaunchPrefetch>().localeReady();
+    }
+  }
+
+  /// The session expired under the splash: the launch goes to login, so a
+  /// home read it started is dropped, never handed over later.
+  static void dropHomePrefetch() {
+    if (sl.isRegistered<HomeLaunchPrefetch>()) {
+      sl<HomeLaunchPrefetch>().discard();
     }
   }
 }

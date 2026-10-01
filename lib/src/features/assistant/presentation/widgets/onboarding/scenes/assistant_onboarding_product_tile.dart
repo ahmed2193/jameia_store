@@ -5,7 +5,9 @@ import '../../../../../../config/theme/app_colors.dart';
 import '../../../../../../config/theme/app_shadows.dart';
 import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../config/theme/app_text_styles.dart';
+import '../../../../../../core/design/hero_icons.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 import 'assistant_onboarding_item.dart';
 import 'assistant_onboarding_item_glyph.dart';
 
@@ -80,8 +82,8 @@ class AssistantOnboardingProductTile extends StatelessWidget {
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        Icons.add_rounded,
+                      child: HeroIcon(
+                        HeroIcons.plus,
                         size: AppSize.s14,
                         color: AppColors.white,
                       ),

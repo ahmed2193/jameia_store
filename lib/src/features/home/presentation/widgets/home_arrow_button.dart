@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// The storefront's round "→": opens what a block advertises — its
 /// collection, the campaign behind a banner. A lifted white disc with an ink
@@ -56,9 +58,9 @@ class HomeArrowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A Material directional glyph: it already mirrors under RTL.
-    final glyph = Icon(
-      Icons.arrow_forward_rounded,
+    // A directional Hero glyph: it already mirrors under RTL.
+    final glyph = HeroIcon(
+      HeroIcons.arrowForward,
       size: size * _glyphShare,
       color: AppColors.primaryText,
     );

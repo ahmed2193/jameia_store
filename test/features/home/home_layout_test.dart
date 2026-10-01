@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/core/widgets/catalog_product_card.dart';
@@ -265,7 +266,7 @@ void main() {
       ),
     );
 
-    expect(find.byIcon(Icons.category_rounded), findsOneWidget);
+    expect(find.byIcon(HeroIcons.category), findsOneWidget);
   });
 
   testWidgets('a header wears the backend icon in its accent', (tester) async {

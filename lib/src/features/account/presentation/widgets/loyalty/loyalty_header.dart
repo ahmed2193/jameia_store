@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../domain/entities/loyalty_entry_entity.dart';
@@ -37,7 +38,7 @@ class LoyaltyHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   LedgerBalanceCard(
-                    icon: Icons.stars_rounded,
+                    icon: HeroIcons.points,
                     label: 'loyalty.balance'.tr(),
                     value: points,
                     valueText: (number) => 'loyalty.points_value'.tr(

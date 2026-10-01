@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/branded_dot_loader.dart';
@@ -22,7 +23,7 @@ class SettingsClearCacheTile extends StatelessWidget {
     return BlocSelector<SettingCubit, SettingState, bool>(
       selector: (state) => state.isClearingCache,
       builder: (context, clearing) => SettingsTile(
-        icon: Icons.cleaning_services_outlined,
+        icon: HeroIcons.cleaning,
         tone: SettingsTone.teal,
         title: title,
         chevron: false,

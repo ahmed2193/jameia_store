@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Burnt-orange pill at the top of a reward card: a gift glyph + "KD 0.100
 /// off". The label never ellipsizes (a cut amount reads as another value):
@@ -33,8 +35,8 @@ class RewardOffPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.card_giftcard_rounded,
+            const HeroIcon(
+              HeroIcons.gift,
               size: AppSize.s14,
               color: AppColors.white,
             ),

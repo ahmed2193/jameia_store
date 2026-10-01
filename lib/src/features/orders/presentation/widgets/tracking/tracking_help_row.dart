@@ -28,7 +28,7 @@ class TrackingHelpRow extends StatelessWidget {
         child: HeroListRow(
           title: 'orders.help_title'.tr(),
           subtitle: 'orders.help_subtitle'.tr(),
-          icon: HeroIcons.customerService,
+          icon: HeroIcons.support,
           onTap: onPressed,
         ),
       ),

@@ -4,6 +4,7 @@ import '../../config/theme/app_colors.dart';
 import '../motion/motion.dart';
 import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// One round − / + / delete button of [CatalogPillStepper]. It sinks under
 /// the finger ([PressScale] at the small-button depth); the host fires the
@@ -39,7 +40,7 @@ class CatalogStepButton extends StatelessWidget {
           ),
           child: AnimatedSwitcher(
             duration: MotionGuard.duration(context, AppMotion.fast),
-            child: Icon(
+            child: HeroIcon(
               icon,
               key: ValueKey<IconData>(icon),
               size: AppSize.s16,

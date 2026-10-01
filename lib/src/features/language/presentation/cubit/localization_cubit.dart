@@ -32,13 +32,14 @@ class LanguageChangeResult {
 ///
 /// Known debt (§12): it still takes a `BuildContext` for `context.setLocale`.
 class LocalizationCubit extends Cubit<LocalizationState> {
+  /// Leaves `Intl.defaultLocale` alone: the app root already set it to the
+  /// locale easy_localization restored, and a request made before
+  /// [initializeLocale] ends (`Accept-Language`) must not go out as `en`.
   LocalizationCubit({
     required this._getSavedLang,
     required this._changeLang,
     required this._syncLanguage,
-  }) : super(const LocalizationState(locale: _defaultLocale)) {
-    Intl.defaultLocale = _defaultLocale.languageCode;
-  }
+  }) : super(const LocalizationState(locale: _defaultLocale));
 
   static const List<Locale> supported = [Locale('en'), Locale('ar')];
   static const Locale _defaultLocale = Locale('en');

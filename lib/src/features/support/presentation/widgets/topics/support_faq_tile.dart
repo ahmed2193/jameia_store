@@ -7,6 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/faq_item.dart';
 import 'support_faq_answer.dart';
 import 'support_faq_chevron.dart';
@@ -49,7 +50,7 @@ class SupportFaqTile extends StatelessWidget {
                     padding: const EdgeInsets.all(AppSpacing.s14),
                     child: Row(
                       children: [
-                        const Icon(
+                        const HeroIcon(
                           HeroIcons.help,
                           size: AppSize.s18,
                           color: AppColors.secondaryText,

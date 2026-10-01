@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_surface_card.dart';
 
 /// "You earned N points" under the payment summary, on the brand wash —
@@ -38,8 +40,8 @@ class InvoiceLoyaltyNote extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(
-              Icons.stars_rounded,
+            const HeroIcon(
+              HeroIcons.points,
               size: AppSize.s20,
               color: AppColors.brandDeep,
             ),

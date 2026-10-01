@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/widgets/hero_section_header.dart';
 import 'search_term_chip.dart';
 
@@ -41,7 +42,7 @@ class SearchRecentsSection extends StatelessWidget {
                 SearchTermChip(
                   key: ValueKey<String>(term),
                   label: term,
-                  icon: Icons.history_rounded,
+                  icon: HeroIcons.history,
                   onTap: () => onTerm(term),
                 ),
             ],

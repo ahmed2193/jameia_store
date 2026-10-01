@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/wallet_entry_entity.dart';
 import '../ledger/ledger_signed.dart';
 
@@ -58,10 +60,8 @@ class WalletDeltaChip extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      credit
-                          ? Icons.arrow_upward_rounded
-                          : Icons.arrow_downward_rounded,
+                    HeroIcon(
+                      credit ? HeroIcons.arrowUp : HeroIcons.arrowDown,
                       size: AppSize.s14,
                       color: ink,
                     ),

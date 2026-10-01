@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
-/// A star's face: the grey outline, with the filled star (brand, pressed
-/// shade) scaled over it. Filling pops the star in with the snappy spring
+/// A star's face: the grey outline, with the sticker star (ink line, amber
+/// fill) scaled over it. Filling pops the star in with the snappy spring
 /// after `delaySteps × AppMotion.staggerStep` (the multi-star cascade — one
 /// controller, the delay is an [Interval], no timer); emptying shrinks it
 /// out quickly. Static on mount; reduced motion → the end state at once.
@@ -74,16 +76,16 @@ class _ReviewStarIconState extends State<ReviewStarIcon>
     return Stack(
       alignment: Alignment.center,
       children: [
-        const Icon(
-          Icons.star_border_rounded,
+        const HeroIcon(
+          HeroIcons.star,
           size: AppSize.s28,
           color: AppColors.secondaryText,
         ),
         // At scale 0 nothing is painted (a degenerate transform is skipped).
         ScaleTransition(
           scale: _scale,
-          child: const Icon(
-            Icons.star_rounded,
+          child: const HeroIcon(
+            HeroIcons.star,
             size: AppSize.s28,
             color: AppColors.primaryDark,
           ),

@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
@@ -8,6 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/pop_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/hero_bottom_bar.dart';
 import '../../../../../core/widgets/hero_submit_button.dart';
 
@@ -39,10 +39,9 @@ class OrderHelpSentView extends StatelessWidget {
                   ExcludeSemantics(
                     child: RepaintBoundary(
                       child: PopScale.onMount(
-                        child: SvgPicture.asset(
+                        child: const HeroSvgGlyph.art(
                           HeroAssets.stateSuccess,
-                          width: _art,
-                          height: _art,
+                          size: _art,
                         ),
                       ),
                     ),

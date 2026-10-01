@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../design/hero_assets.dart';
+import '../design/hero_icon_tone.dart';
+import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
 import '../utils/formatters.dart';
+import 'hero_icon.dart';
 
-/// The delivery line under a basket bar's amount: the rider and "Free
+/// The delivery line under a basket bar's amount: the Hero scooter and "Free
 /// delivery" when [kd] is `0`, or "KD 0.650 delivery" — the server's quote
 /// (`CartEntity.deliveryQuoteKd`).
 class CartDeliveryNote extends StatelessWidget {
@@ -26,16 +28,13 @@ class CartDeliveryNote extends StatelessWidget {
         : 'core.delivery_fee_amount'.tr(
             namedArgs: {'amount': Formatters.price(kd)},
           );
-    final decode = (_rider * MediaQuery.devicePixelRatioOf(context)).round();
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          HeroAssets.globalRider,
-          width: _rider,
-          height: _rider,
-          cacheWidth: decode,
-          excludeFromSemantics: true,
+        const HeroIcon(
+          HeroIcons.delivery,
+          tone: HeroIconTone.brand,
+          size: _rider,
         ),
         const SizedBox(width: AppSpacing.s6),
         Flexible(

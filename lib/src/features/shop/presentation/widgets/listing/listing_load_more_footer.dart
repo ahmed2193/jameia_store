@@ -5,9 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/screen_load.dart';
 import '../../../../../core/widgets/app_loader.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/load_more_offline_note.dart';
 import '../../cubit/product_listing_cubit.dart';
 import '../../cubit/product_listing_state.dart';
@@ -36,7 +38,7 @@ class ListingLoadMoreFooter extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: () =>
                     context.read<ProductListingCubit>().loadMore(retry: true),
-                icon: const Icon(Icons.refresh_rounded, color: AppColors.link),
+                icon: const HeroIcon(HeroIcons.refresh, color: AppColors.link),
                 label: Text(
                   'retry'.tr(),
                   style: AppTextStyles.bodyMedium.copyWith(

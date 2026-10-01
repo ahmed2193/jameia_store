@@ -97,6 +97,7 @@ class HomePromoCardTile extends StatelessWidget {
                           icon: card.icon,
                           size: _icon,
                           color: strong,
+                          tone: HomeAccentPalette.tone(card.accent),
                         ),
                       ),
                     ),

@@ -10,10 +10,12 @@ import 'package:intl/intl.dart' show Intl;
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
 import 'package:hero_mart/src/config/theme/app_text_styles.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/press_scale.dart';
 import 'package:hero_mart/src/core/responsive/app_size.dart';
 import 'package:hero_mart/src/core/utils/formatters.dart';
 import 'package:hero_mart/src/core/widgets/app_button.dart';
+import 'package:hero_mart/src/core/widgets/hero_icon.dart';
 import 'package:hero_mart/src/core/widgets/hero_image.dart';
 import 'package:hero_mart/src/core/widgets/hero_input_decoration.dart';
 import 'package:hero_mart/src/core/widgets/hero_line_thumb.dart';
@@ -283,7 +285,7 @@ void main() {
     );
 
     HeroListRow row({bool dense = false, bool divider = false}) => HeroListRow(
-      icon: Icons.place_outlined,
+      icon: HeroIcons.pin,
       title: 'Select a delivery address',
       dense: dense,
       divider: divider,
@@ -295,7 +297,7 @@ void main() {
 
       expect(tester.getSize(find.byType(HeroListRow)).height, AppSize.s56);
       expect(
-        tester.getSize(find.byIcon(Icons.place_outlined)),
+        tester.getSize(find.byIcon(HeroIcons.pin)),
         const Size.square(AppSize.s24),
       );
       expect(hairline(), findsNothing);
@@ -308,7 +310,7 @@ void main() {
       final rowRect = tester.getRect(find.byType(HeroListRow));
       expect(rowRect.height, HeroListRow.denseMinHeight);
       expect(
-        tester.getSize(find.byIcon(Icons.place_outlined)),
+        tester.getSize(find.byIcon(HeroIcons.pin)),
         const Size.square(AppSize.s20),
       );
       final text = tester.getRect(find.text('Select a delivery address'));
@@ -546,9 +548,8 @@ void main() {
       await pump(
         tester,
         tone: HeroSegmentTone.brandSoft,
-        iconOf: (value) => value == 'Pickup'
-            ? Icons.storefront_rounded
-            : Icons.delivery_dining_rounded,
+        iconOf: (value) =>
+            value == 'Pickup' ? HeroIcons.store : HeroIcons.delivery,
       );
       await tester.pumpAndSettle();
 
@@ -560,15 +561,27 @@ void main() {
       expect(labelStyle(tester, 'Delivery').fontWeight, AppTextStyles.bold);
       expect(labelStyle(tester, 'Pickup').color, AppColors.primaryText);
       expect(
-        tester.widget<Icon>(find.byIcon(Icons.delivery_dining_rounded)).color,
+        tester
+            .widget<HeroIcon>(find.widgetWithIcon(HeroIcon, HeroIcons.delivery))
+            .color,
         AppColors.primary,
       );
       expect(
-        tester.widget<Icon>(find.byIcon(Icons.storefront_rounded)).color,
+        tester
+            .widget<HeroIcon>(find.widgetWithIcon(HeroIcon, HeroIcons.store))
+            .color,
         AppColors.primaryText,
       );
+      // Both colours read as ink: each glyph is the sticker, its line in
+      // iconInk.
+      for (final icon in [HeroIcons.delivery, HeroIcons.store]) {
+        expect(
+          tester.widget<Icon>(find.byIcon(icon)).color,
+          HeroColors.light.iconInk,
+        );
+      }
       expect(
-        tester.getSize(find.byIcon(Icons.storefront_rounded)),
+        tester.getSize(find.byIcon(HeroIcons.store)),
         const Size.square(HeroSegment.iconSize),
       );
     });
@@ -595,7 +608,7 @@ void main() {
     }) => OptionRow(
       title: 'As soon as possible',
       subtitle: 'About 40 min',
-      icon: Icons.schedule_rounded,
+      icon: HeroIcons.clock,
       iconColor: AppColors.primary,
       selected: selected,
       enabled: enabled,
@@ -625,9 +638,9 @@ void main() {
       tester,
     ) async {
       await pump(tester, row(enabled: false));
-      expect(tester.getTopLeft(find.byIcon(Icons.schedule_rounded)).dx, 16);
+      expect(tester.getTopLeft(find.byIcon(HeroIcons.clock)).dx, 16);
       expect(
-        tester.getSize(find.byIcon(Icons.schedule_rounded)),
+        tester.getSize(find.byIcon(HeroIcons.clock)),
         const Size.square(AppSize.s24),
       );
       expect(tester.getTopLeft(find.text('As soon as possible')).dx, 56);
@@ -637,14 +650,21 @@ void main() {
     testWidgets('dense: the icon at 12 dp and the text at the dense text '
         'column, in both directions', (tester) async {
       await pump(tester, row(look: OptionRowLook.dense));
-      expect(tester.getTopLeft(find.byIcon(Icons.schedule_rounded)).dx, 12);
+      expect(tester.getTopLeft(find.byIcon(HeroIcons.clock)).dx, 12);
       expect(
         tester.getTopLeft(find.text('As soon as possible')).dx,
         HeroListRow.denseTextStart,
       );
       expect(
-        tester.widget<Icon>(find.byIcon(Icons.schedule_rounded)).color,
+        tester
+            .widget<HeroIcon>(find.widgetWithIcon(HeroIcon, HeroIcons.clock))
+            .color,
         AppColors.primary,
+      );
+      // Brand green reads as ink: the clock is the sticker.
+      expect(
+        tester.widget<Icon>(find.byIcon(HeroIcons.clock)).color,
+        HeroColors.light.iconInk,
       );
       final sub = tester.widget<Text>(find.text('About 40 min'));
       expect(sub.style!.color, AppColors.labelGrey);
@@ -656,10 +676,7 @@ void main() {
         direction: TextDirection.rtl,
       );
       final width = tester.getSize(find.byType(OptionRow)).width;
-      expect(
-        tester.getTopRight(find.byIcon(Icons.schedule_rounded)).dx,
-        width - 12,
-      );
+      expect(tester.getTopRight(find.byIcon(HeroIcons.clock)).dx, width - 12);
       expect(
         tester.getTopRight(find.text('As soon as possible')).dx,
         width - HeroListRow.denseTextStart,
@@ -693,7 +710,7 @@ void main() {
           AppColors.tertiaryText,
         );
         expect(
-          tester.widget<Icon>(find.byIcon(Icons.schedule_rounded)).color,
+          tester.widget<Icon>(find.byIcon(HeroIcons.clock)).color,
           AppColors.disabledText,
         );
       }
@@ -743,9 +760,7 @@ void main() {
       tester,
     ) async {
       await pump(tester, dense: true);
-      final chevron = tester.widget<Icon>(
-        find.byIcon(Icons.chevron_right_rounded),
-      );
+      final chevron = tester.widget<Icon>(find.byIcon(HeroIcons.chevronEnd));
       expect(chevron.size, AppSize.s16);
       expect(chevron.color, AppColors.secondaryText);
       final sub = tester.widget<Text>(find.text('Ring the bell'));
@@ -758,9 +773,7 @@ void main() {
 
     testWidgets('non-dense is unchanged', (tester) async {
       await pump(tester, dense: false);
-      final chevron = tester.widget<Icon>(
-        find.byIcon(Icons.chevron_right_rounded),
-      );
+      final chevron = tester.widget<Icon>(find.byIcon(HeroIcons.chevronEnd));
       expect(chevron.size, AppSize.s24);
       expect(chevron.color, AppColors.tertiaryText);
       final sub = tester.widget<Text>(find.text('Ring the bell'));

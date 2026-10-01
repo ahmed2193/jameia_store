@@ -11,6 +11,7 @@ import 'package:easy_localization/src/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/second_clock.dart';
 import 'package:hero_mart/src/core/motion/second_clock_scope.dart';
 import 'package:hero_mart/src/core/widgets/countdown_chip.dart';
@@ -102,7 +103,7 @@ void main() {
       now = endsAt;
       await tester.pump(const Duration(seconds: 1));
 
-      expect(find.byIcon(Icons.timer_outlined), findsNothing);
+      expect(find.byIcon(HeroIcons.clock), findsNothing);
       expect(scopeClock(tester).debugIsRunning, isFalse);
     });
 

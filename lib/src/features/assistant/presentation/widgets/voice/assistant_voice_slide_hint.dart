@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'assistant_voice_drag.dart';
 
 /// "‹ Slide to cancel": it moves with the finger toward the start of the
@@ -23,8 +25,8 @@ class AssistantVoiceSlideHint extends StatelessWidget {
     final hint = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
-          Icons.chevron_left_rounded,
+        const HeroIcon(
+          HeroIcons.chevronStart,
           size: AppSize.s20,
           color: AppColors.secondaryText,
         ),

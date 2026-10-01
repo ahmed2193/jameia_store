@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_app_logo.dart';
 
 /// The Hero app icon on a rounded, softly lifted tile.
 class AboutLogo extends StatelessWidget {
@@ -14,25 +14,13 @@ class AboutLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final corners = BorderRadius.circular(AppRadius.r2);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: corners,
+        borderRadius: BorderRadius.circular(AppRadius.r2),
         boxShadow: AppShadows.high,
       ),
-      child: ClipRRect(
-        borderRadius: corners,
-        child: Image.asset(
-          HeroAssets.appLogo,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          // The source is 1024 px; decode only what the tile shows.
-          cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
-          excludeFromSemantics: true,
-        ),
-      ),
+      child: const HeroAppLogo(size: size, radius: AppRadius.r2),
     );
   }
 }

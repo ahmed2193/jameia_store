@@ -12,6 +12,7 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
     this.load = const ScreenLoad(),
     required this.feed,
     this.bootstrap = HomeBootstrap.empty,
+    this.welcomeDue = false,
     this.duePopups = const <HomeMarketingPopup>[],
     this.popupsShown = false,
   });
@@ -30,6 +31,10 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
   /// its request fails: home renders without it.
   final HomeBootstrap bootstrap;
 
+  /// The first-order free-delivery gift opens the popup queue (the store runs
+  /// it and the customer has no order yet).
+  final bool welcomeDue;
+
   /// Marketing popups allowed to show now (frequency already applied).
   final List<HomeMarketingPopup> duePopups;
 
@@ -41,7 +46,8 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
   Failure? get failure => load.failure;
   bool get isLoaded => load.isLoaded;
   bool get isEmpty => isLoaded && feed.isEmpty;
-  bool get hasPendingPopups => isLoaded && !popupsShown && duePopups.isNotEmpty;
+  bool get hasPendingPopups =>
+      isLoaded && !popupsShown && (welcomeDue || duePopups.isNotEmpty);
 
   @override
   HomeState withLoad(ScreenLoad load) => copyWith(load: load);
@@ -50,16 +56,25 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
     ScreenLoad? load,
     HomeFeed? feed,
     HomeBootstrap? bootstrap,
+    bool? welcomeDue,
     List<HomeMarketingPopup>? duePopups,
     bool? popupsShown,
   }) => HomeState(
     load: load ?? this.load.settled(),
     feed: feed ?? this.feed,
     bootstrap: bootstrap ?? this.bootstrap,
+    welcomeDue: welcomeDue ?? this.welcomeDue,
     duePopups: duePopups ?? this.duePopups,
     popupsShown: popupsShown ?? this.popupsShown,
   );
 
   @override
-  List<Object?> get props => [load, feed, bootstrap, duePopups, popupsShown];
+  List<Object?> get props => [
+    load,
+    feed,
+    bootstrap,
+    welcomeDue,
+    duePopups,
+    popupsShown,
+  ];
 }

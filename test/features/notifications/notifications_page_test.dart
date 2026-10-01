@@ -17,6 +17,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
 import 'package:hero_mart/src/features/notifications/presentation/cubit/notifications_cubit.dart';
@@ -197,7 +198,7 @@ void main() {
   ) async {
     await pumpPage(tester);
 
-    await tester.tap(find.byIcon(Icons.done_all_rounded));
+    await tester.tap(find.byIcon(HeroIcons.checkDouble));
     await settle(tester);
 
     expect(markAllRead.calls, 1);

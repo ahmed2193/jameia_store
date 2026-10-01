@@ -26,6 +26,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/navigation/route_observer.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_access.dart';
 import 'package:hero_mart/src/features/assistant/domain/entities/assistant_voice_event.dart';
@@ -313,7 +314,7 @@ void main() {
     expect(find.byType(AssistantVoiceLockedControls), findsOneWidget);
     expect(find.byType(AssistantVoiceLockedPanel), findsOneWidget);
     expect(find.byType(AssistantVoiceLockPill), findsNothing);
-    expect(find.byIcon(Icons.arrow_upward_rounded), findsOneWidget);
+    expect(find.byIcon(HeroIcons.arrowUp), findsOneWidget);
 
     await tester.tap(mic());
     await tester.pump();

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/size_fade_switcher.dart';
 import '../../../../../core/widgets/state_views.dart';
 import '../../cubit/product_listing_cubit.dart';
@@ -46,7 +47,7 @@ class ListingBrandSheet extends StatelessWidget {
                         ? const Center(child: AppLoader.inline())
                         : EmptyStateView(
                             message: 'shop.no_brands'.tr(),
-                            icon: Icons.sell_outlined,
+                            icon: HeroIcons.tag,
                           ),
                   ),
           );

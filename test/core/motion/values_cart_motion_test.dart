@@ -15,6 +15,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:easy_localization/src/localization.dart';
 // ignore: implementation_imports
 import 'package:easy_localization/src/translations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -386,6 +387,32 @@ void main() {
       await tester.pump(_landed);
       await tester.pump();
       expect(FlyToCart.airborne, 0);
+    });
+
+    // Review fix O1: a landed thumbnail's overlay entry is disposed too.
+    testWidgets('a landed flight disposes its overlay entry', (tester) async {
+      final count = ValueNotifier<int>(0);
+      addTearDown(count.dispose);
+      await tester.pumpWidget(_host(_CartScene(count: count)));
+      final created = <Object>{};
+      final disposed = <Object>{};
+      void track(ObjectEvent event) {
+        if (event.object is! OverlayEntry) return;
+        if (event is ObjectCreated) created.add(event.object);
+        if (event is ObjectDisposed) disposed.add(event.object);
+      }
+
+      FlutterMemoryAllocations.instance.addListener(track);
+      addTearDown(
+        () => FlutterMemoryAllocations.instance.removeListener(track),
+      );
+      expect(_launch(tester), isTrue);
+      await tester.pump();
+      await tester.pump(_landed);
+      await tester.pump();
+
+      expect(created, hasLength(1));
+      expect(disposed, created);
     });
 
     testWidgets('a cart under a covering route takes no flight', (

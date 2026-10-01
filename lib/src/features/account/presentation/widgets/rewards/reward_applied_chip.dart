@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Green "✓ Applied" pill beside the points of the tier that is on the
 /// basket right now.
@@ -28,8 +30,8 @@ class RewardAppliedChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.check_circle_rounded,
+            const HeroIcon(
+              HeroIcons.checkCircleFill,
               size: AppSize.s14,
               color: AppColors.success,
             ),

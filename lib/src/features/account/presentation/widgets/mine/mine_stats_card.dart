@@ -43,7 +43,7 @@ class MineStatsCard extends StatelessWidget {
           Expanded(
             child: MineCountStat(
               count: _coupons,
-              icon: Icons.confirmation_num_rounded,
+              icon: HeroIcons.voucher,
               tone: MineTone.orange,
               label: 'account.coupons'.tr(),
               route: Routes.myCoupons,
@@ -53,7 +53,7 @@ class MineStatsCard extends StatelessWidget {
           Expanded(
             child: MineCountStat(
               count: _favourites,
-              icon: HeroIcons.favorite,
+              icon: HeroIcons.heart,
               tone: MineTone.rose,
               label: 'account.favourites'.tr(),
               route: Routes.shopFavorites,

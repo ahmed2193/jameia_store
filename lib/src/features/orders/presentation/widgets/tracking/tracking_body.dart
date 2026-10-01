@@ -13,6 +13,7 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/widgets/branded_refresh.dart';
 import '../../../../../core/widgets/hero_section_header.dart';
 import '../../../../../core/widgets/thin_divider.dart';
+import '../../../domain/entities/order_journey.dart';
 import '../../../domain/entities/order_line_changes.dart';
 import '../../cubit/order_tracking_cubit.dart';
 import '../invoice/invoice_totals.dart';
@@ -21,6 +22,7 @@ import 'tracking_cancel_button.dart';
 import 'tracking_cancellation_notice.dart';
 import 'tracking_delivery_details.dart';
 import 'tracking_help_row.dart';
+import 'tracking_live_map_card.dart';
 import 'tracking_order_info.dart';
 import 'tracking_payment_row.dart';
 import 'tracking_people_card.dart';
@@ -30,8 +32,9 @@ import 'tracking_status_hero.dart';
 import 'tracking_store_row.dart';
 
 /// The order page, top to bottom, the way delivery apps lay it out: the
-/// status panel (time, stage, bar), what changed (cancelled, picking
-/// changes), who handles it, the rating card once delivered, the delivery
+/// status panel (time, stage, bar), the live rider map's card while a
+/// delivery is on its way, what changed (cancelled, picking changes), who
+/// handles it, the rating card once delivered, the delivery
 /// details, the order summary (items with photos folded to three, the bill,
 /// how it is paid), the order info (number, invoice, history), help, and
 /// cancel while the API still allows it. Pull down to check the order now.
@@ -62,6 +65,14 @@ class TrackingBody extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TrackingStatusHero(order: order),
+                DeferredValue<bool>(
+                  value: OrderJourney.of(order).tracksRider,
+                  delay: AppMotion.page,
+                  builder: (context, tracksRider) => CollapseReveal(
+                    visible: tracksRider,
+                    child: TrackingLiveMapCard(order: order),
+                  ),
+                ),
                 DeferredValue<OrderCancellationEntity?>(
                   value: order.cancellation,
                   delay: AppMotion.page,

@@ -1,12 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_savings_figure.dart';
@@ -25,11 +25,9 @@ class CheckoutCouponsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return HeroListRow(
       dense: true,
-      leading: SvgPicture.asset(
+      leading: const HeroSvgGlyph.art(
         HeroAssets.checkoutVoucherDisc,
-        width: discSize,
-        height: discSize,
-        excludeFromSemantics: true,
+        size: discSize,
       ),
       title: 'checkout.savings_coupons'.tr(),
       subtitleWidget: const CheckoutSavingsFigure(),

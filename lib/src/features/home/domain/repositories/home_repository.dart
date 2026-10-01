@@ -18,6 +18,11 @@ abstract class HomeRepository {
     bool forceRefresh = false,
   });
 
+  /// `GET /v1/orders` (customer) — how many orders the signed-in customer
+  /// has placed, every status included. Never cached: a copy could still say
+  /// 0 after the first order.
+  Future<Either<Failure, int>> countOrders();
+
   /// The calendar day (`YYYY-MM-DD`) a popup was last shown on this device, or
   /// `null`.
   Either<Failure, String?> popupShownDay(String popupId);

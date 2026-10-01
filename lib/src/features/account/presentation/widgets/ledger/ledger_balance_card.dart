@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icon_tone.dart';
 import '../../../../../core/motion/rolling_number_text.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Warm amber → orange points card at the top of the loyalty history (the
 /// Rewards family): muted label, big value, an optional caption and the
@@ -132,10 +134,10 @@ class LedgerBalanceCard extends StatelessWidget {
                         ),
                         child: SizedBox.square(
                           dimension: _disc,
-                          child: Icon(
+                          child: HeroIcon(
                             icon,
+                            tone: HeroIconTone.gold,
                             size: AppSize.s32,
-                            color: AppColors.accent3,
                           ),
                         ),
                       ),

@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:hero_mart/src/core/design/hero_assets.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
@@ -145,10 +146,10 @@ void main() {
           widget is SvgPicture &&
           (widget.bytesLoader as SvgAssetLoader).assetName == asset,
     );
-    expect(inRow(svg(HeroAssets.sharedClock)), findsOneWidget);
+    expect(inRow(find.byIcon(HeroIcons.clock)), findsOneWidget);
     expect(inRow(svg(HeroAssets.checkoutExpressBolt)), findsNothing);
     expect(inRow(find.text('Express')), findsNothing);
-    expect(inRow(find.byIcon(Icons.chevron_right_rounded)), findsOneWidget);
+    expect(inRow(find.byIcon(HeroIcons.chevronEnd)), findsOneWidget);
     // The destination row is the flat one: the chosen address, no prompt.
     expect(find.text('Choose a delivery address'), findsNothing);
     expect(find.byType(CheckoutEtaCardText), findsOneWidget);
@@ -239,7 +240,7 @@ void main() {
     expect(inRow(find.text('Ready for pickup')), findsOneWidget);
     expect(inRow(find.text('45 min')), findsOneWidget);
     expect(inRow(find.text('Expected')), findsNothing);
-    expect(inRow(find.byIcon(Icons.chevron_right_rounded)), findsNothing);
+    expect(inRow(find.byIcon(HeroIcons.chevronEnd)), findsNothing);
     expect(find.byType(CheckoutEtaCardText), findsNothing);
     expect(find.text('Salmiya'), findsOneWidget);
     expect(find.textContaining('+96522223333'), findsOneWidget);

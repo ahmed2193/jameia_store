@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// How the stock of the selection stands, only when it matters: out of
 /// stock (red) or running out ("Only 3 left", in the warning colour).
@@ -28,20 +30,16 @@ class PdpStockNote extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final (icon, label, color) = !inStock
-        ? (
-            Icons.remove_circle_outline_rounded,
-            'catalog.out_of_stock'.tr(),
-            AppColors.error,
-          )
+        ? (HeroIcons.minusCircle, 'catalog.out_of_stock'.tr(), AppColors.error)
         : (
-            Icons.hourglass_bottom_rounded,
+            HeroIcons.hourglass,
             'product.only_left'.tr(namedArgs: {'count': '$left'}),
             AppColors.warn,
           );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: AppSize.s16, color: color),
+        HeroIcon(icon, size: AppSize.s16, color: color),
         const SizedBox(width: AppSpacing.s4),
         Flexible(
           child: Text(

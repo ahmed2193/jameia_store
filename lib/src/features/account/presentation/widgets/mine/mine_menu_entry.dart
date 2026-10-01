@@ -6,8 +6,7 @@ import 'mine_tone.dart';
 class MineMenuEntry {
   const MineMenuEntry({
     this.icon,
-    this.asset,
-    this.plate = false,
+    this.plate,
     required this.label,
     required this.route,
     this.tone = MineTone.neutral,
@@ -17,10 +16,9 @@ class MineMenuEntry {
 
   final IconData? icon;
 
-  /// A drawn `HeroAssets` glyph in place of [icon] ([plate]: a colour
-  /// plate, see `MineIconTile`).
-  final String? asset;
-  final bool plate;
+  /// A colour plate (`HeroAssets` path) in place of [icon]'s tinted tile,
+  /// see `MineIconTile`.
+  final String? plate;
   final String label;
   final String route;
   final MineTone tone;

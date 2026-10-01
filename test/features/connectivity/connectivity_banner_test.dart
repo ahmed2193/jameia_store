@@ -18,6 +18,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/constants/app_constants.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
 import 'package:hero_mart/src/core/motion/shake_x.dart';
 import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
@@ -310,7 +311,7 @@ void main() {
     await pumpHost(tester, direction: TextDirection.rtl);
     await report(tester, ConnectivityStatus.offline);
     expect(find.text('أنت غير متصل بالإنترنت'), findsOneWidget);
-    final icon = tester.getCenter(find.byIcon(Icons.wifi_off_rounded));
+    final icon = tester.getCenter(find.byIcon(HeroIcons.offline));
     final title = tester.getCenter(find.text('أنت غير متصل بالإنترنت'));
     expect(icon.dx, greaterThan(title.dx));
   });

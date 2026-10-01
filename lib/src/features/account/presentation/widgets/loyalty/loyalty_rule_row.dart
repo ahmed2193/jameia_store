@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icon_tone.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// One line of the "How it works" card: the rule's icon in a small cream
-/// disc (the points family's amber), then the rule.
+/// disc, two-tone in the points family's gold (ink line, amber accent), then
+/// the rule.
 class LoyaltyRuleRow extends StatelessWidget {
   const LoyaltyRuleRow({super.key, required this.icon, required this.text});
 
@@ -29,10 +32,10 @@ class LoyaltyRuleRow extends StatelessWidget {
               ),
               child: SizedBox.square(
                 dimension: _disc,
-                child: Icon(
+                child: HeroIcon(
                   icon,
+                  tone: HeroIconTone.gold,
                   size: AppSize.s18,
-                  color: AppColors.accent3Dark,
                 ),
               ),
             ),

@@ -5,9 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 
 /// Under the receipt while the basket is below the store's minimum order:
@@ -37,8 +39,8 @@ class CheckoutMinOrderNotice extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.info_outline_rounded,
+            const HeroIcon(
+              HeroIcons.info,
               size: AppSize.s16,
               color: AppColors.error,
             ),

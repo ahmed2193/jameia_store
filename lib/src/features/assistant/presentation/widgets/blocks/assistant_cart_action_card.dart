@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
@@ -124,7 +125,7 @@ class _AssistantCartActionCardState extends State<AssistantCartActionCard> {
         block.status == AssistantActionStatus.expired;
     return AssistantCardFrame(
       title: 'assistant.action_title'.tr(),
-      icon: Icons.add_shopping_cart_rounded,
+      icon: HeroIcons.cartAdd,
       muted: spent,
       borderColor: block.status == AssistantActionStatus.confirmed
           ? AppColors.success

@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import 'home_layout.dart';
 
 /// "Delivering in 40 mins" — the accent-outlined pill under the store name,
@@ -44,8 +46,8 @@ class HomeEtaPill extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.rocket_launch_rounded,
+            const HeroIcon(
+              HeroIcons.rocket,
               size: AppSize.s14,
               color: HomeLayout.accent,
             ),

@@ -35,7 +35,8 @@ import '../api_headers.dart';
 ///   * One log entry per block, so concurrent calls never interleave.
 ///   * Secrets are masked wherever they travel — header, query, body field,
 ///     list item — when the key contains `authorization`, `token`, `secret`,
-///     `password`, `cookie` or `guest`: first 4 + last 4 chars, or `***` when
+///     `password`, `cookie`, `guest` or `api-key` (a third-party map key):
+///     first 4 + last 4 chars, or `***` when
 ///     the value is too short to hide that way. The `url:` line never carries
 ///     the query string. `--dart-define=API_LOG_SECRETS=true` reveals them.
 ///   * Bodies are pretty-printed JSON, truncated at [maxBodyChars]; streams
@@ -84,6 +85,7 @@ class NetworkLogInterceptor extends Interceptor {
     'password',
     'cookie',
     'guest',
+    'api-key',
   ];
   static const JsonEncoder _pretty = JsonEncoder.withIndent('  ');
 

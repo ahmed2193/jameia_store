@@ -9,6 +9,7 @@ import 'package:hero_mart/src/features/language/domain/usecases/change_lang_usec
 import 'package:hero_mart/src/features/language/domain/usecases/get_saved_lang_usecase.dart';
 import 'package:hero_mart/src/features/language/domain/usecases/sync_language_usecase.dart';
 import 'package:hero_mart/src/features/language/presentation/cubit/localization_cubit.dart';
+import 'package:intl/intl.dart' show Intl;
 
 /// Answers each sync with the next queued reply (success once empty).
 class _Repository implements LangRepository {
@@ -60,5 +61,18 @@ void main() {
     await cubit.onReconnected();
 
     expect(repository.synced, ['en']);
+  });
+
+  // B1: the app root set the restored locale before the cubit exists; a
+  // request made before the launch restore ends must not go out as `en`.
+  test('creating the cubit keeps the locale the app root set', () {
+    final previous = Intl.defaultLocale;
+    addTearDown(() => Intl.defaultLocale = previous);
+    Intl.defaultLocale = 'ar';
+
+    final cubit = _cubit(_Repository());
+    addTearDown(cubit.close);
+
+    expect(Intl.defaultLocale, 'ar');
   });
 }

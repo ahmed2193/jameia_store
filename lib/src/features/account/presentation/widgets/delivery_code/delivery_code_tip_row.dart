@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../settings/settings_tone.dart';
 
 /// One delivery-code tip: a tinted glyph disc and the sentence.
@@ -28,7 +29,7 @@ class DeliveryCodeTipRow extends StatelessWidget {
           dimension: AppSize.s32,
           child: DecoratedBox(
             decoration: BoxDecoration(color: tone.fill, shape: BoxShape.circle),
-            child: Icon(icon, size: AppSize.s16, color: tone.ink),
+            child: HeroIcon(icon, size: AppSize.s16, color: tone.ink),
           ),
         ),
         const SizedBox(width: AppSpacing.s12),

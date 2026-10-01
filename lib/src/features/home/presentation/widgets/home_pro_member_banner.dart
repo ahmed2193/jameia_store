@@ -5,10 +5,12 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/design/hero_assets.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/domain/entities/pro_membership_entity.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/hero_svg_glyph.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import 'home_layout.dart';
@@ -88,8 +90,8 @@ class HomeProMemberBanner extends StatelessWidget {
                       fontWeight: AppTextStyles.bold,
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right,
+                  const HeroIcon(
+                    HeroIcons.chevronEnd,
                     size: AppSize.s20,
                     color: AppColors.white,
                   ),

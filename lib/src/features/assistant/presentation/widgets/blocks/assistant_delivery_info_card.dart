@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/summary_row.dart';
 import '../../../domain/entities/assistant_block.dart';
@@ -22,7 +23,7 @@ class AssistantDeliveryInfoCard extends StatelessWidget {
     final zone = block.zoneName;
     return AssistantCardFrame(
       title: 'assistant.delivery_title'.tr(),
-      icon: Icons.delivery_dining_outlined,
+      icon: HeroIcons.delivery,
       child: Column(
         children: [
           if (area != null && block.hasArea)

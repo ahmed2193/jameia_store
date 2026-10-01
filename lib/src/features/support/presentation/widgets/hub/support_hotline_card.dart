@@ -7,6 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/press_row.dart';
 import 'support_section_card.dart';
 
@@ -33,7 +34,7 @@ class SupportHotlineCard extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(
+              const HeroIcon(
                 HeroIcons.phone,
                 size: AppSize.s20,
                 color: AppColors.success,
@@ -58,8 +59,8 @@ class SupportHotlineCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(
-                HeroIcons.arrowRight,
+              const HeroIcon(
+                HeroIcons.chevronEnd,
                 size: AppSize.s16,
                 color: AppColors.disabledText,
               ),

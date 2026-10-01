@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// "✓ Applied" on a ticket the cart already applied (the coupon, an offer):
 /// a green check and the word, read as one.
@@ -17,8 +19,8 @@ class CheckoutAppliedMark extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.check_rounded,
+          const HeroIcon(
+            HeroIcons.check,
             size: AppSize.s16,
             color: AppColors.primaryDark,
           ),

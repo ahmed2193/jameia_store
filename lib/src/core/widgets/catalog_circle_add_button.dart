@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_shadows.dart';
-import '../design/hero_assets.dart';
+import '../design/hero_icons.dart';
 import '../motion/motion.dart';
 import '../motion/press_scale.dart';
 import '../responsive/app_size.dart';
-import 'hero_svg_glyph.dart';
+import './hero_icon.dart';
 
 /// The floating round button on a product card: "+" for a product one tap can
 /// add, the Hero options glyph ([options], three jar sizes —
-/// [HeroAssets.productOptions]) for a product that needs a choice first
+/// [HeroIcons.options]) for a product that needs a choice first
 /// (variants). It
 /// sinks under the finger ([PressScale] at the small-button depth); the host
 /// fires the haptic with the add.
@@ -19,7 +19,7 @@ class CatalogCircleAddButton extends StatelessWidget {
     super.key,
     required this.label,
     required this.onTap,
-    this.icon = Icons.add_rounded,
+    this.icon = HeroIcons.plus,
     this.options = false,
   });
 
@@ -48,12 +48,16 @@ class CatalogCircleAddButton extends StatelessWidget {
             boxShadow: AppShadows.medium,
           ),
           child: options
-              ? const HeroSvgGlyph.mono(
-                  HeroAssets.productOptions,
+              ? const HeroIcon(
+                  HeroIcons.options,
                   size: AppSize.s20,
                   color: AppColors.brandForeground,
                 )
-              : Icon(icon, size: AppSize.s20, color: AppColors.brandForeground),
+              : HeroIcon(
+                  icon,
+                  size: AppSize.s20,
+                  color: AppColors.brandForeground,
+                ),
         ),
       ),
     );

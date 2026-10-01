@@ -280,4 +280,70 @@ void main() {
       expect(find.text('next'), findsNothing);
     });
   });
+
+  // Review fixes (I16): I1 — a route something else popped under the
+  // finger never comes back on a cancel; O2 — one gesture per route.
+  group('gesture races', () {
+    HeroPageRoute<dynamic> routeOf(WidgetTester tester, String label) =>
+        ModalRoute.of(tester.element(find.text(label)))!
+            as HeroPageRoute<dynamic>;
+
+    testWidgets('a pop during a predictive back, then a cancel: the page '
+        'stays gone', (tester) async {
+      final router = await _pumpApp(tester);
+      router.push('/next');
+      await tester.pumpAndSettle();
+
+      await _backGesture('startBackGesture', _backEvent(0));
+      await _backGesture('updateBackGestureProgress', _backEvent(0.3));
+      await tester.pump();
+      router.pop();
+      await tester.pump();
+      await _backGesture('cancelBackGesture');
+      await tester.pumpAndSettle();
+
+      expect(find.text('next'), findsNothing);
+      expect(router.state.uri.path, '/');
+      final home = tester.element(find.text('home'));
+      expect(Navigator.of(home).userGestureInProgress, isFalse);
+    });
+
+    testWidgets('a pop during a drag to dismiss, then a short release: the '
+        'page stays gone', (tester) async {
+      final router = await _pumpApp(tester, modal: true);
+      router.push('/next');
+      await tester.pumpAndSettle();
+
+      final route = routeOf(tester, 'next');
+      expect(route.startBackGesture(HeroBackGestureKind.drag), isTrue);
+      route.updateBackGesture(0.1);
+      await tester.pump();
+      router.pop();
+      await tester.pump();
+      route.endBackGesture(commit: false);
+      await tester.pumpAndSettle();
+
+      expect(find.text('next'), findsNothing);
+      expect(router.state.uri.path, '/');
+    });
+
+    testWidgets('a drag cannot start (nor drive) a route another gesture '
+        'already drives', (tester) async {
+      final router = await _pumpApp(tester, modal: true);
+      router.push('/next');
+      await tester.pumpAndSettle();
+
+      await _backGesture('startBackGesture', _backEvent(0));
+      await tester.pump();
+      final route = routeOf(tester, 'next');
+
+      expect(route.canStartDrag, isFalse);
+      expect(route.startBackGesture(HeroBackGestureKind.drag), isFalse);
+      expect(route.backGesture.value?.kind, HeroBackGestureKind.predictive);
+
+      await _backGesture('cancelBackGesture');
+      await tester.pumpAndSettle();
+      expect(route.canStartDrag, isTrue);
+    });
+  });
 }

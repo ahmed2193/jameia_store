@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/motion/spring_curve.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/login_cubit.dart';
 import '../../cubit/login_state.dart';
 
@@ -27,10 +29,10 @@ class LoginPhoneValidMark extends StatelessWidget {
             ? PopScale.onMount(
                 curve: AppSprings.snappy,
                 duration: AppSprings.snappy.duration,
-                child: const Icon(
-                  Icons.check_circle_rounded,
+                child: const HeroIcon(
+                  HeroIcons.checkCircle,
                   size: AppSize.s22,
-                  color: AppColors.primary,
+                  color: AppColors.primaryDark,
                 ),
               )
             : const SizedBox.shrink(),

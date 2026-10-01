@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Copies [text] (the order number) for the customer to paste into a chat
 /// with support, then says so.
@@ -34,7 +36,7 @@ class TrackingCopyButton extends StatelessWidget {
       visualDensity: VisualDensity.compact,
       iconSize: AppSize.s18,
       color: AppColors.brandDeep,
-      icon: const Icon(Icons.copy_rounded),
+      icon: const HeroIcon(HeroIcons.copy),
     );
   }
 }

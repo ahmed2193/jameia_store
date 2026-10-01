@@ -39,7 +39,7 @@ class MineDeliveryCodeCell extends StatelessWidget {
           borderRadius: _radius,
           clipBehavior: Clip.antiAlias,
           child: MineMenuCell(
-            icon: HeroIcons.confirmReceipt,
+            icon: HeroIcons.ordersDone,
             tone: MineTone.brand,
             label: 'account.delivery_code'.tr(),
             onTap: () => context.push(Routes.mineDeliveryCode),

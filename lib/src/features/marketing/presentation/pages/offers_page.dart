@@ -22,8 +22,6 @@ import '../widgets/offers_cart_bar.dart';
 class OffersPage extends StatelessWidget {
   const OffersPage({super.key});
 
-  static const String _emoji = '🔥';
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider<OffersCubit>(
@@ -35,7 +33,7 @@ class OffersPage extends StatelessWidget {
           child: CollectionFrame(
             storeName: 'core.store_name'.tr(),
             heading: 'offers.hero_title'.tr(),
-            emoji: _emoji,
+            flame: true,
             subtitle: 'offers.hero_subtitle'.tr(),
             onBack: context.canPop() ? context.pop : null,
             onSearch: () => context.push(Routes.search),

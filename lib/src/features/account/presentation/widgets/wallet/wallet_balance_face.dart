@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'wallet_balance_amount.dart';
 import 'wallet_delta_chip.dart';
 
@@ -115,8 +117,8 @@ class WalletBalanceFace extends StatelessWidget {
                           ),
                           child: SizedBox.square(
                             dimension: _disc,
-                            child: Icon(
-                              Icons.account_balance_wallet_rounded,
+                            child: HeroIcon(
+                              HeroIcons.wallet,
                               size: AppSize.s24,
                               color: AppColors.primaryDark,
                             ),
@@ -136,11 +138,7 @@ class WalletBalanceFace extends StatelessWidget {
                   const SizedBox(height: AppSpacing.s12),
                   Row(
                     children: [
-                      Icon(
-                        Icons.shopping_bag_outlined,
-                        size: AppSize.s16,
-                        color: _muted,
-                      ),
+                      HeroIcon(HeroIcons.bag, size: AppSize.s16, color: _muted),
                       const SizedBox(width: AppSpacing.s8),
                       Expanded(
                         child: Text(

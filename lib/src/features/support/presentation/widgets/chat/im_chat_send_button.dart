@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Send button — lit in the brand colour once there is text, grey otherwise.
 /// Rebuilds off the field's value only (never the thread).
@@ -33,8 +34,8 @@ class ImChatSendButton extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: Icon(
-              HeroIcons.arrowUp,
+            child: HeroIcon(
+              HeroIcons.chevronUp,
               size: AppSize.s20,
               color: active
                   ? AppColors.brandForeground

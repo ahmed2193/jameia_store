@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// Under a cancelled member's card: the membership will not renew and the
 /// perks stay on until [periodEnd] — on a warm amber wash, popping in right
@@ -34,8 +36,8 @@ class ProEndingNotice extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.event_available_rounded,
+            const HeroIcon(
+              HeroIcons.calendarCheck,
               size: _icon,
               color: AppColors.accent4Foreground,
             ),

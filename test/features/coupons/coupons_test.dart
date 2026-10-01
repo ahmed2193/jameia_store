@@ -114,7 +114,7 @@ GetCouponsUseCase _useCase(CouponsRepository repository) =>
     GetCouponsUseCase(repository, now: _today);
 
 const Map<String, List<String>> _fonts = {
-  'Hero': ['Hero-Regular.otf', 'Hero-Medium.otf', 'Hero-Bold.otf'],
+  'NotoSans': ['NotoSans-Regular.ttf', 'NotoSans-Medium.ttf', 'NotoSans-Bold.ttf'],
   'NotoSansArabicUI': [
     'NotoSansArabicUI-Regular.ttf',
     'NotoSansArabicUI-Medium.ttf',

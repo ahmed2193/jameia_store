@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
 import '../../cubit/checkout_cubit.dart';
 import 'checkout_note_sheet.dart';
@@ -21,7 +22,7 @@ class CheckoutNoteRow extends StatelessWidget {
     );
     return HeroListRow(
       dense: true,
-      icon: Icons.edit_note_rounded,
+      icon: HeroIcons.edit,
       title: 'checkout.notes_title'.tr(),
       subtitle: notes.trim().isEmpty ? 'checkout.notes_empty'.tr() : notes,
       subtitleMaxLines: 1,

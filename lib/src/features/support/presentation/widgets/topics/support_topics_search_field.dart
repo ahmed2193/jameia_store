@@ -6,6 +6,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Search field of the help topics, with a clear button while [query] has
 /// text.
@@ -38,7 +39,7 @@ class SupportTopicsSearchField extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(
+            const HeroIcon(
               HeroIcons.search,
               size: AppSize.s18,
               color: AppColors.tertiaryText,
@@ -70,8 +71,8 @@ class SupportTopicsSearchField extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   child: const Padding(
                     padding: EdgeInsetsDirectional.only(start: AppSpacing.s8),
-                    child: Icon(
-                      HeroIcons.searchClear,
+                    child: HeroIcon(
+                      HeroIcons.closeCircleFill,
                       size: AppSize.s16,
                       color: AppColors.tertiaryText,
                     ),

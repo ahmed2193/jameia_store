@@ -33,4 +33,14 @@ abstract final class AppEnv {
   static const bool liveNotifications = bool.fromEnvironment(
     'LIVE_NOTIFICATIONS',
   );
+
+  /// Road routing on OpenStreetMap roads (the live map's simulated rider,
+  /// when Google's Routes API is not available — see `AppConstants.mapsApiKey`).
+  /// Defaults to the public OSRM demo server: fair use only (≤ 1 request / s),
+  /// never for production; point it at a self-hosted OSRM with
+  /// `--dart-define=OSRM_BASE_URL=https://osrm.example.com`.
+  static const String osrmBaseUrl = String.fromEnvironment(
+    'OSRM_BASE_URL',
+    defaultValue: 'https://router.project-osrm.org',
+  );
 }

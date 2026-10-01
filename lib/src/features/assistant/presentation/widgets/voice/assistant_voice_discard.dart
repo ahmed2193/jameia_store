@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'assistant_voice_bin_painter.dart';
 
 /// WhatsApp's goodbye to a cancelled recording: the red mic hops up and
@@ -125,8 +127,8 @@ class _AssistantVoiceDiscardState extends State<AssistantVoiceDiscard>
                       angle: math.pi * hop,
                       child: Transform.scale(
                         scale: 1 - (1 - _fallenScale) * fall,
-                        child: const Icon(
-                          Icons.mic_rounded,
+                        child: const HeroIcon(
+                          HeroIcons.mic,
                           size: AppSize.s22,
                           color: AppColors.error,
                         ),

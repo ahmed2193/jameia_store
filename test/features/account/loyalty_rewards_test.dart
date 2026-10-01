@@ -11,6 +11,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_loyalty_entity.dart';
@@ -566,7 +567,14 @@ void main() {
       expect(find.text('200 points'), findsOneWidget);
       expect(find.text('180 more points'), findsOneWidget);
       expect(find.text('680 more points'), findsOneWidget);
-      expect(find.byIcon(Icons.lock_rounded), findsNWidgets(2));
+      // The two locked cards wear the lock (the next-tier line has its own).
+      expect(
+        find.descendant(
+          of: find.byType(RewardCard),
+          matching: find.byIcon(HeroIcons.lock),
+        ),
+        findsNWidgets(2),
+      );
     });
 
     testWidgets('the balance card shows the way to the next locked tier', (
@@ -588,7 +596,7 @@ void main() {
       expect(findRolled('1000 pts'), findsOneWidget);
       expect(find.textContaining('to unlock'), findsNothing);
       expect(find.text('Keep earning'), findsNothing);
-      expect(find.byIcon(Icons.lock_rounded), findsNothing);
+      expect(find.byIcon(HeroIcons.lock), findsNothing);
     });
 
     testWidgets('the tier the cart carries shows the Applied chip', (

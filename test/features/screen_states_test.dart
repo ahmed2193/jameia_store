@@ -24,6 +24,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
 import 'package:hero_mart/src/core/constants/app_constants.dart';
 import 'package:hero_mart/src/core/design/hero_assets.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
 import 'package:hero_mart/src/core/domain/entities/data_freshness.dart';
@@ -218,7 +219,7 @@ void main() {
     ) async {
       await tester.pumpWidget(app(ErrorView(onRetry: () {})));
       expect(_art(HeroAssets.stateError), findsOneWidget);
-      expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
+      expect(find.byIcon(HeroIcons.warning), findsNothing);
 
       await tester.pumpWidget(
         app(const HeroStateView.signedOut(message: 'Sign in to see this')),

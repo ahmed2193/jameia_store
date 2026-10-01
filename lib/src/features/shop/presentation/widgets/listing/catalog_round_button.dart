@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// A round outlined button of the catalogue app bar (back, search). Sinks
 /// under the finger.
@@ -41,7 +42,7 @@ class CatalogRoundButton extends StatelessWidget {
             border: Border.all(color: AppColors.divider),
           ),
           // Directional glyphs (back) flip with the reading direction.
-          child: Icon(icon, size: _glyph, color: AppColors.primaryText),
+          child: HeroIcon(icon, size: _glyph, color: AppColors.primaryText),
         ),
       ),
     );

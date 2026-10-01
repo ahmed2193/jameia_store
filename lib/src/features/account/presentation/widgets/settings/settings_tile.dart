@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/press_row.dart';
 import 'settings_icon_badge.dart';
 import 'settings_tone.dart';
@@ -99,8 +100,8 @@ class SettingsTile extends StatelessWidget {
                 end,
               ] else if (chevron && onTap != null) ...[
                 const SizedBox(width: AppSpacing.s8),
-                const Icon(
-                  HeroIcons.arrowRight,
+                const HeroIcon(
+                  HeroIcons.chevronEnd,
                   size: AppSize.s16,
                   color: AppColors.tertiaryText,
                 ),

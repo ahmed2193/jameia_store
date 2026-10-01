@@ -7,7 +7,6 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/hero_address_entity.dart';
-import '../../../../../core/motion/motion.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../cubit/address_book_cubit.dart';
 import 'address_delete_dialog.dart';
@@ -15,14 +14,11 @@ import 'address_row_action.dart';
 
 /// Edit + delete for one row. A confirmed delete takes the row out at once;
 /// the DELETE waits while the page's "Address deleted · Undo" snack is up
-/// (B1-17).
+/// (B1-17): the page releases it when the snack closes without the Undo.
 class AddressRowActions extends StatelessWidget {
   const AddressRowActions({super.key, required this.address});
 
   final HeroAddressEntity address;
-
-  /// The snack's whole stay: it rises in, then dwells.
-  static Duration get _undoWindow => AppMotion.medium + AppMotion.snackDwell;
 
   Future<void> _confirmDelete(BuildContext context) async {
     final cubit = context.read<AddressBookCubit>();
@@ -33,7 +29,7 @@ class AddressRowActions extends StatelessWidget {
       pageBuilder: (_) => const AddressDeleteDialog(),
     );
     if (confirmed ?? false) {
-      await cubit.delete(address.id, undoWindow: _undoWindow);
+      await cubit.delete(address.id, holdForUndo: true);
     }
   }
 
@@ -48,7 +44,7 @@ class AddressRowActions extends StatelessWidget {
           onPressed: () => context.push(Routes.addressEdit, extra: address),
         ),
         AddressRowAction(
-          icon: HeroIcons.delete,
+          icon: HeroIcons.trash,
           tooltip: 'common.delete'.tr(),
           onPressed: () => _confirmDelete(context),
         ),

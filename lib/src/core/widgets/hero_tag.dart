@@ -4,6 +4,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// Colour pairs of a [HeroTag] (every pair meets AA for bold 12).
 enum HeroTagTone {
@@ -59,7 +60,7 @@ class HeroTag extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: AppSize.s14, color: tone.foreground),
+              HeroIcon(icon!, size: AppSize.s14, color: tone.foreground),
               const SizedBox(width: AppSpacing.s4),
             ],
             Flexible(

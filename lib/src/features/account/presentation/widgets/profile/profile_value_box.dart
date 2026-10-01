@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'profile_field_shell.dart';
 
 /// Tappable profile field showing a picked value (or a grey [placeholder])
@@ -47,7 +49,11 @@ class ProfileValueBox extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(icon, size: AppSize.s20, color: AppColors.secondaryText),
+                  HeroIcon(
+                    icon,
+                    size: AppSize.s20,
+                    color: AppColors.secondaryText,
+                  ),
                   const SizedBox(width: AppSpacing.s10),
                   Expanded(
                     child: Text(
@@ -78,8 +84,8 @@ class ProfileValueBox extends StatelessWidget {
                   else
                     const Padding(
                       padding: EdgeInsetsDirectional.only(end: AppSpacing.s10),
-                      child: Icon(
-                        Icons.expand_more_rounded,
+                      child: HeroIcon(
+                        HeroIcons.chevronDown,
                         size: AppSize.s20,
                         color: AppColors.tertiaryText,
                       ),

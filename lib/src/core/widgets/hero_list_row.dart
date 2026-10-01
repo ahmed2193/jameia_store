@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 import 'press_row.dart';
 
 /// One row of a list: a 24 dp leading icon, the title (+ an optional grey
@@ -99,8 +101,8 @@ class HeroListRow extends StatelessWidget {
         leading ??
         (icon == null
             ? null
-            : Icon(
-                icon,
+            : HeroIcon(
+                icon!,
                 size: dense ? denseLeadSize : AppSize.s24,
                 color: ink,
               ));
@@ -175,8 +177,8 @@ class HeroListRow extends StatelessWidget {
                         ],
                         if (showChevron && tap != null) ...[
                           const SizedBox(width: AppSpacing.s4),
-                          Icon(
-                            Icons.chevron_right_rounded,
+                          HeroIcon(
+                            HeroIcons.chevronEnd,
                             size: dense ? denseChevronSize : AppSize.s24,
                             color: dense
                                 ? AppColors.secondaryText

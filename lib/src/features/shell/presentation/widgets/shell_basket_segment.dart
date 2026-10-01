@@ -5,6 +5,7 @@ import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/press_row.dart';
 import 'shell_nav_badge.dart';
 
@@ -41,7 +42,7 @@ class ShellBasketSegment extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: AppSize.s18, color: color),
+            HeroIcon(icon, size: AppSize.s18, color: color),
             const SizedBox(width: AppSpacing.s6),
             Flexible(
               child: AnimatedDefaultTextStyle(

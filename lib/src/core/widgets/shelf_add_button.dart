@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_shadows.dart';
-import '../design/hero_assets.dart';
+import '../design/hero_icons.dart';
 import '../motion/motion.dart';
 import '../motion/motion_widgets.dart';
 import '../responsive/app_size.dart';
-import 'hero_svg_glyph.dart';
+import './hero_icon.dart';
 
 /// The round white "+" on a listing card's picture (or, with [options], the
-/// Hero "choose options" glyph — three jar sizes, [HeroAssets.productOptions]
+/// Hero "choose options" glyph — three jar sizes, [HeroIcons.options]
 /// — for a product whose size must be chosen first), floating on its own
 /// shadow with no outline. Sinks under the finger.
 class ShelfAddButton extends StatelessWidget {
   const ShelfAddButton({
     super.key,
     required this.label,
-    this.icon = Icons.add_rounded,
+    this.icon = HeroIcons.plus,
     this.options = false,
     required this.onTap,
   });
@@ -51,12 +51,12 @@ class ShelfAddButton extends StatelessWidget {
             boxShadow: AppShadows.medium,
           ),
           child: options
-              ? const HeroSvgGlyph.mono(
-                  HeroAssets.productOptions,
+              ? const HeroIcon(
+                  HeroIcons.options,
                   size: _glyph,
                   color: AppColors.primaryDark,
                 )
-              : Icon(icon, size: _glyph, color: AppColors.primary),
+              : HeroIcon(icon, size: _glyph, color: AppColors.primaryDark),
         ),
       ),
     );

@@ -7,15 +7,19 @@ import 'package:flutter/services.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/brand_mark.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../settings/settings_card.dart';
 import 'about_social.dart';
 
-/// One social profile tile: tinted glyph over the network's name. A tap
+/// One social profile tile: the network's official mark (untinted, on a
+/// neutral disc) over its name. A tap
 /// copies the profile address (there is no browser hand-off in the app) and
-/// says so in place, like the delivery code's copy pill (B1-19): the glyph
+/// says so in place, like the delivery code's copy pill (B1-19): the mark
 /// flips to a check and the name to "Copied" for a moment, then back. The
 /// screen reader hears which address was copied.
 class AboutSocialChip extends StatefulWidget {
@@ -29,6 +33,7 @@ class AboutSocialChip extends StatefulWidget {
 
 class _AboutSocialChipState extends State<AboutSocialChip> {
   static const Duration _copiedHold = Duration(milliseconds: 1800);
+  static const double _glyph = AppSize.s22;
 
   bool _copied = false;
   Timer? _reset;
@@ -74,18 +79,22 @@ class _AboutSocialChipState extends State<AboutSocialChip> {
                 dimension: AppSize.s40,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: _copied ? AppColors.brandLightBg : social.fill,
+                    color: _copied
+                        ? AppColors.brandLightBg
+                        : AppColors.smallBackground,
                     shape: BoxShape.circle,
                   ),
                   child: RepaintBoundary(
                     child: FlipValue(
                       flipKey: _copied,
                       alignment: AlignmentDirectional.center,
-                      child: Icon(
-                        _copied ? Icons.check_rounded : social.icon,
-                        size: AppSize.s22,
-                        color: _copied ? AppColors.primaryDark : social.tint,
-                      ),
+                      child: _copied
+                          ? const HeroIcon(
+                              HeroIcons.check,
+                              size: _glyph,
+                              color: AppColors.primaryDark,
+                            )
+                          : BrandMark(social.mark, size: _glyph),
                     ),
                   ),
                 ),

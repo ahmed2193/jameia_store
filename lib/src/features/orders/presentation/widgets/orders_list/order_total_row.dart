@@ -26,10 +26,7 @@ class OrderTotalRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.s12),
-        HeroMoneyText(
-          kd: order.totalKd,
-          style: AppTextStyles.itemTitleStrong,
-        ),
+        HeroMoneyText(kd: order.totalKd, style: AppTextStyles.itemTitleStrong),
       ],
     );
   }

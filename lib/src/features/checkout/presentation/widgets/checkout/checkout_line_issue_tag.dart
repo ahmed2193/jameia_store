@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/cart_line_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Why the server flagged a line, as a small tag on its items-sheet row:
 /// red for a line that cannot be ordered ("Out of stock", "Unavailable"),
@@ -26,21 +28,21 @@ class CheckoutLineIssueTag extends StatelessWidget {
       CartLineIssue.none => null,
       CartLineIssue.outOfStock => (
         'checkout.line_out_of_stock',
-        Icons.error_outline_rounded,
+        HeroIcons.warning,
         AppColors.errorBg,
         AppColors.error,
         AppColors.errorDeep,
       ),
       CartLineIssue.unavailable || CartLineIssue.other => (
         'checkout.line_unavailable',
-        Icons.error_outline_rounded,
+        HeroIcons.warning,
         AppColors.errorBg,
         AppColors.error,
         AppColors.errorDeep,
       ),
       CartLineIssue.quantityReduced => (
         'checkout.line_qty_reduced',
-        Icons.info_outline_rounded,
+        HeroIcons.info,
         AppColors.accent4Light,
         AppColors.warn,
         AppColors.accent4Foreground,
@@ -58,7 +60,7 @@ class CheckoutLineIssueTag extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: AppSize.s12, color: glyph),
+            HeroIcon(icon, size: AppSize.s12, color: glyph),
             const SizedBox(width: AppSpacing.s4),
             Flexible(
               child: Text(

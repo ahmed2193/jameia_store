@@ -7,6 +7,7 @@ import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// A 48 dp icon action under a reply. A toggle (thumbs) shows its state by
 /// shape — filled vs outlined — not only colour (docs/motion §9.6 §2.10):
@@ -71,7 +72,7 @@ class _AssistantThumbButtonState extends State<AssistantThumbButton> {
                 value: _ratings,
                 child: AnimatedSwitcher(
                   duration: MotionGuard.duration(context, AppMotion.fast),
-                  child: Icon(
+                  child: HeroIcon(
                     selected ? widget.selectedIcon : widget.icon,
                     key: ValueKey<bool>(selected),
                     size: AppSize.s18,

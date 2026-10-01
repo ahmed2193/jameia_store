@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 
 /// Opens the chat history; the conversation picked there opens here.
@@ -24,8 +26,8 @@ class AssistantHistoryButton extends StatelessWidget {
     return IconButton(
       tooltip: 'assistant.history'.tr(),
       onPressed: () => _open(context),
-      icon: const Icon(
-        Icons.history_rounded,
+      icon: const HeroIcon(
+        HeroIcons.history,
         size: AppSize.s24,
         color: AppColors.primaryText,
       ),

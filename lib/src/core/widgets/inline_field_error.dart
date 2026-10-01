@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../motion/collapse_reveal.dart';
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// The reason a field or code was refused, next to it (docs/motion §9.4 #18):
 /// an error icon and the words in the error colour. It opens (height, then
@@ -64,8 +66,8 @@ class InlineFieldError extends StatelessWidget {
                       ? CrossAxisAlignment.center
                       : CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.error_outline_rounded,
+                    HeroIcon(
+                      HeroIcons.warning,
                       size: iconSize,
                       color: AppColors.error,
                     ),

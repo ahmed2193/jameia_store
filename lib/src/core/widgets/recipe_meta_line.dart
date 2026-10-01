@@ -4,13 +4,13 @@ import 'package:flutter/widgets.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
-import '../design/hero_assets.dart';
+import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
-import 'hero_svg_glyph.dart';
+import './hero_icon.dart';
 
 /// A recipe's time and size in one grey line — the Hero clock and "80 min",
-/// the Hero person and "6 servings" ([HeroAssets.sharedClock],
-/// [HeroAssets.tabAccount]). The glyphs are decorative: the words say it.
+/// the Hero person and "6 servings" ([HeroIcons.clock],
+/// [HeroIcons.account]). The glyphs are decorative: the words say it.
 class RecipeMetaLine extends StatelessWidget {
   const RecipeMetaLine({
     super.key,
@@ -31,8 +31,8 @@ class RecipeMetaLine extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const HeroSvgGlyph.mono(
-          HeroAssets.sharedClock,
+        const HeroIcon(
+          HeroIcons.clock,
           size: _glyph,
           color: AppColors.secondaryText,
         ),
@@ -46,8 +46,8 @@ class RecipeMetaLine extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.s10),
-        const HeroSvgGlyph.mono(
-          HeroAssets.tabAccount,
+        const HeroIcon(
+          HeroIcons.account,
           size: _glyph,
           color: AppColors.secondaryText,
         ),

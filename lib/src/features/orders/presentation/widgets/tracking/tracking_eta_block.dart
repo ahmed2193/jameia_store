@@ -47,7 +47,8 @@ class TrackingEtaBlock extends StatelessWidget {
                   ? 'orders.eta_arriving_label'
                   : 'orders.eta_ready_label')
               .tr(),
-          'orders.eta_minutes_value'.tr(
+          'orders.eta_minutes_count'.plural(
+            eta.minutesLeft ?? 0,
             namedArgs: {'minutes': '${eta.minutesLeft ?? 0}'},
           ),
           'orders.eta_around'.tr(namedArgs: {'time': clock}),
@@ -76,7 +77,8 @@ class TrackingEtaBlock extends StatelessWidget {
           clock,
           took == null
               ? date
-              : 'orders.eta_took'.tr(
+              : 'orders.eta_took'.plural(
+                  took.inMinutes,
                   namedArgs: {'date': date, 'minutes': '${took.inMinutes}'},
                 ),
         );

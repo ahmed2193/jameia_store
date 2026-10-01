@@ -11,8 +11,6 @@ class PhoneNumber extends Equatable {
 
   static const String kuwaitDialCode = '+965';
 
-  /// Flag shown next to the dial code (not translatable text).
-  static const String kuwaitFlag = '🇰🇼';
   static const String _kuwaitCountryCode = '965';
   static const String _internationalPrefix = '00';
 

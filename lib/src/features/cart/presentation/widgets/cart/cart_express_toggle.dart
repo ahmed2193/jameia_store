@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
@@ -35,7 +36,7 @@ class CartExpressToggle extends StatelessWidget {
     }
 
     return HeroListRow(
-      icon: Icons.bolt_rounded,
+      icon: HeroIcons.bolt,
       title: 'cart.express_title'.tr(),
       subtitle: 'cart.express_subtitle'.tr(
         namedArgs: {

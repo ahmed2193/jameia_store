@@ -8,11 +8,13 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../config/theme/order_status_palette.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/motion/size_fade_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/orders_cubit.dart';
 import 'order_actions.dart';
 import 'order_items_preview.dart';
@@ -92,8 +94,8 @@ class OrderCard extends StatelessWidget {
                     ),
                     const SizedBox(width: AppSpacing.s8),
                     const ExcludeSemantics(
-                      child: Icon(
-                        Icons.chevron_right_rounded,
+                      child: HeroIcon(
+                        HeroIcons.chevronEnd,
                         size: AppSize.s24,
                         color: AppColors.tertiaryText,
                       ),

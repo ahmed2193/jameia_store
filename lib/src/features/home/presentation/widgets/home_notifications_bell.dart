@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import 'home_bell_ring.dart';
 
 /// Notifications entry of the home header: a hairline-framed white disc with
@@ -49,8 +51,8 @@ class HomeNotificationsBell extends StatelessWidget {
                 child: Center(
                   child: HomeBellRing(
                     ringing: hasUnread,
-                    child: const Icon(
-                      Icons.notifications_none_rounded,
+                    child: const HeroIcon(
+                      HeroIcons.bell,
                       size: AppSize.s22,
                       color: AppColors.primaryText,
                     ),

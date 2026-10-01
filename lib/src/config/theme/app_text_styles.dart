@@ -8,18 +8,20 @@ import 'app_colors.dart';
 /// mediumMultiLine / small / smallMultiLine). We expose the single-line variant
 /// of each as the common case; multiline only differs by +1sp line height.
 ///
-/// Body face = **Noto Sans** (theme `brand` font); RTL automatically falls back to
-/// NotoSansArabicUI via [fontFamilyFallback]. Digits use **MTDigit**. Weights:
+/// Body face = **Noto Sans**; RTL falls back to NotoSansArabicUI via
+/// [fontFamilyFallback]. Price digits use **HeroDigits** (Fredoka, the round
+/// face of the Hero "h"; digits and . , : % + - / × only). Weights:
 /// regular 400 / medium 500 / bold 700. Light sp values used (dark is +1sp).
 class AppTextStyles {
   AppTextStyles._();
 
-  // Hero's Mach screens render almost all text in the Hero brand OTF
-  // (Hero-Regular/Medium/Bold — confirmed by every bundle.css.json). Noto Sans
-  // + NotoSansArabicUI are fallbacks for glyphs Hero lacks (incl. Arabic).
-  static const String fontFamily = 'Hero';
-  static const String digitFamily = 'MTDigit';
-  static const List<String> _fallback = ['NotoSans', 'NotoSansArabicUI'];
+  static const String fontFamily = 'NotoSans';
+  static const String digitFamily = 'HeroDigits';
+  static const List<String> _fallback = ['NotoSansArabicUI'];
+
+  /// A digit style's fallback: HeroDigits carries only the digits and their
+  /// separators, so any other glyph (a letter, Arabic) comes from the body face.
+  static const List<String> digitFallback = [fontFamily, ..._fallback];
 
   static const FontWeight regular = FontWeight.w400;
   static const FontWeight medium = FontWeight.w500;
@@ -90,9 +92,10 @@ class AppTextStyles {
   /// Tabular figures for numbers people compare (money, points, codes).
   static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 
-  /// Digit-display style (prices / counters) using MT Digital Display.
+  /// Digit-display style (prices / counters) in HeroDigits.
   static TextStyle digits(double size, {FontWeight weight = bold}) => TextStyle(
     fontFamily: digitFamily,
+    fontFamilyFallback: digitFallback,
     fontSize: size,
     fontWeight: weight,
     color: AppColors.primaryText,

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../auth/presentation/cubit/auth_session_state.dart';
@@ -56,7 +57,7 @@ class SettingsLogoutTile extends StatelessWidget {
           child: SettingsSection(
             children: [
               SettingsTile(
-                icon: Icons.logout_rounded,
+                icon: HeroIcons.logout,
                 tone: SettingsTone.danger,
                 title: title,
                 titleColor: AppColors.logoutRed,

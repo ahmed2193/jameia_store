@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/entrance_arrival.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// The little hand beside the greeting: it waves hello once, as the greeting
 /// lands, and again every time [trigger] ticks (a tap on the greeting).
@@ -95,8 +97,8 @@ class _HomeWavingHandState extends State<HomeWavingHand>
       child: RepaintBoundary(
         child: AnimatedBuilder(
           animation: _controller,
-          child: const Icon(
-            Icons.waving_hand_rounded,
+          child: const HeroIcon(
+            HeroIcons.wave,
             size: _glyph,
             color: AppColors.accent3,
           ),

@@ -57,6 +57,7 @@ class _MemoryStorage implements LocalStorage {
 class _ScriptedRemote implements HomeRemoteDataSource {
   Object? homeError;
   Object? initError;
+  Object? ordersError;
   int homeCalls = 0;
 
   @override
@@ -74,6 +75,12 @@ class _ScriptedRemote implements HomeRemoteDataSource {
     if (error != null) throw error;
     final raw = liveInitJson();
     return RemotePayload(HomeInitModel.fromJson(raw), raw);
+  }
+  @override
+  Future<int> countOrders() async {
+    final error = ordersError;
+    if (error != null) throw error;
+    return 2;
   }
 }
 
@@ -130,6 +137,39 @@ void main() {
       expect(init.storeName, 'Hero');
       expect(init.delivery?.zoneName, 'Salmiya & Sharq');
       expect(init.proEnabled, isTrue);
+    });
+
+    test('countOrders GETs one row of /v1/orders and reads the total', () async {
+      final dataSource = build(
+        FakeHttpClientAdapter(
+          (_, _) => okBody({
+            'data': <Object>[],
+            'pagination': {'total': 0, 'page': 1, 'limit': 1, 'hasMore': false},
+          }),
+        ),
+      );
+
+      final total = await dataSource.countOrders();
+
+      final request = adapter.requests.single;
+      expect(request.method, 'GET');
+      expect(request.path, EndPoints.orders);
+      expect(request.queryParameters, {'page': 1, 'limit': 1});
+      expect(total, 0);
+    });
+
+    test('countOrders signed out is an UnauthorizedException', () {
+      final dataSource = build(
+        FakeHttpClientAdapter(
+          (_, _) => envelope(
+            status: 401,
+            statusMessage: 'UNAUTHORIZED',
+            errorMessage: 'Sign in',
+          ),
+        ),
+      );
+
+      expect(dataSource.countOrders, throwsA(isA<UnauthorizedException>()));
     });
 
     test('a non-object payload is a ParsingException', () {
@@ -280,6 +320,18 @@ void main() {
           ),
           emitsError(isA<NetworkFailure>()),
         ]),
+      );
+    });
+
+    test('countOrders maps the count and its failures', () async {
+      expect((await repository.countOrders()).getOrElse(() => -1), 2);
+
+      remote.ordersError = const UnauthorizedException('Sign in');
+      final signedOut = await repository.countOrders();
+
+      expect(
+        signedOut.fold((failure) => failure, (_) => null),
+        isA<UnauthorizedFailure>(),
       );
     });
 

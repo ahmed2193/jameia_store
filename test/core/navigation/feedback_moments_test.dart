@@ -6,9 +6,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hero_mart/src/core/design/hero_assets.dart';
+import 'package:hero_mart/src/config/theme/app_colors.dart';
 import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/motion/locale_swap_veil.dart';
@@ -72,19 +71,15 @@ void main() {
 
       final glyph = tester.widget<HeroSnackGlyph>(find.byType(HeroSnackGlyph));
       expect(glyph.tone, HeroSnackTone.success);
-      final svg = tester.widget<SvgPicture>(find.byType(SvgPicture));
-      expect(
-        (svg.bytesLoader as SvgAssetLoader).assetName,
-        HeroAssets.statusSuccess,
-      );
+      final check = tester.widget<Icon>(find.byIcon(HeroIcons.checkCircleFill));
+      expect(check.color, AppColors.primary);
+      expect(check.size, HeroSnackGlyph.size);
 
       await show(tester, 'Needs the internet', tone: HeroSnackTone.offline);
       await tester.pump(AppMotion.fast);
-      final offline = tester.widget<SvgPicture>(find.byType(SvgPicture));
-      expect(
-        (offline.bytesLoader as SvgAssetLoader).assetName,
-        HeroAssets.statusOffline,
-      );
+      final offline = tester.widget<Icon>(find.byIcon(HeroIcons.offline));
+      expect(offline.color, AppColors.white);
+      expect(find.byIcon(HeroIcons.checkCircleFill), findsNothing);
     });
 
     testWidgets('warning / error wear the info / alert icons; info none', (
@@ -92,17 +87,18 @@ void main() {
     ) async {
       await tester.pumpWidget(app());
       await show(tester, 'Pick a slot', tone: HeroSnackTone.warning);
-      expect(find.byIcon(HeroIcons.info), findsOneWidget);
+      expect(find.byIcon(HeroIcons.warning), findsOneWidget);
 
       await show(tester, 'Refused', tone: HeroSnackTone.error);
       await tester.pump(AppMotion.fast);
-      expect(find.byIcon(HeroIcons.alert), findsOneWidget);
-      expect(find.byIcon(HeroIcons.info), findsNothing);
+      expect(find.byIcon(HeroIcons.bell), findsOneWidget);
+      expect(find.byIcon(HeroIcons.warning), findsNothing);
 
       await show(tester, 'Just so you know');
       await tester.pump(AppMotion.fast);
-      expect(find.byIcon(HeroIcons.alert), findsNothing);
-      expect(find.byType(SvgPicture), findsNothing);
+      expect(find.byIcon(HeroIcons.bell), findsNothing);
+      expect(find.byIcon(HeroIcons.checkCircleFill), findsNothing);
+      expect(find.byIcon(HeroIcons.offline), findsNothing);
       expect(find.text('Just so you know'), findsOneWidget);
     });
   });
@@ -153,6 +149,60 @@ void main() {
 
       expect(undone, 1);
       expect(find.byType(SnackBar), findsNothing);
+    });
+
+    // Review fix I3: a screen-reader user must be able to reach the action.
+    testWidgets('with a screen reader a snack with an action stays until '
+        'acted on; one without still goes', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(accessibleNavigation: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await tester.pumpWidget(app());
+      var undone = 0;
+      await show(
+        tester,
+        'Address deleted',
+        actionLabel: 'Undo',
+        onAction: () => undone++,
+      );
+      expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isTrue);
+
+      await tester.pump(AppMotion.snackDwell * 3);
+      await tester.pump(tick);
+      expect(find.text('Undo'), findsOneWidget, reason: 'no time-out');
+
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+      await tester.pump(tick);
+      expect(undone, 1);
+      expect(find.byType(SnackBar), findsNothing);
+
+      await show(tester, 'Saved');
+      expect(tester.widget<SnackBar>(find.byType(SnackBar)).persist, isFalse);
+    });
+
+    testWidgets('the controller comes back: closed tells how the snack went', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app());
+      final reasons = <SnackBarClosedReason>[];
+      final snack = showHeroSnackBar(
+        host,
+        'Address deleted',
+        actionLabel: 'Undo',
+        onAction: () {},
+      );
+      unawaited(snack!.closed.then(reasons.add));
+      await tester.pump();
+      await tester.pump(AppMotion.medium);
+      await tester.pump(tick);
+      await tester.pump(AppMotion.snackDwell);
+      await tester.pump(AppMotion.fast);
+      await tester.pump(tick);
+
+      expect(reasons, [SnackBarClosedReason.timeout]);
     });
 
     testWidgets('a replacement takes the place at once; the words '
@@ -356,6 +406,44 @@ void main() {
       await tester.pump();
       await tester.pump(AppMotion.page);
       expect(find.text('Next sheet'), findsOneWidget);
+    });
+
+    testWidgets('lets go of a sheet once it answered, keeps the next one', (
+      tester,
+    ) async {
+      await tester.pumpWidget(app());
+      final first = showHeroBottomSheet<String>(
+        host,
+        builder: (_) => const Text('First sheet'),
+      );
+      await tester.pump();
+      await tester.pump(AppMotion.page);
+      final firstRoute = ModalRoute.of(
+        tester.element(find.text('First sheet')),
+      );
+      expect(debugHeldSheet, same(firstRoute));
+
+      Navigator.of(host).pop('done');
+      expect(await first, 'done');
+      // Answered: held no more, so its page (captured themes, elements) can
+      // be collected once the sheet is gone.
+      expect(debugHeldSheet, isNull);
+
+      // The next of a flow is held while it is up, even though the first
+      // one is still sliding out.
+      unawaited(
+        showHeroBottomSheet<String>(
+          host,
+          builder: (_) => const Text('Next sheet'),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(AppMotion.page);
+      final nextRoute = ModalRoute.of(tester.element(find.text('Next sheet')));
+      expect(debugHeldSheet, same(nextRoute));
+      Navigator.of(host).pop();
+      await tester.pump();
+      expect(debugHeldSheet, isNull);
     });
 
     testWidgets('in over page (large: slow), out over medium', (tester) async {

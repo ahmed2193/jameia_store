@@ -6,6 +6,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// An outlined pill chip of the search screen (docs/design_system.md): white,
 /// a hairline border, an ink label and an optional grey leading icon. The
@@ -62,7 +63,7 @@ class SearchTermChip extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (icon != null) ...[
-                        Icon(
+                        HeroIcon(
                           icon,
                           size: AppSize.s18,
                           color: AppColors.secondaryText,

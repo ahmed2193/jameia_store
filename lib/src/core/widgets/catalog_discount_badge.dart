@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// Gradient "N% off" badge with a flame, pinned to the top-start corner of a
 /// product image.
@@ -31,8 +33,8 @@ class CatalogDiscountBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.local_fire_department,
+          const HeroIcon(
+            HeroIcons.flameFill,
             size: AppSize.s11,
             color: AppColors.white,
           ),

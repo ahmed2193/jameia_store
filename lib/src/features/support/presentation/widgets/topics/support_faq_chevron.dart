@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The chevron of a topic header: turns over while the topic is [open].
 class SupportFaqChevron extends StatelessWidget {
@@ -19,8 +20,8 @@ class SupportFaqChevron extends StatelessWidget {
       duration: MotionGuard.duration(context, AppMotion.fast),
       curve: AppMotion.signature,
       turns: open ? _openTurns : 0,
-      child: const Icon(
-        HeroIcons.arrowDownSmall,
+      child: const HeroIcon(
+        HeroIcons.chevronDown,
         size: AppSize.s16,
         color: AppColors.tertiaryText,
       ),

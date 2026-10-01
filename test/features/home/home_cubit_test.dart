@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/check_first_order_welcome_usecase.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/mark_home_popups_shown_usecase.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/select_due_home_popups_usecase.dart';
@@ -33,6 +34,7 @@ void main() {
     WatchHomeBootstrapUseCase(repository),
     SelectDueHomePopupsUseCase(repository),
     MarkHomePopupsShownUseCase(repository),
+    CheckFirstOrderWelcomeUseCase(repository),
     now: () => _today,
   );
 
@@ -302,6 +304,165 @@ void main() {
         SelectDueHomePopupsUseCase.dayStamp(DateTime(2026, 1, 5)),
         '2026-01-05',
       );
+    });
+  });
+
+  group('first-order welcome gift', () {
+    const guestGift = HomeBootstrap(firstOrderFreeDelivery: true);
+    const customerGift = HomeBootstrap(
+      firstOrderFreeDelivery: true,
+      hasCustomer: true,
+    );
+
+    Future<bool> check(HomeBootstrap bootstrap) async =>
+        (await CheckFirstOrderWelcomeUseCase(
+          repository,
+        )(CheckFirstOrderWelcomeParams(bootstrap: bootstrap))).getOrElse(
+          () => false,
+        );
+
+    test('switched off by the store: never due, no count asked', () async {
+      expect(await check(const HomeBootstrap(hasCustomer: true)), isFalse);
+      expect(repository.orderCounts, 0);
+    });
+
+    test('a guest has no order yet: due without asking', () async {
+      expect(await check(guestGift), isTrue);
+      expect(repository.orderCounts, 0);
+    });
+
+    test('a signed-in customer (also just after sign-in): due only with 0 orders', () async {
+      repository.ordersCount = const Right(0);
+      expect(await check(customerGift), isTrue);
+
+      repository.ordersCount = const Right(2);
+      expect(await check(customerGift), isFalse);
+      expect(repository.orderCounts, 2);
+    });
+
+    test('a failed count is returned as it is', () async {
+      repository.ordersCount = const Left(NetworkFailure('offline'));
+
+      final result = await CheckFirstOrderWelcomeUseCase(
+        repository,
+      )(const CheckFirstOrderWelcomeParams(bootstrap: customerGift));
+
+      expect(result.isLeft(), isTrue);
+    });
+
+    test('opens the queue on its own, before any marketing popup', () async {
+      repository.bootstrap = const Right(guestGift);
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      expect(cubit.state.welcomeDue, isTrue);
+      expect(cubit.state.duePopups, isEmpty);
+      expect(cubit.state.hasPendingPopups, isTrue);
+      await cubit.close();
+    });
+
+    test('the queue waits for the count, then offers gift + popups at once', () async {
+      repository
+        ..bootstrap = const Right(
+          HomeBootstrap(
+            firstOrderFreeDelivery: true,
+            hasCustomer: true,
+            popups: [sessionPopup],
+          ),
+        )
+        ..orderGates = [];
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      expect(cubit.state.hasPendingPopups, isFalse, reason: 'count pending');
+      expect(cubit.state.bootstrap.hasCustomer, isTrue);
+
+      final states = await record(cubit, () async {
+        repository.orderGates!.single.complete(const Right(0));
+      });
+
+      expect(states, hasLength(1), reason: 'one emission opens the queue');
+      expect(cubit.state.welcomeDue, isTrue);
+      expect(cubit.state.duePopups, [sessionPopup]);
+      await cubit.close();
+    });
+
+    test('a failed count shows no gift; the popups still come', () async {
+      repository
+        ..bootstrap = const Right(
+          HomeBootstrap(
+            firstOrderFreeDelivery: true,
+            hasCustomer: true,
+            popups: [sessionPopup],
+          ),
+        )
+        ..ordersCount = const Left(ServerFailure('boom', statusCode: 500));
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      expect(cubit.state.welcomeDue, isFalse);
+      expect(cubit.state.duePopups, [sessionPopup]);
+      await cubit.close();
+    });
+
+    test('a saved copy never offers the gift', () async {
+      repository
+        ..cachedBootstrap = guestGift
+        ..bootstrap = const Left(NetworkFailure('offline'));
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      expect(cubit.state.bootstrap.firstOrderFreeDelivery, isTrue);
+      expect(cubit.state.welcomeDue, isFalse);
+      expect(cubit.state.hasPendingPopups, isFalse);
+      await cubit.close();
+    });
+
+    test('shown once per session: the latch clears it for good', () async {
+      repository.bootstrap = const Right(guestGift);
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+
+      cubit.markPopupsShown();
+      expect(cubit.state.welcomeDue, isFalse);
+      expect(cubit.state.popupsShown, isTrue);
+
+      await record(cubit, cubit.refresh);
+      expect(cubit.state.welcomeDue, isFalse);
+      expect(cubit.state.hasPendingPopups, isFalse);
+      await cubit.close();
+    });
+
+    test("an older snapshot's late count never overwrites the newer", () async {
+      repository
+        ..bootstrap = const Right(customerGift)
+        ..orderGates = [];
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+      await record(cubit, cubit.refresh);
+      final gates = repository.orderGates!;
+      expect(gates, hasLength(2));
+
+      await record(cubit, () async => gates[1].complete(const Right(0)));
+      expect(cubit.state.welcomeDue, isTrue);
+
+      await record(cubit, () async => gates[0].complete(const Right(4)));
+      expect(cubit.state.welcomeDue, isTrue, reason: 'the stale count drops');
+      await cubit.close();
+    });
+
+    test('a count landing after close emits nothing', () async {
+      repository
+        ..bootstrap = const Right(customerGift)
+        ..orderGates = [];
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+      await cubit.close();
+
+      repository.orderGates!.single.complete(const Right(0));
+      await pumpEventQueue();
+
+      expect(cubit.state.welcomeDue, isFalse);
     });
   });
 }

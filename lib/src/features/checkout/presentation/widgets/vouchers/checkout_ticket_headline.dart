@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 
 /// A ticket's first line: the glyph — the offer kind's Hero plate
 /// ([OfferPlate]: "%", voucher, scooter, gift) or, for a coupon code and any
@@ -29,12 +29,7 @@ class CheckoutTicketHeadline extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SvgPicture.asset(
-          asset,
-          width: iconSize,
-          height: iconSize,
-          excludeFromSemantics: true,
-        ),
+        HeroSvgGlyph.art(asset, size: iconSize),
         const SizedBox(width: AppSpacing.s12),
         Expanded(
           child: Text(

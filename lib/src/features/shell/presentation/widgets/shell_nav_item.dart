@@ -10,7 +10,9 @@ import 'shell_nav_badge.dart';
 /// One bottom-nav destination: icon (scaled up a touch when selected), label,
 /// and an optional count badge. It presses like every tappable (a dip, no
 /// ripple, no haptic — a tab switch is navigation, §9.5). The [icon] takes its size and colour from
-/// the item, so pass a plain `const Icon(...)` (or a `HeroMarkIcon`).
+/// the item, so pass a plain `const HeroIcon(...)` (or a `HeroMarkIcon`):
+/// the selected ink turns it into the sticker (ink line + natural fill), the
+/// idle grey keeps it one flat colour.
 class ShellNavItem extends StatelessWidget {
   const ShellNavItem({
     super.key,

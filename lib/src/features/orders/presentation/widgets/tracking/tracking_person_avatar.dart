@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// A person's disc on the order page: the first letter of their [name] on
 /// the green wash, with the [role] glyph in a small white badge at the
@@ -60,10 +61,10 @@ class TrackingPersonAvatar extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: AppColors.brandLightBg),
                   ),
-                  child: Icon(
+                  child: HeroIcon(
                     role,
                     size: _badgeGlyph,
-                    color: AppColors.primary,
+                    color: AppColors.brandDeep,
                   ),
                 ),
               ),

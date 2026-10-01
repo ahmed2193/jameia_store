@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The round "Jump to latest" button over the chat. The list decides when
 /// it shows ([visible]: the reader is away from the newest message — also
@@ -71,8 +73,8 @@ class AssistantJumpToLatest extends StatelessWidget {
                 ),
                 child: SizedBox.square(
                   dimension: AppSize.s48,
-                  child: Icon(
-                    Icons.keyboard_arrow_down_rounded,
+                  child: HeroIcon(
+                    HeroIcons.chevronDown,
                     size: AppSize.s28,
                     color: AppColors.primaryText,
                   ),

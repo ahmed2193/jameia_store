@@ -52,13 +52,7 @@ class _AddressListPageState extends State<AddressListPage> {
     if (deletedId != null) {
       // App-global: Undo still works once this page is gone.
       final book = context.read<AddressBookCubit>();
-      showHeroSnackBar(
-        context,
-        'addr.deleted'.tr(),
-        tone: HeroSnackTone.success,
-        actionLabel: 'core.undo'.tr(),
-        onAction: () => book.undoDelete(deletedId),
-      );
+      _offerUndo(context, book, deletedId);
       unawaited(
         _tellRefusalAfterLeaving(
           book,
@@ -77,6 +71,40 @@ class _AddressListPageState extends State<AddressListPage> {
       context,
       failure,
       action: state.failedAction == AddressBookAction.delete,
+    );
+  }
+
+  /// "Address deleted · Undo". The Undo window is the snack's whole life
+  /// (I2): the held DELETE goes out only once the snack closed without the
+  /// action (timed out, replaced, swiped away) — so an Undo the customer can
+  /// still see always works. An Undo that finds nothing to undo (the
+  /// session ended meanwhile) says so instead of closing as if it had.
+  void _offerUndo(BuildContext context, AddressBookCubit book, String id) {
+    final messenger = ScaffoldMessenger.of(context);
+    var undone = false;
+    final snack = showHeroSnackBar(
+      context,
+      'addr.deleted'.tr(),
+      tone: HeroSnackTone.success,
+      actionLabel: 'core.undo'.tr(),
+      onAction: () => undone = book.undoDelete(id),
+    );
+    if (snack == null) {
+      book.releaseDelete(id);
+      return;
+    }
+    unawaited(
+      snack.closed.then((reason) {
+        if (reason != SnackBarClosedReason.action) {
+          book.releaseDelete(id);
+        } else if (!undone) {
+          showHeroSnackBarOn(
+            messenger,
+            'addr.undo_too_late'.tr(),
+            tone: HeroSnackTone.warning,
+          );
+        }
+      }),
     );
   }
 

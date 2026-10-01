@@ -8,6 +8,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 
 /// Under the app bar once the chat is with support: "A person will reply
@@ -31,8 +32,8 @@ class AssistantHandoffBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(
-              HeroIcons.customerService,
+            const HeroIcon(
+              HeroIcons.support,
               size: AppSize.s20,
               color: AppColors.primaryDark,
             ),

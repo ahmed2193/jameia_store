@@ -20,7 +20,7 @@ class AssistantHandoffCard extends StatelessWidget {
       title: 'assistant.handoff_title'.tr(
         namedArgs: {'number': Formatters.isolate(block.ticketNumber)},
       ),
-      icon: HeroIcons.customerService,
+      icon: HeroIcons.support,
       borderColor: AppColors.brandTileBorder,
       child: Text(
         'assistant.handoff_body'.tr(),

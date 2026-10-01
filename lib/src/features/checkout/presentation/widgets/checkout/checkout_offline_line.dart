@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'checkout_bar_fact_text.dart';
 
 /// The line under the bar's total while the app is offline, in place of the
@@ -17,8 +19,8 @@ class CheckoutOfflineLine extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(
-          Icons.wifi_off_rounded,
+        const HeroIcon(
+          HeroIcons.offline,
           size: CheckoutBarFactText.iconSize,
           color: AppColors.secondaryText,
         ),

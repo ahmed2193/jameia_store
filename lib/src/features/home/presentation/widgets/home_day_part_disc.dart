@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/ambient_loop.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../domain/entities/home_greeting.dart';
 
 /// The round sky beside the greeting — a sun in the morning and afternoon, a
@@ -32,22 +34,22 @@ class HomeDayPartDisc extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, ink, plate) = switch (dayPart) {
       HomeDayPart.morning => (
-        Icons.wb_sunny_rounded,
+        HeroIcons.sun,
         AppColors.accent3,
         AppColors.accent4Light,
       ),
       HomeDayPart.afternoon => (
-        Icons.light_mode_rounded,
+        HeroIcons.sun,
         AppColors.accent3Dark,
         AppColors.accent3Light,
       ),
       HomeDayPart.evening => (
-        Icons.wb_twilight_rounded,
+        HeroIcons.sunrise,
         AppColors.accent1,
         AppColors.accent1Light,
       ),
       HomeDayPart.night => (
-        Icons.nights_stay_rounded,
+        HeroIcons.moon,
         AppColors.martGreenDark,
         AppColors.martGreenLight,
       ),
@@ -63,7 +65,7 @@ class HomeDayPartDisc extends StatelessWidget {
           rest: _swayRest,
           valueBuilder: (context, t, child) =>
               Transform.rotate(angle: _sway.transform(t), child: child),
-          child: Icon(icon, size: _glyph, color: ink),
+          child: HeroIcon(icon, size: _glyph, color: ink),
         ),
       ),
     );

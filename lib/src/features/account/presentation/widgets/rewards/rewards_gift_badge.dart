@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Amber → orange disc with a white gift that bobs gently ([FloatLoop]; still
 /// under reduced motion) — the badge of the "Redeem your points" tile.
@@ -34,8 +36,8 @@ class RewardsGiftBadge extends StatelessWidget {
           ),
           child: SizedBox.square(
             dimension: _diameter,
-            child: Icon(
-              Icons.card_giftcard_rounded,
+            child: HeroIcon(
+              HeroIcons.gift,
               size: AppSize.s22,
               color: AppColors.white,
             ),

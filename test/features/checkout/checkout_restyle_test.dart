@@ -9,6 +9,7 @@ import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
@@ -328,13 +329,17 @@ void main() {
         isEnabled: false,
       ),
     );
-    // Each method leads with its plate (the cash note, the wallet).
+    // Each method leads with its mark (the cash note, the wallet plate).
     for (final row in [cod, wallet]) {
       expect(
         find.descendant(of: row, matching: find.byType(CheckoutPaymentIcon)),
         findsOneWidget,
       );
     }
+    expect(
+      find.descendant(of: cod, matching: find.byIcon(HeroIcons.cash)),
+      findsOneWidget,
+    );
 
     await tester.tap(wallet);
     await tester.pumpAndSettle();

@@ -1,13 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/hero_assets.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../checkout/checkout_sheet_frame.dart';
 import 'checkout_coupon_sheet.dart';
 
@@ -52,11 +52,10 @@ class CheckoutCodeRow extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  SvgPicture.asset(
-                    HeroAssets.checkoutCodeTag,
-                    width: _iconSize,
-                    height: _iconSize,
-                    excludeFromSemantics: true,
+                  const HeroIcon(
+                    HeroIcons.tag,
+                    size: _iconSize,
+                    color: AppColors.primaryText,
                   ),
                   const SizedBox(width: _iconGap),
                   Expanded(
@@ -67,8 +66,8 @@ class CheckoutCodeRow extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
+                  const HeroIcon(
+                    HeroIcons.chevronEnd,
                     size: AppSize.s20,
                     color: AppColors.tertiaryText,
                   ),

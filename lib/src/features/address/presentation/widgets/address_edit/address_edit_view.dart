@@ -433,9 +433,9 @@ class _AddressEditViewState extends State<AddressEditView> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ZoomButton(icon: Icons.add, onTap: _zoomIn),
+                    ZoomButton(icon: HeroIcons.plus, onTap: _zoomIn),
                     const SizedBox(height: AppSpacing.s8),
-                    ZoomButton(icon: Icons.remove, onTap: _zoomOut),
+                    ZoomButton(icon: HeroIcons.minus, onTap: _zoomOut),
                   ],
                 ),
               ),

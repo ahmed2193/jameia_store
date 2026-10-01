@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_colors.dart';
+import '../../../../../../core/design/hero_icons.dart';
 import '../../../../../../core/motion/motion.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 import '../assistant_onboarding_timeline.dart';
 
 /// A see-through finger that shows how the cart demo works when the
@@ -84,8 +86,8 @@ class AssistantOnboardingGhostFinger extends StatelessWidget {
             child: Transform.scale(
               scale: 1 - (1 - _pressedScale) * press,
               alignment: AlignmentDirectional.topStart,
-              child: Icon(
-                Icons.touch_app_rounded,
+              child: HeroIcon(
+                HeroIcons.tap,
                 size: _size,
                 color: AppColors.primaryText.withValues(alpha: _alpha * alpha),
                 shadows: [

@@ -80,6 +80,11 @@ class FakeHomeRepository implements HomeRepository {
   final Map<String, String> shownDays = <String, String>{};
   Failure? stampReadFailure;
   Failure? stampWriteFailure;
+  Either<Failure, int> ordersCount = const Right(0);
+  int orderCounts = 0;
+
+  /// When set, every order count waits on a gate of its own, in call order.
+  List<Completer<Either<Failure, int>>>? orderGates;
 
   @override
   Stream<DataSnapshot<HomeFeed>> watchHomeFeed({bool forceRefresh = false}) {
@@ -97,6 +102,16 @@ class FakeHomeRepository implements HomeRepository {
     cached: forceRefresh ? null : cachedBootstrap,
     network: bootstrap,
   );
+
+  @override
+  Future<Either<Failure, int>> countOrders() async {
+    orderCounts++;
+    final gates = orderGates;
+    if (gates == null) return ordersCount;
+    final gate = Completer<Either<Failure, int>>();
+    gates.add(gate);
+    return gate.future;
+  }
 
   @override
   Either<Failure, String?> popupShownDay(String popupId) {

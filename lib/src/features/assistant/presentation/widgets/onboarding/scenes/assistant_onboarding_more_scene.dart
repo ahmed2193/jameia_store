@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_colors.dart';
 import '../../../../../../config/theme/app_spacing.dart';
+import '../../../../../../core/design/hero_icons.dart';
 import '../../../../../../core/motion/motion.dart';
 import '../assistant_onboarding_cue.dart';
 import '../assistant_onboarding_timeline.dart';
@@ -64,7 +65,7 @@ class AssistantOnboardingMoreScene extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AssistantOnboardingFeatureRow(
-                icon: Icons.local_offer_rounded,
+                icon: HeroIcons.tag,
                 color: AppColors.accent1,
                 tint: AppColors.accent1Light,
                 title: 'assistant.onboarding_demo_offer'.tr(),
@@ -76,7 +77,7 @@ class AssistantOnboardingMoreScene extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.s8),
               AssistantOnboardingFeatureRow(
-                icon: Icons.local_shipping_rounded,
+                icon: HeroIcons.delivery,
                 color: AppColors.link,
                 tint: AppColors.accentSkyLight,
                 title: 'assistant.onboarding_demo_order'.tr(),
@@ -94,7 +95,7 @@ class AssistantOnboardingMoreScene extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.s8),
               AssistantOnboardingFeatureRow(
-                icon: Icons.schedule_rounded,
+                icon: HeroIcons.clock,
                 color: AppColors.primaryDark,
                 tint: AppColors.brandLightBg,
                 title: 'assistant.onboarding_demo_delivery'.tr(),

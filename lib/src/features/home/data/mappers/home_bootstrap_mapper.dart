@@ -13,6 +13,8 @@ extension HomeBootstrapMapper on HomeInitModel {
       pointsMultiplier: proPointsMultiplier,
       discountPercent: proDiscountPercent,
     ),
+    firstOrderFreeDelivery: firstOrderFreeDelivery,
+    hasCustomer: hasCustomer,
     popups: [for (final popup in popups) popup.toEntity()],
   );
 }

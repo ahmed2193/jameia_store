@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/hero_image.dart';
 
 /// A flat labelled link to the products of the brand or the category: the
@@ -64,8 +66,8 @@ class PdpLinkRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: AppSpacing.s8),
-              const Icon(
-                Icons.chevron_right_rounded,
+              const HeroIcon(
+                HeroIcons.chevronEnd,
                 size: AppSize.s22,
                 color: AppColors.secondaryText,
               ),

@@ -5,9 +5,11 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/design/hero_assets.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/hero_svg_glyph.dart';
 import 'home_layout.dart';
 
@@ -100,8 +102,8 @@ class HomeMinOrderBar extends StatelessWidget {
                       behavior: HitTestBehavior.opaque,
                       child: const Padding(
                         padding: EdgeInsets.all(AppSpacing.s6),
-                        child: Icon(
-                          Icons.info_outline_rounded,
+                        child: HeroIcon(
+                          HeroIcons.info,
                           size: _glyph,
                           color: AppColors.primaryText,
                         ),

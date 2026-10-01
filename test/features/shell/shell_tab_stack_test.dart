@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/features/shell/presentation/widgets/shell_nav_item.dart';
 import 'package:hero_mart/src/features/shell/presentation/widgets/shell_tab_stack.dart';
@@ -111,7 +112,7 @@ void main() {
       MaterialApp(
         home: Scaffold(
           body: ShellNavItem(
-            icon: const Icon(Icons.search),
+            icon: const Icon(HeroIcons.search),
             label: 'Search',
             selected: false,
             onTap: () => tapped++,

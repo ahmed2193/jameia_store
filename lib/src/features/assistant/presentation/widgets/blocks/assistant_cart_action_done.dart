@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'assistant_cart_links.dart';
 
 /// A confirmed proposal: the confirm reply's own words ([message], shown as
@@ -21,8 +23,8 @@ class AssistantCartActionDone extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = message;
     final justConfirmed = text != null;
-    const check = Icon(
-      Icons.check_circle_rounded,
+    const check = HeroIcon(
+      HeroIcons.checkCircleFill,
       size: AppSize.s20,
       color: AppColors.success,
     );

@@ -713,5 +713,67 @@ void main() {
       expect(cubit.state, const AddressBookState());
       expect(saveCache.saved, [serverBook]);
     });
+
+    // Review fix I2: the page holds the DELETE for its Undo snack's life.
+    test('held for Undo: nothing is sent until the page releases it', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+
+      final deleting = cubit.delete(addressId(2), holdForUndo: true);
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(deleteAddress.calls, isEmpty, reason: 'no timer of its own');
+
+      cubit.releaseDelete(addressId(2));
+      await deleting;
+      expect(deleteAddress.calls.single.id, addressId(2));
+      expect(cubit.undoDelete(addressId(2)), isFalse);
+    });
+
+    test('held for Undo: an Undo before the release sends nothing, and a '
+        'late release does nothing', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+
+      final deleting = cubit.delete(addressId(2), holdForUndo: true);
+      await flush();
+      expect(cubit.undoDelete(addressId(2)), isTrue);
+      cubit.releaseDelete(addressId(2));
+      await deleting;
+
+      expect(deleteAddress.calls, isEmpty);
+      expect(cubit.state.book, serverBook);
+    });
+
+    // Review fix O3: the device copy changes only once the server confirmed.
+    test('a save while a delete waits keeps the waiting row in the device '
+        'copy; the confirmed delete then drops it', () async {
+      final cubit = build();
+      addTearDown(cubit.close);
+      await cubit.start(customerId: customerA);
+      expect(saveCache.saved, [serverBook]);
+
+      final deleting = cubit.delete(addressId(2), holdForUndo: true);
+      await flush();
+      final edited = address(
+        n: 1,
+        label: 'Home 2',
+        isDefault: serverBook.byId(addressId(1))!.isDefault,
+      );
+      cubit.applySaved(edited);
+      await flush();
+
+      final written = saveCache.saved.last;
+      expect(written.byId(addressId(2)), isNotNull, reason: 'not confirmed');
+      expect(written.byId(addressId(1))!.label, 'Home 2');
+      expect(cubit.state.book.byId(addressId(2)), isNull, reason: 'on screen');
+
+      cubit.releaseDelete(addressId(2));
+      await deleting;
+      await flush();
+      expect(saveCache.saved.last.byId(addressId(2)), isNull);
+      expect(saveCache.saved.last.byId(addressId(1))!.label, 'Home 2');
+    });
   });
 }

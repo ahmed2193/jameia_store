@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../settings/settings_section.dart';
 import '../settings/settings_tile.dart';
 import '../settings/settings_tone.dart';
@@ -24,19 +25,19 @@ class AboutLinksSection extends StatelessWidget {
     return SettingsSection(
       children: [
         SettingsTile(
-          icon: Icons.description_outlined,
+          icon: HeroIcons.document,
           tone: SettingsTone.sky,
           title: 'account.terms_of_service'.tr(),
           onTap: () => context.push(Routes.contentPage, extra: _termsSlug),
         ),
         SettingsTile(
-          icon: Icons.privacy_tip_outlined,
+          icon: HeroIcons.shield,
           tone: SettingsTone.violet,
           title: 'account.privacy_policy'.tr(),
           onTap: () => context.push(Routes.contentPage, extra: _privacySlug),
         ),
         SettingsTile(
-          icon: Icons.code_rounded,
+          icon: HeroIcons.code,
           tone: SettingsTone.neutral,
           title: 'account.licenses'.tr(),
           onTap: () => showLicensePage(
@@ -46,7 +47,7 @@ class AboutLinksSection extends StatelessWidget {
           ),
         ),
         SettingsTile(
-          icon: Icons.star_outline_rounded,
+          icon: HeroIcons.star,
           tone: SettingsTone.amber,
           title: 'account.rate_us'.tr(),
           subtitle: 'account.rate_us_soon'.tr(),

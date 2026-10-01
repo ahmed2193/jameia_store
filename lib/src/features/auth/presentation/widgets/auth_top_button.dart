@@ -4,15 +4,17 @@ import 'package:go_router/go_router.dart';
 import '../../../../config/routes/route_args/shell_arrival.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// The round white button at the top start of the sign-in pages, over the
 /// green header. Back to the page that opened sign-in when there is one;
 /// otherwise — sign-in is the whole stack, after signing out or an expired
 /// session — a close that lets the customer keep browsing as a guest (the
-/// shell, with `go`, so its cubits start fresh). `Icons.arrow_back` mirrors
+/// shell, with `go`, so its cubits start fresh). `HeroIcons.back` mirrors
 /// under RTL on its own.
 class AuthTopButton extends StatelessWidget {
   const AuthTopButton({super.key});
@@ -36,8 +38,8 @@ class AuthTopButton extends StatelessWidget {
           backgroundColor: AppColors.white,
           foregroundColor: AppColors.primaryText,
         ),
-        icon: Icon(
-          canPop ? Icons.arrow_back : Icons.close_rounded,
+        icon: HeroIcon(
+          canPop ? HeroIcons.back : HeroIcons.close,
           size: AppSize.s22,
         ),
       ),

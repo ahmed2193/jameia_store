@@ -1,6 +1,7 @@
 // "My addresses" over a GoRouter with the app-global AddressBookCubit built on
 // fake use cases: the screen faces (loaded, empty, signed-out, error), delete
 // with confirmation, and the picker pop.
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
@@ -308,6 +309,99 @@ void main() {
     expect(find.text('Try later'), findsOneWidget);
 
     await teardownApp(tester);
+  });
+
+  group('the Undo window is the snack (review fixes I2 / I3)', () {
+    Future<void> deleteWork(WidgetTester tester) async {
+      await book.start();
+      await pumpList(tester);
+      await tester.tap(find.byTooltip('Delete').last);
+      await settle(tester);
+      await tester.tap(find.text('Confirm'));
+      await tester.pump();
+    }
+
+    Animation<double>? snackAnimation(WidgetTester tester) =>
+        tester.widget<SnackBar>(find.byType(SnackBar)).animation;
+
+    testWidgets('nothing is sent while the Undo can be seen; the DELETE goes '
+        'once the snack is gone', (tester) async {
+      await deleteWork(tester);
+
+      var frames = 0;
+      while (find.text('Undo').evaluate().isNotEmpty) {
+        expect(deleteAddress.calls, isEmpty, reason: 'Undo still on screen');
+        await tester.pump(const Duration(milliseconds: 50));
+        expect(++frames, lessThan(200), reason: 'the snack must go');
+      }
+      await settle(tester);
+      expect(deleteAddress.calls.single.id, work.id);
+
+      await teardownApp(tester);
+    });
+
+    testWidgets('an Undo tapped while the snack leaves still brings the row '
+        'back, and nothing is sent', (tester) async {
+      await deleteWork(tester);
+
+      var frames = 0;
+      while (snackAnimation(tester)?.status != AnimationStatus.reverse) {
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(++frames, lessThan(400), reason: 'the snack must start to go');
+      }
+      await tester.pump(const Duration(milliseconds: 16));
+      await tester.tap(find.text('Undo'), warnIfMissed: false);
+      await settle(tester);
+      await tester.pump(const Duration(seconds: 10));
+      await settle(tester);
+
+      expect(find.byType(AddressRowTile), findsNWidgets(2));
+      expect(deleteAddress.calls, isEmpty);
+
+      await teardownApp(tester);
+    });
+
+    testWidgets('an Undo with nothing left to undo says so', (tester) async {
+      await deleteWork(tester);
+      await settle(tester);
+      // The session ends under the snack: the delete is dropped, not sent.
+      unawaited(book.stop());
+      await tester.pump();
+
+      await tester.tap(find.text('Undo'));
+      await settle(tester);
+
+      expect(
+        find.text('Too late to undo: the address is already deleted'),
+        findsOneWidget,
+      );
+      expect(deleteAddress.calls, isEmpty);
+
+      await teardownApp(tester);
+    });
+
+    testWidgets('with a screen reader the Undo stays until used, and the '
+        'DELETE waits for it', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(accessibleNavigation: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+      await deleteWork(tester);
+      await settle(tester);
+
+      await tester.pump(const Duration(seconds: 20));
+      await settle(tester);
+      expect(find.text('Undo'), findsOneWidget);
+      expect(deleteAddress.calls, isEmpty);
+
+      await tester.tap(find.text('Undo'));
+      await settle(tester);
+      expect(find.byType(AddressRowTile), findsNWidgets(2));
+      expect(deleteAddress.calls, isEmpty);
+
+      await teardownApp(tester);
+    });
   });
 
   testWidgets('cancelling the delete dialog sends nothing', (tester) async {

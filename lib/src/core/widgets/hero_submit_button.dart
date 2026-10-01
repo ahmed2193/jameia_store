@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../motion/haptics.dart';
 import '../motion/motion.dart';
 import '../motion/motion_widgets.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 import 'branded_loader.dart';
 import 'ready_wipe.dart';
 import 'sticker_text.dart';
@@ -125,8 +127,8 @@ class HeroSubmitButton extends StatelessWidget {
       _SubmitPhase.success => PopScale.onMount(
         curve: AppSprings.snappy,
         duration: AppSprings.snappy.duration,
-        child: Icon(
-          Icons.check_rounded,
+        child: HeroIcon(
+          HeroIcons.check,
           size: _checkSize,
           color: AppColors.brandForeground,
           semanticLabel: successLabel,

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_app_logo.dart';
 
 /// The head of the item card: the Hero store badge (the app icon, decoded
 /// at the size shown), "Hero" and the branch that serves the order, and how
@@ -27,21 +27,7 @@ class TrackingStoreRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(AppRadius.r5),
-              ),
-              child: Image.asset(
-                HeroAssets.appLogo,
-                width: _plate,
-                height: _plate,
-                fit: BoxFit.cover,
-                // The source is 1024 px; decode only what the badge shows.
-                cacheWidth: (_plate * MediaQuery.devicePixelRatioOf(context))
-                    .round(),
-                excludeFromSemantics: true,
-              ),
-            ),
+            const HeroAppLogo(size: _plate, radius: AppRadius.r5),
             const SizedBox(width: AppSpacing.s12),
             Expanded(
               child: Column(

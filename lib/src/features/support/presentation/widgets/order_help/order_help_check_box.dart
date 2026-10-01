@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The box at the end of an item row: a 20 dp rounded square that fills
 /// with the brand ink when [checked], the tick springing in (easing out when
@@ -42,8 +44,8 @@ class OrderHelpCheckBox extends StatelessWidget {
               ? MotionGuard.duration(context, AppSprings.snappy.duration)
               : duration,
           curve: checked ? AppSprings.snappy : AppMotion.exit,
-          child: const Icon(
-            Icons.check_rounded,
+          child: const HeroIcon(
+            HeroIcons.check,
             size: AppSize.s14,
             color: AppColors.white,
           ),

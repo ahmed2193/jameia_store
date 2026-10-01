@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// One end of the cart stepper: a 44 dp ink icon button with its tooltip,
 /// one selection haptic per tap, greyed out when [onTap] is null. With
@@ -38,7 +39,11 @@ class CartQtyStepButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tap = onTap;
-    final glyph = Icon(icon, key: ValueKey<IconData>(icon), size: AppSize.s20);
+    final glyph = HeroIcon(
+      icon,
+      key: ValueKey<IconData>(icon),
+      size: AppSize.s20,
+    );
     return IconButton(
       tooltip: tooltip,
       onPressed: tap == null

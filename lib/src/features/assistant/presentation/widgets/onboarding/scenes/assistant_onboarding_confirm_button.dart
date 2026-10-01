@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import '../../../../../../config/theme/app_colors.dart';
 import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../config/theme/app_text_styles.dart';
+import '../../../../../../core/design/hero_icons.dart';
 import '../../../../../../core/motion/motion.dart';
 import '../../../../../../core/motion/motion_widgets.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 
 /// The cart demo's "Confirm": green until tapped (by the customer, or by
 /// the ghost finger — [pressed] while it pushes), then "Added to cart" on a
@@ -52,10 +54,8 @@ class AssistantOnboardingConfirmButton extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    confirmed
-                        ? Icons.check_circle_rounded
-                        : Icons.add_shopping_cart_rounded,
+                  HeroIcon(
+                    confirmed ? HeroIcons.checkCircle : HeroIcons.cartAdd,
                     size: AppSize.s16,
                     color: foreground,
                   ),

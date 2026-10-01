@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/price_text.dart';
 import '../../../domain/entities/assistant_cart_snapshot.dart';
@@ -26,7 +27,7 @@ class AssistantCartSummaryCard extends StatelessWidget {
     );
     return AssistantCardFrame(
       title: 'assistant.cart_summary_title'.tr(),
-      icon: Icons.shopping_cart_outlined,
+      icon: HeroIcons.cart,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/rolling_number.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import 'mine_stat_tile.dart';
@@ -23,7 +24,7 @@ class MinePointsStat extends StatelessWidget {
           cubit.state.isSignedIn ? cubit.state.customer?.loyaltyPoints ?? 0 : 0,
     );
     return MineStatTile(
-      icon: Icons.stars_rounded,
+      icon: HeroIcons.points,
       tone: MineTone.amber,
       label: 'account.points'.tr(),
       onTap: () => context.push(Routes.loyalty),

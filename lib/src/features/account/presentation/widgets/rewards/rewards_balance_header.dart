@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/loyalty_rewards.dart';
 import 'rewards_balance_card.dart';
 import 'rewards_history_link.dart';
@@ -34,8 +36,8 @@ class RewardsBalanceHeader extends StatelessWidget {
             const SizedBox(height: AppSpacing.s16),
             Row(
               children: [
-                const Icon(
-                  Icons.info_outline_rounded,
+                const HeroIcon(
+                  HeroIcons.info,
                   size: AppSize.s16,
                   color: AppColors.tertiaryText,
                 ),

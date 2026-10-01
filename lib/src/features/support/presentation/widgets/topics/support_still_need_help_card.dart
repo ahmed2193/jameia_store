@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
@@ -10,6 +9,8 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/core_widgets.dart';
 
 /// "Still need help?" — the footer card under the topics, into the chat,
@@ -31,12 +32,10 @@ class SupportStillNeedHelpCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          SvgPicture.asset(
+          const HeroSvgGlyph.art(
             HeroAssets.assistantPropHandoff,
-            width: _art,
-            height: _art,
+            size: _art,
             matchTextDirection: true,
-            excludeFromSemantics: true,
           ),
           const SizedBox(height: AppSpacing.s12),
           Text(
@@ -57,7 +56,7 @@ class SupportStillNeedHelpCard extends StatelessWidget {
           AppButton(
             label: 'support.contact_support'.tr(),
             radius: AppRadius.r2,
-            trailing: const Icon(
+            trailing: const HeroIcon(
               HeroIcons.chat,
               size: AppSize.s18,
               color: AppColors.brandForeground,

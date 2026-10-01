@@ -4,6 +4,7 @@ import '../../config/theme/app_colors.dart';
 import '../motion/motion.dart';
 import '../motion/motion_widgets.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// A round outlined icon button (back, search, share) for headers that sit
 /// on a picture or a tinted band. Sinks under the finger and reads as one
@@ -46,7 +47,7 @@ class RoundOutlinedButton extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.divider),
           ),
-          child: Icon(icon, size: _glyph, color: AppColors.primaryText),
+          child: HeroIcon(icon, size: _glyph, color: AppColors.primaryText),
         ),
       ),
     );

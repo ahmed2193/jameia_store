@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// One fact on the order page: a 24 dp [icon] (or a [leading] picture of the
 /// same size), then its lines — the first in the row style, the rest as grey
@@ -33,7 +34,9 @@ class TrackingInfoRow extends StatelessWidget {
           ExcludeSemantics(
             child: SizedBox.square(
               dimension: AppSize.s24,
-              child: leading ?? Icon(icon, size: AppSize.s24, color: iconColor),
+              child:
+                  leading ??
+                  HeroIcon(icon!, size: AppSize.s24, color: iconColor),
             ),
           ),
           const SizedBox(width: AppSpacing.s16),

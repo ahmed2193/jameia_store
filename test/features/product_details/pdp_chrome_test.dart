@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
 import 'package:hero_mart/src/config/theme/app_spacing.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/core/widgets/hero_image.dart';
 import 'package:hero_mart/src/core/widgets/round_outlined_button.dart';
@@ -159,7 +160,7 @@ void main() {
     expect(find.byType(PdpBackButton), findsOneWidget);
     expect(find.byType(PdpCartAction), findsOneWidget);
     expect(find.byType(RoundOutlinedButton), findsNWidgets(2));
-    expect(find.byIcon(Icons.search_rounded), findsNothing);
+    expect(find.byIcon(HeroIcons.search), findsNothing);
     // The gallery pages with its dots pill.
     expect(tester.widget<PdpDotsPill>(find.byType(PdpDotsPill)).count, 3);
     // Full bleed from the very top, on light grey.

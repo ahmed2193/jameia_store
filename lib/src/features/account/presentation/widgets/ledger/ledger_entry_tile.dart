@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// One wallet / points history row: the kind in a soft rounded tile, title,
 /// time (+ an optional detail line) and the signed amount at the end —
@@ -58,7 +59,7 @@ class LedgerEntryTile extends StatelessWidget {
               ),
               child: SizedBox.square(
                 dimension: iconBox,
-                child: Icon(
+                child: HeroIcon(
                   icon,
                   size: AppSize.s22,
                   color: isCredit

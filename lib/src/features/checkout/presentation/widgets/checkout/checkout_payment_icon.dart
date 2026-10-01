@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon_plate.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 
-/// The 22 dp art at the start of a payment row (Hero's plates): the cash
-/// note or the yellow wallet plate (`HeroAssets.checkoutCash` /
-/// `checkoutWallet`). Decorative: the row's title names the method.
+/// The 22 dp mark at the start of a payment row: a Hero [icon] white on its
+/// [HeroIconPlate] (the cash note, `HeroIcons.cash`, on brand green) or a
+/// colour [plate] (the yellow wallet, `HeroAssets.checkoutWallet`).
+/// Decorative: the row's title names the method.
 class CheckoutPaymentIcon extends StatelessWidget {
-  const CheckoutPaymentIcon({super.key, required this.asset});
+  const CheckoutPaymentIcon({super.key, this.icon, this.plate})
+    : assert((icon == null) != (plate == null), 'an icon or a plate');
 
   static const double size = AppSize.s22;
 
-  final String asset;
+  final IconData? icon;
+  final String? plate;
 
   @override
-  Widget build(BuildContext context) => SvgPicture.asset(
-    asset,
-    width: size,
-    height: size,
-    excludeFromSemantics: true,
-  );
+  Widget build(BuildContext context) => switch (plate) {
+    final String art => HeroSvgGlyph.art(art, size: size),
+    null => HeroIconPlate(icon!, size: size),
+  };
 }

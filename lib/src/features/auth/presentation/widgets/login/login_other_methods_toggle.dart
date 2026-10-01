@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// "Other methods ⌄" under the Google pill: opens and closes the rest of
 /// the ways in; the brand-green chevron turns over with it.
@@ -50,10 +52,10 @@ class LoginOtherMethodsToggle extends StatelessWidget {
               turns: expanded ? _halfTurn : 0,
               duration: MotionGuard.duration(context, AppMotion.medium),
               curve: MotionGuard.curve(context, AppMotion.signature),
-              child: const Icon(
-                Icons.keyboard_arrow_down_rounded,
+              child: const HeroIcon(
+                HeroIcons.chevronDown,
                 size: AppSize.s26,
-                color: AppColors.primary,
+                color: AppColors.primaryDark,
               ),
             ),
           ],

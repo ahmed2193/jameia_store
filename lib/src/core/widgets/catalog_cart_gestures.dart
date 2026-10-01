@@ -57,9 +57,12 @@ abstract final class CatalogCartGestures {
   /// The same sequence for a request that has ALREADY added (a reorder puts
   /// every paid line back in one call, so its "commit" is the awaited
   /// request): the add's haptic and the flight of [image] from [context]'s
-  /// box to the cart on screen. Completes once the thumbnail lands (or is
-  /// dropped), at once when nothing flew — so a follow-up (opening the cart)
-  /// never covers the flight.
+  /// box to the cart on screen. Completes on the next landing (or drop) of
+  /// ANY flight — flights are not tagged, so with other thumbnails already
+  /// in the air (at most `FlyToCart.maxFlights`) an earlier one may end it
+  /// first — and at once when nothing flew. Good enough for its one use: a
+  /// follow-up (opening the cart) that must not cover the flight; never
+  /// count on it for this flight's own landing.
   static Future<void> added(
     BuildContext context, {
     required String image,

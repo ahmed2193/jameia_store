@@ -10,6 +10,7 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/light_sweep.dart';
 import '../rewards/rewards_gift_badge.dart';
 
@@ -99,8 +100,8 @@ class LoyaltyRewardsEntry extends StatelessWidget {
                       ),
                       child: SizedBox.square(
                         dimension: _arrowDisc,
-                        child: Icon(
-                          HeroIcons.arrowRight,
+                        child: HeroIcon(
+                          HeroIcons.chevronEnd,
                           size: AppSize.s14,
                           color: AppColors.accent3,
                         ),

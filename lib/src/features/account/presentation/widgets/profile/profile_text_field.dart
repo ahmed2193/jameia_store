@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import 'profile_field_error.dart';
 import 'profile_field_label.dart';
 import 'profile_field_shell.dart';
@@ -99,7 +100,11 @@ class ProfileTextField extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(icon, size: AppSize.s20, color: AppColors.secondaryText),
+                  HeroIcon(
+                    icon,
+                    size: AppSize.s20,
+                    color: AppColors.secondaryText,
+                  ),
                   const SizedBox(width: AppSpacing.s10),
                   Expanded(child: field),
                 ],

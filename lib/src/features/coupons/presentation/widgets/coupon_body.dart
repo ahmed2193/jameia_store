@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/domain/entities/coupon_entity.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/coupon_dates.dart';
@@ -95,7 +96,7 @@ class CouponBody extends StatelessWidget {
             children: [
               if (coupon.minSpend > 0)
                 CouponInfoChip(
-                  icon: Icons.shopping_bag_outlined,
+                  icon: HeroIcons.bag,
                   faded: faded,
                   label: 'coupons.min_amount'.tr(
                     namedArgs: {'value': Formatters.price(coupon.minSpend)},
@@ -103,7 +104,7 @@ class CouponBody extends StatelessWidget {
                 ),
               if (dateLabel != null)
                 CouponInfoChip(
-                  icon: Icons.schedule_rounded,
+                  icon: HeroIcons.clock,
                   faded: faded,
                   label: dateLabel,
                 ),

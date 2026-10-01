@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../../core/utils/address_display.dart';
 import '../../../../../core/utils/formatters.dart';
@@ -41,7 +42,7 @@ class CheckoutAddressSection extends StatelessWidget {
       (cubit) => addressId == null ? null : cubit.state.book.byId(addressId),
     );
     return CheckoutDestinationRow(
-      icon: Icons.location_on_outlined,
+      icon: HeroIcons.pin,
       title: address == null
           ? 'checkout.address_choose'.tr()
           : zone.isEmpty

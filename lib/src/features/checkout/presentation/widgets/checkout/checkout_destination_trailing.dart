@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/widgets/branded_dot_loader.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
 
 /// End of a destination row (address or branch): a small loader while the
@@ -20,8 +22,8 @@ class CheckoutDestinationTrailing extends StatelessWidget {
       alignment: AlignmentDirectional.centerEnd,
       child: selecting
           ? const BrandedDotLoader(size: HeroListRow.denseLeadSize)
-          : const Icon(
-              Icons.chevron_right_rounded,
+          : const HeroIcon(
+              HeroIcons.chevronEnd,
               size: HeroListRow.denseLeadSize,
               color: AppColors.primaryText,
             ),

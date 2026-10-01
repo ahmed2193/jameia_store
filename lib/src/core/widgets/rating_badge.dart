@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
+import './hero_icon.dart';
 
 /// Small rating pill: ★ 4.8 in Hero's bold digit style.
 class RatingBadge extends StatelessWidget {
@@ -22,7 +24,7 @@ class RatingBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.star_rounded, size: size + 2, color: AppColors.warn),
+        HeroIcon(HeroIcons.starFill, size: size + 2, color: AppColors.warn),
         const SizedBox(width: AppSpacing.s2),
         Text(
           rating.toStringAsFixed(1),

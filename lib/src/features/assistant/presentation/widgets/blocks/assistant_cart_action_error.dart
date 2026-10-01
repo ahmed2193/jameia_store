@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Why a proposal's confirm failed, under its button: an icon and the words
 /// (never colour or motion alone). A screen reader hears it once.
@@ -23,8 +25,8 @@ class AssistantCartActionError extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(
-              Icons.error_outline_rounded,
+            const HeroIcon(
+              HeroIcons.warning,
               size: AppSize.s16,
               color: AppColors.error,
             ),

@@ -19,6 +19,7 @@ import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/routes/app_router.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/utils/formatters.dart';
@@ -283,9 +284,9 @@ void main() {
     await pumpApp(tester);
     expect(find.text('May 17, 1990'), findsOneWidget);
 
-    await tester.ensureVisible(find.byIcon(Icons.add_rounded));
+    await tester.ensureVisible(find.byIcon(HeroIcons.plus));
     await tester.pump();
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.byIcon(HeroIcons.plus));
     await tester.pump();
     expect(find.text('1'), findsOneWidget);
     await tapSave(tester);

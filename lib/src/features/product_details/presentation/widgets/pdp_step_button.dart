@@ -4,6 +4,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// One − / + of the buy bar's stepper pill: a 40 dp touch target that sinks
 /// under the finger with a selection tick (the − side: a remove's tap). When it cannot move any further
@@ -48,7 +49,7 @@ class PdpStepButton extends StatelessWidget {
         haptic: removes ? HapticKind.tap : HapticKind.selection,
         child: SizedBox.square(
           dimension: size,
-          child: Icon(
+          child: HeroIcon(
             icon,
             size: AppSize.s22,
             color: active ? color : disabledColor,

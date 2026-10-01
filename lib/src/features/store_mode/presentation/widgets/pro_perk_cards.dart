@@ -7,6 +7,7 @@ import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../domain/entities/pro_membership.dart';
@@ -40,7 +41,7 @@ class ProPerkCards extends StatelessWidget {
           if (perks.hasPointsBoost)
             ProPerkCard(
               color: AppColors.accentSkyLight,
-              icon: Icons.stars_rounded,
+              icon: HeroIcons.points,
               title: 'pro.perk_points_title'.tr(namedArgs: multiplier),
               body: 'pro.perk_points_body'.tr(namedArgs: multiplier),
               ctaLabel: 'pro.perk_points_cta'.tr(),
@@ -50,14 +51,14 @@ class ProPerkCards extends StatelessWidget {
           if (perks.hasDiscount)
             ProPerkCard(
               color: AppColors.accent3Light,
-              icon: Icons.percent_rounded,
+              icon: HeroIcons.discount,
               title: 'pro.perk_discount_title'.tr(namedArgs: percent),
               body: 'pro.perk_discount_body'.tr(namedArgs: percent),
               active: isMember,
             ),
           ProPerkCard(
             color: AppColors.brandLightBg,
-            icon: Icons.sell_rounded,
+            icon: HeroIcons.tag,
             title: 'pro.perk_prices_title'.tr(),
             body: 'pro.perk_prices_body'.tr(),
             active: isMember,

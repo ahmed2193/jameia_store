@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/pop_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/branded_loader.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/assistant_voice_state.dart';
 
 /// The mic button's round face: the mic, the send arrow once locked, the
@@ -44,14 +46,14 @@ class AssistantVoiceMicFace extends StatelessWidget {
             child: switch (phase) {
               AssistantVoicePhase.sending || AssistantVoicePhase.stopping =>
                 const BrandedLoader.inline(size: AppSize.s28),
-              AssistantVoicePhase.locked => const Icon(
-                Icons.arrow_upward_rounded,
+              AssistantVoicePhase.locked => const HeroIcon(
+                HeroIcons.arrowUp,
                 size: AppSize.s22,
                 color: AppColors.brandForeground,
               ),
               AssistantVoicePhase.idle ||
-              AssistantVoicePhase.holding => const Icon(
-                Icons.mic_rounded,
+              AssistantVoicePhase.holding => const HeroIcon(
+                HeroIcons.mic,
                 size: AppSize.s24,
                 color: AppColors.brandForeground,
               ),

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../domain/entities/profile_field.dart';
 import '../../../domain/entities/profile_update.dart';
 import '../../cubit/profile_cubit.dart';
@@ -29,7 +30,7 @@ class ProfileNameField extends StatelessWidget {
         label: 'profile.name'.tr(),
         controller: controller,
         focusNode: focusNode,
-        icon: Icons.person_outline_rounded,
+        icon: HeroIcons.person,
         hintText: 'profile.name_hint'.tr(),
         maxLength: ProfileUpdate.maxNameLength,
         keyboardType: TextInputType.name,

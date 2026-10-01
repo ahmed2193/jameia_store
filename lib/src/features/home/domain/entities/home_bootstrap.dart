@@ -9,13 +9,16 @@ enum HomeDeliveryMode { delivery, pickup }
 enum HomePopupFrequency { session, day }
 
 /// What home needs from the launch snapshot (`GET /v1/init`): where we deliver
-/// to (the header), the Pro programme (the Pro banner) and the marketing
-/// popups. Home still renders without it — see `WatchHomeBootstrapUseCase`.
+/// to (the header), the Pro programme (the Pro banner), the first-order
+/// welcome gift and the marketing popups. Home still renders without it — see
+/// `WatchHomeBootstrapUseCase`.
 class HomeBootstrap extends Equatable {
   const HomeBootstrap({
     this.storeName = '',
     this.delivery,
     this.pro = const HomeProInfo(),
+    this.firstOrderFreeDelivery = false,
+    this.hasCustomer = false,
     this.popups = const <HomeMarketingPopup>[],
   });
 
@@ -26,10 +29,25 @@ class HomeBootstrap extends Equatable {
   /// `null` until the backend resolved a branch / zone for this customer.
   final HomeDelivery? delivery;
   final HomeProInfo pro;
+
+  /// The store offers free delivery on a customer's first order (on unless
+  /// the backend switches it off).
+  final bool firstOrderFreeDelivery;
+
+  /// The snapshot was read for a signed-in customer (`init.user` is there);
+  /// `false` for a guest.
+  final bool hasCustomer;
   final List<HomeMarketingPopup> popups;
 
   @override
-  List<Object?> get props => [storeName, delivery, pro, popups];
+  List<Object?> get props => [
+    storeName,
+    delivery,
+    pro,
+    firstOrderFreeDelivery,
+    hasCustomer,
+    popups,
+  ];
 }
 
 /// The delivery context of `init.delivery`: serving branch + the customer's

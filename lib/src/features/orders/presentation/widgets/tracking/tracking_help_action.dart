@@ -6,6 +6,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// "Help" at the end of the order page's title bar (where delivery apps put
 /// it): the help glyph and the word, on a soft green pill.
@@ -33,7 +34,7 @@ class TrackingHelpAction extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
+                  const HeroIcon(
                     HeroIcons.help,
                     size: AppSize.s18,
                     color: AppColors.brandDeep,

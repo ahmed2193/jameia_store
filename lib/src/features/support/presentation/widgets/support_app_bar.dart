@@ -6,6 +6,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// White centred title bar of the help-center pages, with a back arrow.
 class SupportAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -25,7 +26,7 @@ class SupportAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       centerTitle: true,
       leading: IconButton(
-        icon: const Icon(
+        icon: const HeroIcon(
           HeroIcons.back,
           size: AppSize.s20,
           color: AppColors.primaryText,

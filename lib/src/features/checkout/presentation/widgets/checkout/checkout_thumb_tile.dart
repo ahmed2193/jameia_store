@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/change_bump.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_line_thumb.dart';
 import '../../../../../core/widgets/sticker_text.dart';
 import '../../../domain/entities/checkout_thumb.dart';
@@ -61,10 +63,8 @@ class CheckoutThumbTile extends StatelessWidget {
                   color: flagged ? AppColors.warn : AppColors.primary,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  flagged
-                      ? Icons.priority_high_rounded
-                      : Icons.card_giftcard_rounded,
+                child: HeroIcon(
+                  flagged ? HeroIcons.exclamation : HeroIcons.gift,
                   size: _glyph,
                   color: AppColors.white,
                 ),

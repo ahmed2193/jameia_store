@@ -89,6 +89,11 @@ class AppMotion {
   /// reading.
   static const Duration drawOn = Duration(milliseconds: 700);
 
+  /// The map camera's reframe or zoom glide (`HeroMapCamera.glideTo`).
+  /// [INFERENCE] — [drawOn]'s length: long enough for the tiles to follow; a
+  /// shorter glide reads as a jump.
+  static const Duration cameraGlide = drawOn;
+
   /// One celebration burst (subscribe success, reward applied). [INFERENCE].
   static const Duration confetti = Duration(milliseconds: 1400);
 

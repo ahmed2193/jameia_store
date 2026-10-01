@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/address_book_cubit.dart';
 import '../../cubit/address_book_state.dart';
 
@@ -29,8 +31,8 @@ class AddressAddBar extends StatelessWidget {
             onPressed: () => context.push(Routes.addressEdit),
             height: AppSize.s50,
             radius: AppRadius.r3,
-            trailing: const Icon(
-              Icons.add,
+            trailing: const HeroIcon(
+              HeroIcons.plus,
               size: AppSize.s20,
               color: AppColors.brandForeground,
             ),

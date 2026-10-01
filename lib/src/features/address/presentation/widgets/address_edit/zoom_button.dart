@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// White circular zoom +/- control (matches the recenter pill / FAB styling).
 class ZoomButton extends StatelessWidget {
@@ -22,7 +23,11 @@ class ZoomButton extends StatelessWidget {
         child: SizedBox(
           width: AppSize.s40,
           height: AppSize.s40,
-          child: Icon(icon, size: AppSize.s22, color: AppColors.primaryText),
+          child: HeroIcon(
+            icon,
+            size: AppSize.s22,
+            color: AppColors.primaryText,
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/widgets/round_outlined_button.dart';
 
 /// Leaves the product page: the storefront's round white button, reading on
@@ -13,7 +14,7 @@ class PdpBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RoundOutlinedButton(
-      icon: Icons.arrow_back_rounded,
+      icon: HeroIcons.back,
       label: 'common.back'.tr(),
       onTap: () => context.pop(),
     );

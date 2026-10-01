@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
-import '../../../../core/design/hero_assets.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/hero_svg_glyph.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import 'home_notifications_bell.dart';
 
 /// The assistant entry of the home header: a brand-tinted disc with the
@@ -47,8 +47,8 @@ class HomeAssistantButton extends StatelessWidget {
                     ),
                   ),
                   child: Center(
-                    child: HeroSvgGlyph.mono(
-                      HeroAssets.assistantAi,
+                    child: HeroIcon(
+                      HeroIcons.assistant,
                       size: AppSize.s20,
                       color: AppColors.primaryDark,
                     ),

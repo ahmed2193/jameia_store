@@ -19,6 +19,7 @@ import 'package:hero_mart/src/core/domain/entities/offer_reward_entity.dart';
 import 'package:hero_mart/src/core/widgets/address_label_icon.dart';
 import 'package:hero_mart/src/core/widgets/cart_basket_badge.dart';
 import 'package:hero_mart/src/core/widgets/catalog_circle_add_button.dart';
+import 'package:hero_mart/src/core/widgets/hero_icon.dart';
 import 'package:hero_mart/src/core/widgets/hero_svg_glyph.dart';
 import 'package:hero_mart/src/core/widgets/offer_plate.dart';
 import 'package:hero_mart/src/core/widgets/recipe_meta_line.dart';
@@ -75,8 +76,10 @@ void main() {
   );
 
   group('HeroSvgGlyph', () {
-    testWidgets('mono takes the IconTheme colour and size; art is never '
-        'tinted; a label is read out, none is decorative', (tester) async {
+    testWidgets('art takes the IconTheme size and is never tinted; a label '
+        'is read out, none is decorative; a height makes a non-square box', (
+      tester,
+    ) async {
       await pump(
         tester,
         const IconTheme(
@@ -84,23 +87,23 @@ void main() {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              HeroSvgGlyph.mono(HeroAssets.tabAccount),
               HeroSvgGlyph.art(HeroAssets.proCrown, semanticLabel: 'Pro'),
+              HeroSvgGlyph.art(HeroAssets.mapPin, size: 40, height: 48),
             ],
           ),
         ),
       );
-      final mono = _picture(tester, HeroAssets.tabAccount);
-      expect(
-        mono.colorFilter,
-        const ColorFilter.mode(AppColors.primaryDark, BlendMode.srcIn),
-      );
-      expect(mono.width, 30);
-      expect(mono.excludeFromSemantics, isTrue);
       final art = _picture(tester, HeroAssets.proCrown);
       expect(art.colorFilter, isNull);
+      expect(art.width, 30);
+      expect(art.height, 30);
       expect(art.semanticsLabel, 'Pro');
       expect(art.excludeFromSemantics, isFalse);
+      final pin = _picture(tester, HeroAssets.mapPin);
+      expect(pin.colorFilter, isNull);
+      expect(pin.width, 40);
+      expect(pin.height, 48);
+      expect(pin.excludeFromSemantics, isTrue);
     });
   });
 
@@ -132,9 +135,9 @@ void main() {
           ],
         ),
       );
-      expect(_svg(HeroAssets.productOptions), findsNWidgets(2));
-      expect(find.byIcon(Icons.add_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.tune_rounded), findsNothing);
+      expect(find.byIcon(HeroIcons.options), findsNWidgets(2));
+      expect(find.byIcon(HeroIcons.plus), findsOneWidget);
+      expect(find.byIcon(HeroIcons.filter), findsNothing);
     });
   });
 
@@ -152,14 +155,22 @@ void main() {
           ],
         ),
       );
-      for (final asset in [
-        HeroAssets.addressLabelHome,
-        HeroAssets.addressLabelOffice,
-        HeroAssets.addressLabelGathering,
-        HeroAssets.addressLabelOther,
+      for (final icon in [
+        HeroIcons.home,
+        HeroIcons.office,
+        HeroIcons.people,
+        HeroIcons.pin,
       ]) {
-        expect(_svg(asset), findsOneWidget, reason: asset);
-        expect(_picture(tester, asset).colorFilter, isNotNull);
+        expect(find.byIcon(icon), findsOneWidget, reason: '$icon');
+        expect(
+          tester.widget<HeroIcon>(find.widgetWithIcon(HeroIcon, icon)).color,
+          AppColors.primaryText,
+        );
+        // Ink text colour: the sticker, its line in iconInk.
+        expect(
+          tester.widget<Icon>(find.byIcon(icon)).color,
+          HeroColors.light.iconInk,
+        );
       }
     });
 
@@ -183,7 +194,16 @@ void main() {
       expect(_svg(HeroAssets.checkoutWallet), findsOneWidget);
       expect(_picture(tester, HeroAssets.proCrown).colorFilter, isNull);
       expect(_svg(HeroAssets.offerPercent), findsOneWidget);
-      expect(_picture(tester, HeroAssets.tabAccount).colorFilter, isNotNull);
+      expect(
+        tester
+            .widget<HeroIcon>(find.widgetWithIcon(HeroIcon, HeroIcons.account))
+            .color,
+        NotificationKindIcon.inkFor(NotificationKind.account),
+      );
+      expect(
+        tester.widget<Icon>(find.byIcon(HeroIcons.account)).color,
+        HeroColors.light.iconInk,
+      );
       expect(find.byIcon(HeroIcons.orders), findsOneWidget);
     });
 
@@ -207,25 +227,16 @@ void main() {
       );
       expect(_svg(HeroAssets.offerPercent), findsOneWidget);
       expect(_svg(HeroAssets.offerDelivery), findsOneWidget);
-      expect(find.byIcon(Icons.local_offer_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.percent_rounded), findsNothing);
+      expect(find.byIcon(HeroIcons.tag), findsOneWidget);
+      expect(find.byIcon(HeroIcons.percent), findsNothing);
     });
 
     test('assistant steps map to the Hero set; the van mirrors itself', () {
-      expect(AssistantToolGlyphs.of(null).asset, HeroAssets.assistantAi);
-      expect(
-        AssistantToolGlyphs.of('search_recipes').asset,
-        HeroAssets.recipePot,
-      );
-      expect(
-        AssistantToolGlyphs.of('check_delivery').asset,
-        HeroAssets.sharedClock,
-      );
-      expect(
-        AssistantToolGlyphs.of('list_offers').asset,
-        HeroAssets.checkoutCodeTag,
-      );
-      final van = AssistantToolGlyphs.of('track_order').icon!;
+      expect(AssistantToolGlyphs.of(null), HeroIcons.assistant);
+      expect(AssistantToolGlyphs.of('search_recipes'), HeroIcons.recipe);
+      expect(AssistantToolGlyphs.of('check_delivery'), HeroIcons.clock);
+      expect(AssistantToolGlyphs.of('list_offers'), HeroIcons.tag);
+      final van = AssistantToolGlyphs.of('track_order');
       expect(van, HeroIcons.deliveryDirectional);
       expect(van.matchTextDirection, isTrue);
       expect(AssistantToolGlyphs.of('unknown'), AssistantToolGlyphs.thinking);
@@ -246,8 +257,8 @@ void main() {
           onTap: () {},
         ),
       );
-      expect(_svg(HeroAssets.categoryAll), findsOneWidget);
-      expect(find.byIcon(Icons.category_outlined), findsNothing);
+      expect(find.byIcon(HeroIcons.categoryAll), findsOneWidget);
+      expect(find.byIcon(HeroIcons.category), findsNothing);
     });
 
     testWidgets('recipe meta: the Hero clock and person beside the words', (
@@ -256,8 +267,8 @@ void main() {
       await pump(tester, const RecipeMetaLine(minutes: 80, servings: 6));
       expect(find.text('80 min'), findsOneWidget);
       expect(find.text('6 servings'), findsOneWidget);
-      expect(_svg(HeroAssets.sharedClock), findsOneWidget);
-      expect(_svg(HeroAssets.tabAccount), findsOneWidget);
+      expect(find.byIcon(HeroIcons.clock), findsOneWidget);
+      expect(find.byIcon(HeroIcons.account), findsOneWidget);
     });
 
     testWidgets('the address map pin is the drawn Hero pin, decorative', (
@@ -348,7 +359,7 @@ void main() {
       final sticker = _picture(tester, HeroAssets.stateSuccess);
       expect(sticker.width, StateArt.compactWidth);
       expect(sticker.height, StateArt.compactHeight);
-      expect(find.byIcon(Icons.check_circle_rounded), findsNothing);
+      expect(find.byIcon(HeroIcons.checkCircleFill), findsNothing);
     });
   });
 }

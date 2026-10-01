@@ -14,8 +14,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
+import 'package:hero_mart/src/core/responsive/app_size.dart';
 import 'package:hero_mart/src/core/widgets/collection_app_bar_delegate.dart';
 import 'package:hero_mart/src/core/widgets/collection_frame.dart';
+import 'package:hero_mart/src/core/widgets/collection_hero.dart';
+import 'package:hero_mart/src/core/widgets/collection_hero_flame.dart';
 import 'package:hero_mart/src/core/widgets/collection_tab_strip.dart';
 import 'package:hero_mart/src/core/widgets/collection_tabs_delegate.dart';
 import 'package:hero_mart/src/core/widgets/countdown_chip.dart';
@@ -75,10 +79,11 @@ void main() {
     VoidCallback? onSearch,
     Widget? tabs,
     Widget? bottomBar,
+    bool flame = true,
   }) => CollectionFrame(
     storeName: _store,
     heading: _heading,
-    emoji: '🔥',
+    flame: flame,
     subtitle: 'Picked by shoppers around you',
     onBack: onBack,
     onSearch: onSearch ?? () {},
@@ -107,6 +112,32 @@ void main() {
       expect(find.textContaining(_heading, findRichText: true), findsOneWidget);
       expect(find.text('Picked by shoppers around you'), findsOneWidget);
       expect(find.byType(RoundOutlinedButton), findsNWidgets(2));
+    });
+
+    testWidgets('a sale shows the Hero flame after the heading (no emoji), '
+        'in the offer red at the heading size; other pages show none', (
+      tester,
+    ) async {
+      await pumpApp(tester, frame());
+      await tester.pumpAndSettle();
+
+      final flame = find.descendant(
+        of: find.byType(CollectionHero),
+        matching: find.byType(CollectionHeroFlame),
+      );
+      expect(flame, findsOneWidget);
+      final icon = tester.widget<Icon>(
+        find.descendant(of: flame, matching: find.byType(Icon)),
+      );
+      expect(icon.icon, HeroIcons.flameFill);
+      expect(icon.color, AppColors.accent1Dark);
+      expect(icon.size, AppSize.font24);
+      expect(find.textContaining('🔥', findRichText: true), findsNothing);
+
+      await pumpApp(tester, frame(flame: false));
+      await tester.pumpAndSettle();
+      expect(find.byType(CollectionHeroFlame), findsNothing);
+      expect(find.byIcon(HeroIcons.flameFill), findsNothing);
     });
 
     testWidgets('has no back button when there is nowhere to go back', (
@@ -340,7 +371,7 @@ void main() {
 
       now = ends;
       await tester.pump(const Duration(seconds: 1));
-      expect(find.byIcon(Icons.timer_outlined), findsNothing);
+      expect(find.byIcon(HeroIcons.clock), findsNothing);
     });
 
     testWidgets('keeps the clock left to right inside Arabic text', (
@@ -378,7 +409,7 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.timer_outlined), findsNothing);
+      expect(find.byIcon(HeroIcons.clock), findsNothing);
     });
   });
 }

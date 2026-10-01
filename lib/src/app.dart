@@ -204,10 +204,14 @@ class _HeroAppState extends State<HeroApp> {
           ),
           // The network layer gave up refreshing the session: replace the
           // whole stack with login and let it explain why (`extra: true`).
+          // A home read the splash started goes with the session.
           BlocListener<AuthSessionCubit, AuthSessionState>(
             listenWhen: (previous, current) =>
                 !previous.expired && current.expired,
-            listener: (_, _) => appRouter.go(Routes.login, extra: true),
+            listener: (_, _) {
+              AppGlobalCubits.dropHomePrefetch();
+              appRouter.go(Routes.login, extra: true);
+            },
           ),
           // Mirror the device language onto the account when the profile
           // disagrees. Two triggers, because at launch the session restore and
@@ -223,10 +227,14 @@ class _HeroAppState extends State<HeroApp> {
                 current.customer != null,
             listener: (context, _) => _syncAccountLanguage(context),
           ),
+          // The saved language is on: the splash's home read may start (B1).
           BlocListener<LocalizationCubit, LocalizationState>(
             listenWhen: (previous, current) =>
                 !previous.isInitialized && current.isInitialized,
-            listener: (context, _) => _syncAccountLanguage(context),
+            listener: (context, _) {
+              AppGlobalCubits.homeLocaleReady();
+              _syncAccountLanguage(context);
+            },
           ),
           // Once per offline → online recovery (never on raw status flips).
           BlocListener<ConnectivityCubit, ConnectivityState>(

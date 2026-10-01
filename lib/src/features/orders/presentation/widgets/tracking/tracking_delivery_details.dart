@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_assets.dart';
@@ -11,7 +11,9 @@ import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/address_label_icon.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_section_header.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/hero_surface_card.dart';
 import '../../../../../core/widgets/thin_divider.dart';
 import 'tracking_info_row.dart';
@@ -66,7 +68,7 @@ class TrackingDeliveryDetails extends StatelessWidget {
     final rows = <Widget>[
       if (place.isNotEmpty)
         TrackingInfoRow(
-          icon: Icons.storefront_outlined,
+          icon: HeroIcons.store,
           // The destination wears its tag's glyph (home, office …).
           leading: address == null
               ? null
@@ -78,13 +80,16 @@ class TrackingDeliveryDetails extends StatelessWidget {
         ),
       if (timing.isNotEmpty)
         TrackingInfoRow(
-          leading: SvgPicture.asset(
-            order.express && order.deliverySlot == null
-                ? HeroAssets.checkoutExpressBolt
-                : HeroAssets.sharedClock,
-            width: AppSize.s24,
-            height: AppSize.s24,
-          ),
+          leading: order.express && order.deliverySlot == null
+              ? const HeroSvgGlyph.art(
+                  HeroAssets.checkoutExpressBolt,
+                  size: AppSize.s24,
+                )
+              : const HeroIcon(
+                  HeroIcons.clock,
+                  size: AppSize.s24,
+                  color: AppColors.primaryText,
+                ),
           lines: [
             timing,
             if (order.deliverySlot != null) 'orders.delivery_scheduled'.tr(),
@@ -92,7 +97,7 @@ class TrackingDeliveryDetails extends StatelessWidget {
         ),
       if (notes.isNotEmpty)
         TrackingInfoRow(
-          icon: HeroIcons.notice,
+          icon: HeroIcons.megaphone,
           lines: [notes, 'orders.delivery_instructions'.tr()],
         ),
     ];

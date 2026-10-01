@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// "★ 4.5 · 12 reviews" in the grey line under the product's name; the
 /// count is underlined and a tap anywhere on it scrolls to the reviews.
@@ -36,8 +38,8 @@ class PdpRatingSummary extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.star_rounded,
+            const HeroIcon(
+              HeroIcons.starFill,
               size: AppSize.s16,
               color: AppColors.warn,
             ),

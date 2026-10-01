@@ -37,6 +37,7 @@ import 'package:hero_mart/src/features/cart/domain/usecases/sync_cart_owner_usec
 import 'package:hero_mart/src/features/cart/domain/usecases/watch_cart_usecase.dart';
 import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/check_first_order_welcome_usecase.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/mark_home_popups_shown_usecase.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/select_due_home_popups_usecase.dart';
@@ -134,6 +135,7 @@ void main() {
         WatchHomeBootstrapUseCase(homeRepository),
         SelectDueHomePopupsUseCase(homeRepository),
         MarkHomePopupsShownUseCase(homeRepository),
+        CheckFirstOrderWelcomeUseCase(homeRepository),
       );
       await homeCubit.load();
       await tester.pumpWidget(

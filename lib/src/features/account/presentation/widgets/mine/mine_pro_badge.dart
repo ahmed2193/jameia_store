@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/light_sweep.dart';
 
 /// "PRO" pill next to a Hero Pro member's name: the Pro gradient, a small
@@ -45,8 +47,8 @@ class MineProBadge extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.workspace_premium_rounded,
+              HeroIcon(
+                HeroIcons.crown,
                 size: _crown,
                 color: AppColors.proAmber.withValues(alpha: opacity),
               ),

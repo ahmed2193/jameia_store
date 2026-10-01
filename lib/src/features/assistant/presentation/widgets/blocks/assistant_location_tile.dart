@@ -5,9 +5,11 @@ import 'package:flutter/services.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/assistant_block.dart';
 
 /// One branch: name, address and — when it has one — the phone number,
@@ -61,8 +63,8 @@ class AssistantLocationTile extends StatelessWidget {
                   constraints: const BoxConstraints(minHeight: AppSize.s48),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.phone_outlined,
+                      const HeroIcon(
+                        HeroIcons.phone,
                         size: AppSize.s18,
                         color: AppColors.primaryDark,
                       ),

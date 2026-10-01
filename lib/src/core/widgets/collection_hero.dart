@@ -5,14 +5,14 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
-import 'collection_hero_emoji.dart';
+import 'collection_hero_flame.dart';
 import 'wavy_edge_painter.dart';
 
 /// The tinted top of a collection page (offers, flash deals, best sellers):
-/// a big heavy heading with an optional emoji ("Best sellers near you 🔥"),
+/// a big heavy heading with an optional Hero [flame] after it (a sale),
 /// an optional line under it and an optional [trailing] (a countdown), on a
 /// warm band whose bottom is a hand-drawn wave. The heading rises in as the
-/// page opens; the emoji wiggles once after it.
+/// page opens; the flame wiggles once after it.
 ///
 /// Reports its laid-out height through [onExtent], so the app bar above can
 /// finish turning white exactly as the band scrolls away.
@@ -20,7 +20,7 @@ class CollectionHero extends StatefulWidget {
   const CollectionHero({
     super.key,
     required this.heading,
-    this.emoji,
+    this.flame = false,
     this.subtitle,
     this.trailing,
     this.color = AppColors.collectionCream,
@@ -28,7 +28,9 @@ class CollectionHero extends StatefulWidget {
   });
 
   final String heading;
-  final String? emoji;
+
+  /// A sale or deals page: the Hero flame follows the heading.
+  final bool flame;
   final String? subtitle;
   final Widget? trailing;
   final Color color;
@@ -66,7 +68,6 @@ class _CollectionHeroState extends State<CollectionHero> {
       height: _lineHeight,
       color: AppColors.primaryText,
     );
-    final emoji = widget.emoji;
     return CustomPaint(
       painter: WavyEdgePainter(
         color: widget.color,
@@ -98,16 +99,15 @@ class _CollectionHeroState extends State<CollectionHero> {
                 TextSpan(
                   text: widget.heading,
                   children: [
-                    if (emoji != null)
+                    if (widget.flame)
                       WidgetSpan(
                         alignment: PlaceholderAlignment.middle,
                         child: Padding(
                           padding: const EdgeInsetsDirectional.only(
                             start: AppSpacing.s6,
                           ),
-                          child: CollectionHeroEmoji(
-                            emoji: emoji,
-                            style: headingStyle,
+                          child: CollectionHeroFlame(
+                            size: headingStyle.fontSize ?? AppSize.font24,
                             delay: AppMotion.slow,
                           ),
                         ),

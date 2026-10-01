@@ -7,6 +7,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../config/theme/order_status_palette.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/dot_sep.dart';
@@ -37,7 +38,7 @@ class AssistantOrderCard extends StatelessWidget {
     );
     return AssistantCardFrame(
       title: title,
-      icon: Icons.receipt_long_outlined,
+      icon: HeroIcons.receipt,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

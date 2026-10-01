@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/press_row.dart';
 import 'search_highlighted_text.dart';
 
@@ -29,7 +31,6 @@ class SearchTermRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rtl = Directionality.of(context) == TextDirection.rtl;
     return PressRow(
       onTap: onTap,
       // The term below carries the row's action for screen readers, so the
@@ -52,8 +53,8 @@ class SearchTermRow extends StatelessWidget {
                   excludeSemantics: true,
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.history_rounded,
+                      const HeroIcon(
+                        HeroIcons.history,
                         size: AppSize.s24,
                         color: AppColors.secondaryText,
                       ),
@@ -78,8 +79,8 @@ class SearchTermRow extends StatelessWidget {
                   style: IconButton.styleFrom(
                     fixedSize: const Size.square(AppSize.s48),
                   ),
-                  icon: Icon(
-                    rtl ? Icons.north_east_rounded : Icons.north_west_rounded,
+                  icon: const HeroIcon(
+                    HeroIcons.arrowUpStart,
                     size: AppSize.s20,
                     color: AppColors.secondaryText,
                   ),

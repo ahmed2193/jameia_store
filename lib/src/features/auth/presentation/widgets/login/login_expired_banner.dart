@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Explains why the user landed on login after the session could not be
 /// refreshed (shown when the route was opened with the expired flag). A
@@ -34,8 +36,8 @@ class LoginExpiredBanner extends StatelessWidget {
                     color: AppColors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.lock_clock_outlined,
+                  child: HeroIcon(
+                    HeroIcons.lockClock,
                     color: AppColors.accent3Dark,
                     size: AppSize.s18,
                   ),

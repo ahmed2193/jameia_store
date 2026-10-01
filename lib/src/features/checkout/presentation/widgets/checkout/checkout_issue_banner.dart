@@ -5,8 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 import '../../../domain/entities/checkout_thumbs.dart';
 
@@ -53,8 +55,8 @@ class CheckoutIssueBanner extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.error_outline_rounded,
+                      const HeroIcon(
+                        HeroIcons.warning,
                         size: AppSize.s16,
                         color: AppColors.error,
                       ),
@@ -86,8 +88,8 @@ class CheckoutIssueBanner extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
+                      const HeroIcon(
+                        HeroIcons.chevronEnd,
                         size: AppSize.s16,
                         color: AppColors.errorDeep,
                       ),

@@ -2,8 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// The ✕ inside the search pill. It is there only while the field has text
 /// (a quick fade in and out) and clears it; a 44 dp target.
@@ -37,8 +39,8 @@ class SearchClearButton extends StatelessWidget {
                 style: IconButton.styleFrom(
                   fixedSize: const Size.square(AppSize.s44),
                 ),
-                icon: const Icon(
-                  Icons.cancel_rounded,
+                icon: const HeroIcon(
+                  HeroIcons.closeCircleFill,
                   size: AppSize.s20,
                   color: AppColors.tertiaryText,
                 ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../domain/entities/assistant_message_entity.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 import 'assistant_copy_sheet.dart';
@@ -43,8 +44,8 @@ class _AssistantMessageActionsState extends State<AssistantMessageActions> {
         children: [
           if (copyText.isNotEmpty)
             AssistantThumbButton(
-              icon: Icons.copy_rounded,
-              selectedIcon: Icons.copy_rounded,
+              icon: HeroIcons.copy,
+              selectedIcon: HeroIcons.copy,
               label: 'assistant.copy'.tr(),
               selected: false,
               toggles: false,
@@ -52,15 +53,15 @@ class _AssistantMessageActionsState extends State<AssistantMessageActions> {
               onTap: () => AssistantCopySheet.copy(context, copyText),
             ),
           AssistantThumbButton(
-            icon: Icons.thumb_up_alt_outlined,
-            selectedIcon: Icons.thumb_up_alt,
+            icon: HeroIcons.thumbUp,
+            selectedIcon: HeroIcons.thumbUp,
             label: 'assistant.feedback_up'.tr(),
             selected: feedback == AssistantFeedback.up,
             onTap: () => _rate(AssistantFeedback.up),
           ),
           AssistantThumbButton(
-            icon: Icons.thumb_down_alt_outlined,
-            selectedIcon: Icons.thumb_down_alt,
+            icon: HeroIcons.thumbDown,
+            selectedIcon: HeroIcons.thumbDown,
             label: 'assistant.feedback_down'.tr(),
             selected: feedback == AssistantFeedback.down,
             onTap: () => _rate(AssistantFeedback.down),

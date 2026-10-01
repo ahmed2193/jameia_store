@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
@@ -8,6 +7,8 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/float_loop.dart';
 import '../../../../../core/motion/pop_switcher.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../domain/entities/order_journey.dart';
 
 /// What the stage disc shows.
@@ -58,9 +59,9 @@ class TrackingStageArt extends StatelessWidget {
   static IconData _glyphOf(_Art art) => switch (art) {
     _Art.received => HeroIcons.orders,
     _Art.packing => HeroIcons.cart,
-    _Art.packed || _Art.readyForPickup => HeroIcons.confirmReceipt,
+    _Art.packed || _Art.readyForPickup => HeroIcons.ordersDone,
     _Art.onTheWay => HeroIcons.delivery,
-    _Art.attention => HeroIcons.alert,
+    _Art.attention => HeroIcons.bell,
     _Art.stopped || _Art.delivered => HeroIcons.close,
   };
 
@@ -82,12 +83,11 @@ class TrackingStageArt extends StatelessWidget {
         ),
         child: Center(
           child: art == _Art.delivered
-              ? SvgPicture.asset(
+              ? const HeroSvgGlyph.art(
                   HeroAssets.stateSuccess,
-                  width: _successArt,
-                  height: _successArt,
+                  size: _successArt,
                 )
-              : Icon(_glyphOf(art), size: _glyph, color: ink),
+              : HeroIcon(_glyphOf(art), size: _glyph, color: ink),
         ),
       ),
     );

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/motion.dart';
@@ -7,6 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 
 /// Fixed map-centre marker: the drawn Hero pin ([HeroAssets.mapPin], green
 /// in an ink outline) over a soft ground shadow, with an optional white label
@@ -68,11 +68,10 @@ class CenterMarker extends StatelessWidget {
             ),
           if (label.isNotEmpty) const SizedBox(height: AppSpacing.s6),
 
-          SvgPicture.asset(
+          const HeroSvgGlyph.art(
             HeroAssets.mapPin,
-            width: _pinWidth,
+            size: _pinWidth,
             height: _pinHeight,
-            excludeFromSemantics: true,
           ),
           // Ground shadow, under the tip.
           Transform.translate(

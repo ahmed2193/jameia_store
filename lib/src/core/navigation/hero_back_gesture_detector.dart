@@ -111,9 +111,12 @@ class _HeroBackGestureDetectorState extends State<HeroBackGestureDetector>
   }
 
   void _onSwipeStart(DragStartDetails details) {
-    _swiping = true;
     _swipeProgress = 0;
-    _route.startBackGesture(HeroBackGestureKind.swipe, fromLeftEdge: !_rtl);
+    // Another gesture already drives the route: this swipe stays out.
+    _swiping = _route.startBackGesture(
+      HeroBackGestureKind.swipe,
+      fromLeftEdge: !_rtl,
+    );
   }
 
   void _onSwipeUpdate(DragUpdateDetails details) {

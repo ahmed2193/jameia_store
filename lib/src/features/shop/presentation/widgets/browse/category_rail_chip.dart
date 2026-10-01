@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/hero_assets.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_image.dart';
-import '../../../../../core/widgets/hero_svg_glyph.dart';
 
 /// One sub-category of the folded rail: a pill with the artwork in a small
 /// circle before the name, filled in ink while it is the open one. The rail
@@ -32,7 +32,7 @@ class CategoryRailChip extends StatelessWidget {
   final VoidCallback onTap;
 
   /// The "All" chip: the Hero category-all glyph
-  /// ([HeroAssets.categoryAll]) instead of an [image].
+  /// ([HeroIcons.categoryAll]) instead of an [image].
   final bool all;
 
   static const double height = AppSize.s36;
@@ -70,14 +70,14 @@ class CategoryRailChip extends StatelessWidget {
                 child: SizedBox.square(
                   dimension: _image,
                   child: all
-                      ? const HeroSvgGlyph.mono(
-                          HeroAssets.categoryAll,
+                      ? const HeroIcon(
+                          HeroIcons.categoryAll,
                           size: _glyph,
                           color: AppColors.primaryText,
                         )
                       : image.isEmpty
-                      ? const Icon(
-                          Icons.category_outlined,
+                      ? const HeroIcon(
+                          HeroIcons.category,
                           size: _glyph,
                           color: AppColors.secondaryText,
                         )

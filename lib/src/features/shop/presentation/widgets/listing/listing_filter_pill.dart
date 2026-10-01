@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// A pill of the listing toolbar: the sort button or the brand filter (with
 /// a dropdown caret), or an on / off filter. Outlined at rest, filled with
@@ -59,7 +61,7 @@ class ListingFilterPill extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
-              Icon(icon, size: _glyph, color: foreground),
+              HeroIcon(icon!, size: _glyph, color: foreground),
               const SizedBox(width: AppSpacing.s6),
             ],
             AnimatedDefaultTextStyle(
@@ -78,8 +80,8 @@ class ListingFilterPill extends StatelessWidget {
                 turns: selected ? _caretTurned : 0,
                 duration: MotionGuard.duration(context, AppMotion.medium),
                 curve: AppMotion.emphasizedDecelerate,
-                child: Icon(
-                  Icons.keyboard_arrow_down_rounded,
+                child: HeroIcon(
+                  HeroIcons.chevronDown,
                   size: _glyph,
                   color: foreground,
                 ),

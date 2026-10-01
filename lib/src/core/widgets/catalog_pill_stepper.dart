@@ -5,6 +5,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_shadows.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
+import '../design/hero_icons.dart';
 import '../motion/rolling_number.dart';
 import '../responsive/app_size.dart';
 import 'catalog_step_button.dart';
@@ -40,7 +41,7 @@ class CatalogPillStepper extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           CatalogStepButton(
-            icon: isLast ? Icons.delete_outline_rounded : Icons.remove_rounded,
+            icon: isLast ? HeroIcons.trash : HeroIcons.minus,
             label: isLast
                 ? 'catalog.remove'.tr()
                 : 'catalog.decrease_quantity'.tr(),
@@ -57,7 +58,7 @@ class CatalogPillStepper extends StatelessWidget {
             ),
           ),
           CatalogStepButton(
-            icon: Icons.add_rounded,
+            icon: HeroIcons.plus,
             label: 'catalog.increase_quantity'.tr(),
             onTap: onAdd,
           ),

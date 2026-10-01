@@ -7,13 +7,20 @@ import '../motion/motion.dart';
 export 'package:google_maps_flutter/google_maps_flutter.dart'
     show
         LatLng,
+        LatLngBounds,
         Marker,
         MarkerId,
         Polyline,
         PolylineId,
+        PatternItem,
+        JointType,
+        Cap,
+        Circle,
+        CircleId,
         BitmapDescriptor,
         CameraPosition,
         CameraUpdate,
+        MinMaxZoomPreference,
         GoogleMapController;
 
 /// Single Google-Maps surface for the whole app (Hero map screens: order
@@ -30,6 +37,10 @@ class HeroMap extends StatelessWidget {
     this.zoom = 14.5,
     this.markers = const {},
     this.polylines = const {},
+    this.circles = const {},
+    this.padding = EdgeInsets.zero,
+    this.style,
+    this.minMaxZoomPreference = MinMaxZoomPreference.unbounded,
     this.liteMode = false,
     this.interactive = true,
     this.myLocationEnabled = false,
@@ -44,6 +55,19 @@ class HeroMap extends StatelessWidget {
   final double zoom;
   final Set<Marker> markers;
   final Set<Polyline> polylines;
+  final Set<Circle> circles;
+
+  /// Room the screen's own chrome takes over the map (a bottom card, a top
+  /// bar): the camera centres and fits bounds in what is left, and the
+  /// Google logo stays in sight.
+  final EdgeInsets padding;
+
+  /// A JSON map style (`HeroMapStyle.brand` for the Hero look); `null` = the
+  /// default Google style.
+  final String? style;
+
+  /// How far the camera may zoom, by gesture or by a camera update.
+  final MinMaxZoomPreference minMaxZoomPreference;
 
   /// Lite mode renders a lightweight static-ish bitmap map — ideal for the small
   /// embedded map card on the address/shop-detail screens.
@@ -77,6 +101,9 @@ class HeroMap extends StatelessWidget {
       initialCameraPosition: CameraPosition(target: target, zoom: zoom),
       markers: markers,
       polylines: polylines,
+      circles: circles,
+      padding: padding,
+      minMaxZoomPreference: minMaxZoomPreference,
       liteModeEnabled: liteMode,
       onMapCreated: onMapCreated,
       onCameraMove: onCameraMove,
@@ -92,8 +119,7 @@ class HeroMap extends StatelessWidget {
       scrollGesturesEnabled: interactive,
       tiltGesturesEnabled: interactive,
       zoomGesturesEnabled: interactive,
-      // Neutral Hero-ish loading background while tiles fetch.
-      style: null,
+      style: style,
     );
   }
 }
@@ -101,8 +127,11 @@ class HeroMap extends StatelessWidget {
 /// The native map camera never reads Flutter's reduced-motion setting, so
 /// every programmatic camera move goes through here: a glide normally, a
 /// jump ([GoogleMapController.moveCamera]) under reduced motion
-/// ([MotionGuard.reduced]).
+/// ([MotionGuard.reduced]). The glide takes [AppMotion.cameraGlide], not the
+/// native SDK's own length, which differs between Android and iOS.
 extension HeroMapCamera on GoogleMapController {
   Future<void> glideTo(BuildContext context, CameraUpdate update) =>
-      MotionGuard.reduced(context) ? moveCamera(update) : animateCamera(update);
+      MotionGuard.reduced(context)
+      ? moveCamera(update)
+      : animateCamera(update, duration: AppMotion.cameraGlide);
 }

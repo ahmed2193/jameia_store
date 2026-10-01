@@ -12,6 +12,11 @@ class AppConstants {
   static const Duration receiveTimeout = Duration(seconds: 20);
   static const Duration sendTimeout = Duration(seconds: 20);
 
+  /// How long one outside road service may take to draw a route before the
+  /// next is asked (the live map waits on it): a slow public server never
+  /// holds the map for the full request timeouts.
+  static const Duration roadRouteBudget = Duration(seconds: 6);
+
   /// Google Maps Platform key for the HTTP Places/geocoding endpoints, injected
   /// at build time: `flutter run --dart-define=MAPS_API_KEY=<key>`. Empty by
   /// default so NO secret ships in source; a web-service key can't be restricted

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The points of a reward card in big digits, centred under the discount
 /// pill: white on a ready card, deep orange under a lock on a locked one.
@@ -34,7 +36,7 @@ class RewardCardFace extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isLocked)
-                Icon(Icons.lock_rounded, size: AppSize.s24, color: ink),
+                HeroIcon(HeroIcons.lock, size: AppSize.s24, color: ink),
               Text(
                 '$points',
                 style: AppTextStyles.digits(AppSize.font40)

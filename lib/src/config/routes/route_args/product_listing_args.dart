@@ -6,7 +6,7 @@ import '../../../core/domain/entities/catalog_product_query.dart';
 /// (`GET /v1/products`) scoped by [query], under [title].
 ///
 /// A collection or a brand opens as a collection page ([isCollectionLook]):
-/// a tinted hero with [title], [emoji], [subtitle] and a countdown to
+/// a tinted hero with [title], a [flame], [subtitle] and a countdown to
 /// [endsAt]. Every other list (search, a tag) keeps the plain app bar and
 /// ignores the hero fields.
 @immutable
@@ -16,7 +16,7 @@ class ProductListingArgs {
     required this.query,
     this.subtitle = '',
     this.endsAt,
-    this.emoji,
+    this.flame = false,
   });
 
   /// The products of a brand (`brandSlug`).
@@ -25,7 +25,7 @@ class ProductListingArgs {
     required this.title,
     this.subtitle = '',
     this.endsAt,
-    this.emoji,
+    this.flame = false,
   }) : query = CatalogProductQuery(brandSlug: slug);
 
   /// The products of a collection (`collectionSlug`) — the "view all" of a
@@ -35,7 +35,7 @@ class ProductListingArgs {
     required this.title,
     this.subtitle = '',
     this.endsAt,
-    this.emoji,
+    this.flame = false,
   }) : query = CatalogProductQuery(collectionSlug: slug);
 
   /// Already resolved for the active language by whoever opens the list.
@@ -50,8 +50,8 @@ class ProductListingArgs {
   /// down to it while it is in the future.
   final DateTime? endsAt;
 
-  /// Shown after the hero's heading (a fire for a sale); `null` = none.
-  final String? emoji;
+  /// A sale or deals list: the Hero flame follows the hero's heading.
+  final bool flame;
 
   /// A collection or a brand: the Hero collection page (hero, category
   /// tabs, no sort / filter toolbar). Search and tag lists stay plain.

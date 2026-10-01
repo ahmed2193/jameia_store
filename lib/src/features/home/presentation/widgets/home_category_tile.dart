@@ -4,9 +4,11 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_shadows.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/domain/entities/catalog_category_entity.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/hero_image.dart';
 import '../../domain/entities/home_icon.dart';
 import 'home_accent_palette.dart';
@@ -113,13 +115,10 @@ class HomeCategoryTile extends StatelessWidget {
                         boxShadow: AppShadows.low,
                       ),
                       child: category.hasImage
-                          ? HeroImage.circle(
-                              url: category.image,
-                              size: _photo,
-                            )
+                          ? HeroImage.circle(url: category.image, size: _photo)
                           // Some of the store's categories have no image.
-                          : Icon(
-                              Icons.category_rounded,
+                          : HeroIcon(
+                              HeroIcons.category,
                               size: _fallbackGlyph,
                               color: strong,
                             ),

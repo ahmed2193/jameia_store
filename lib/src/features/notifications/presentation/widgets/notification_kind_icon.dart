@@ -4,13 +4,13 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/design/hero_assets.dart';
 import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/hero_svg_glyph.dart';
 import '../../domain/entities/notification_entity.dart';
 
 /// Leading glyph of a notification row: the kind's icon in a tinted circle.
 /// Money, rewards, coupons, offers and Pro wear the drawn Hero plates
-/// ([plateFor]), the account the Hero person ([glyphFor]); the rest are
-/// Hero font glyphs, Material only where the font has none.
+/// ([plateFor]); the rest are Hero font glyphs ([iconFor]).
 class NotificationKindIcon extends StatelessWidget {
   const NotificationKindIcon({super.key, required this.kind});
 
@@ -29,16 +29,13 @@ class NotificationKindIcon extends StatelessWidget {
     _ => null,
   };
 
-  /// A mono Hero glyph, tinted [inkFor].
-  static String? glyphFor(NotificationKind kind) =>
-      kind == NotificationKind.account ? HeroAssets.tabAccount : null;
-
-  /// The font glyph of the kinds without a drawn one.
+  /// The font glyph of the kinds without a plate, tinted [inkFor].
   static IconData iconFor(NotificationKind kind) => switch (kind) {
+    NotificationKind.account => HeroIcons.account,
     NotificationKind.order => HeroIcons.orders,
-    NotificationKind.review => HeroIcons.star,
-    NotificationKind.support => HeroIcons.customerService,
-    _ => HeroIcons.notice,
+    NotificationKind.review => HeroIcons.starFill,
+    NotificationKind.support => HeroIcons.support,
+    _ => HeroIcons.megaphone,
   };
 
   static Color inkFor(NotificationKind kind) => switch (kind) {
@@ -76,14 +73,9 @@ class NotificationKindIcon extends StatelessWidget {
       height: AppSize.s40,
       decoration: BoxDecoration(color: tintFor(kind), shape: BoxShape.circle),
       alignment: Alignment.center,
-      child: switch ((plateFor(kind), glyphFor(kind))) {
-        (final String plate, _) => HeroSvgGlyph.art(plate, size: _plate),
-        (_, final String glyph) => HeroSvgGlyph.mono(
-          glyph,
-          size: AppSize.s20,
-          color: inkFor(kind),
-        ),
-        _ => Icon(iconFor(kind), size: AppSize.s20, color: inkFor(kind)),
+      child: switch (plateFor(kind)) {
+        final String plate => HeroSvgGlyph.art(plate, size: _plate),
+        null => HeroIcon(iconFor(kind), size: AppSize.s20, color: inkFor(kind)),
       },
     );
   }

@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/press_row.dart';
 import 'mine_icon_tile.dart';
 import 'mine_tone.dart';
@@ -18,8 +19,7 @@ class MineMenuCell extends StatelessWidget {
   const MineMenuCell({
     super.key,
     this.icon,
-    this.asset,
-    this.plate = false,
+    this.plate,
     required this.label,
     required this.onTap,
     this.tone = MineTone.neutral,
@@ -36,8 +36,7 @@ class MineMenuCell extends StatelessWidget {
   static const double _chevron = AppSize.s16;
 
   final IconData? icon;
-  final String? asset;
-  final bool plate;
+  final String? plate;
   final String label;
   final VoidCallback onTap;
   final MineTone tone;
@@ -59,7 +58,7 @@ class MineMenuCell extends StatelessWidget {
           ),
           child: Row(
             children: [
-              MineIconTile(icon: icon, asset: asset, plate: plate, tone: tone),
+              MineIconTile(icon: icon, plate: plate, tone: tone),
               const SizedBox(width: AppSpacing.s12),
               Expanded(
                 child: Text(
@@ -78,8 +77,8 @@ class MineMenuCell extends StatelessWidget {
               ),
               if (end != null) ...[const SizedBox(width: AppSpacing.s8), end],
               const SizedBox(width: AppSpacing.s8),
-              const Icon(
-                HeroIcons.arrowRight,
+              const HeroIcon(
+                HeroIcons.chevronEnd,
                 size: _chevron,
                 color: AppColors.tertiaryText,
               ),

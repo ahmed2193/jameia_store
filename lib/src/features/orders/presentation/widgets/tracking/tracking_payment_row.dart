@@ -1,15 +1,18 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_assets.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/domain/entities/order_fulfillment_entities.dart';
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/hero_tag.dart';
 
 /// How the order is paid: the method's plate (cash / wallet), its name, the
@@ -63,13 +66,16 @@ class TrackingPaymentRow extends StatelessWidget {
       child: Row(
         children: [
           ExcludeSemantics(
-            child: SvgPicture.asset(
-              payment.method == OrderPaymentMethod.wallet
-                  ? HeroAssets.checkoutWallet
-                  : HeroAssets.checkoutCash,
-              width: AppSize.s24,
-              height: AppSize.s24,
-            ),
+            child: payment.method == OrderPaymentMethod.wallet
+                ? const HeroSvgGlyph.art(
+                    HeroAssets.checkoutWallet,
+                    size: AppSize.s24,
+                  )
+                : const HeroIcon(
+                    HeroIcons.cash,
+                    size: AppSize.s24,
+                    color: AppColors.primaryText,
+                  ),
           ),
           const SizedBox(width: AppSpacing.s12),
           Expanded(
@@ -94,7 +100,7 @@ class TrackingPaymentRow extends StatelessWidget {
               heightFactor: 1,
               child: HeroTag(
                 label: status,
-                icon: payment.isPaid ? Icons.check_rounded : null,
+                icon: payment.isPaid ? HeroIcons.check : null,
                 tone: payment.isPaid
                     ? HeroTagTone.brandSoft
                     : HeroTagTone.neutral,

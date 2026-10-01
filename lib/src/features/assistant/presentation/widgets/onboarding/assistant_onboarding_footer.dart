@@ -5,9 +5,11 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The tour's buttons, one height on every step: "Skip" and "Next" on the
 /// way, "Maybe later" and "Start chatting" on the last step — each pops
@@ -61,8 +63,8 @@ class AssistantOnboardingFooter extends StatelessWidget {
                           : 'assistant.onboarding_next')
                       .tr(),
               onPressed: last ? onStart : onNext,
-              trailing: Icon(
-                last ? Icons.chat_bubble_rounded : Icons.arrow_forward_rounded,
+              trailing: HeroIcon(
+                last ? HeroIcons.chatFill : HeroIcons.arrowForward,
                 size: AppSize.s18,
                 color: AppColors.brandForeground,
               ),

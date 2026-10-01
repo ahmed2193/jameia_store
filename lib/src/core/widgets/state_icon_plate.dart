@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// The flat round plate an empty / error / signed-out state leads with: an
 /// 88 dp muted circle and a 40 dp icon.
@@ -24,7 +25,7 @@ class StateIconPlate extends StatelessWidget {
         dimension: AppSize.s88,
         child: DecoratedBox(
           decoration: BoxDecoration(color: fill, shape: BoxShape.circle),
-          child: Icon(icon, size: AppSize.s40, color: color),
+          child: HeroIcon(icon, size: AppSize.s40, color: color),
         ),
       ),
     );

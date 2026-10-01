@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../cubit/setting_cubit.dart';
 import '../../cubit/setting_state.dart';
@@ -33,7 +34,7 @@ class SettingsHapticsTile extends StatelessWidget {
 
         return MergeSemantics(
           child: SettingsTile(
-            icon: Icons.vibration_rounded,
+            icon: HeroIcons.vibration,
             tone: SettingsTone.teal,
             title: title,
             subtitle: subtitle,

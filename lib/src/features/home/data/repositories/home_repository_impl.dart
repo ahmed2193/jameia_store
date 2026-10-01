@@ -42,6 +42,10 @@ class HomeRepositoryImpl
   );
 
   @override
+  Future<Either<Failure, int>> countOrders() =>
+      execute(() => _remote.countOrders());
+
+  @override
   Either<Failure, String?> popupShownDay(String popupId) =>
       executeSync(() => _local.popupShownDay(popupId));
 

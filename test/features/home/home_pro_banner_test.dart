@@ -8,6 +8,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
@@ -154,7 +155,7 @@ void main() {
     expect(find.text("You're a Pro member"), findsOneWidget);
     expect(find.text('Renews on Sat, Oct 17, 2026'), findsOneWidget);
     expect(find.text('Manage'), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle_rounded), findsNWidgets(3));
+    expect(find.byIcon(HeroIcons.checkCircleFill), findsNWidgets(3));
     expect(find.text('Join Pro'), findsNothing);
     expect(find.byType(HomeProOfferBanner), findsNothing);
 

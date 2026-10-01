@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/domain/entities/address_label.dart';
+import '../../../../../core/widgets/address_label_icon.dart';
 import '../../cubit/address_edit_cubit.dart';
 import '../../cubit/address_edit_state.dart';
 import 'label_chip.dart';
@@ -16,29 +16,12 @@ class TagSection extends StatelessWidget {
   const TagSection({super.key});
 
   // [textKey] is resolved with .tr() at build time (a const list can't).
-  static const List<({AddressLabel label, String textKey, String icon})> _tags =
-      [
-        (
-          label: AddressLabel.home,
-          textKey: 'addr.tag.home',
-          icon: HeroAssets.addressLabelHome,
-        ),
-        (
-          label: AddressLabel.work,
-          textKey: 'addr.tag.work',
-          icon: HeroAssets.addressLabelOffice,
-        ),
-        (
-          label: AddressLabel.gathering,
-          textKey: 'addr.tag.gathering',
-          icon: HeroAssets.addressLabelGathering,
-        ),
-        (
-          label: AddressLabel.other,
-          textKey: 'addr.tag.other',
-          icon: HeroAssets.addressLabelOther,
-        ),
-      ];
+  static const List<({AddressLabel label, String textKey})> _tags = [
+    (label: AddressLabel.home, textKey: 'addr.tag.home'),
+    (label: AddressLabel.work, textKey: 'addr.tag.work'),
+    (label: AddressLabel.gathering, textKey: 'addr.tag.gathering'),
+    (label: AddressLabel.other, textKey: 'addr.tag.other'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +50,7 @@ class TagSection extends StatelessWidget {
                         for (final tag in _tags)
                           LabelChip(
                             label: tag.textKey.tr(),
-                            iconAsset: tag.icon,
+                            icon: AddressLabelIcon.iconFor(tag.label),
                             selected: tag.label == active,
                             onTap: () => cubit.labelChanged(tag.label),
                           ),

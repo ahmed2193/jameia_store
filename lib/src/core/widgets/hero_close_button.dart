@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../config/theme/app_colors.dart';
+import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 
 /// Plain ✕ for a sheet header or a full-screen flow: a 48 dp target, no fill.
 /// Pops the route unless [onPressed] is given.
@@ -21,7 +23,7 @@ class HeroCloseButton extends StatelessWidget {
         fixedSize: const Size.square(AppSize.s48),
         foregroundColor: color ?? AppColors.primaryText,
       ),
-      icon: const Icon(Icons.close_rounded, size: AppSize.s24),
+      icon: const HeroIcon(HeroIcons.close, size: AppSize.s24),
     );
   }
 }

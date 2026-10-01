@@ -6,6 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Phone input with a leading "+965 ▾" country-code chip + inline error.
 class PhoneField extends StatelessWidget {
@@ -51,8 +52,8 @@ class PhoneField extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.s2),
-                    const Icon(
-                      HeroIcons.arrowDown,
+                    const HeroIcon(
+                      HeroIcons.chevronDown,
                       size: AppSize.s14,
                       color: AppColors.secondaryText,
                     ),

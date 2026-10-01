@@ -24,10 +24,10 @@ class LoginSocialSection extends StatefulWidget {
 }
 
 class _LoginSocialSectionState extends State<LoginSocialSection> {
-  static const (String, String) _google = (HeroAssets.loginGoogle, 'Google');
+  static const (String, String) _google = (HeroAssets.brandGoogle, 'Google');
   static const List<(String, String)> _others = [
-    (HeroAssets.loginApple, 'Apple'),
-    (HeroAssets.loginFacebook, 'Facebook'),
+    (HeroAssets.brandApple, 'Apple'),
+    (HeroAssets.brandFacebook, 'Facebook'),
   ];
 
   bool _expanded = false;
@@ -46,7 +46,7 @@ class _LoginSocialSectionState extends State<LoginSocialSection> {
         EntranceCascadeItem(
           index: first,
           child: LoginSocialButton(
-            icon: _google.$1,
+            mark: _google.$1,
             label: _google.$2,
             onTap: _comingSoon,
           ),
@@ -63,10 +63,10 @@ class _LoginSocialSectionState extends State<LoginSocialSection> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (final (icon, provider) in _others) ...[
+              for (final (mark, provider) in _others) ...[
                 const SizedBox(height: AppSpacing.s8),
                 LoginSocialButton(
-                  icon: icon,
+                  mark: mark,
                   label: 'auth.continue_with'.tr(
                     namedArgs: {'provider': provider},
                   ),

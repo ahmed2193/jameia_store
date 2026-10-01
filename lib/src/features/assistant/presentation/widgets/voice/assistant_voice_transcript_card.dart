@@ -5,8 +5,10 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/constants/app_constants.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/assistant_text_direction.dart';
 import '../assistant_word_reveal.dart';
 
@@ -90,8 +92,8 @@ class AssistantVoiceTranscriptCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Icon(
-                Icons.graphic_eq_rounded,
+              const HeroIcon(
+                HeroIcons.waveform,
                 size: AppSize.s18,
                 color: AppColors.primaryDark,
               ),

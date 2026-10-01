@@ -9,6 +9,7 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/failure_message.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/assistant_live_turn.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 import '../../cubit/assistant_chat_state.dart';
@@ -68,10 +69,8 @@ class AssistantEndedTurnFooter extends StatelessWidget {
                 ),
               Row(
                 children: [
-                  Icon(
-                    turn.isStopped
-                        ? Icons.stop_circle_outlined
-                        : Icons.error_outline_rounded,
+                  HeroIcon(
+                    turn.isStopped ? HeroIcons.stopCircle : HeroIcons.warning,
                     size: AppSize.s16,
                     color: turn.isStopped
                         ? AppColors.labelGrey
@@ -98,21 +97,21 @@ class AssistantEndedTurnFooter extends StatelessWidget {
                   if (isLast && canSend && !turn.lostConversation)
                     AssistantSuggestionChip(
                       label: 'assistant.retry'.tr(),
-                      icon: Icons.refresh_rounded,
+                      icon: HeroIcons.refresh,
                       haptic: HapticKind.tap,
                       onTap: () => cubit.retryTurn(turn.key),
                     ),
                   if (turn.lostConversation)
                     AssistantSuggestionChip(
                       label: 'assistant.start_new_chat'.tr(),
-                      icon: Icons.add_comment_outlined,
+                      icon: HeroIcons.chatAdd,
                       haptic: HapticKind.tap,
                       onTap: cubit.startNewChat,
                     ),
                   if (turn.isFailed && canHandOff)
                     AssistantSuggestionChip(
                       label: 'assistant.talk_to_person'.tr(),
-                      icon: HeroIcons.customerService,
+                      icon: HeroIcons.support,
                       haptic: null,
                       onTap: () => AssistantHandoffDialog.confirm(context),
                     ),

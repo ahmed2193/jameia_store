@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/profile_completion.dart';
 import 'profile_completion_ring_painter.dart';
 
@@ -50,8 +52,8 @@ class _ProfileCompletionRingState extends State<ProfileCompletionRing> {
   Widget build(BuildContext context) {
     final completion = widget.completion;
     final check = completion.isComplete
-        ? const Icon(
-            Icons.check_rounded,
+        ? const HeroIcon(
+            HeroIcons.check,
             size: ProfileCompletionRing._checkSize,
             color: AppColors.white,
           )

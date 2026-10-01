@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import 'search_clear_button.dart';
 
 /// The pill search box (docs/design_system.md: muted fill, pill radius,
@@ -60,8 +62,8 @@ class SearchField extends StatelessWidget {
           border: _border,
           enabledBorder: _border,
           focusedBorder: _border,
-          prefixIcon: const Icon(
-            Icons.search_rounded,
+          prefixIcon: const HeroIcon(
+            HeroIcons.search,
             size: AppSize.s24,
             color: AppColors.primaryText,
           ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/domain/entities/offer_entity.dart';
 import '../../../../core/utils/formatters.dart';
 import 'offer_term_row.dart';
@@ -44,20 +45,20 @@ class OfferTerms extends StatelessWidget {
         children: [
           if (condition.isNotEmpty)
             OfferTermRow(
-              icon: Icons.shopping_basket_outlined,
+              icon: HeroIcons.basket,
               text: condition,
               emphasized: true,
             ),
           if (cap != null)
             OfferTermRow(
-              icon: Icons.savings_outlined,
+              icon: HeroIcons.savings,
               text: 'offers.max_discount'.tr(
                 namedArgs: {'amount': Formatters.price(cap)},
               ),
             ),
           if (endsAt != null)
             OfferTermRow(
-              icon: Icons.event_outlined,
+              icon: HeroIcons.calendar,
               text: 'offers.valid_until'.tr(
                 namedArgs: {
                   'date': Formatters.date(context.locale.languageCode, endsAt),

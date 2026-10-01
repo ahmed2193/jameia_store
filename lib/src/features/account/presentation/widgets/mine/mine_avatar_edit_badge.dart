@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Small white disc with a pencil on the avatar's bottom-end corner: the
 /// header opens the profile editor.
@@ -25,7 +26,7 @@ class MineAvatarEditBadge extends StatelessWidget {
         border: Border.all(color: AppColors.divider),
         boxShadow: AppShadows.low,
       ),
-      child: const Icon(
+      child: const HeroIcon(
         HeroIcons.edit,
         size: _glyph,
         color: AppColors.primaryText,

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_colors.dart';
 import '../../../../../../config/theme/app_shadows.dart';
+import '../../../../../../core/design/hero_icons.dart';
 import '../../../../../../core/responsive/app_size.dart';
 import '../../../../../../core/widgets/count_badge.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 
 /// The cart demo's cart: a white disc that pops in with [appear] and
 /// carries the app's own count pill ([CountBadge], like the chat's cart
@@ -42,8 +44,8 @@ class AssistantOnboardingCartBadge extends StatelessWidget {
               child: DecoratedBox(
                 key: cartKey,
                 decoration: _face,
-                child: const Icon(
-                  Icons.shopping_cart_outlined,
+                child: const HeroIcon(
+                  HeroIcons.cart,
                   size: AppSize.s22,
                   color: AppColors.primaryText,
                 ),

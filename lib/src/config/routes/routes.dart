@@ -43,6 +43,7 @@ class Routes {
   static const String orderTracking = '/order-tracking'; // arg: orderId
   static const String orderReview = '/order-review';
   static const String orderInvoice = '/order-invoice';
+  static const String orderLiveMap = '/order-live-map'; // arg: OrderEntity
 
   // Account & support
   static const String mine = '/mine';

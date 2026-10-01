@@ -168,9 +168,21 @@ class _AmbientLoopState extends State<AmbientLoop>
   @override
   void onScreenChanged() => _sync();
 
-  /// Out of the tree (for good, or moving): the slot is free at once.
+  /// Out of the tree (for good, or moving): the loop stops and the slot is
+  /// free at once. A move (a GlobalKey reparent) starts a new appearance
+  /// from [didChangeDependencies] (the element re-reads its dependencies
+  /// there) under its new route — never a loop that runs without its slot.
   @override
   void deactivate() {
+    if (_live) {
+      // No value change here: its listeners are leaving the tree too.
+      _live = false;
+      _rest?.cancel();
+      _rest = null;
+      _deadline?.cancel();
+      _deadline = null;
+      _lap.stop();
+    }
     _release();
     super.deactivate();
   }

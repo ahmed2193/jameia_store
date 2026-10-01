@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,6 +10,7 @@ import '../../../../core/utils/performance/screen_loader_mixin.dart';
 import '../../../../core/utils/performance/snapshot_loader_mixin.dart';
 import '../../domain/entities/home_bootstrap.dart';
 import '../../domain/entities/home_feed.dart';
+import '../../domain/usecases/check_first_order_welcome_usecase.dart';
 import '../../domain/usecases/compose_home_feed_usecase.dart';
 import '../../domain/usecases/mark_home_popups_shown_usecase.dart';
 import '../../domain/usecases/select_due_home_popups_usecase.dart';
@@ -21,6 +23,8 @@ import 'home_state.dart';
 /// (no skeleton) and then the server's. The feed is the screen's read (the
 /// loader mixins' flow); the snapshot is secondary: its failure never
 /// blanks the screen, and its saved copy never offers the time-boxed popups.
+/// The popup queue opens with the first-order welcome gift when the customer
+/// is due it, then the marketing popups.
 class HomeCubit extends Cubit<HomeState>
     with
         SafeCubitMixin<HomeState>,
@@ -31,7 +35,8 @@ class HomeCubit extends Cubit<HomeState>
     this._composeFeed,
     this._watchBootstrap,
     this._selectDuePopups,
-    this._markPopupsShown, {
+    this._markPopupsShown,
+    this._checkWelcome, {
     this._now = DateTime.now,
   }) : super(HomeState.initial());
 
@@ -42,7 +47,11 @@ class HomeCubit extends Cubit<HomeState>
   final WatchHomeBootstrapUseCase _watchBootstrap;
   final SelectDueHomePopupsUseCase _selectDuePopups;
   final MarkHomePopupsShownUseCase _markPopupsShown;
+  final CheckFirstOrderWelcomeUseCase _checkWelcome;
   final DateTime Function() _now;
+
+  /// Bumped per server snapshot: only the newest one's offer lands.
+  int _popupOffer = 0;
 
   /// First open, and "try again" after a full-screen error (skeleton). A
   /// saved copy paints at once; the server's replaces it when stale.
@@ -72,17 +81,32 @@ class HomeCubit extends Cubit<HomeState>
     );
   }
 
-  void _onBootstrap(DataSnapshot<HomeBootstrap> snapshot) => safeEmit(
-    state.copyWith(
-      bootstrap: snapshot.data,
-      // Popups are time-boxed: never offered from a saved copy.
-      duePopups: snapshot.isFromCache
-          ? null
-          : (state.popupsShown
-                ? const <HomeMarketingPopup>[]
-                : _duePopups(snapshot.data)),
-    ),
-  );
+  void _onBootstrap(DataSnapshot<HomeBootstrap> snapshot) {
+    safeEmit(state.copyWith(bootstrap: snapshot.data));
+    // Popups are time-boxed: never offered from a saved copy.
+    if (snapshot.isFromCache || state.popupsShown) return;
+    unawaited(_offerPopups(snapshot.data));
+  }
+
+  /// Settles the welcome gift (maybe an order count) before the queue is
+  /// offered, so it opens once, whole and in order. A newer snapshot's offer
+  /// replaces one still waiting on its count.
+  Future<void> _offerPopups(HomeBootstrap bootstrap) async {
+    final offer = ++_popupOffer;
+    final welcome = await _checkWelcome(
+      CheckFirstOrderWelcomeParams(bootstrap: bootstrap),
+    );
+    if (offer != _popupOffer || state.popupsShown) return;
+    safeEmit(
+      state.copyWith(
+        welcomeDue: welcome.fold((failure) {
+          log('welcome gift unchecked', name: 'HomeCubit', error: failure);
+          return false;
+        }, (due) => due),
+        duePopups: _duePopups(bootstrap),
+      ),
+    );
+  }
 
   /// The blocks the screen draws: expired strips dropped, a strip folded
   /// into the rail it advertises, the category block filled from the tree.
@@ -103,6 +127,7 @@ class HomeCubit extends Cubit<HomeState>
     safeEmit(
       state.copyWith(
         popupsShown: true,
+        welcomeDue: false,
         duePopups: const <HomeMarketingPopup>[],
       ),
     );

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import 'catalog_app_bar_title.dart';
 import 'catalog_round_button.dart';
@@ -42,7 +43,7 @@ class CatalogAppBar extends StatelessWidget implements PreferredSizeWidget {
         children: [
           if (canGoBack) ...[
             CatalogRoundButton(
-              icon: Icons.arrow_back_rounded,
+              icon: HeroIcons.back,
               label: strings.backButtonTooltip,
               onTap: () => context.pop(),
             ),
@@ -53,7 +54,7 @@ class CatalogAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         CatalogRoundButton(
-          icon: Icons.search_rounded,
+          icon: HeroIcons.search,
           label: strings.searchFieldLabel,
           onTap: () => context.push(Routes.search),
         ),

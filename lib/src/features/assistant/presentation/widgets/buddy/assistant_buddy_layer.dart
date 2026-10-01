@@ -81,6 +81,10 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
   bool _wasCalm = true;
   Timer? _settle;
 
+  /// The layer's route is on top and its tab shown (read with the
+  /// dependencies, never in build).
+  bool _inFront = true;
+
   @override
   void initState() {
     super.initState();
@@ -93,10 +97,26 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
     if (mounted) setState(() {});
   }
 
-  /// Nothing the layer knows keeps the buddy still; a change back to calm
-  /// is held for the settle first.
-  bool _calm(bool inFront) {
-    final calm = inFront && _resumed && !_keyboardOpen && !_scrolling;
+  // A hidden tab (its tickers muted) is not in front either.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final inFront =
+        (ModalRoute.isCurrentOf(context) ?? true) &&
+        TickerMode.valuesOf(context).enabled;
+    if (inFront == _inFront) return;
+    _inFront = inFront;
+    _updateCalm();
+  }
+
+  /// Whether the buddy may move now: calm, and past the settle.
+  bool get _calm => _wasCalm && !_settling;
+
+  /// Follows a change of what keeps the buddy still (called with the
+  /// change, never from build); a change back to calm is held for the
+  /// settle first.
+  void _updateCalm() {
+    final calm = _inFront && _resumed && !_keyboardOpen && !_scrolling;
     if (calm && !_wasCalm) {
       _settling = true;
       _settle?.cancel();
@@ -108,7 +128,6 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
       _settling = false;
     }
     _wasCalm = calm;
-    return calm && !_settling;
   }
 
   // The shell's Scaffold strips the keyboard inset from its body, so it is
@@ -116,7 +135,11 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
   @override
   void didChangeMetrics() {
     final open = View.of(context).viewInsets.bottom > 0;
-    if (open != _keyboardOpen) setState(() => _keyboardOpen = open);
+    if (open == _keyboardOpen) return;
+    setState(() {
+      _keyboardOpen = open;
+      _updateCalm();
+    });
   }
 
   // A backgrounded app keeps no mascot timers running, and coming back
@@ -124,7 +147,12 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final resumed = state == AppLifecycleState.resumed;
-    if (resumed != _resumed) setState(() => _resumed = resumed);
+    if (resumed != _resumed) {
+      setState(() {
+        _resumed = resumed;
+        _updateCalm();
+      });
+    }
     final buddy = context.read<AssistantBuddyCubit>();
     switch (state) {
       case AppLifecycleState.resumed:
@@ -149,7 +177,12 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
     if (notification.metrics.axis != Axis.vertical) return false;
     final buddy = context.read<AssistantBuddyCubit>();
     final scrolling = notification.direction != ScrollDirection.idle;
-    if (scrolling != _scrolling) setState(() => _scrolling = scrolling);
+    if (scrolling != _scrolling) {
+      setState(() {
+        _scrolling = scrolling;
+        _updateCalm();
+      });
+    }
     switch (notification.direction) {
       case ScrollDirection.reverse:
         buddy.scrollStarted(towardsEnd: true);
@@ -230,11 +263,8 @@ class _AssistantBuddyLayerState extends State<AssistantBuddyLayer>
 
   @override
   Widget build(BuildContext context) {
-    // A hidden tab (its tickers muted) is not in front either.
-    final inFront =
-        (ModalRoute.isCurrentOf(context) ?? true) &&
-        TickerMode.valuesOf(context).enabled;
-    final calm = _calm(inFront);
+    final inFront = _inFront;
+    final calm = _calm;
     _report(
       AssistantBuddyScene(
         place: widget.place,

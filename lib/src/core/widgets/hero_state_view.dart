@@ -7,6 +7,7 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../design/hero_assets.dart';
+import '../design/hero_icons.dart';
 import 'app_button.dart';
 import 'hero_secondary_button.dart';
 import 'state_art.dart';
@@ -25,7 +26,7 @@ class HeroStateView extends StatelessWidget {
   const HeroStateView({
     super.key,
     required this.message,
-    this.icon = Icons.inbox_outlined,
+    this.icon = HeroIcons.inbox,
     this.art,
     this.title,
     this.actionLabel,
@@ -41,7 +42,7 @@ class HeroStateView extends StatelessWidget {
     String? message,
     required VoidCallback onRetry,
   }) : message = message ?? '',
-       icon = Icons.error_outline_rounded,
+       icon = HeroIcons.warning,
        art = HeroAssets.stateError,
        title = null,
        actionLabel = null,
@@ -54,7 +55,7 @@ class HeroStateView extends StatelessWidget {
   /// A customer route hit `UnauthorizedFailure`: the screen's own invitation
   /// (e.g. `'orders.sign_in_required'.tr()`) and a sign-in button.
   const HeroStateView.signedOut({super.key, required this.message})
-    : icon = Icons.person_outline_rounded,
+    : icon = HeroIcons.person,
       art = HeroAssets.stateSignedOut,
       title = null,
       actionLabel = null,
@@ -69,7 +70,7 @@ class HeroStateView extends StatelessWidget {
   /// reconnect) and "Try again" to try now. Not an error: no red.
   const HeroStateView.offline({super.key, required VoidCallback onRetry})
     : message = '',
-      icon = Icons.wifi_off_rounded,
+      icon = HeroIcons.offline,
       art = HeroAssets.stateOffline,
       title = null,
       actionLabel = null,
@@ -85,7 +86,7 @@ class HeroStateView extends StatelessWidget {
   /// loads again by itself.
   const HeroStateView.checking({super.key})
     : message = '',
-      icon = Icons.wifi_rounded,
+      icon = HeroIcons.wifi,
       art = null,
       title = null,
       actionLabel = null,

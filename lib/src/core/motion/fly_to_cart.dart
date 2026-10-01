@@ -139,7 +139,12 @@ class FlyToCart {
         size: thumbSize,
         thumbnail: thumbnail,
         onLanded: () {
-          if (entry.mounted) entry.remove();
+          // Removed and released (leak_tracker): the entry is done.
+          if (entry.mounted) {
+            entry
+              ..remove()
+              ..dispose();
+          }
           _setAirborne(_airborne - 1);
           _landings.value++;
         },

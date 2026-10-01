@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The points star at the corner of the balance card: a white disc with the
 /// star and a soft breathing glow behind it ([FloatLoop.glow]; a still glow under
@@ -29,8 +31,8 @@ class RewardsStarBadge extends StatelessWidget {
               ),
               child: SizedBox.square(
                 dimension: _discDiameter,
-                child: Icon(
-                  Icons.stars_rounded,
+                child: HeroIcon(
+                  HeroIcons.pointsFill,
                   size: AppSize.s32,
                   color: AppColors.accent3,
                 ),

@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/order_timeline.dart';
 import 'tracking_timeline_row.dart';
 
@@ -63,8 +65,8 @@ class _TrackingTimelineState extends State<TrackingTimeline> {
                     turns: _open ? _openTurns : 0,
                     duration: MotionGuard.duration(context, AppMotion.medium),
                     curve: AppMotion.signature,
-                    child: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
+                    child: const HeroIcon(
+                      HeroIcons.chevronDown,
                       size: AppSize.s24,
                       color: AppColors.secondaryText,
                     ),

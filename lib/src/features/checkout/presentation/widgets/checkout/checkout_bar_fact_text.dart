@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/checkout_bar_fact.dart';
 import '../../../domain/entities/checkout_block_reason.dart';
 
@@ -79,37 +81,37 @@ class CheckoutBarFactText extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, iconColor, textColor) = switch (fact.kind) {
       CheckoutBarFactKind.blocked => (
-        Icons.info_outline_rounded,
+        HeroIcons.info,
         AppColors.error,
         AppColors.errorDeep,
       ),
       CheckoutBarFactKind.chooseDestination => (
-        Icons.location_on_outlined,
+        HeroIcons.pin,
         AppColors.secondaryText,
         AppColors.secondaryText,
       ),
       CheckoutBarFactKind.totalSavings => (
-        Icons.discount_rounded,
+        HeroIcons.discount,
         AppColors.accent1,
         AppColors.primaryText,
       ),
       CheckoutBarFactKind.couponSaved => (
-        Icons.confirmation_number_rounded,
+        HeroIcons.voucher,
         AppColors.accent1Dark,
         AppColors.primaryText,
       ),
       CheckoutBarFactKind.pointsSaved => (
-        Icons.stars_rounded,
+        HeroIcons.pointsFill,
         AppColors.proAmber,
         AppColors.primaryText,
       ),
       CheckoutBarFactKind.freeDelivery => (
-        Icons.delivery_dining_rounded,
+        HeroIcons.delivery,
         AppColors.freeDelivery,
         AppColors.primaryText,
       ),
       CheckoutBarFactKind.freeDeliveryGap => (
-        Icons.delivery_dining_outlined,
+        HeroIcons.delivery,
         AppColors.secondaryText,
         AppColors.secondaryText,
       ),
@@ -117,7 +119,7 @@ class CheckoutBarFactText extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: iconSize, color: iconColor),
+        HeroIcon(icon, size: iconSize, color: iconColor),
         const SizedBox(width: AppSpacing.s4),
         Flexible(
           child: Text(

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/rolling_number.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
@@ -25,7 +26,7 @@ class MineWalletStat extends StatelessWidget {
           cubit.state.isSignedIn ? cubit.state.customer?.walletKd ?? 0 : 0,
     );
     return MineStatTile(
-      icon: Icons.account_balance_wallet_rounded,
+      icon: HeroIcons.wallet,
       tone: MineTone.brand,
       label: 'account.wallet'.tr(),
       onTap: () => context.push(Routes.wallet),

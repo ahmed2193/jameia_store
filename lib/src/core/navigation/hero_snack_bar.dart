@@ -29,10 +29,15 @@ class _ShownSnack {
 /// an optional action — "Undo", "View" — named [actionLabel] and run by
 /// [onAction] (the snack closes on the tap). It rises in over
 /// [AppMotion.medium], stays [AppMotion.snackDwell] (with an action too),
-/// and leaves over [AppMotion.fast]. A new message while one is on screen
-/// takes its place at once and its words cross-fade from the old ones —
-/// rapid messages never queue, and never leave and come back.
-void showHeroSnackBar(
+/// and leaves over [AppMotion.fast]. For a screen-reader user a snack with
+/// an action stays until it is acted on or replaced (I3): the action must
+/// be reachable. A new message while one is on screen takes its place at
+/// once and its words cross-fade from the old ones — rapid messages never
+/// queue, and never leave and come back.
+///
+/// Returns the snack's controller (`null` with no messenger): its `closed`
+/// reason tells an action window (an Undo) when, and how, it ended.
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? showHeroSnackBar(
   BuildContext context,
   String message, {
   HeroSnackTone tone = HeroSnackTone.info,
@@ -49,14 +54,14 @@ void showHeroSnackBar(
 /// [showHeroSnackBar] on a [messenger] read before an `await` — for a flow
 /// whose own widget may be gone when the answer comes (the cart that turns
 /// into its empty state once cleared).
-void showHeroSnackBarOn(
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? showHeroSnackBarOn(
   ScaffoldMessengerState messenger,
   String message, {
   HeroSnackTone tone = HeroSnackTone.info,
   String? actionLabel,
   VoidCallback? onAction,
 }) {
-  if (!messenger.mounted) return;
+  if (!messenger.mounted) return null;
   final next = HeroSnackMessage(message, tone: tone);
   final current = _shownSnacks[messenger];
   final previous = current != null && current.open ? current.message : null;
@@ -71,6 +76,9 @@ void showHeroSnackBarOn(
   final shown = _ShownSnack(next);
   _shownSnacks[messenger] = shown;
   final label = actionLabel;
+  final action = label == null || onAction == null
+      ? null
+      : SnackBarAction(label: label, onPressed: onAction);
   final controller = messenger.showSnackBar(
     SnackBar(
       content: HeroSnackContent(
@@ -78,11 +86,13 @@ void showHeroSnackBarOn(
         message: next,
         previous: previous,
       ),
-      action: label == null || onAction == null
-          ? null
-          : SnackBarAction(label: label, onPressed: onAction),
+      action: action,
       duration: AppMotion.snackDwell,
-      persist: false,
+      // A screen reader needs the time to reach the action (Material's
+      // own rule); everyone else gets the dwell.
+      persist:
+          action != null &&
+          (MediaQuery.maybeAccessibleNavigationOf(motion) ?? false),
     ),
     snackBarAnimationStyle: AnimationStyle(
       duration: replacing
@@ -92,6 +102,7 @@ void showHeroSnackBarOn(
     ),
   );
   unawaited(controller.closed.then((_) => shown.open = false));
+  return controller;
 }
 
 /// [showFailureSnackBar] for a failed ACTION, on a [messenger] read before

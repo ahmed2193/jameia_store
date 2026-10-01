@@ -300,4 +300,51 @@ void main() {
       expect(tester.hasRunningAnimations, isFalse);
     });
   });
+
+  // Review fix O4: a loop moved by its GlobalKey keeps (re-takes) its route
+  // slot, so a second exclusive loop never plays beside it.
+  group('exclusive slot', () {
+    Widget exclusive(List<double> seen, {Key? key}) => AmbientLoop.value(
+      key: key,
+      period: _lap,
+      exclusive: true,
+      valueBuilder: (context, t, child) {
+        seen.add(t);
+        return child;
+      },
+      child: const SizedBox.square(dimension: 40),
+    );
+
+    testWidgets('a loop reparented under its GlobalKey still holds the slot', (
+      tester,
+    ) async {
+      final key = GlobalKey();
+      final first = <double>[];
+      final second = <double>[];
+      await tester.pumpWidget(
+        _host(Column(children: [exclusive(first, key: key)])),
+      );
+      await tester.pump(_lap ~/ 4);
+      expect(first.last, greaterThan(0), reason: 'the first one plays');
+
+      // Moved (a new parent, same route) as the second one comes on screen.
+      await tester.pumpWidget(
+        _host(
+          Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.zero,
+                child: exclusive(first, key: key),
+              ),
+              exclusive(second),
+            ],
+          ),
+        ),
+      );
+      await _frames(tester, _lap ~/ 2);
+
+      expect(second.every((t) => t == 0), isTrue, reason: 'one per route');
+      expect(first.last, greaterThan(0), reason: 'the moved one plays on');
+    });
+  });
 }

@@ -26,7 +26,7 @@ class CollectionFrame extends StatefulWidget {
     required this.heading,
     required this.onSearch,
     required this.bodyBuilder,
-    this.emoji,
+    this.flame = false,
     this.subtitle,
     this.heroTrailing,
     this.tabs,
@@ -38,7 +38,9 @@ class CollectionFrame extends StatefulWidget {
   final String heading;
   final VoidCallback onSearch;
   final CollectionBodyBuilder bodyBuilder;
-  final String? emoji;
+
+  /// A sale or deals page: the Hero flame follows the heading.
+  final bool flame;
   final String? subtitle;
 
   /// Under the heading (a countdown for a flash sale).
@@ -125,7 +127,7 @@ class _CollectionFrameState extends State<CollectionFrame> {
           SliverToBoxAdapter(
             child: CollectionHero(
               heading: widget.heading,
-              emoji: widget.emoji,
+              flame: widget.flame,
               subtitle: widget.subtitle,
               trailing: widget.heroTrailing,
               onExtent: _heroMeasured,

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../../../config/theme/app_colors.dart';
 import '../../../../../../config/theme/app_shadows.dart';
+import '../../../../../../core/design/hero_icons.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 
 /// The hello demo's centre: a white disc with the assistant's sparkle, and
 /// a ring of brand colour that spreads from it once. The hello itself is
@@ -61,10 +63,10 @@ class AssistantOnboardingWave extends StatelessWidget {
               scale: pop,
               child: const DecoratedBox(
                 decoration: _face,
-                child: Icon(
-                  Icons.auto_awesome_rounded,
+                child: HeroIcon(
+                  HeroIcons.sparkle,
                   size: _glyph,
-                  color: AppColors.primary,
+                  color: AppColors.primaryDark,
                 ),
               ),
             ),

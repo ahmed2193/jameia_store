@@ -1,0 +1,20 @@
+{
+  "name": "hero-icons",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Builds the HeroIcons icon font (assets/fonts/hero_icons.ttf) from tool/icons/src/*.svg.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "build:dart": "node build.js --dart",
+    "qa": "node build.js --qa .build/qa"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "opentype.js": "2.0.0",
+    "oslllo-svg-fixer": "6.0.1",
+    "subset-font": "2.9.0",
+    "svg2ttf": "6.1.0",
+    "svgicons2svgfont": "15.0.1"
+  }
+}

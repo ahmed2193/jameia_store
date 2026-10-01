@@ -6,6 +6,7 @@ import '../../config/theme/app_text_styles.dart';
 import '../motion/haptics.dart';
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 import 'hero_list_row.dart';
 import 'hero_radio_mark.dart';
 import 'press_row.dart';
@@ -80,7 +81,7 @@ class OptionRow extends StatelessWidget {
         leading ??
         (icon == null
             ? null
-            : Icon(
+            : HeroIcon(
                 icon,
                 size: iconSize,
                 color: muted

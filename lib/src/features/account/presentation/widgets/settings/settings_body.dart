@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/content_clamp.dart';
 import 'settings_clear_cache_tile.dart';
@@ -69,13 +70,13 @@ class SettingsBody extends StatelessWidget {
                 title: 'settings.section_general'.tr(),
                 children: [
                   SettingsTile(
-                    icon: Icons.shield_outlined,
+                    icon: HeroIcons.shield,
                     tone: SettingsTone.green,
                     title: 'settings.account_security'.tr(),
                     onTap: () => context.push(Routes.profileEdit),
                   ),
                   SettingsTile(
-                    icon: Icons.lock_outline_rounded,
+                    icon: HeroIcons.lock,
                     tone: SettingsTone.violet,
                     title: 'settings.privacy'.tr(),
                     onTap: () =>
@@ -83,7 +84,7 @@ class SettingsBody extends StatelessWidget {
                   ),
                   SettingsClearCacheTile(title: 'settings.clear_cache'.tr()),
                   SettingsTile(
-                    icon: Icons.info_outline_rounded,
+                    icon: HeroIcons.info,
                     tone: SettingsTone.neutral,
                     title: 'settings.about'.tr(),
                     onTap: () => context.push(Routes.mineAbout),

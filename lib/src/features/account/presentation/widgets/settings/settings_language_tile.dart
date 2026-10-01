@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/locale_swap_veil.dart';
 import '../../../../../core/motion/motion.dart';
@@ -72,7 +73,7 @@ class _SettingsLanguageTileState extends State<SettingsLanguageTile> {
         _pending != null ||
         context.select<SettingCubit, bool>((c) => c.state.isChangingLanguage);
     return SettingsTile(
-      icon: Icons.translate_rounded,
+      icon: HeroIcons.language,
       tone: SettingsTone.sky,
       title: widget.title,
       below: HeroSegmentedControl<SettingsLanguage>(

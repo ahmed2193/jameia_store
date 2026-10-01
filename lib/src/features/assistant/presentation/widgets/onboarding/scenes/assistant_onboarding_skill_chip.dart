@@ -6,6 +6,7 @@ import '../../../../../../config/theme/app_shadows.dart';
 import '../../../../../../config/theme/app_spacing.dart';
 import '../../../../../../config/theme/app_text_styles.dart';
 import '../../../../../../core/responsive/app_size.dart';
+import '../../../../../../core/widgets/hero_icon.dart';
 import 'assistant_onboarding_skill.dart';
 
 /// One thing the assistant does, as a small white pill: its glyph on a
@@ -50,7 +51,7 @@ class AssistantOnboardingSkillChip extends StatelessWidget {
                     color: skill.tint,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: HeroIcon(
                     skill.icon,
                     size: AppSize.s14,
                     color: skill.color,

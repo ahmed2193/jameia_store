@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/data_freshness.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
@@ -48,7 +49,7 @@ class TrackingLastKnownNote extends StatelessWidget {
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: InfoPill(
-                  icon: Icons.history_rounded,
+                  icon: HeroIcons.history,
                   text: 'connectivity.order_status_as_of'.tr(
                     namedArgs: {'time': _asOf(context.locale.languageCode, at)},
                   ),

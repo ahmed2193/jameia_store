@@ -35,7 +35,9 @@ class PdpViewerDismissDrag {
       final modal = ModalRoute.of(context);
       if (modal is! HeroPageRoute<dynamic> || !modal.canStartDrag) return;
       if (dy <= 0) return;
-      route = _route = modal..startBackGesture(HeroBackGestureKind.drag);
+      // Another gesture drives the route: this drag leaves it alone.
+      if (!modal.startBackGesture(HeroBackGestureKind.drag)) return;
+      route = _route = modal;
       _pulled = 0;
     }
     final height = MediaQuery.sizeOf(context).height;

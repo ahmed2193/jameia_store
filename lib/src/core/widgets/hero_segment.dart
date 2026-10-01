@@ -5,6 +5,7 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
+import './hero_icon.dart';
 import 'hero_segmented_control.dart';
 import 'press_row.dart';
 
@@ -73,7 +74,7 @@ class HeroSegment extends StatelessWidget {
                     duration: duration,
                     curve: AppMotion.signature,
                     builder: (context, color, _) =>
-                        Icon(glyph, size: iconSize, color: color),
+                        HeroIcon(glyph, size: iconSize, color: color),
                   ),
                   const SizedBox(width: AppSpacing.s6),
                 ],

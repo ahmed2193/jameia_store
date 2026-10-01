@@ -1,6 +1,7 @@
 import 'package:flutter/painting.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icon_tone.dart';
 import '../../domain/entities/home_icon.dart';
 import '../../domain/entities/home_section_entity.dart';
 
@@ -16,6 +17,16 @@ abstract final class HomeAccentPalette {
     HomeAccent.orange => AppColors.accent1,
     HomeAccent.zinc => AppColors.labelGrey,
     HomeAccent.none => AppColors.primaryDark,
+  };
+
+  /// Two-tone icon colours of the family (a Hero glyph on a white disc).
+  static HeroIconTone tone(HomeAccent accent) => switch (accent) {
+    HomeAccent.emerald || HomeAccent.none => HeroIconTone.brand,
+    HomeAccent.amber => HeroIconTone.warm,
+    HomeAccent.rose || HomeAccent.orange => HeroIconTone.offer,
+    HomeAccent.violet => HeroIconTone.pro,
+    HomeAccent.sky => HeroIconTone.info,
+    HomeAccent.zinc => HeroIconTone.neutral,
   };
 
   /// Light wash: the disc behind a section icon.

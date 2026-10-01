@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../motion/haptics.dart';
 import '../motion/motion_widgets.dart';
+import './hero_icon.dart';
 
 /// Round "+" / "−" button of [QtyStepper] with press-scale + selection haptic.
 class QtyStepperRoundButton extends StatelessWidget {
@@ -37,7 +38,7 @@ class QtyStepperRoundButton extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: Icon(icon, size: size * 0.62, color: fg),
+        child: HeroIcon(icon, size: size * 0.62, color: fg),
       ),
     );
     return Semantics(

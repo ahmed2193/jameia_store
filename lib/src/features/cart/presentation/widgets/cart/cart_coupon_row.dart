@@ -4,11 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/cart_coupon_entity.dart';
 import '../../../../../core/motion/change_bump.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
 import '../../../../../core/widgets/hero_sheet_header.dart';
 import '../../../domain/entities/cart_snapshot.dart';
@@ -48,16 +50,12 @@ class _CartCouponRowState extends State<CartCouponRow> {
       (cubit) => cubit.state.busyAction == CartAction.coupon,
     );
     return HeroListRow(
-      // No coupon glyph in wm_c_iconfont — its 0xe014 is the WORD 賞 — so this
-      // is the same Material ticket the Mine menu and the coupon notification
-      // already use.
+      // The same Hero ticket the Mine menu and the coupon notification use.
       leading: ChangeBump(
         key: _ticket,
         value: coupon?.code,
-        child: Icon(
-          coupon == null
-              ? Icons.confirmation_number_outlined
-              : Icons.confirmation_number_rounded,
+        child: HeroIcon(
+          coupon == null ? HeroIcons.voucher : HeroIcons.voucher,
           size: AppSize.s24,
           color: coupon == null ? AppColors.primaryText : AppColors.brandDeep,
         ),
@@ -81,7 +79,7 @@ class _CartCouponRowState extends State<CartCouponRow> {
                       Haptics.cartRemove();
                       context.read<CartCubit>().removeCoupon();
                     },
-              icon: const Icon(Icons.close_rounded, size: AppSize.s20),
+              icon: const HeroIcon(HeroIcons.close, size: AppSize.s20),
             ),
       showChevron: coupon == null,
       mergeSemantics: coupon == null,

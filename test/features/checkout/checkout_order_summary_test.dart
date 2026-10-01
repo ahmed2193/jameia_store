@@ -6,6 +6,7 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_offer_line_entity.dart';
@@ -141,7 +142,7 @@ void main() {
     expect(inStrip(find.text('2x')), findsOneWidget);
     expect(inStrip(find.text('1x')), findsOneWidget);
     // Nothing flagged: no badge, no banner.
-    expect(find.byIcon(Icons.priority_high_rounded), findsNothing);
+    expect(find.byIcon(HeroIcons.exclamation), findsNothing);
     expect(find.textContaining('unavailable'), findsNothing);
     // Fixed places: never more than the strip holds.
     expect(
@@ -160,7 +161,7 @@ void main() {
       ]),
     );
 
-    expect(inStrip(find.byIcon(Icons.priority_high_rounded)), findsOneWidget);
+    expect(inStrip(find.byIcon(HeroIcons.exclamation)), findsOneWidget);
     expect(find.textContaining('1 item unavailable'), findsOneWidget);
 
     await tester.tap(find.byType(CheckoutIssueBanner));
@@ -181,7 +182,7 @@ void main() {
       ]),
     );
 
-    expect(inStrip(find.byIcon(Icons.priority_high_rounded)), findsOneWidget);
+    expect(inStrip(find.byIcon(HeroIcons.exclamation)), findsOneWidget);
     expect(find.textContaining('unavailable'), findsNothing);
   });
 
@@ -305,7 +306,7 @@ void main() {
     );
 
     expect(find.text('4 pcs'), findsOneWidget);
-    expect(inStrip(find.byIcon(Icons.card_giftcard_rounded)), findsOneWidget);
+    expect(inStrip(find.byIcon(HeroIcons.gift)), findsOneWidget);
   });
 
   testWidgets('Arabic: the title and the pieces, right to left', (

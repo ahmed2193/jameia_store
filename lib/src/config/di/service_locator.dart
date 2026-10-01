@@ -16,6 +16,8 @@ import '../../core/network/api_base_options.dart';
 import '../../core/network/api_consumer.dart';
 import '../../core/network/dio_consumer.dart';
 import '../../core/network/event_stream_client.dart';
+import '../../core/network/external_api_consumer.dart';
+import '../../core/notifications/local_alerts.dart';
 import '../../core/network/interceptors/app_headers_interceptor.dart';
 import '../../core/network/interceptors/auth_interceptor.dart';
 import '../../core/network/interceptors/network_log_interceptor.dart';
@@ -89,6 +91,12 @@ Future<void> _initCore() async {
   _initNetwork();
   _initCache();
   _initCatalog();
+  // The phone's notification shade for the app's own alerts (live order
+  // tracking); the plugin initialises on first use, never at launch. A test
+  // registers a fake first.
+  if (!sl.isRegistered<LocalAlerts>()) {
+    sl.registerLazySingleton<LocalAlerts>(PluginLocalAlerts.new);
+  }
 }
 
 /// The shared [LocalStorage] (and its backing [SharedPreferences]), registered
@@ -203,6 +211,14 @@ void _initNetwork() {
   // the envelope; they share the Dio so auth + headers + trace still apply.
   sl.registerLazySingleton<EventStreamClient>(
     () => DioEventStreamClient(sl<Dio>()),
+  );
+  // Third-party map services get a client of their own: none of the chain
+  // above, so no Hero credential or guest id ever leaves for another host
+  // (and their outage never reads as "offline"); the trace still shows them.
+  sl.registerLazySingleton<ExternalApiConsumer>(
+    () => DioExternalApiConsumer(
+      Dio(buildExternalBaseOptions())..interceptors.addAll([?trace]),
+    ),
   );
 }
 

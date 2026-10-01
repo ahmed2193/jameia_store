@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_line_entity.dart';
 import 'package:hero_mart/src/core/motion/haptics.dart';
@@ -112,7 +113,7 @@ void main() {
   ) async {
     await pumpCart(tester, _withRice(1));
 
-    await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+    await tester.tap(find.byIcon(HeroIcons.trash));
     await tester.pump();
     await tester.pump(AppMotion.medium);
     await tester.pump(_tick);
@@ -130,7 +131,7 @@ void main() {
   ) async {
     await pumpCart(tester, _withRice(2));
 
-    await tester.tap(find.byIcon(Icons.remove_rounded));
+    await tester.tap(find.byIcon(HeroIcons.minus));
     await tester.pump();
     await tester.pump(AppMotion.medium);
 

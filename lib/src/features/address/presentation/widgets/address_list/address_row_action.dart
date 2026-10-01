@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Compact 32dp icon button (RE §5 tap target) for a row action. It presses
 /// itself (the small press depth), so the row around it stays still.
@@ -30,7 +31,11 @@ class AddressRowAction extends StatelessWidget {
           padding: EdgeInsets.zero,
           visualDensity: VisualDensity.compact,
           tooltip: tooltip,
-          icon: Icon(icon, size: AppSize.s18, color: AppColors.secondaryText),
+          icon: HeroIcon(
+            icon,
+            size: AppSize.s18,
+            color: AppColors.secondaryText,
+          ),
           onPressed: onPressed,
         ),
       ),

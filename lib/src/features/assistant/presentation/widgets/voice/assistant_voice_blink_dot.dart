@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The red mic that blinks while recording (WhatsApp's "on air" light).
 /// A real-state light (like a loader), so it is exempt from the ambient
@@ -54,8 +56,8 @@ class _AssistantVoiceBlinkDotState extends State<AssistantVoiceBlinkDot>
     return RepaintBoundary(
       child: FadeTransition(
         opacity: _opacity,
-        child: const Icon(
-          Icons.mic_rounded,
+        child: const HeroIcon(
+          HeroIcons.mic,
           size: AppSize.s22,
           color: AppColors.error,
         ),

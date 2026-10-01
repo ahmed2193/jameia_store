@@ -6,7 +6,9 @@ import '../../../../config/routes/route_args/shell_arrival.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import 'pro_brand_lockup.dart';
 
 /// The paywall's top bar: close on the start side, the "Hero | Pro" lockup
@@ -42,8 +44,8 @@ class ProTopBar extends StatelessWidget {
               child: IconButton(
                 onPressed: () => _close(context),
                 tooltip: 'pro.close'.tr(),
-                icon: const Icon(
-                  Icons.close_rounded,
+                icon: const HeroIcon(
+                  HeroIcons.close,
                   color: AppColors.primaryText,
                 ),
               ),

@@ -1,6 +1,6 @@
 // A collection, a brand or the "view all" of a home rail opens as a Hero
 // collection page: the store's name in the top bar, the tinted hero (heading,
-// emoji, line, a flash sale's countdown), category tabs once two or more
+// flame, line, a flash sale's countdown), category tabs once two or more
 // categories have products, the grid without the sort / filter toolbar and
 // the "View cart" pill. Search results keep the plain catalogue look.
 import 'dart:async';
@@ -177,7 +177,7 @@ ProductListingArgs _bestSellers({DateTime? endsAt}) =>
       slug: 'best-sellers',
       title: _heading,
       subtitle: _subtitle,
-      emoji: '🔥',
+      flame: true,
       endsAt: endsAt,
     );
 

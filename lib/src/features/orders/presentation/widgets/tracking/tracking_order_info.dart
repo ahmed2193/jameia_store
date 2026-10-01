@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/hero_list_row.dart';
@@ -77,7 +78,7 @@ class TrackingOrderInfo extends StatelessWidget {
                 const ThinDivider(),
                 HeroListRow(
                   title: 'orders.view_invoice'.tr(),
-                  icon: Icons.receipt_long_outlined,
+                  icon: HeroIcons.receipt,
                   dense: true,
                   onTap: () =>
                       context.push(Routes.orderInvoice, extra: order.id),

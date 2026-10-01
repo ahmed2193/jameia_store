@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_svg_glyph.dart';
 import 'assistant_mascot.dart';
 import 'assistant_mascot_mood.dart';
 
@@ -46,10 +46,9 @@ class AssistantPropScene extends StatelessWidget {
             child: AssistantMascot(size: mascotSize, mood: mood),
           ),
           const SizedBox(width: AppSpacing.s4),
-          SvgPicture.asset(
+          HeroSvgGlyph.art(
             prop,
-            width: propSize,
-            height: propSize,
+            size: propSize,
             matchTextDirection: directional,
           ),
         ],

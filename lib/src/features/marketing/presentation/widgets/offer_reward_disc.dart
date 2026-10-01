@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/domain/entities/offer_entity.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../../../../core/widgets/offer_plate.dart';
 
 /// The tinted disc at the start of an offer card, holding the kind's Hero
@@ -23,27 +25,27 @@ class OfferRewardDisc extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, ink, plate) = switch (type) {
       OfferRewardType.freeDelivery => (
-        Icons.local_shipping_outlined,
+        HeroIcons.delivery,
         AppColors.freeDeliveryFgOnLight,
         AppColors.freeDeliveryBg,
       ),
       OfferRewardType.percentageDiscount => (
-        Icons.percent_rounded,
+        HeroIcons.percent,
         AppColors.accent3Dark,
         AppColors.accent3Light,
       ),
       OfferRewardType.fixedDiscount => (
-        Icons.sell_outlined,
+        HeroIcons.tag,
         AppColors.accent1Dark,
         AppColors.accent1Light,
       ),
       OfferRewardType.freeProduct => (
-        Icons.card_giftcard_rounded,
+        HeroIcons.gift,
         AppColors.accentViolet,
         AppColors.accentVioletLight,
       ),
       OfferRewardType.other => (
-        Icons.local_offer_outlined,
+        HeroIcons.tag,
         AppColors.primaryText,
         AppColors.smallBackground,
       ),
@@ -56,7 +58,7 @@ class OfferRewardDisc extends StatelessWidget {
         decoration: BoxDecoration(color: plate, shape: BoxShape.circle),
         child: switch (OfferPlate.assetFor(type)) {
           final String asset => OfferPlate(asset: asset, size: _plateSize),
-          null => Icon(icon, size: _glyph, color: ink),
+          null => HeroIcon(icon, size: _glyph, color: ink),
         },
       ),
     );

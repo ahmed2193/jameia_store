@@ -9,6 +9,7 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/core_widgets.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Chat title bar: the rider's avatar, name and "Your rider", and a call
 /// action (a snack bar offline).
@@ -28,7 +29,7 @@ class ImChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0,
       titleSpacing: 0,
       leading: IconButton(
-        icon: const Icon(
+        icon: const HeroIcon(
           HeroIcons.back,
           size: AppSize.s20,
           color: AppColors.primaryText,
@@ -45,7 +46,7 @@ class ImChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Icon(
+            child: const HeroIcon(
               HeroIcons.delivery,
               size: AppSize.s20,
               color: AppColors.secondaryText,
@@ -80,7 +81,7 @@ class ImChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          icon: const Icon(
+          icon: const HeroIcon(
             HeroIcons.phone,
             size: AppSize.s20,
             color: AppColors.primaryText,

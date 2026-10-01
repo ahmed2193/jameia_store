@@ -5,14 +5,15 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/brand_mark.dart';
 
-/// White outlined sign-in pill with the provider's logo at its start and a
-/// bold label centred on the whole pill (the phone step's primary is the
-/// green pill above it).
+/// White outlined sign-in pill with the provider's official mark ([BrandMark],
+/// never tinted) at its start and a bold label centred on the whole pill (the
+/// phone step's primary is the green pill above it).
 class LoginSocialButton extends StatelessWidget {
   const LoginSocialButton({
     super.key,
-    required this.icon,
+    required this.mark,
     required this.label,
     required this.onTap,
   });
@@ -23,7 +24,8 @@ class LoginSocialButton extends StatelessWidget {
     Radius.circular(AppRadius.pill),
   );
 
-  final String icon;
+  /// The provider's `HeroAssets.brand*` mark.
+  final String mark;
   final String label;
   final VoidCallback onTap;
 
@@ -49,13 +51,7 @@ class LoginSocialButton extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Image.asset(
-                    icon,
-                    width: _logo,
-                    height: _logo,
-                    fit: BoxFit.contain,
-                    excludeFromSemantics: true,
-                  ),
+                  BrandMark(mark, size: _logo),
                   Expanded(
                     child: Center(
                       child: FittedBox(

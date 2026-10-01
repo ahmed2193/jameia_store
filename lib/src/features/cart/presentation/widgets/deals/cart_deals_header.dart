@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/widgets/round_outlined_button.dart';
 
 /// The sheet's head: close at the start, "Buy more, save more" and the
@@ -50,7 +51,7 @@ class CartDealsHeader extends StatelessWidget {
             ),
           ),
           RoundOutlinedButton(
-            icon: Icons.close_rounded,
+            icon: HeroIcons.close,
             label: MaterialLocalizations.of(context).closeButtonLabel,
             onTap: () => context.pop(),
           ),

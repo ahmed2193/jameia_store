@@ -5,6 +5,10 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <!-- Voice search (speech_to_text) — record audio + query the speech recognizer. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <!-- Live order tracking: the ongoing "rider on the way" notification and
+         the stage alerts (asked at run time on Android 13+). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <application
         android:label="Hero"
         android:name="${applicationName}"

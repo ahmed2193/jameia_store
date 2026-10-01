@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/widgets/hero_state_view.dart';
 
 /// No orders yet: the empty state centred in the space the list would take,
@@ -21,7 +22,7 @@ class OrdersEmptyView extends StatelessWidget {
             height: constraints.maxHeight,
             child: HeroStateView(
               message: 'orders.empty'.tr(),
-              icon: Icons.receipt_long_outlined,
+              icon: HeroIcons.receipt,
             ),
           ),
         ],

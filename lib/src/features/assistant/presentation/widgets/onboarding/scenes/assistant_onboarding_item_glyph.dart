@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../../core/widgets/hero_icon.dart';
 import 'assistant_onboarding_item.dart';
 
 /// A demo item's glyph on its tinted disc, [size] across.
@@ -21,7 +22,7 @@ class AssistantOnboardingItemGlyph extends StatelessWidget {
       dimension: size,
       child: DecoratedBox(
         decoration: BoxDecoration(color: item.tint, shape: BoxShape.circle),
-        child: Icon(item.icon, size: size * _glyphShare, color: item.color),
+        child: HeroIcon(item.icon, size: size * _glyphShare, color: item.color),
       ),
     );
   }

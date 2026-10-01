@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/navigation.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Long-press menu of a bubble: Copy.
 class AssistantCopySheet extends StatelessWidget {
@@ -40,7 +42,7 @@ class AssistantCopySheet extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
         child: ListTile(
-          leading: const Icon(Icons.copy_rounded, color: AppColors.primaryText),
+          leading: const HeroIcon(HeroIcons.copy, color: AppColors.primaryText),
           title: Text('assistant.copy'.tr(), style: AppTextStyles.headingSmall),
           onTap: () {
             // The sheet's own context dies with it: confirm from the page's.

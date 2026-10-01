@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Warm gradient disc with a gift — the invite banner's badge, in the
 /// amber → orange of the Rewards hero.
@@ -30,8 +32,8 @@ class MineGiftBadge extends StatelessWidget {
           colors: _warm,
         ),
       ),
-      child: const Icon(
-        Icons.card_giftcard_rounded,
+      child: const HeroIcon(
+        HeroIcons.gift,
         size: _glyph,
         color: AppColors.white,
       ),

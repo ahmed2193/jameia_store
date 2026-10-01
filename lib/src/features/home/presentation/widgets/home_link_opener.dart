@@ -10,9 +10,9 @@ import '../../domain/entities/home_link.dart';
 
 /// Opens a backend-configured [HomeLink] (promo card, promo strip, banner,
 /// marketing popup) through the router. [title] names the page it opens;
-/// [subtitle], [endsAt] and [emoji] dress the hero of a collection / brand
-/// page (a flash-sale strip's line, its countdown, a fire) and are ignored by
-/// every other destination.
+/// [subtitle], [endsAt] and [flame] dress the hero of a collection / brand
+/// page (a flash-sale strip's line, its countdown, the flame) and are ignored
+/// by every other destination.
 abstract final class HomeLinkOpener {
   static void open(
     BuildContext context,
@@ -20,7 +20,7 @@ abstract final class HomeLinkOpener {
     String title = '',
     String subtitle = '',
     DateTime? endsAt,
-    String? emoji,
+    bool flame = false,
   }) {
     if (!link.isNavigable) return;
     switch (link.type) {
@@ -32,7 +32,7 @@ abstract final class HomeLinkOpener {
             title: title,
             subtitle: subtitle,
             endsAt: endsAt,
-            emoji: emoji,
+            flame: flame,
           ),
         );
       case HomeLinkType.brand:
@@ -43,7 +43,7 @@ abstract final class HomeLinkOpener {
             title: title,
             subtitle: subtitle,
             endsAt: endsAt,
-            emoji: emoji,
+            flame: flame,
           ),
         );
       case HomeLinkType.category:

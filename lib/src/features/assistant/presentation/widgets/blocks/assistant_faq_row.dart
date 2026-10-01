@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/entities/assistant_block.dart';
 
 /// One question: tap to unfold its answer (chevron turns, the answer grows
@@ -52,8 +54,8 @@ class _AssistantFaqRowState extends State<AssistantFaqRow> {
                     turns: _open ? _halfTurn : 0,
                     duration: MotionGuard.duration(context, AppMotion.medium),
                     curve: AppMotion.signature,
-                    child: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
+                    child: const HeroIcon(
+                      HeroIcons.chevronDown,
                       size: AppSize.s22,
                       color: AppColors.secondaryText,
                     ),

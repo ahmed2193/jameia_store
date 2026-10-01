@@ -1,10 +1,12 @@
 // Home DTOs + mappers, fed with the payloads the live host really sends.
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/error/exceptions.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_product_entity.dart';
 import 'package:hero_mart/src/features/home/data/mappers/home_bootstrap_mapper.dart';
 import 'package:hero_mart/src/features/home/data/mappers/home_feed_mapper.dart';
 import 'package:hero_mart/src/features/home/data/models/home_feed_model.dart';
 import 'package:hero_mart/src/features/home/data/models/home_init_model.dart';
+import 'package:hero_mart/src/features/home/data/models/home_orders_count_model.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_bootstrap.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_icon.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_link.dart';
@@ -251,6 +253,67 @@ void main() {
 
       expect(bootstrap.delivery, isNull);
       expect(bootstrap.pro.enabled, isFalse);
+      expect(bootstrap.firstOrderFreeDelivery, isTrue, reason: 'on by default');
+      expect(bootstrap.hasCustomer, isFalse);
+    });
+
+    test('the live store sends no gift flag: on; a guest has no user', () {
+      final bootstrap = HomeInitModel.fromJson(liveInitJson()).toEntity();
+
+      expect(bootstrap.firstOrderFreeDelivery, isTrue);
+      expect(bootstrap.hasCustomer, isFalse);
+    });
+
+    test('the backend switches the gift off with false', () {
+      final bootstrap = HomeInitModel.fromJson({
+        'store': {
+          'featureFlags': {'firstOrderFreeDelivery': false},
+        },
+      }).toEntity();
+
+      expect(bootstrap.firstOrderFreeDelivery, isFalse);
+    });
+
+    test('featureFlags.firstOrderFreeDelivery + a user object are read', () {
+      final bootstrap = HomeInitModel.fromJson({
+        'store': {
+          'featureFlags': {'assistant': true, 'firstOrderFreeDelivery': true},
+        },
+        'user': {'_id': 'c1', 'name': 'Sara'},
+      }).toEntity();
+
+      expect(bootstrap.firstOrderFreeDelivery, isTrue);
+      expect(bootstrap.hasCustomer, isTrue);
+    });
+
+    test('a non-boolean flag keeps the default (on)', () {
+      final bootstrap = HomeInitModel.fromJson({
+        'store': {
+          'featureFlags': {'firstOrderFreeDelivery': 'no'},
+        },
+      }).toEntity();
+
+      expect(bootstrap.firstOrderFreeDelivery, isTrue);
+    });
+  });
+
+  group('GET /v1/orders count', () {
+    test('reads pagination.total', () {
+      final count = HomeOrdersCountModel.fromJson({
+        'data': [
+          {'_id': 'o1'},
+        ],
+        'pagination': {'total': 3, 'page': 1, 'limit': 1, 'hasMore': true},
+      });
+
+      expect(count.total, 3);
+    });
+
+    test('no pagination.total is a ParsingException', () {
+      expect(
+        () => HomeOrdersCountModel.fromJson(const {'data': <Object>[]}),
+        throwsA(isA<ParsingException>()),
+      );
     });
   });
 }

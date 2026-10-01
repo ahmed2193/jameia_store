@@ -10,6 +10,7 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/count_badge.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
 
 /// The cart in the chat's app bar, with the unit count badge ([CountBadge]:
@@ -47,7 +48,7 @@ class _AssistantCartButtonState extends State<AssistantCartButton> {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          Icon(
+          HeroIcon(
             HeroIcons.cart,
             key: _targetKey,
             size: AppSize.s22,

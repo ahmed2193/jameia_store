@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The white card every block sits in: an optional icon + title, then the
 /// content. The border tweens over `medium` (a proposal turns green once
@@ -70,7 +71,7 @@ class AssistantCardFrame extends StatelessWidget {
                     tween: ColorTween(end: glyphColor),
                     duration: fade,
                     builder: (context, color, _) =>
-                        Icon(glyph, size: AppSize.s18, color: color),
+                        HeroIcon(glyph, size: AppSize.s18, color: color),
                   ),
                   const SizedBox(width: AppSpacing.s6),
                 ],

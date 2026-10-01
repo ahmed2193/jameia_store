@@ -15,7 +15,7 @@ import 'listing_category_tabs.dart';
 import 'product_listing_body.dart';
 
 /// A collection or a brand as a Hero collection page: the store's name in
-/// a top bar that turns white as the tinted hero (heading, emoji, line, a
+/// a top bar that turns white as the tinted hero (heading, flame, line, a
 /// flash sale's countdown) scrolls away, the category tabs pinned under it
 /// once at least two categories have products, the grid with no sort /
 /// filter toolbar, and the "View cart" pill. Tabs that could not load are
@@ -35,7 +35,7 @@ class ListingCollectionScaffold extends StatelessWidget {
         builder: (context, tabs) => CollectionFrame(
           storeName: 'core.store_name'.tr(),
           heading: args.title,
-          emoji: args.emoji,
+          flame: args.flame,
           subtitle: args.subtitle.isEmpty ? null : args.subtitle,
           heroTrailing: switch (args.endsAt) {
             final endsAt? when endsAt.isAfter(DateTime.now()) => CountdownChip(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/pop_switcher.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/branded_dot_loader.dart';
+import '../../../../core/widgets/hero_icon.dart';
 import '../cubit/connectivity_banner_mode.dart';
 
 /// The banner's icon slot (start side): no-wifi while offline, the branded
@@ -24,14 +26,14 @@ class ConnectivityBarIcon extends StatelessWidget {
             size: AppSize.s20,
             color: AppColors.white,
           ),
-          ConnectivityBannerMode.backOnline => const Icon(
-            Icons.check_circle_rounded,
+          ConnectivityBannerMode.backOnline => const HeroIcon(
+            HeroIcons.checkCircleFill,
             size: AppSize.s20,
             color: AppColors.white,
           ),
           ConnectivityBannerMode.offline ||
-          ConnectivityBannerMode.hidden => const Icon(
-            Icons.wifi_off_rounded,
+          ConnectivityBannerMode.hidden => const HeroIcon(
+            HeroIcons.offline,
             size: AppSize.s20,
             color: AppColors.white,
           ),

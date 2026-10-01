@@ -21,22 +21,20 @@ import 'home_themed_block.dart';
 /// new block type cannot be forgotten here.
 ///
 /// A block that opens a collection page hands it the hero dress it
-/// advertised: a strip's line and countdown, and a fire after the heading
-/// when the block is a sale or deals.
+/// advertised: a strip's line and countdown, and the Hero flame after the
+/// heading when the block is a sale or deals.
 class HomeSectionView extends StatelessWidget {
   const HomeSectionView({super.key, required this.section});
 
   final HomeSectionEntity section;
 
-  /// After the heading of a collection page opened from a sale / deals block.
-  static const String _saleEmoji = '🔥';
-
-  /// The hero emoji of a list opened from a block themed [theme].
-  static String? _heroEmojiOf(HomeSectionTheme theme) => switch (theme) {
-    HomeSectionTheme.sale || HomeSectionTheme.deals => _saleEmoji,
+  /// Whether a list opened from a block themed [theme] shows the flame after
+  /// its heading (a sale or deals).
+  static bool _isHot(HomeSectionTheme theme) => switch (theme) {
+    HomeSectionTheme.sale || HomeSectionTheme.deals => true,
     HomeSectionTheme.standard ||
     HomeSectionTheme.featured ||
-    HomeSectionTheme.store => null,
+    HomeSectionTheme.store => false,
   };
 
   @override
@@ -54,13 +52,13 @@ class HomeSectionView extends StatelessWidget {
           extra: ProductListingArgs.collection(
             slug: section.collectionSlug,
             title: section.title,
-            emoji: _heroEmojiOf(section.theme),
+            flame: _isHot(section.theme),
           ),
         ),
       ),
       // The strip links to the collection the rail previews, so its arrow is
       // the rail's "view all" too: the listing takes the rail's short title.
-      // The fire follows the strip's theme, or the block's when the rail
+      // The flame follows the strip's theme, or the block's when the rail
       // itself is the sale.
       HomeThemedBlockSection() => HomeThemedBlock(
         section: section,
@@ -72,8 +70,7 @@ class HomeSectionView extends StatelessWidget {
               : section.strip.headline,
           subtitle: section.strip.subtitle,
           endsAt: section.strip.endsAt,
-          emoji:
-              _heroEmojiOf(section.strip.theme) ?? _heroEmojiOf(section.theme),
+          flame: _isHot(section.strip.theme) || _isHot(section.theme),
         ),
         onOpenProduct: (product) => context.push(
           Routes.productDetail,
@@ -113,7 +110,7 @@ class HomeSectionView extends StatelessWidget {
           title: section.hasTitle ? section.title : section.headline,
           subtitle: section.subtitle,
           endsAt: section.endsAt,
-          emoji: _heroEmojiOf(section.theme),
+          flame: _isHot(section.theme),
         ),
       ),
       HomeBannerSection() => HomeBannerBlock(

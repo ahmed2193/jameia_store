@@ -8,6 +8,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/core_widgets.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// "Chat with support" — opens the rider / support chat.
 class SupportChatButton extends StatelessWidget {
@@ -21,7 +22,7 @@ class SupportChatButton extends StatelessWidget {
       ),
       child: AppButton(
         label: 'support.chat_with_support'.tr(),
-        trailing: const Icon(
+        trailing: const HeroIcon(
           HeroIcons.chat,
           size: AppSize.s18,
           color: AppColors.brandForeground,

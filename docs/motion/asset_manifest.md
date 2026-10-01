@@ -6,6 +6,32 @@ Date: 2026-09-28. Every asset is original: hand-authored SVG, or frames drawn in
 - In-app GIFs: none. Animated art is specified as CustomPainter / primitive specs instead (section "Painter and primitive specs"), because a GIF cannot follow reduced motion, cannot pause off screen and decodes every frame on the CPU.
 - Preview GIFs (docs only, never bundled): 37 files in `previews/<screen>/`, 12.22 MB total, largest 1.60 MB, 360 px wide, ≤ 30 fps. Each was checked frame by frame from a contact sheet.
 
+## Update 2026-09-30: the icons and assets pass
+
+Details: [`docs/assets/hero_icons_assets_2026.md`](../assets/hero_icons_assets_2026.md). Rows below this section still describe the state of 2026-09-29.
+
+- **SVGs folded into the icon font.** The 5 mono SVGs are now glyphs in the `HeroIcons` font, and the SVG files are deleted:
+
+  | Old SVG | New glyph |
+  |---|---|
+  | `tab_account` | `account` / `person` |
+  | `assistant_ai` | `assistant` |
+  | `recipe_pot` | `recipe` |
+  | `product_options` | `options` |
+  | `category_all` | `categoryAll` |
+
+- **Last mono SVGs folded (R1).** `shared_clock`, `address_label_*`, `checkout_cash`, `checkout_code_tag`, `rewards_badge`, `status_offline` are deleted; they are the glyphs `clock`, `home` / `office` / `people` / `pin`, `cash`, `tag`, `medal`, `offline` (snack success → `checkCircleFill`). `status_success.svg` stays for the live map only. `HeroSvgGlyph.mono` is gone.
+- **Icon names.** Every `HeroIcons.*` name and Material icon in the tables below is a pre-2026-09-30 name. Today's `HeroIcons` is our own font, and `tool/icons/concepts.tsv` maps each old name to its new one (for example `confirmReceipt` → `ordersDone`, `customerService` → `support`, `location` → `pinFill`).
+- **Rasters extracted from the reference APK are gone:**
+
+  | Old | Replaced by |
+  |---|---|
+  | `globalRider` | `HeroIcon(delivery)` |
+  | `popupClose` | Hero close glyph on a dark disc |
+  | Login social PNGs | Official brand marks (`assets/images/brands/`, `assets/svg/brand_*.svg`) |
+
+- **Palette fixes.** `checkout_points`, `checkout_wallet` and `offer_voucher` now use only `AppColors` hexes.
+
 ## Wiring status (2026-09-29)
 
 All 48 files in `assets/svg/` (38 new + 10 older) have a `HeroAssets` constant and a user in `lib/`

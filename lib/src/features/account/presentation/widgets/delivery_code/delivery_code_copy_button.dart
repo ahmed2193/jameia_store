@@ -7,10 +7,12 @@ import 'package:flutter/services.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/motion_widgets.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// "Copy code" pill under the saved code. A tap copies the code, gives a
 /// selection tick and flips the label to "Copied" (green check) for a
@@ -79,8 +81,8 @@ class _DeliveryCodeCopyButtonState extends State<DeliveryCodeCopyButton> {
                 child: FlipValue(
                   flipKey: _copied,
                   alignment: AlignmentDirectional.center,
-                  child: Icon(
-                    _copied ? Icons.check_rounded : Icons.copy_rounded,
+                  child: HeroIcon(
+                    _copied ? HeroIcons.check : HeroIcons.copy,
                     size: AppSize.s18,
                     color: ink,
                   ),

@@ -230,7 +230,7 @@ void main() {
         ShellBottomNav(index: index, cartIconKey: GlobalKey(), onTap: taps.add);
 
     await pump(tester, nav(ShellBottomNav.homeTab));
-    expect(find.byIcon(Icons.home_rounded), findsNothing);
+    expect(find.byIcon(HeroIcons.homeFill), findsNothing);
     expect(
       tester.widget<HeroMarkIcon>(find.byType(HeroMarkIcon)).active,
       isTrue,

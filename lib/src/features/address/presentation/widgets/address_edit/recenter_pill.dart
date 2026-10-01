@@ -6,6 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// White "Locate me" recenter pill.
 class RecenterPill extends StatelessWidget {
@@ -30,8 +31,8 @@ class RecenterPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
-                HeroIcons.location,
+              const HeroIcon(
+                HeroIcons.pin,
                 size: AppSize.s18,
                 color: AppColors.primaryText,
               ),

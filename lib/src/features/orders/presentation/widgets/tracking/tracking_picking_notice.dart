@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/order_progress_entities.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import 'tracking_notice_card.dart';
@@ -31,7 +32,7 @@ class TrackingPickingNotice extends StatelessWidget {
                 0,
               ),
               child: TrackingNoticeCard(
-                icon: Icons.swap_horiz_rounded,
+                icon: HeroIcons.swapHorizontal,
                 iconColor: AppColors.warn,
                 title: 'orders.picking_changes'.tr(),
                 lines: [

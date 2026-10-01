@@ -6,8 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/design/hero_assets.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/option_row.dart';
 import '../../../../cart/presentation/cubit/cart_cubit.dart';
@@ -57,8 +59,8 @@ class CheckoutTimingSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             OptionRow(
-              leading: const HeroSvgGlyph.mono(
-                HeroAssets.sharedClock,
+              leading: const HeroIcon(
+                HeroIcons.clock,
                 size: AppSize.s24,
                 color: AppColors.primaryText,
               ),
@@ -91,7 +93,7 @@ class CheckoutTimingSheet extends StatelessWidget {
               ),
             if (hasSlots)
               OptionRow(
-                icon: Icons.event_outlined,
+                icon: HeroIcons.calendar,
                 title: 'checkout.timing_scheduled'.tr(),
                 subtitle: slotText ?? 'checkout.timing_scheduled_sub'.tr(),
                 selected: timing == DeliveryTiming.scheduled,

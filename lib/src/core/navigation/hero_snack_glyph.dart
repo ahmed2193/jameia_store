@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../config/theme/app_colors.dart';
-import '../design/hero_assets.dart';
 import '../design/hero_icons.dart';
 import '../responsive/app_size.dart';
+import '../widgets/hero_icon.dart';
 import 'hero_snack_message.dart';
 
 /// The tone glyph at the start of a snack bar: the Hero check (success),
@@ -22,27 +21,26 @@ class HeroSnackGlyph extends StatelessWidget {
   Widget build(BuildContext context) {
     final glyph = switch (tone) {
       HeroSnackTone.info => null,
-      HeroSnackTone.success => SvgPicture.asset(
-        HeroAssets.statusSuccess,
-        width: size,
-        height: size,
-        colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+      HeroSnackTone.success => const HeroIcon(
+        HeroIcons.checkCircleFill,
+        size: size,
+        color: AppColors.primary,
+        mono: true,
       ),
-      HeroSnackTone.warning => const Icon(
-        HeroIcons.info,
+      HeroSnackTone.warning => const HeroIcon(
+        HeroIcons.warning,
         size: size,
         color: AppColors.proAmber,
       ),
-      HeroSnackTone.error => const Icon(
-        HeroIcons.alert,
+      HeroSnackTone.error => const HeroIcon(
+        HeroIcons.bell,
         size: size,
         color: AppColors.accent1,
       ),
-      HeroSnackTone.offline => SvgPicture.asset(
-        HeroAssets.statusOffline,
-        width: size,
-        height: size,
-        colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
+      HeroSnackTone.offline => const HeroIcon(
+        HeroIcons.offline,
+        size: size,
+        color: AppColors.white,
       ),
     };
     if (glyph == null) return const SizedBox.shrink();

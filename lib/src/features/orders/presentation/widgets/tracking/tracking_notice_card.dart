@@ -4,6 +4,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_surface_card.dart';
 
 /// A notice on the tracking page (cancelled, changed while picking): a white
@@ -40,7 +41,7 @@ class TrackingNoticeCard extends StatelessWidget {
                   color: AppColors.smallBackground,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, size: AppSize.s24, color: iconColor),
+                child: HeroIcon(icon, size: AppSize.s24, color: iconColor),
               ),
             ),
           ),

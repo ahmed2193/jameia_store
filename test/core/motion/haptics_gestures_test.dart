@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/haptics.dart';
 import 'package:hero_mart/src/core/widgets/app_button.dart';
 import 'package:hero_mart/src/features/address/presentation/widgets/address_list/address_delete_dialog.dart';
@@ -226,13 +227,13 @@ void main() {
           mainAxisSize: MainAxisSize.min,
           children: [
             CartQtyStepButton(
-              icon: Icons.remove_rounded,
+              icon: HeroIcons.minus,
               tooltip: 'less',
               removes: true,
               onTap: () {},
             ),
             CartQtyStepButton(
-              icon: Icons.add_rounded,
+              icon: HeroIcons.plus,
               tooltip: 'more',
               onTap: () {},
             ),
@@ -256,19 +257,19 @@ void main() {
           mainAxisSize: MainAxisSize.min,
           children: [
             PdpStepButton(
-              icon: Icons.remove_rounded,
+              icon: HeroIcons.minus,
               label: 'less',
               removes: true,
               onTap: () {},
             ),
-            PdpStepButton(icon: Icons.add_rounded, label: 'more', onTap: () {}),
+            PdpStepButton(icon: HeroIcons.plus, label: 'more', onTap: () {}),
           ],
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.add_rounded));
+      await tester.tap(find.byIcon(HeroIcons.plus));
       await tester.pump();
-      await tester.tap(find.byIcon(Icons.remove_rounded));
+      await tester.tap(find.byIcon(HeroIcons.minus));
       await tester.pump();
 
       expect(calls, [_click, _light]);

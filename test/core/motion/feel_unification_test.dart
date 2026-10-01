@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/config/theme/app_colors.dart';
+import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/after_arrival.dart';
 import 'package:hero_mart/src/core/motion/blocked_tap_shake.dart';
 import 'package:hero_mart/src/core/motion/deferred_value.dart';
@@ -223,7 +224,7 @@ void main() {
                   pressedScale: AppMotion.pressedScaleSmall,
                   child: IconButton(
                     onPressed: () {},
-                    icon: const Icon(Icons.edit),
+                    icon: const Icon(HeroIcons.edit),
                   ),
                 ),
               ),

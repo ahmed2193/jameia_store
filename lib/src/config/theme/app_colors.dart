@@ -327,6 +327,7 @@ class HeroColors extends ThemeExtension<HeroColors> {
     required this.freeDelivery,
     required this.overlay,
     required this.offlineSurface,
+    required this.iconInk,
   });
 
   final Color brandPrimary;
@@ -350,6 +351,11 @@ class HeroColors extends ThemeExtension<HeroColors> {
   /// The offline banner surface (see [AppColors.offlineSurface]).
   final Color offlineSurface;
 
+  /// The line colour of a sticker icon (`HeroIcon`): the dark-green rim of the
+  /// art in `assets/svg` ([AppColors.stickerOutline]) in light mode, a light
+  /// ink that reads on the dark surface in dark mode.
+  final Color iconInk;
+
   static const HeroColors light = HeroColors(
     brandPrimary: Color(0xFF22C55E),
     brandForeground: Color(0xFFFFFFFF),
@@ -369,6 +375,7 @@ class HeroColors extends ThemeExtension<HeroColors> {
     freeDelivery: Color(0xFF00A175),
     overlay: Color(0x99000000),
     offlineSurface: Color(0xFF1F2937),
+    iconInk: AppColors.stickerOutline,
   );
 
   static const HeroColors dark = HeroColors(
@@ -390,6 +397,7 @@ class HeroColors extends ThemeExtension<HeroColors> {
     freeDelivery: Color(0xFF00A175),
     overlay: Color(0x99FFFFFF),
     offlineSurface: Color(0xFF374151),
+    iconInk: Color(0xFFFFFFFF),
   );
 
   @override
@@ -412,6 +420,7 @@ class HeroColors extends ThemeExtension<HeroColors> {
     Color? freeDelivery,
     Color? overlay,
     Color? offlineSurface,
+    Color? iconInk,
   }) {
     return HeroColors(
       brandPrimary: brandPrimary ?? this.brandPrimary,
@@ -432,6 +441,7 @@ class HeroColors extends ThemeExtension<HeroColors> {
       freeDelivery: freeDelivery ?? this.freeDelivery,
       overlay: overlay ?? this.overlay,
       offlineSurface: offlineSurface ?? this.offlineSurface,
+      iconInk: iconInk ?? this.iconInk,
     );
   }
 
@@ -461,6 +471,7 @@ class HeroColors extends ThemeExtension<HeroColors> {
       freeDelivery: Color.lerp(freeDelivery, other.freeDelivery, t)!,
       overlay: Color.lerp(overlay, other.overlay, t)!,
       offlineSurface: Color.lerp(offlineSurface, other.offlineSurface, t)!,
+      iconInk: Color.lerp(iconInk, other.iconInk, t)!,
     );
   }
 }

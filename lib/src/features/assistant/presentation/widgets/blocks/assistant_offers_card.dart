@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../domain/entities/assistant_block.dart';
 import 'assistant_card_frame.dart';
 import 'assistant_card_link.dart';
@@ -22,7 +23,7 @@ class AssistantOffersCard extends StatelessWidget {
     final code = block.couponCode;
     return AssistantCardFrame(
       title: 'assistant.offers_title'.tr(),
-      icon: Icons.local_offer_outlined,
+      icon: HeroIcons.tag,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

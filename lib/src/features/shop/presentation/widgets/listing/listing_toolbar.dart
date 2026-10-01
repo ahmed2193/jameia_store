@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/catalog_product_query.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../cubit/product_listing_cubit.dart';
@@ -71,7 +72,7 @@ class ListingToolbar extends StatelessWidget {
             children: [
               ListingFilterPill(
                 label: ListingSortLabel.keyOf(query.sort).tr(),
-                icon: Icons.swap_vert_rounded,
+                icon: HeroIcons.sort,
                 isDropdown: true,
                 selected: query.sort != null,
                 onTap: () => _pickSort(context, query.sort),

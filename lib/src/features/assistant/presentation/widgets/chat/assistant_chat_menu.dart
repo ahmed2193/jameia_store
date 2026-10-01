@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../config/theme/app_colors.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/assistant_chat_cubit.dart';
 import '../onboarding/assistant_onboarding_sheet.dart';
 import 'assistant_handoff_dialog.dart';
@@ -50,8 +52,8 @@ class AssistantChatMenu extends StatelessWidget {
         );
     return PopupMenuButton<_MenuItem>(
       tooltip: 'assistant.more'.tr(),
-      icon: const Icon(
-        Icons.more_vert_rounded,
+      icon: const HeroIcon(
+        HeroIcons.moreVertical,
         size: AppSize.s24,
         color: AppColors.primaryText,
       ),

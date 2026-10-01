@@ -8,6 +8,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/press_row.dart';
 import '../../../domain/entities/faq_item.dart';
 
@@ -29,7 +30,7 @@ class SupportFaqRow extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(
+            const HeroIcon(
               HeroIcons.help,
               size: AppSize.s18,
               color: AppColors.secondaryText,
@@ -41,8 +42,8 @@ class SupportFaqRow extends StatelessWidget {
                 style: AppTextStyles.headingSmall,
               ),
             ),
-            const Icon(
-              HeroIcons.arrowRight,
+            const HeroIcon(
+              HeroIcons.chevronEnd,
               size: AppSize.s16,
               color: AppColors.disabledText,
             ),

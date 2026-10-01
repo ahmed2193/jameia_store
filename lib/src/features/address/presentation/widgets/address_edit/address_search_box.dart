@@ -6,6 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// Live search field — `autocomplete(query)` typeahead (RE §3.2 step 3).
 class AddressSearchBox extends StatelessWidget {
@@ -37,7 +38,7 @@ class AddressSearchBox extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
+          const HeroIcon(
             HeroIcons.search,
             size: AppSize.s18,
             color: AppColors.secondaryText,

@@ -4,18 +4,16 @@ import '../../config/theme/app_colors.dart';
 import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import '../responsive/app_size.dart';
-import 'hero_svg_glyph.dart';
+import './hero_icon.dart';
 
 /// A quiet grey pill: a small icon and one line of secondary text — the look
 /// of the notes over data that is not live ("Updated 12 minutes ago", "Last
-/// known status · 5:55 PM"). The glyph is an [icon] or a drawn mono
-/// `HeroAssets` SVG ([asset], e.g. the Hero clock of the stale note).
+/// known status · 5:55 PM"). The glyph is a `HeroIcons` [icon] (e.g. the
+/// clock of the stale note).
 class InfoPill extends StatelessWidget {
-  const InfoPill({super.key, this.icon, this.asset, required this.text})
-    : assert((icon == null) != (asset == null), 'an icon or an asset');
+  const InfoPill({super.key, required this.icon, required this.text});
 
-  final IconData? icon;
-  final String? asset;
+  final IconData icon;
   final String text;
 
   @override
@@ -32,14 +30,7 @@ class InfoPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (asset case final String drawn)
-            HeroSvgGlyph.mono(
-              drawn,
-              size: AppSize.s14,
-              color: AppColors.secondaryText,
-            )
-          else
-            Icon(icon, size: AppSize.s14, color: AppColors.secondaryText),
+          HeroIcon(icon, size: AppSize.s14, color: AppColors.secondaryText),
           const SizedBox(width: AppSpacing.s4),
           Flexible(
             child: Text(
