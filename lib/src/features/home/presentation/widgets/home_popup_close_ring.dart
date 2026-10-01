@@ -6,6 +6,7 @@ import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/motion/press_scale.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_icon.dart';
 
 /// The close button under a centred popup: a white ring with a white × on
 /// the scrim, inside a 48 dp touch target.
@@ -38,7 +39,7 @@ class HomePopupCloseRing extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.white, width: _stroke),
               ),
-              child: const Icon(
+              child: const HeroIcon(
                 HeroIcons.close,
                 size: _glyph,
                 color: AppColors.white,

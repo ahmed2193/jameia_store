@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/widgets/hero_input_decoration.dart';
 
-/// Bordered rounded input field (~52dp) with the label rendered as the hint.
+/// A text field of the address form in the app's one field look
+/// ([HeroInputDecoration.outlined]: white, 12 dp corners, a hairline, an ink
+/// outline while focused, red once refused), the label as the hint. The
+/// reason a value is refused is one line under the field, never inside it.
 class BoxedField extends StatelessWidget {
   const BoxedField({
     super.key,
@@ -24,47 +28,42 @@ class BoxedField extends StatelessWidget {
   final String? errorText;
   final ValueChanged<String>? onChanged;
 
+  /// A multi-line field opens at this many lines.
+  static const int _multiLineMin = 2;
+
   @override
   Widget build(BuildContext context) {
-    final hasError = errorText != null;
-    return Container(
-      constraints: BoxConstraints(minHeight: maxLines > 1 ? 80 : 52),
-      alignment: Alignment.center,
-      padding: const EdgeInsetsDirectional.symmetric(
-        horizontal: AppSpacing.s12,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(
-          color: hasError ? AppColors.error : AppColors.divider,
-        ),
-      ),
-      child: TextField(
-        controller: controller,
-        onChanged: onChanged,
-        maxLines: maxLines,
-        minLines: 1,
-        maxLength: maxLength,
-        style: AppTextStyles.bodyLarge,
-        decoration: InputDecoration(
-          isDense: true,
-          counterText: '',
-          contentPadding: const EdgeInsets.symmetric(vertical: AppSpacing.s12),
-          border: InputBorder.none,
-          // Hide the default error border (the box border above turns red);
-          // Flutter still renders the red error message beneath the field.
-          errorBorder: InputBorder.none,
-          focusedErrorBorder: InputBorder.none,
-          errorText: errorText,
-          errorStyle: AppTextStyles.captionLarge.copyWith(
-            color: AppColors.error,
-          ),
-          hintText: hint,
-          hintStyle: AppTextStyles.bodyLarge.copyWith(
-            color: AppColors.tertiaryText,
+    final error = errorText;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: controller,
+          onChanged: onChanged,
+          maxLines: maxLines,
+          minLines: maxLines > 1 ? _multiLineMin : 1,
+          maxLength: maxLength,
+          style: AppTextStyles.itemTitle,
+          cursorColor: AppColors.primaryText,
+          decoration: HeroInputDecoration.outlined(
+            hintText: hint,
+            counterText: '',
+            error: error != null,
           ),
         ),
-      ),
+        if (error != null)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(
+              top: AppSpacing.s6,
+              start: AppSpacing.s4,
+            ),
+            child: Text(
+              error,
+              style: AppTextStyles.meta.copyWith(color: AppColors.errorDeep),
+            ),
+          ),
+      ],
     );
   }
 }

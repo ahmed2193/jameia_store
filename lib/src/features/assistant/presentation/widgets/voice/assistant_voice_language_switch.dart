@@ -73,7 +73,7 @@ class AssistantVoiceLanguageSwitch extends StatelessWidget {
                       name,
                       style: AppTextStyles.label.copyWith(
                         color: AppColors.primaryDark,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: AppTextStyles.bold,
                       ),
                     ),
                   ],

@@ -63,7 +63,11 @@ class _HomeWelcomeGiftArtState extends State<HomeWelcomeGiftArt> {
         onTap: widget.onTap,
         child: AspectRatio(
           aspectRatio: HomeWelcomeGiftArt.aspectRatio,
-          child: Image(image: image, fit: BoxFit.contain, gaplessPlayback: true),
+          child: Image(
+            image: image,
+            fit: BoxFit.contain,
+            gaplessPlayback: true,
+          ),
         ),
       ),
     );

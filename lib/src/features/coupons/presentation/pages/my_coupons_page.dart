@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../cubit/coupons_cubit.dart';
-import '../widgets/coupons_app_bar.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../widgets/coupons_state_switch.dart';
 import '../widgets/my_coupons/coupons_history_link.dart';
 import '../widgets/my_coupons/my_coupons_content.dart';
@@ -22,9 +22,9 @@ class MyCouponsPage extends StatelessWidget {
       create: (_) => sl<CouponsCubit>()..load(),
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: CouponsAppBar(
+        appBar: HeroTitleBar(
           title: 'coupons.my_coupons'.tr(),
-          action: const CouponsHistoryLink(),
+          actions: const [CouponsHistoryLink()],
         ),
         body: CouponsStateSwitch(
           loaded: (_, buckets) => MyCouponsContent(buckets: buckets),

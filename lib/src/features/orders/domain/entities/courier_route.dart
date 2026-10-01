@@ -76,6 +76,7 @@ class CourierRoute extends Equatable {
 
   static const double _degreesPerRadian = 180 / math.pi;
   static const double _fullTurn = 360;
+  static const double _halfTurn = 180;
 
   /// The corners of the road, store first, door last.
   final List<GeoPointEntity> points;
@@ -115,17 +116,41 @@ class CourierRoute extends Equatable {
     return _heading(_local[index], _local[index + 1]);
   }
 
-  /// Which way the rider faces at [meters]: the heading from [span] / 2
-  /// behind to [span] / 2 ahead, so it swings through a corner over [span]
-  /// metres of road instead of snapping round at the corner itself. Where
-  /// that stretch is one point (a road of no length), [headingAt].
+  /// Which way the rider faces at [meters]: the road's heading from
+  /// [span] / 2 behind to [span] / 2 ahead — each stretch's heading
+  /// weighted by how much of that window it covers, averaged as an angle
+  /// (each corner adding its own turn) — so they turn through a corner over
+  /// [span] metres of road, at an even pace however sharp it is, instead of
+  /// snapping round at the corner itself. (The line from one end of the
+  /// window to the other would swing round in a metre or two where the two
+  /// sides of a sharp corner nearly cancel.) Where the window is one point
+  /// (a road of no length), [headingAt].
   double headingAround(double meters, {double span = turnSpanMeters}) {
     final half = span / 2;
-    final behind = _localAt(clamp(meters - half));
-    final ahead = _localAt(clamp(meters + half));
-    if (behind.distanceTo(ahead) < _samePointMeters) return headingAt(meters);
-    return _heading(behind, ahead);
+    final from = clamp(meters - half);
+    final to = clamp(meters + half);
+    if (to - from < _samePointMeters) return headingAt(meters);
+    final last = _marks.length - 2;
+    var index = _segmentAt(from);
+    var at = from;
+    var sum = 0.0;
+    double? previous;
+    while (at < to) {
+      final end = math.min(to, _marks[index + 1]);
+      var heading = _heading(_local[index], _local[index + 1]);
+      if (previous != null) heading = previous + _turn(heading - previous);
+      sum += heading * (end - at);
+      previous = heading;
+      at = end;
+      if (index == last) break;
+      index++;
+    }
+    return (sum / (to - from)) % _fullTurn;
   }
+
+  /// [degrees] as the turn it makes, -180 … 180 (exclusive).
+  static double _turn(double degrees) =>
+      (degrees + _halfTurn) % _fullTurn - _halfTurn;
 
   /// The road between [from] and [to] metres: the point at [from], every
   /// corner in between, the point at [to] — what is left ahead of a rider,

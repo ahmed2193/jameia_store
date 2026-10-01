@@ -2,5 +2,4 @@
 library;
 
 export 'rating_badge.dart';
-export 'tag_chip.dart';
 export 'thin_divider.dart';

@@ -99,7 +99,7 @@ class CatalogProductEntity extends Equatable {
   double priceKdFor({required bool pro}) =>
       priceFilsFor(pro: pro) / filsPerDinar;
 
-  /// `0` without a discount (what `PriceText.originalPrice` expects).
+  /// `0` without a discount (what `ShelfCardPrice.wasKd` expects).
   double get compareAtKd => hasDiscount ? compareAtFils! / filsPerDinar : 0;
 
   bool hasTag(String tag) => tags.contains(tag);

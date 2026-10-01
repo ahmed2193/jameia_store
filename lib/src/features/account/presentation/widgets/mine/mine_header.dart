@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../config/routes/route_args/login_args.dart';
+import '../../../../../config/routes/route_args/shell_tabs.dart';
 import '../../../../../config/routes/routes.dart';
 import '../../../../../core/domain/entities/auth_customer_entity.dart';
 import '../../../../../core/motion/press_scale.dart';
@@ -73,8 +75,14 @@ class _MineHeaderState extends State<MineHeader> {
         child: PressScale(
           pressedScale: 1,
           onPressChanged: (down) => _pressed.value = down,
-          onTap: () =>
-              context.push(signedIn ? Routes.profileEdit : Routes.login),
+          // Sign-in is pushed over the shell: back and "Continue as guest"
+          // pop to Mine, and signing in lands on Mine again.
+          onTap: () => signedIn
+              ? context.push(Routes.profileEdit)
+              : context.push(
+                  Routes.login,
+                  extra: const LoginArgs(returnTab: ShellTab.mine),
+                ),
           child: Stack(
             fit: StackFit.expand,
             children: [

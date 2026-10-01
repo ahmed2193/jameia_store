@@ -26,8 +26,6 @@ class AccountRepositoryImpl
     () async => AccountOverview(
       user: _local.user().toEntity(),
       couponCount: _local.couponCount(),
-      favouriteCount: await _local.favouriteCount(),
-      customerServiceUnread: _local.customerServiceUnread(),
     ),
   );
 

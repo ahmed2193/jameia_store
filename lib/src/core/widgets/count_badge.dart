@@ -10,11 +10,17 @@ import '../motion/pop_switcher.dart';
 import '../motion/rolling_number.dart';
 import '../motion/tint_flash.dart';
 import '../responsive/app_size.dart';
+import 'at_least_square.dart';
 
 /// THE count pill (docs/motion §9.3, D15 / D16; CC-06): a coloured pill with
 /// a tabular count, `99+` above [cap], laid out left-to-right in every
 /// language. Every cart, unread and coupon badge is one of these; the host
-/// passes only its colours and size.
+/// passes only its colours and size. One digit sits in a circle at any
+/// text size ([AtLeastSquare]: never narrower than tall), more digits in a
+/// pill; the pill hugs its number, so a host row taller than it never
+/// stretches it, and the digits' ink (not their line box, which the face
+/// and the engine's whole-pixel baseline leave a little low) sits on its
+/// centre line whatever text style and text size the host has.
 ///
 /// Motion: the first build is static (a badge never pops on mount or on a
 /// tab visit). While on screen, a change bumps the pill once (`ChangeBump`)
@@ -48,6 +54,12 @@ class CountBadge extends StatefulWidget {
   /// How strongly the reduced-motion tint washes over the pill.
   static const double _tintAlpha = 0.45;
 
+  /// The glyph the digits' baseline is measured on.
+  static const String _probe = '0';
+
+  /// Flutter's own default, for a style without a size.
+  static const double _defaultFontSize = 14;
+
   final int count;
   final Color color;
   final Color textColor;
@@ -60,7 +72,8 @@ class CountBadge extends StatefulWidget {
   final Color? borderColor;
   final double borderWidth;
 
-  /// The pill is at least this wide and tall (a circle for one digit).
+  /// The pill is at least this wide and tall (a circle for one digit; it
+  /// grows with the text and stays round).
   final double minSize;
   final EdgeInsetsGeometry padding;
 
@@ -80,6 +93,12 @@ class _CountBadgeState extends State<CountBadge> {
   /// The count on the pill: [CountBadge.count], or the one before it while a
   /// rise waits for its flight.
   late int _shown = widget.count;
+
+  // The last digit-centring measurement and what it was measured for.
+  TextStyle? _measuredStyle;
+  TextScaler? _measuredScaler;
+  TextHeightBehavior? _measuredBehavior;
+  double _inkShift = 0;
 
   @override
   void initState() {
@@ -118,6 +137,45 @@ class _CountBadgeState extends State<CountBadge> {
   String _format(num value) =>
       value > widget.cap ? '${widget.cap}+' : '${value.round()}';
 
+  /// How far the number moves down (negative: up) so the digits' ink sits
+  /// on the pill's centre line. Measured on the text exactly as the number
+  /// lays it out (the inherited style, text size and height behaviour), so
+  /// the engine's whole-pixel baseline is part of it; measured again only
+  /// when one of those changes.
+  double _inkShiftFor(BuildContext context, TextStyle style) {
+    final inherited = DefaultTextStyle.of(context);
+    final effective = inherited.style.merge(style);
+    final scaler = MediaQuery.textScalerOf(context);
+    final behavior =
+        inherited.textHeightBehavior ??
+        DefaultTextHeightBehavior.maybeOf(context);
+    if (effective == _measuredStyle &&
+        scaler == _measuredScaler &&
+        behavior == _measuredBehavior) {
+      return _inkShift;
+    }
+    final painter = TextPainter(
+      text: TextSpan(text: CountBadge._probe, style: effective),
+      textDirection: TextDirection.ltr,
+      textScaler: scaler,
+      textHeightBehavior: behavior,
+      maxLines: 1,
+    )..layout();
+    final baseline = painter.computeDistanceToActualBaseline(
+      TextBaseline.alphabetic,
+    );
+    final ink =
+        scaler.scale(effective.fontSize ?? CountBadge._defaultFontSize) *
+        AppTextStyles.digitHeight;
+    // The engine draws the baseline on a whole pixel.
+    _inkShift = painter.height / 2 - (baseline.roundToDouble() - ink / 2);
+    painter.dispose();
+    _measuredStyle = effective;
+    _measuredScaler = scaler;
+    _measuredBehavior = behavior;
+    return _inkShift;
+  }
+
   @override
   Widget build(BuildContext context) {
     final shown = _shown;
@@ -148,27 +206,39 @@ class _CountBadgeState extends State<CountBadge> {
                   reducedOnly: true,
                   duration: AppMotion.fast,
                   borderRadius: radius,
-                  child: Container(
-                    constraints: BoxConstraints(
-                      minWidth: widget.minSize,
-                      minHeight: widget.minSize,
-                    ),
-                    padding: widget.padding,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: widget.color,
-                      borderRadius: radius,
-                      border: border == null
-                          ? null
-                          : Border.all(
-                              color: border,
-                              width: widget.borderWidth,
-                            ),
-                    ),
-                    child: RollingNumber(
-                      value: shown,
-                      format: _format,
-                      style: style,
+                  child: AtLeastSquare(
+                    // One digit: a true circle.
+                    square: _format(shown).length == 1,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minWidth: widget.minSize,
+                        minHeight: widget.minSize,
+                      ),
+                      padding: widget.padding,
+                      decoration: BoxDecoration(
+                        color: widget.color,
+                        borderRadius: radius,
+                        border: border == null
+                            ? null
+                            : Border.all(
+                                color: border,
+                                width: widget.borderWidth,
+                              ),
+                      ),
+                      // Hugs the number (an `alignment` would fill the
+                      // host's height) and centres it in the circle.
+                      child: Center(
+                        widthFactor: 1,
+                        heightFactor: 1,
+                        child: Transform.translate(
+                          offset: Offset(0, _inkShiftFor(context, style)),
+                          child: RollingNumber(
+                            value: shown,
+                            format: _format,
+                            style: style,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),

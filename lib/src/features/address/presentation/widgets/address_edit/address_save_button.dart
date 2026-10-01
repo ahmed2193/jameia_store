@@ -15,7 +15,7 @@ class AddressSaveButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding: const EdgeInsetsDirectional.fromSTEB(
         AppSpacing.s12,
         AppSpacing.s8,
         AppSpacing.s12,
@@ -23,7 +23,6 @@ class AddressSaveButton extends StatelessWidget {
       ),
       child: AppButton(
         label: 'addr.save_address'.tr(),
-        radius: AppRadius.r1,
         onPressed: context.read<AddressEditCubit>().save,
       ),
     );

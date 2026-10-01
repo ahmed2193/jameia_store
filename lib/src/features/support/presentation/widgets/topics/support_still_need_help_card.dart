@@ -55,7 +55,6 @@ class SupportStillNeedHelpCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.s16),
           AppButton(
             label: 'support.contact_support'.tr(),
-            radius: AppRadius.r2,
             trailing: const HeroIcon(
               HeroIcons.chat,
               size: AppSize.s18,

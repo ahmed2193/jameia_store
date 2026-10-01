@@ -6,8 +6,8 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
-import '../../../../core/widgets/app_outline_button.dart';
-import '../../../../core/widgets/error_view.dart';
+import '../../../../core/widgets/hero_secondary_button.dart';
+import '../../../../core/widgets/hero_state_view.dart';
 import '../../../../core/widgets/failure_verdict_builder.dart';
 import '../../../../core/widgets/offline_inline_note.dart';
 
@@ -50,12 +50,12 @@ class PdpLoadFailure extends StatelessWidget {
             OfflineInlineNote(
               message: 'connectivity.offline_state_message'.tr(),
             ),
-            AppOutlineButton(label: 'retry'.tr(), onPressed: onRetry),
+            HeroSecondaryButton(label: 'retry'.tr(), onPressed: onRetry),
           ],
         ),
       ),
-      FailureVerdict.unreachable => ErrorView(onRetry: onRetry),
-      FailureVerdict.error => ErrorView(
+      FailureVerdict.unreachable => HeroStateView.error(onRetry: onRetry),
+      FailureVerdict.error => HeroStateView.error(
         message: failure?.localizedMessage,
         onRetry: onRetry,
       ),

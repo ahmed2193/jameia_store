@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/design/hero_icons.dart';
-import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/summary_row.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 import '../../../domain/entities/assistant_block.dart';
 import 'assistant_card_frame.dart';
 
@@ -27,22 +27,30 @@ class AssistantDeliveryInfoCard extends StatelessWidget {
       child: Column(
         children: [
           if (area != null && block.hasArea)
-            SummaryRow(label: 'assistant.delivery_area'.tr(), value: area),
+            HeroSummaryLine(
+              label: 'assistant.delivery_area'.tr(),
+              value: Text(area),
+            ),
           if (zone != null && block.hasZone)
-            SummaryRow(label: 'assistant.delivery_zone'.tr(), value: zone),
+            HeroSummaryLine(
+              label: 'assistant.delivery_zone'.tr(),
+              value: Text(zone),
+            ),
           if (fee != null)
-            SummaryRow(
+            HeroSummaryLine(
               label: 'assistant.delivery_fee'.tr(),
               value: fee == 0
-                  ? 'assistant.delivery_free'.tr()
-                  : Formatters.isolate(Formatters.price(fee)),
-              valueColor: fee == 0 ? AppColors.freeDelivery : null,
+                  ? Text(
+                      'assistant.delivery_free'.tr(),
+                      style: const TextStyle(color: AppColors.brandDeep),
+                    )
+                  : HeroMoneyText(kd: fee),
             ),
           if (eta != null)
-            SummaryRow(
+            HeroSummaryLine(
               label: 'assistant.delivery_eta_label'.tr(),
-              value: 'assistant.delivery_eta'.tr(
-                namedArgs: {'minutes': '$eta'},
+              value: Text(
+                'assistant.delivery_eta'.tr(namedArgs: {'minutes': '$eta'}),
               ),
             ),
         ],

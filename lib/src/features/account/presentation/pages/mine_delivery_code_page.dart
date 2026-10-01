@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../cubit/delivery_code_cubit.dart';
 import '../widgets/delivery_code/delivery_code_body.dart';
 import '../widgets/delivery_code/delivery_code_save_bar.dart';
-import '../widgets/settings/settings_app_bar.dart';
 
 /// Mine → Delivery code: the code the rider asks for at the door, a copy
 /// button, an editor for a new code and a pinned Save bar, over a
@@ -21,7 +21,7 @@ class MineDeliveryCodePage extends StatelessWidget {
       create: (_) => sl<DeliveryCodeCubit>(),
       child: Scaffold(
         backgroundColor: AppColors.mediumBackground,
-        appBar: SettingsAppBar(title: 'account.delivery_code'.tr()),
+        appBar: HeroTitleBar(title: 'account.delivery_code'.tr()),
         body: const DeliveryCodeBody(),
         bottomNavigationBar: const DeliveryCodeSaveBar(),
       ),

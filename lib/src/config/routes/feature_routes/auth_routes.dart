@@ -21,10 +21,7 @@ final List<RouteBase> authRoutes = <RouteBase>[
       return HeroFadeThroughPage<Object?>(
         key: state.pageKey,
         name: state.uri.path,
-        child: LoginPage(
-          sessionExpired: args.sessionExpired,
-          returnTo: args.returnTo,
-        ),
+        child: LoginPage(args: args),
       );
     },
   ),

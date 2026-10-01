@@ -15,22 +15,18 @@ import 'mine_tone.dart';
 /// The Mine menu in three titled cards — shopping, wallet & rewards, help &
 /// settings — each cascading in once after the cards above it
 /// ([firstEntranceIndex]). Every destination of the tab is here: orders,
-/// addresses, coupons, wallet, loyalty points, Hero Pro, invite friends,
-/// notifications, the Hero Assistant (while the store runs it), customer
+/// addresses, coupons, wallet, loyalty points, Hero Pro, notifications,
+/// the Hero Assistant (while the store runs it), customer
 /// service, settings and about.
 class MineMenuGroup extends StatelessWidget {
   const MineMenuGroup({
     super.key,
-    this.customerUnreadCount = 0,
     this.notificationsUnread = 0,
     this.showAssistant = false,
     this.proMembership,
     this.proOffered = false,
     this.firstEntranceIndex = 0,
   });
-
-  /// Unread customer-service messages → the badge on that cell.
-  final int customerUnreadCount;
 
   /// Unread inbox notifications (app-global `UnreadNotificationsCubit`).
   final int notificationsUnread;
@@ -93,12 +89,6 @@ class MineMenuGroup extends StatelessWidget {
             ? null
             : MineProStatusChip(membership: pro, offered: proOffered),
       ),
-      MineMenuEntry(
-        plate: HeroAssets.offerGift,
-        label: 'account.invite_friends'.tr(),
-        route: Routes.inviteFriends,
-        tone: MineTone.rose,
-      ),
     ];
     final help = <MineMenuEntry>[
       MineMenuEntry(
@@ -118,7 +108,6 @@ class MineMenuGroup extends StatelessWidget {
         icon: HeroIcons.support,
         label: 'account.customer_service'.tr(),
         route: Routes.customerService,
-        badgeCount: customerUnreadCount,
       ),
       MineMenuEntry(
         icon: HeroIcons.settings,
@@ -126,11 +115,9 @@ class MineMenuGroup extends StatelessWidget {
         route: Routes.mineSettings,
       ),
       MineMenuEntry(
-        icon: HeroIcons.warning,
+        icon: HeroIcons.info,
         label: 'account.about'.tr(),
         route: Routes.mineAbout,
-        // The slate plate: the yellow family's red would read as an alert.
-        tone: MineTone.amber,
       ),
     ];
     return Column(

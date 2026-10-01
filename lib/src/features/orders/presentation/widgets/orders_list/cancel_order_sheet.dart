@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_status.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
@@ -127,14 +128,20 @@ class _CancelOrderSheetState extends State<CancelOrderSheet> {
                 for (final (index, reason)
                     in CancelOrderReason.values.indexed) ...[
                   if (index > 0) const ThinDivider(indent: AppSpacing.gutter),
-                  OptionRow(
+                  EntranceCascadeItem.single(
                     key: ValueKey<CancelOrderReason>(reason),
-                    title: _label(reason),
-                    selected: reason == _reason,
-                    onTap: () => setState(() => _reason = reason),
+                    index: index + 1,
+                    child: OptionRow(
+                      title: _label(reason),
+                      selected: reason == _reason,
+                      onTap: () => setState(() => _reason = reason),
+                    ),
                   ),
                 ],
-                CancelOrderNoteField(controller: _note),
+                EntranceCascadeItem.single(
+                  index: CancelOrderReason.values.length + 1,
+                  child: CancelOrderNoteField(controller: _note),
+                ),
                 if (_offline && ConnectivityScope.isOfflineOf(context))
                   OfflineInlineNote(
                     message: 'connectivity.action_needs_internet'.tr(),
@@ -146,15 +153,18 @@ class _CancelOrderSheetState extends State<CancelOrderSheet> {
                     AppSpacing.gutter,
                     AppSpacing.gutter,
                   ),
-                  child: AppButton(
-                    label: 'orders.cancel_confirm'.tr(),
-                    color: AppColors.errorDeep,
-                    foreground: AppColors.white,
-                    height: AppSize.s52,
-                    loading: _checking,
-                    // A destructive confirm: the one warning haptic.
-                    haptic: HapticKind.warning,
-                    onPressed: () => unawaited(_confirm()),
+                  child: EntranceCascadeItem.single(
+                    index: CancelOrderReason.values.length + 2,
+                    child: AppButton(
+                      label: 'orders.cancel_confirm'.tr(),
+                      color: AppColors.errorDeep,
+                      foreground: AppColors.white,
+                      height: AppSize.s52,
+                      loading: _checking,
+                      // A destructive confirm: the one warning haptic.
+                      haptic: HapticKind.warning,
+                      onPressed: () => unawaited(_confirm()),
+                    ),
                   ),
                 ),
               ],

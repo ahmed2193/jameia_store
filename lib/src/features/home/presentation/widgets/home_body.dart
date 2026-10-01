@@ -94,7 +94,7 @@ class _HomeBodyState extends State<HomeBody> {
                 // pulled like the feed.
                 LoadPhase.loaded when state.isEmpty => SliverFillRemaining(
                   hasScrollBody: false,
-                  child: EmptyStateView(
+                  child: HeroStateView(
                     message: 'home.empty'.tr(),
                     art: HeroAssets.emptyShelf,
                     actionLabel: 'common.refresh'.tr(),

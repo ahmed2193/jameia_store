@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../config/routes/route_args/login_args.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/entrance_cascade.dart';
 import '../../../../../core/motion/entrance_cascade_item.dart';
@@ -27,9 +28,10 @@ import 'login_welcome_heading.dart';
 /// Owns the phone controller and focus, forwards edits to [LoginCubit], and
 /// decides when an invalid number is pointed out.
 class LoginBody extends StatefulWidget {
-  const LoginBody({super.key, this.sessionExpired = false});
+  const LoginBody({super.key, this.args = const LoginArgs()});
 
-  final bool sessionExpired;
+  /// Why sign-in opened, and the way back the guest link takes.
+  final LoginArgs args;
 
   @override
   State<LoginBody> createState() => _LoginBodyState();
@@ -115,7 +117,7 @@ class _LoginBodyState extends State<LoginBody> {
                       ),
                       child: EntranceCascadeItem(
                         index: 0,
-                        child: widget.sessionExpired
+                        child: widget.args.sessionExpired
                             ? const LoginExpiredBanner()
                             : const LoginOfferCard(),
                       ),
@@ -142,9 +144,9 @@ class _LoginBodyState extends State<LoginBody> {
                     child: LoginContinueButton(onBlocked: _nudge),
                   ),
                   const SizedBox(height: AppSpacing.s4),
-                  const EntranceCascadeItem(
+                  EntranceCascadeItem(
                     index: 4,
-                    child: LoginGuestButton(),
+                    child: LoginGuestButton(args: widget.args),
                   ),
                 ],
               ),

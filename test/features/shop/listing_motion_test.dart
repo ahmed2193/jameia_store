@@ -225,7 +225,7 @@ void main() {
     await tester.pump();
     expect(find.byType(ListingGridSkeleton), findsNothing);
     final fade = find.ancestor(
-      of: find.byType(EmptyStateView),
+      of: find.byType(HeroStateView),
       matching: _listingFade,
     );
     expect(

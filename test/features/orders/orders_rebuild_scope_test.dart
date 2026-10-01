@@ -31,7 +31,7 @@ import 'package:hero_mart/src/features/orders/domain/usecases/get_orders_usecase
 import 'package:hero_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/cancel_order_sheet.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_card.dart';
-import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_status_chip.dart';
+import 'package:hero_mart/src/core/widgets/order_status_chip.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/orders_list.dart';
 import 'package:hero_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
 import 'package:hero_mart/src/features/orders/domain/usecases/get_order_usecase.dart';

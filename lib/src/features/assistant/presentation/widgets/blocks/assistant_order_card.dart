@@ -6,13 +6,11 @@ import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../config/theme/order_status_palette.dart';
 import '../../../../../core/design/hero_icons.dart';
-import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/dot_sep.dart';
-import '../../../../../core/widgets/price_text.dart';
-import '../../../../../core/widgets/tag_chip.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
+import '../../../../../core/widgets/order_status_chip.dart';
 import '../../../domain/entities/assistant_block.dart';
 import 'assistant_card_frame.dart';
 import 'assistant_card_link.dart';
@@ -52,11 +50,7 @@ class AssistantOrderCard extends StatelessWidget {
               spacing: AppSpacing.s8,
               runSpacing: AppSpacing.s4,
               children: [
-                TagChip(
-                  label: order.status.labelKey.tr(),
-                  bg: OrderStatusPalette.background(order.status),
-                  fg: OrderStatusPalette.foreground(order.status),
-                ),
+                OrderStatusChip(status: order.status),
                 if (order.createdAt != null)
                   Text(
                     Formatters.date(
@@ -76,7 +70,7 @@ class AssistantOrderCard extends StatelessWidget {
                 Text('assistant.items'.plural(order.itemCount), style: caption),
                 const DotSep(),
               ],
-              PriceText(price: order.totalKd, size: AppSize.font14),
+              HeroMoneyText(kd: order.totalKd, style: AppTextStyles.label),
             ],
           ),
           if (order.thumbnails.isNotEmpty) ...[

@@ -36,7 +36,7 @@ class RecipeDetailBody extends StatelessWidget {
             if (detail != null) return RecipeDetailView(detail: detail);
             if (state.isNotFound) {
               return PoppableStateFrame(
-                child: EmptyStateView(
+                child: HeroStateView(
                   message: 'recipes.not_found'.tr(),
                   art: HeroAssets.stateNotFound,
                   actionLabel: 'common.back'.tr(),

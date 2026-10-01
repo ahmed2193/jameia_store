@@ -1,7 +1,8 @@
 // MM-2 / DEVICE-7: the map markers drawn from the SVG art. The rasterisers
 // free their Picture and Image even when a step throws; these smoke tests
-// prove the output is unchanged, and that a labelled pin reports its logical
-// size so the camera can keep the whole marker in frame.
+// prove the output is unchanged, that a labelled pin reports its logical
+// size so the camera can keep the whole marker in frame, and that a marker
+// that fails to load is forgotten without an unhandled error.
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
@@ -67,32 +68,27 @@ void main() {
     ));
   });
 
-  testWidgets('EXPERIMENT plain missing asset', (tester) async {
+  testWidgets('a marker that fails to load is forgotten, and fails quietly', (
+    tester,
+  ) async {
     const missing = 'assets/svg/__missing_map_marker__.svg';
     Future<BitmapDescriptor> load() =>
         HeroMapMarkers.svg(missing, size: const Size(36, 44), pixelRatio: 3);
-    final outcome = await tester.runAsync(() async {
+    final loads = await tester.runAsync(() async {
       final first = load();
-      final firstError = await first.then<Object?>(
-        (_) => null,
-        onError: (Object error) => error,
-      );
-      final second = load();
-      final secondError = await second.then<Object?>(
-        (_) => null,
-        onError: (Object error) => error,
-      );
+      await expectLater(first, throwsA(anything));
+      // The cache's own error handler runs here: dropping the failed load
+      // must not raise the error again (an unhandled async error fails the
+      // test).
       await Future<void>.delayed(Duration.zero);
-      return (first, firstError, second, secondError);
+      final second = load();
+      await expectLater(second, throwsA(anything));
+      await Future<void>.delayed(Duration.zero);
+      return (first, second);
     });
     await tester.pump();
-    final (first, firstError, second, secondError) = outcome!;
-    // ignore: avoid_print
-    print('first error: ${firstError.runtimeType} $firstError');
-    // ignore: avoid_print
-    print('second error: ${secondError.runtimeType}');
-    expect(firstError, isNotNull);
-    expect(secondError, isNotNull);
+    final (first, second) = loads!;
+    // Not kept: the next call tries again.
     expect(identical(first, second), isFalse);
   });
 }

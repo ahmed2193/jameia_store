@@ -93,12 +93,13 @@ class _SupportTopicsBodyState extends State<SupportTopicsBody> {
                             query: _query,
                             expanded: _expanded,
                           ),
-                        CustomerServiceQuestionStatus.error => ErrorView(
-                          message: state.errorMessage,
-                          onRetry: context
-                              .read<CustomerServiceQuestionCubit>()
-                              .load,
-                        ),
+                        CustomerServiceQuestionStatus.error =>
+                          HeroStateView.error(
+                            message: state.errorMessage,
+                            onRetry: context
+                                .read<CustomerServiceQuestionCubit>()
+                                .load,
+                          ),
                         _ => const AppLoader(),
                       },
                     ),

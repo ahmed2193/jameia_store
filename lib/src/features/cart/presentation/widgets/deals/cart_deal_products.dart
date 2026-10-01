@@ -6,8 +6,7 @@ import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/utils/failure_message.dart';
 import '../../../../../core/widgets/app_loader.dart';
-import '../../../../../core/widgets/empty_state_view.dart';
-import '../../../../../core/widgets/error_view.dart';
+import '../../../../../core/widgets/hero_state_view.dart';
 import '../../cubit/cart_deals_cubit.dart';
 import '../../cubit/cart_deals_state.dart';
 import 'cart_deal_grid.dart';
@@ -33,12 +32,12 @@ class CartDealProducts extends StatelessWidget {
           child: state.isLoading
               ? const AppLoader()
               : failure != null
-              ? ErrorView(
+              ? HeroStateView.error(
                   message: failure.localizedMessage,
                   onRetry: () => context.read<CartDealsCubit>().retry(),
                 )
               : state.isEmpty
-              ? EmptyStateView(
+              ? HeroStateView(
                   message: 'cart.deals_empty'.tr(),
                   art: HeroAssets.emptyCoupons,
                 )

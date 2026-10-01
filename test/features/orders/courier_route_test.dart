@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
 import 'package:hero_mart/src/features/orders/domain/entities/courier_route.dart';
@@ -48,6 +50,30 @@ void main() {
       expect(route.headingAround(403), inExclusiveRange(45, 90));
       // A road of no length: the plain heading.
       expect(CourierRoute([at(0, 0), at(0, 0)]).headingAround(0), 0);
+    });
+
+    test('turns through a sharp corner at an even pace', () {
+      // 100 m north, then a 150° turn back towards the south-east.
+      const turn = 150.0;
+      final back = turn * math.pi / 180;
+      final route = CourierRoute([
+        at(0, 0),
+        at(0, 100),
+        at(100 * math.sin(back), 100 + 100 * math.cos(back)),
+      ]);
+      const step = 0.5;
+      // Never more than its share of the turn per metre of the window —
+      // the line across the window would swing most of the way round where
+      // its two sides nearly cancel.
+      const most = turn / CourierRoute.turnSpanMeters * step + 1e-6;
+      var last = route.headingAround(90);
+      for (var meters = 90 + step; meters <= 110; meters += step) {
+        final heading = route.headingAround(meters);
+        expect(heading - last, inInclusiveRange(0, most), reason: '$meters m');
+        last = heading;
+      }
+      expect(route.headingAround(100), closeTo(turn / 2, 1e-6));
+      expect(last, closeTo(turn, 1e-6));
     });
 
     test('draws the road with only the corners a line needs', () {

@@ -6,13 +6,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/service_locator.dart';
-import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/motion/success_beat.dart';
 import '../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../core/navigation/screen_failure_listener.dart';
+import '../../../../core/navigation/sign_in_flow.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/cubit_busy_overlay.dart';
 import '../../../../core/widgets/hero_title_bar.dart';
@@ -57,7 +57,7 @@ class OrderReviewPage extends StatelessWidget {
     context.pop(true);
   }
 
-  static void _signIn(BuildContext context) => context.go(Routes.login);
+  static void _signIn(BuildContext context) => SignInFlow.open(context);
 
   @override
   Widget build(BuildContext context) {

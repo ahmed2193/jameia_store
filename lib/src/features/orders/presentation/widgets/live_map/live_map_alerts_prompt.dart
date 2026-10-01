@@ -9,6 +9,7 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_close_button.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_text_link.dart';
 import '../../cubit/tracking_alerts_cubit.dart';
 
@@ -42,7 +43,7 @@ class LiveMapAlertsPrompt extends StatelessWidget {
                     color: AppColors.brandLightBg,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: HeroIcon(
                     HeroIcons.bell,
                     size: _glyph,
                     color: AppColors.primaryDark,

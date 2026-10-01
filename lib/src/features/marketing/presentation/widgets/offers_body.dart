@@ -48,7 +48,7 @@ class OffersBody extends StatelessWidget {
               ),
               LoadPhase.loaded when state.isEmpty => SliverFillRemaining(
                 hasScrollBody: false,
-                child: EmptyStateView(
+                child: HeroStateView(
                   message: 'offers.empty'.tr(),
                   art: HeroAssets.emptyCoupons,
                 ),

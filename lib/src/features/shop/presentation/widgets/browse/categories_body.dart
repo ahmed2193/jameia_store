@@ -60,7 +60,7 @@ class CategoriesBody extends StatelessWidget {
                 failure: state.failure,
                 onRetry: cubit.load,
               ),
-              LoadPhase.loaded when state.isEmpty => EmptyStateView(
+              LoadPhase.loaded when state.isEmpty => HeroStateView(
                 message: 'shop.no_categories'.tr(),
                 art: HeroAssets.emptyShelf,
               ),

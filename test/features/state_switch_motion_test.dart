@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_assets.dart';
 import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/motion/fade_through_switcher.dart';
@@ -121,7 +122,9 @@ void main() {
         failure: _failure,
       ),
       before: find.byType(AppLoader),
-      after: find.byType(ErrorView),
+      after: find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ),
     );
   });
 
@@ -152,7 +155,9 @@ void main() {
         loadFailure: _failure,
       ),
       before: find.byType(AddressListSkeleton),
-      after: find.byType(ErrorView),
+      after: find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ),
     );
   });
 
@@ -226,7 +231,9 @@ void main() {
         failure: _failure,
       ),
       before: find.byType(AssistantThreadSkeleton),
-      after: find.byType(ErrorView),
+      after: find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ),
     );
   });
 }

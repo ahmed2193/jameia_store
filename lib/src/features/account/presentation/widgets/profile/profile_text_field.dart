@@ -64,8 +64,8 @@ class ProfileTextField extends StatelessWidget {
       maxLength: maxLength,
       autofillHints: autofillHints,
       onChanged: onChanged,
-      style: AppTextStyles.headingSmall,
-      cursorColor: AppColors.primaryDark,
+      style: AppTextStyles.itemTitle,
+      cursorColor: AppColors.primaryText,
       decoration: InputDecoration(
         counterText: '',
         isCollapsed: true,
@@ -74,7 +74,7 @@ class ProfileTextField extends StatelessWidget {
           vertical: AppSpacing.s14,
         ),
         hintText: hintText,
-        hintStyle: AppTextStyles.headingSmall.copyWith(
+        hintStyle: AppTextStyles.itemTitle.copyWith(
           color: AppColors.tertiaryText,
         ),
       ),

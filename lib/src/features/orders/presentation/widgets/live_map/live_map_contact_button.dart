@@ -5,6 +5,7 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/count_badge.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// A round contact action on the rider card — message or call: the glyph on
 /// the brand wash, a press that gives, its name read out (and shown on a
@@ -59,7 +60,7 @@ class LiveMapContactButton extends StatelessWidget {
                         color: AppColors.brandLightBg,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: HeroIcon(
                         icon,
                         size: _glyph,
                         color: AppColors.primaryDark,

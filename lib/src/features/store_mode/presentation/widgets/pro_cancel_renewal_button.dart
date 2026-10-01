@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_text_styles.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../cubit/pro_membership_cubit.dart';
 import '../cubit/pro_membership_state.dart';
-import 'pro_confirm_dialog.dart';
 
 /// "Cancel renewal": asks first, then stops the renewal (the paid period keeps
 /// running). The page's busy overlay holds the screen while the call is in
@@ -17,17 +17,15 @@ class ProCancelRenewalButton extends StatelessWidget {
 
   Future<void> _cancel(BuildContext context) async {
     final cubit = context.read<ProMembershipCubit>();
-    final confirmed = await showHeroDialog<bool>(
+    final confirmed = await showHeroConfirmDialog(
       context,
-      barrierLabel: 'pro.cancel_renewal'.tr(),
-      pageBuilder: (_) => ProConfirmDialog(
-        title: 'pro.confirm_cancel_title'.tr(),
-        message: 'pro.confirm_cancel_body'.tr(),
-        confirmLabel: 'pro.cancel_renewal'.tr(),
-        isDestructive: true,
-      ),
+      title: 'pro.confirm_cancel_title'.tr(),
+      message: 'pro.confirm_cancel_body'.tr(),
+      icon: HeroIcons.crown,
+      confirmLabel: 'pro.cancel_renewal'.tr(),
+      destructive: true,
     );
-    if (confirmed ?? false) await cubit.cancelSubscription();
+    if (confirmed) await cubit.cancelSubscription();
   }
 
   @override

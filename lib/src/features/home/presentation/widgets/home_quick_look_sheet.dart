@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/widgets/app_outline_button.dart';
+import '../../../../core/widgets/hero_secondary_button.dart';
 import '../../../../core/widgets/catalog_discount_badge.dart';
 import '../../../../core/widgets/hero_image.dart';
-import '../../../../core/widgets/price_text.dart';
+import '../../../../core/widgets/hero_sheet_handle.dart';
+import '../../../../core/widgets/shelf_card_price.dart';
 import '../../../../core/widgets/rating_badge.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import 'home_layout.dart';
@@ -35,9 +35,6 @@ class HomeQuickLookSheet extends StatelessWidget {
   final VoidCallback onOpen;
 
   static const double _picture = AppSize.s96;
-  static const double _handleWidth = AppSize.s36;
-  static const double _handleHeight = AppSize.s4;
-  static const double _price = AppSize.s20;
 
   static Future<void> show(
     BuildContext context, {
@@ -66,16 +63,7 @@ class HomeQuickLookSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: _handleWidth,
-                height: _handleHeight,
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-              ),
-            ),
+            const HeroSheetHandle(),
             const SizedBox(height: AppSpacing.s16),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,10 +104,9 @@ class HomeQuickLookSheet extends StatelessWidget {
                       ),
                       if (product.hasListPrice) ...[
                         const SizedBox(height: AppSpacing.s8),
-                        PriceText(
-                          price: product.priceKdFor(pro: isPro),
-                          originalPrice: product.compareAtKd,
-                          size: _price,
+                        ShelfCardPrice(
+                          priceKd: product.priceKdFor(pro: isPro),
+                          wasKd: product.compareAtKd,
                         ),
                       ],
                       if (product.hasRating) ...[
@@ -142,15 +129,13 @@ class HomeQuickLookSheet extends StatelessWidget {
                   const SizedBox(width: AppSpacing.s10),
                 ],
                 Expanded(
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: AppOutlineButton(
-                      label: 'home.view_details'.tr(),
-                      onPressed: () {
-                        context.pop();
-                        onOpen();
-                      },
-                    ),
+                  child: HeroSecondaryButton(
+                    label: 'home.view_details'.tr(),
+                    expanded: true,
+                    onPressed: () {
+                      context.pop();
+                      onOpen();
+                    },
                   ),
                 ),
               ],

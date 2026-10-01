@@ -39,7 +39,11 @@ class CartDealsRepositoryImpl
             inStockOnly: true,
             sort: CatalogProductSort.discount,
           );
-    final page = await _catalog.getProducts(query: query, page: 1, limit: limit);
+    final page = await _catalog.getProducts(
+      query: query,
+      page: 1,
+      limit: limit,
+    );
     return page.items.toEntities();
   });
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 
@@ -13,11 +12,6 @@ class ProfileFieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s6),
-    child: Text(
-      text,
-      style: AppTextStyles.subheadingSmall.copyWith(
-        color: AppColors.secondaryText,
-      ),
-    ),
+    child: Text(text, style: AppTextStyles.label),
   );
 }

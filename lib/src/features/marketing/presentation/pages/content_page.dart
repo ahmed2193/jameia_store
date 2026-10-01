@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../../../language/presentation/cubit/localization_cubit.dart';
 import '../../../language/presentation/cubit/localization_state.dart';
 import '../../domain/entities/content_page_entity.dart';
 import '../cubit/content_page_cubit.dart';
 import '../cubit/content_page_state.dart';
 import '../widgets/content_page_body.dart';
-import '../widgets/marketing_app_bar.dart';
 
 /// A CMS page of the backend (`GET /v1/pages/:slug`): about, contact, FAQ,
 /// privacy, terms. Its text arrives resolved for the request language, so a
@@ -40,15 +40,14 @@ class ContentPage extends StatelessWidget {
               child: Scaffold(
                 backgroundColor: AppColors.white,
                 appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(kToolbarHeight),
+                  preferredSize: const Size.fromHeight(HeroTitleBar.height),
                   child:
                       BlocSelector<ContentPageCubit, ContentPageState, String>(
                         selector: (state) {
                           final title = state.page?.title ?? '';
                           return title.isEmpty ? fallbackTitle : title;
                         },
-                        builder: (context, title) =>
-                            MarketingAppBar(title: title),
+                        builder: (context, title) => HeroTitleBar(title: title),
                       ),
                 ),
                 body: const ContentPageBody(),

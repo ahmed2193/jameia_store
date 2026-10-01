@@ -6,7 +6,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/tag_chip.dart';
+import '../../../../../core/widgets/hero_tag.dart';
 import '../../../domain/entities/assistant_conversation_entity.dart';
 import '../../../domain/entities/assistant_text_direction.dart';
 
@@ -67,11 +67,7 @@ class AssistantHistoryTile extends StatelessWidget {
                 ),
                 if (statusKey != null) ...[
                   const SizedBox(width: AppSpacing.s8),
-                  TagChip(
-                    label: statusKey.tr(),
-                    bg: AppColors.smallBackground,
-                    fg: AppColors.secondaryText,
-                  ),
+                  HeroTag(label: statusKey.tr(), tone: HeroTagTone.neutral),
                 ],
               ],
             ),

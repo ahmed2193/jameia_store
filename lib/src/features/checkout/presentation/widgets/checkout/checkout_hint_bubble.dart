@@ -74,9 +74,7 @@ class CheckoutHintBubble extends StatelessWidget {
                           dimension: plateSize,
                           // The 56 dp line thumb (one CDN url and decode with
                           // the cart row), scaled into the 40 dp plate.
-                          child: FittedBox(
-                            child: HeroLineThumb(url: imageUrl),
-                          ),
+                          child: FittedBox(child: HeroLineThumb(url: imageUrl)),
                         ),
                       ),
                     ),

@@ -25,7 +25,7 @@ class AssistantOnboardingPhoneScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
+      padding: const EdgeInsetsDirectional.fromSTEB(
         AppSpacing.s10,
         AppSpacing.s6,
         AppSpacing.s10,

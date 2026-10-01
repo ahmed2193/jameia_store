@@ -16,10 +16,10 @@ import 'package:go_router/go_router.dart';
 import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/motion/haptics.dart';
 import 'package:hero_mart/src/core/widgets/app_button.dart';
-import 'package:hero_mart/src/features/address/presentation/widgets/address_list/address_delete_dialog.dart';
+import 'package:hero_mart/src/core/widgets/hero_confirm_dialog.dart';
+import 'package:hero_mart/src/core/widgets/hero_secondary_button.dart';
 import 'package:hero_mart/src/features/cart/presentation/widgets/cart/cart_qty_step_button.dart';
 import 'package:hero_mart/src/features/product_details/presentation/widgets/pdp_step_button.dart';
-import 'package:hero_mart/src/features/store_mode/presentation/widgets/pro_confirm_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _light = 'HapticFeedbackType.lightImpact';
@@ -125,7 +125,7 @@ void main() {
   });
 
   group('destructive confirms', () {
-    testWidgets('delete address: the confirm warns once, cancel is silent', (
+    testWidgets('a destructive confirm (delete address) warns once; cancel is silent', (
       tester,
     ) async {
       final calls = _recordHaptics(tester);
@@ -136,7 +136,11 @@ void main() {
               body: TextButton(
                 onPressed: () => showDialog<bool>(
                   context: context,
-                  builder: (_) => const AddressDeleteDialog(),
+                  builder: (_) => const HeroConfirmDialog(
+                    title: 'Delete this address?',
+                    confirmLabel: 'Delete',
+                    destructive: true,
+                  ),
                 ),
                 child: const Text('open'),
               ),
@@ -149,7 +153,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(calls, isEmpty, reason: 'opening the dialog never buzzes');
 
-      await tester.tap(find.byType(AppOutlineButton));
+      await tester.tap(find.byType(HeroSecondaryButton));
       await tester.pumpAndSettle();
       expect(calls, isEmpty, reason: 'cancel is not destructive');
 
@@ -172,11 +176,11 @@ void main() {
               body: TextButton(
                 onPressed: () => showDialog<bool>(
                   context: context,
-                  builder: (_) => ProConfirmDialog(
+                  builder: (_) => HeroConfirmDialog(
                     title: 'Title',
                     message: 'Message',
                     confirmLabel: 'Go ahead',
-                    isDestructive: destructive,
+                    destructive: destructive,
                   ),
                 ),
                 child: const Text('open'),
@@ -202,17 +206,20 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(calls, [_heavy]);
-      expect(find.byType(ProConfirmDialog), findsNothing);
+      expect(find.byType(HeroConfirmDialog), findsNothing);
     });
 
-    testWidgets('a non-destructive Pro confirm stays silent', (tester) async {
+    testWidgets('a non-destructive confirm (Pro subscribe) taps once, as a commit', (
+      tester,
+    ) async {
       final calls = _recordHaptics(tester);
       await pumpProDialog(tester, destructive: false);
+      expect(calls, isEmpty, reason: 'opening the dialog never buzzes');
 
       await tester.tap(find.text('Go ahead'));
       await tester.pumpAndSettle();
 
-      expect(calls, isEmpty);
+      expect(calls, [_light]);
     });
   });
 

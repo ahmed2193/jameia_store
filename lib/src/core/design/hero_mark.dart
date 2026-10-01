@@ -81,14 +81,8 @@ abstract final class HeroMark {
   /// The handle as a filled arch, open at its base (the bag covers it).
   static final Path handle = () {
     const half = handleThickness / 2;
-    const outer = Radius.elliptical(
-      handleRadiusX + half,
-      handleRadiusY + half,
-    );
-    const inner = Radius.elliptical(
-      handleRadiusX - half,
-      handleRadiusY - half,
-    );
+    const outer = Radius.elliptical(handleRadiusX + half, handleRadiusY + half);
+    const inner = Radius.elliptical(handleRadiusX - half, handleRadiusY - half);
     const b = handleBase;
     return Path()
       ..moveTo(b.dx - outer.x, b.dy)
@@ -195,11 +189,12 @@ abstract final class HeroMark {
   }
 
   /// The resting mark as one outline (bag, handle, cape), tilted.
-  static final Path _silhouette = (Path()
-        ..addPath(bag, Offset.zero)
-        ..addPath(handle, Offset.zero)
-        ..addPath(capeAtRest, Offset.zero))
-      .transform(tiltMatrix);
+  static final Path _silhouette =
+      (Path()
+            ..addPath(bag, Offset.zero)
+            ..addPath(handle, Offset.zero)
+            ..addPath(capeAtRest, Offset.zero))
+          .transform(tiltMatrix);
 
   /// Painted extent of the resting mark, tilt included.
   static final Rect bounds = _silhouette.getBounds();
@@ -243,7 +238,12 @@ abstract final class HeroMark {
     final n = corners.length;
     final points = <Offset>[
       for (var i = 0; i < n; i++)
-        _pushedOut(corners[(i + n - 1) % n], corners[i], corners[(i + 1) % n], inflate),
+        _pushedOut(
+          corners[(i + n - 1) % n],
+          corners[i],
+          corners[(i + 1) % n],
+          inflate,
+        ),
     ];
     final path = Path();
     for (var i = 0; i < n; i++) {

@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/widgets/cubit_busy_overlay.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../auth/presentation/cubit/auth_session_state.dart';
 import '../cubit/setting_cubit.dart';
-import '../widgets/settings/settings_app_bar.dart';
 import '../widgets/settings/settings_body.dart';
 import '../widgets/settings/settings_feedback_listener.dart';
 
@@ -40,7 +40,7 @@ class _MineSettingsPageState extends State<MineSettingsPage> {
       failOf: (state) => !state.isSigningOut && state.failure != null,
       child: Scaffold(
         backgroundColor: AppColors.mediumBackground,
-        appBar: SettingsAppBar(title: 'settings.title'.tr()),
+        appBar: HeroTitleBar(title: 'settings.title'.tr()),
         body: SettingsFeedbackListener(
           child: SettingsBody(languageCode: languageCode),
         ),

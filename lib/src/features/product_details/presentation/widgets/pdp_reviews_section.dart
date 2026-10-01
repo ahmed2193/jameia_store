@@ -8,7 +8,8 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/domain/entities/screen_load.dart';
 import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
-import '../../../../core/widgets/app_outline_button.dart';
+import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_secondary_button.dart';
 import '../../../../core/widgets/failure_verdict_builder.dart';
 import '../../../../core/widgets/thin_divider.dart';
 import '../cubit/product_reviews_cubit.dart';
@@ -68,8 +69,10 @@ class PdpReviewsSection extends StatelessWidget {
                       }, style: muted),
                     ),
                     const SizedBox(width: AppSpacing.s12),
-                    AppOutlineButton(
+                    HeroSecondaryButton(
                       label: 'retry'.tr(),
+                      compact: true,
+                      height: AppSize.s44,
                       onPressed: cubit.load,
                     ),
                   ],
@@ -100,7 +103,7 @@ class PdpReviewsSection extends StatelessWidget {
                   else if (reviews.hasMore) ...[
                     const SizedBox(height: AppSpacing.s8),
                     Center(
-                      child: AppOutlineButton(
+                      child: HeroSecondaryButton(
                         label: state.loadMoreFailed
                             ? 'retry'.tr()
                             : 'product.show_more_reviews'.tr(),

@@ -73,7 +73,7 @@ class CartLineEntity extends Equatable {
   double get unitPriceKd => unitPriceFils / CatalogProductEntity.filsPerDinar;
   double get lineTotalKd => lineTotalFils / CatalogProductEntity.filsPerDinar;
 
-  /// `0` without a discount (what `PriceText.originalPrice` expects).
+  /// `0` without a discount (what a struck "was" price expects).
   double get compareAtKd =>
       hasDiscount ? compareAtFils! / CatalogProductEntity.filsPerDinar : 0;
 

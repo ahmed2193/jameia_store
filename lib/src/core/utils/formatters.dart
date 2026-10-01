@@ -7,8 +7,8 @@ import 'package:easy_localization/easy_localization.dart';
 ///
 /// Locale awareness: the currency **label** and its placement follow the active
 /// locale (via [Intl.defaultLocale], synced by `LocalizationCubit`). The
-/// **numerals stay Western** on purpose — PriceText and the coupon stubs render
-/// amounts in the MT Digital Display digit font, which ships no Arabic-Indic
+/// **numerals stay Western** on purpose — the coupon stubs and the price
+/// digits render amounts in HeroDigits (Fredoka), which ships no Arabic-Indic
 /// glyphs, so forcing `٠١٢٣` there would render tofu.
 class Formatters {
   Formatters._();
@@ -27,8 +27,8 @@ class Formatters {
   static String amount(double v) => v.toStringAsFixed(3);
 
   /// Price with the localized currency label. Arabic places the label AFTER the
-  /// amount (`12.500 د.ك`); English before (`KD 12.500`). For the digit-font
-  /// pill use [PriceText], which localizes the symbol and mirrors under RTL.
+  /// amount (`12.500 د.ك`); English before (`KD 12.500`). Money the customer
+  /// compares in a line of its own goes through `HeroMoneyText` (one LTR run).
   static String price(double v) => priceOf(amount(v));
 
   /// [price] around an amount already written out (e.g. the number slot of a

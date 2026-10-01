@@ -5,16 +5,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
 import '../../../../../config/theme/app_colors.dart';
-import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/hero_bottom_bar.dart';
 import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/address_book_cubit.dart';
 import '../../cubit/address_book_state.dart';
 
-/// Sticky "New address" CTA (RE §5: brand yellow, r16, 50dp). Hidden behind
-/// the sign-in prompt, since a guest cannot save an address.
+/// "New address" pinned under the list (the shared [HeroBottomBar] with the
+/// primary pill); hidden while signed out — the body then asks to sign in.
 class AddressAddBar extends StatelessWidget {
   const AddressAddBar({super.key});
 
@@ -24,13 +24,11 @@ class AddressAddBar extends StatelessWidget {
       selector: (state) => state.status == AddressBookStatus.signedOut,
       builder: (context, signedOut) {
         if (signedOut) return const SizedBox.shrink();
-        return SafeArea(
-          minimum: const EdgeInsets.all(AppSpacing.s12),
+        return HeroBottomBar(
           child: AppButton(
             label: 'addr.new_address'.tr(),
             onPressed: () => context.push(Routes.addressEdit),
-            height: AppSize.s50,
-            radius: AppRadius.r3,
+            height: AppSize.s52,
             trailing: const HeroIcon(
               HeroIcons.plus,
               size: AppSize.s20,

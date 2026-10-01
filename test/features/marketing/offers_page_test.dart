@@ -18,6 +18,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/core/constants/app_constants.dart';
+import 'package:hero_mart/src/core/design/hero_assets.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/cart_totals_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
@@ -27,8 +28,7 @@ import 'package:hero_mart/src/core/motion/entrance_cascade_item.dart';
 import 'package:hero_mart/src/core/widgets/collection_frame.dart';
 import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
 import 'package:hero_mart/src/core/widgets/countdown_chip.dart';
-import 'package:hero_mart/src/core/widgets/empty_state_view.dart';
-import 'package:hero_mart/src/core/widgets/error_view.dart';
+import 'package:hero_mart/src/core/widgets/hero_state_view.dart';
 import 'package:hero_mart/src/core/widgets/view_cart_pill.dart';
 import 'package:hero_mart/src/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:hero_mart/src/features/cart/presentation/cubit/cart_state.dart';
@@ -452,7 +452,7 @@ void main() {
     testWidgets('empty: the empty view under the hero', (tester) async {
       await pumpOffers(tester);
 
-      expect(find.byType(EmptyStateView), findsOneWidget);
+      expect(find.byType(HeroStateView), findsOneWidget);
       expect(
         find.text('No offers right now — check back soon'),
         findsOneWidget,
@@ -470,7 +470,9 @@ void main() {
       await pumpOffers(tester);
 
       expect(find.text('No connection'), findsOneWidget);
-      expect(find.byType(ErrorView), findsNothing);
+      expect(find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ), findsNothing);
       expect(find.byType(CollectionFrame), findsOneWidget);
 
       repository.offers = const Right([_freeDelivery]);
@@ -491,7 +493,9 @@ void main() {
 
       await pumpOffers(tester);
 
-      expect(find.byType(ErrorView), findsOneWidget);
+      expect(find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ), findsOneWidget);
       expect(find.text('Offers are resting'), findsOneWidget);
       expect(find.text('No connection'), findsNothing);
 
@@ -510,7 +514,9 @@ void main() {
 
         expect(find.text('Free delivery over 5 KWD'), findsOneWidget);
         expect(find.textContaining('Updated'), findsOneWidget);
-        expect(find.byType(ErrorView), findsNothing);
+        expect(find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ), findsNothing);
         expect(find.text('No connection'), findsNothing);
         expect(find.byType(SnackBar), findsNothing);
         expect(nudges, 1, reason: 'the banner speaks for a failed read');
@@ -622,7 +628,9 @@ void main() {
 
         expect(repository.calls, 2);
         expect(find.text('Free delivery over 5 KWD'), findsOneWidget);
-        expect(find.byType(ErrorView), findsNothing);
+        expect(find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ), findsNothing);
         expect(find.textContaining('Updated'), findsOneWidget);
         expect(find.byType(SnackBar), findsNothing);
 

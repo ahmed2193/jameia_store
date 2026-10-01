@@ -1,13 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../../../config/routes/route_args/shell_tabs.dart';
 import '../../../../../core/design/hero_assets.dart';
-import '../../../../../config/routes/routes.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
 import '../../../../../core/navigation/hero_snack_bar.dart';
 import '../../../../../core/error/failures.dart';
+import '../../../../../core/navigation/sign_in_flow.dart';
 import '../../../../../core/widgets/app_loader.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../../core/widgets/cubit_busy_overlay.dart';
@@ -39,7 +39,7 @@ class CartView extends StatelessWidget {
     final failure = state.failure;
     if (failure == null) return;
     if (state.isSignedOut) {
-      context.go(Routes.login);
+      SignInFlow.open(context, tab: ShellTab.cart);
       return;
     }
     final background =

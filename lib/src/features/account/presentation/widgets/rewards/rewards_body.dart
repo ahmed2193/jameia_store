@@ -48,7 +48,7 @@ class RewardsBody extends StatelessWidget {
               onRetry: () => context.read<LoyaltyRewardsCubit>().load(),
             ),
             LoyaltyRewardsStatus.loaded when !state.rewards.isAvailable =>
-              EmptyStateView(
+              HeroStateView(
                 message: 'loyalty.rewards_unavailable'.tr(),
                 art: HeroAssets.stateUnavailable,
               ),

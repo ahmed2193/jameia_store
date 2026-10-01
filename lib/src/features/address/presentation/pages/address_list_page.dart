@@ -8,10 +8,10 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/connectivity_scope.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../cubit/address_book_cubit.dart';
 import '../cubit/address_book_state.dart';
 import '../widgets/address_list/address_add_bar.dart';
-import '../widgets/address_list/address_list_app_bar.dart';
 import '../widgets/address_list/address_list_body.dart';
 
 /// Mine → "My addresses" (also the address picker from Home: a tapped row
@@ -136,14 +136,14 @@ class _AddressListPageState extends State<AddressListPage> {
     return BlocListener<AddressBookCubit, AddressBookState>(
       listenWhen: _listenWhen,
       listener: _onState,
-      child: const Scaffold(
+      child: Scaffold(
         backgroundColor: AppColors.mediumBackground,
-        appBar: AddressListAppBar(),
-        body: SafeArea(
+        appBar: HeroTitleBar(title: 'addr.my_addresses'.tr()),
+        body: const SafeArea(
           top: false,
           child: ContentClamp(child: AddressListBody()),
         ),
-        bottomNavigationBar: AddressAddBar(),
+        bottomNavigationBar: const AddressAddBar(),
       ),
     );
   }

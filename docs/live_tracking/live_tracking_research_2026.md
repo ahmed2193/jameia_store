@@ -68,7 +68,39 @@ Camera ("smart zoom") rules that the best trackers share:
 4. **The customer owns the camera after a gesture**: pause following, show a *recenter*
    button (Google's Navigation SDK uses the same "re-center" pattern); arrival takes the
    camera back.
-5. **North-up, no tilt** for a customer (bearing-up is for the person driving).
+5. ~~**North-up, no tilt** for a customer (bearing-up is for the person driving).~~
+   Superseded 2026-10-01 by the user's call: while the rider is on the road the camera
+   **rides along**, the way Google Maps follows a car (§3.1). North-up framing stays for
+   the moments the ride stands still, for "See the route" and under reduced motion.
+
+### 3.1 Riding along (Google Maps' driving view, observed on the phone 2026-10-01)
+
+What Google Maps does while it follows a car: the camera leans ~45°, the map turns with
+the road (heading up), the car sits low (~3/4 down the screen) so most of the view is the
+road ahead, zoom ≈ 17 in town, closer at the manoeuvre; a drag stops the following
+(top-down, a "Re-center" pill), the pill glides the camera back.
+
+How the live map does it (`LiveMapChaseCamera`, `LiveMapChase`):
+- **Pose** from where the rider is on the road and the map's visible part only (no clock,
+  so it moves exactly as smoothly as the rider glides and stops when they stop): tilt 45°;
+  bearing = the road's heading averaged as an angle over [rider − 10 m, rider + 6 m] (a
+  touch calmer than the rider's own 12 m turn, so they lean into a corner); zoom 16.75,
+  easing to 17.5 over the last 250 m to the goal (store, then door); the target placed
+  ahead of the rider along the bearing so the rider shows at 70 % of the visible map
+  (`lead = metersPerDp · y / (cos tilt + y / f · sin tilt)`, f from a 25° vertical field of
+  view — measured on the phone: the rider lands where computed).
+- **Motion**: the native camera glides in once (700 ms, `AppMotion.cameraGlide`) to where
+  the rider will be when it lands, then one `moveCamera` per map update the rider's glide
+  already makes (finer steps while riding along: 0.25 dp, ≤ every 30 ms). No camera
+  animation per fix (it would ease in and out against the rider's linear glide).
+- **Corners**: headings are averaged as unwrapped angles weighted by length, never as the
+  line between the window's ends — that line swings ~110° within 2 m at a hairpin, which
+  spun the map on the phone.
+- **Control**: a pill over the map's foot — "See the route" while riding along (north-up
+  frame of the road ahead), "Follow the rider" after a drag or from the route view. A
+  stage where the ride stands (found, at the store, at the door) frames it north-up; the
+  door always lands flat, north up.
+- **Reduced motion**: no riding along — the stepped north-up framing.
 
 Route rendering: an encoded polyline from the server; a white casing under a brand line
 for contrast on any map; the part behind the rider removed ("eaten"); dashed while only

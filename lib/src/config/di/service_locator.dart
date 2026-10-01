@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -70,19 +69,11 @@ Future<void> setupServiceLocator() async {
 
 Future<void> _initCore() async {
   // Offline account data — loaded once before the first frame (a small
-  // asset). The 2 MB catalogue it counts favourites from is never read
-  // before the first frame (BX-05): it is counted in an isolate once the
-  // first frame is on screen (the splash holds still then), so the Mine tab
-  // finds the number ready.
+  // asset).
   if (!sl.isRegistered<HeroRepository>()) {
     final repo = HeroRepository();
     await repo.load();
     sl.registerSingleton<HeroRepository>(repo);
-    unawaited(
-      WidgetsBinding.instance.waitUntilFirstFrameRasterized.then(
-        (_) => repo.shopCount(),
-      ),
-    );
   }
 
   await _initStorage();

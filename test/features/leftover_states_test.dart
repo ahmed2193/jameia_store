@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_assets.dart';
 import 'package:hero_mart/src/core/domain/entities/catalog_category_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
@@ -163,7 +164,9 @@ void main() {
 
       faqs.reads.single.complete(const Left(CacheFailure('unreadable')));
       await tester.pumpAndSettle();
-      expect(find.byType(ErrorView), findsOneWidget);
+      expect(find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ), findsOneWidget);
       expect(find.byType(SupportNoResults), findsNothing);
 
       await tester.tap(find.text('Retry'));
@@ -171,7 +174,9 @@ void main() {
       expect(faqs.reads, hasLength(2));
       faqs.reads.last.complete(const Right([_faq]));
       await tester.pumpAndSettle();
-      expect(find.byType(ErrorView), findsNothing);
+      expect(find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ), findsNothing);
       expect(find.byType(SupportFaqTile), findsOneWidget);
     });
   });

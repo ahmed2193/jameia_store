@@ -37,7 +37,7 @@ class TrackingScaffold extends StatelessWidget {
         tone: HeroSnackTone.success,
       );
 
-  static void _signIn(BuildContext context) => context.go(Routes.login);
+  static void _signIn(BuildContext context) => SignInFlow.open(context);
 
   /// Help about THIS order once it is on screen (the support ticket form);
   /// before that (still loading, or it could not load) the help hub.

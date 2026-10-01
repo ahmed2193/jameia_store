@@ -21,11 +21,11 @@ class SplashLayout {
     final markUnit = latinHeight * markToWord / HeroMark.bounds.height;
     final markHeight = HeroMark.bounds.height * markUnit;
     final gap = latinHeight * gapToWord;
-    final top =
-        center.dy - lockupLift - (markHeight + gap + wordHeight) / 2;
+    final top = center.dy - lockupLift - (markHeight + gap + wordHeight) / 2;
     final wordTop = top + markHeight + gap;
     // The bag itself — not the cape flowing off it — stands over the name.
-    final bagShift = (HeroMark.bagCenter.dx - HeroMark.bounds.center.dx) * markUnit;
+    final bagShift =
+        (HeroMark.bagCenter.dx - HeroMark.bounds.center.dx) * markUnit;
     return SplashLayout._(
       size: size,
       wordmark: wordmark,

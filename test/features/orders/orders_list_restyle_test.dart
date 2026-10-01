@@ -20,6 +20,7 @@ import 'package:hero_mart/src/core/widgets/app_button.dart';
 import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
 import 'package:hero_mart/src/core/widgets/hero_secondary_button.dart';
 import 'package:hero_mart/src/core/widgets/hero_tag.dart';
+import 'package:hero_mart/src/core/widgets/hero_text_link.dart';
 import 'package:hero_mart/src/core/widgets/hero_title_bar.dart';
 import 'package:hero_mart/src/features/cart/domain/usecases/add_cart_items_usecase.dart';
 import 'package:hero_mart/src/features/cart/domain/usecases/adjust_cart_line_usecase.dart';
@@ -45,7 +46,7 @@ import 'package:hero_mart/src/features/orders/presentation/pages/orders_page.dar
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/cancel_order_sheet.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_actions.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_card.dart';
-import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/order_status_chip.dart';
+import 'package:hero_mart/src/core/widgets/order_status_chip.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/orders_empty_view.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/orders_list/orders_list.dart';
 import 'package:hero_mart/src/features/orders/domain/usecases/watch_orders_usecase.dart';
@@ -416,7 +417,7 @@ void main() {
       expect(builtBy(first), isA<FadeTransition>());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(TextButton));
+      await tester.tap(find.byType(HeroTextLink));
       await tester.pumpAndSettle();
 
       final appended = find.byKey(const ValueKey<String>('o2'));

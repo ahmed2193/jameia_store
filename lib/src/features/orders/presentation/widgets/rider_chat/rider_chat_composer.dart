@@ -10,6 +10,7 @@ import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/motion/press_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 import '../../../domain/usecases/send_rider_message_usecase.dart';
 import '../../cubit/rider_chat_cubit.dart';
 
@@ -128,7 +129,7 @@ class _RiderChatComposerState extends State<RiderChatComposer> {
                       color: canSend ? AppColors.primary : AppColors.divider,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: const HeroIcon(
                       HeroIcons.arrowUp,
                       size: _glyph,
                       color: AppColors.brandForeground,

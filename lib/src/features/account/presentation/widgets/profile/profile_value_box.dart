@@ -7,6 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/widgets/hero_text_link.dart';
 import 'profile_field_shell.dart';
 
 /// Tappable profile field showing a picked value (or a grey [placeholder])
@@ -60,7 +61,7 @@ class ProfileValueBox extends StatelessWidget {
                       text ?? placeholder,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTextStyles.headingSmall.copyWith(
+                      style: AppTextStyles.itemTitle.copyWith(
                         color: text == null
                             ? AppColors.tertiaryText
                             : AppColors.primaryText,
@@ -68,17 +69,14 @@ class ProfileValueBox extends StatelessWidget {
                     ),
                   ),
                   if (clear != null)
-                    TextButton(
-                      onPressed: clear,
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.primaryDark,
-                        visualDensity: VisualDensity.compact,
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        end: AppSpacing.s8,
                       ),
-                      child: Text(
-                        'profile.clear'.tr(),
-                        style: AppTextStyles.subheadingMedium.copyWith(
-                          color: AppColors.primaryDark,
-                        ),
+                      child: HeroTextLink(
+                        label: 'profile.clear'.tr(),
+                        navigates: false,
+                        onTap: clear,
                       ),
                     )
                   else

@@ -52,10 +52,7 @@ class LabeledFieldBox extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: AppTextStyles.headingSmall.copyWith(
-            fontWeight: AppTextStyles.bold,
-            color: AppColors.primaryText,
-          ),
+          style: AppTextStyles.label,
         ),
         const SizedBox(height: AppSpacing.s8),
         GestureDetector(

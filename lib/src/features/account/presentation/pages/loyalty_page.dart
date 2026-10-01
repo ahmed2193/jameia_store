@@ -5,11 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/screen_failure_listener.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../../domain/entities/loyalty_entry_entity.dart';
 import '../cubit/ledger_cubit.dart';
 import '../cubit/ledger_state.dart';
 import '../cubit/loyalty_program_cubit.dart';
-import '../widgets/ledger/ledger_app_bar.dart';
 import '../widgets/ledger/ledger_body.dart';
 import '../widgets/loyalty/loyalty_entry_tile.dart';
 import '../widgets/loyalty/loyalty_header.dart';
@@ -31,7 +31,7 @@ class LoyaltyPage extends StatelessWidget {
       ],
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: LedgerAppBar(title: 'loyalty.title'.tr()),
+        appBar: HeroTitleBar(title: 'loyalty.title'.tr()),
         body:
             ScreenFailureListener<
               LedgerCubit<LoyaltyEntryEntity>,

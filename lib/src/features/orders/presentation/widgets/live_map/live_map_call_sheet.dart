@@ -6,10 +6,13 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/utils/phone_dialer.dart';
 import '../../../../../core/widgets/app_button.dart';
+import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/widgets/hero_secondary_button.dart';
 import '../../../../../core/widgets/hero_sheet_header.dart';
 import '../../../domain/entities/courier_trip.dart';
 import 'live_map_rider_identity.dart';
@@ -68,44 +71,55 @@ class LiveMapCallSheet extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    LiveMapRiderIdentity(trip: trip),
+                    EntranceCascadeItem.single(
+                      index: 1,
+                      child: LiveMapRiderIdentity(trip: trip),
+                    ),
                     const SizedBox(height: AppSpacing.s16),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const ExcludeSemantics(
-                          child: Icon(
-                            HeroIcons.lockClock,
-                            size: _glyph,
-                            color: AppColors.primaryDark,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.s12),
-                        Expanded(
-                          child: Text(
-                            ending.isEmpty
-                                ? 'orders.live_call_note'.tr()
-                                : 'orders.live_call_note_line'.tr(
-                                    namedArgs: {'digits': ending},
-                                  ),
-                            style: AppTextStyles.bodyLarge.copyWith(
-                              color: AppColors.secondaryText,
+                    EntranceCascadeItem.single(
+                      index: 2,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const ExcludeSemantics(
+                            child: HeroIcon(
+                              HeroIcons.lockClock,
+                              size: _glyph,
+                              color: AppColors.primaryDark,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: AppSpacing.s12),
+                          Expanded(
+                            child: Text(
+                              ending.isEmpty
+                                  ? 'orders.live_call_note'.tr()
+                                  : 'orders.live_call_note_line'.tr(
+                                      namedArgs: {'digits': ending},
+                                    ),
+                              style: AppTextStyles.bodyLarge.copyWith(
+                                color: AppColors.secondaryText,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.s20),
-                    AppButton(
-                      label: 'orders.live_call_button'.tr(),
-                      onPressed: () => _call(context),
+                    EntranceCascadeItem.single(
+                      index: 3,
+                      child: AppButton(
+                        label: 'orders.live_call_button'.tr(),
+                        onPressed: () => _call(context),
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.s8),
-                    AppButton(
-                      label: 'orders.live_call_message_instead'.tr(),
-                      color: AppColors.brandLightBg,
-                      foreground: AppColors.primaryDark,
-                      onPressed: () => context.pop(true),
+                    EntranceCascadeItem.single(
+                      index: 4,
+                      child: HeroSecondaryButton(
+                        label: 'orders.live_call_message_instead'.tr(),
+                        expanded: true,
+                        onPressed: () => context.pop(true),
+                      ),
                     ),
                   ],
                 ),

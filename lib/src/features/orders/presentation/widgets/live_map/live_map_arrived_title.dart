@@ -7,6 +7,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/pop_scale.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../../../core/widgets/hero_icon.dart';
 
 /// The headline once the rider is at the door: the Hero check pops in
 /// beside "Your rider is here" (read out as it appears).
@@ -22,10 +23,11 @@ class LiveMapArrivedTitle extends StatelessWidget {
       child: Row(
         children: [
           const PopScale.onMount(
-            child: Icon(
+            child: HeroIcon(
               HeroIcons.checkCircleFill,
               size: _check,
               color: AppColors.brandDeep,
+              mono: true,
             ),
           ),
           const SizedBox(width: AppSpacing.s8),

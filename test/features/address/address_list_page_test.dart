@@ -19,6 +19,7 @@ import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
 import 'package:hero_mart/src/core/domain/entities/hero_address_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/widgets/hero_confirm_dialog.dart';
 import 'package:hero_mart/src/features/address/domain/entities/address_book.dart';
 import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
 import 'package:hero_mart/src/features/address/presentation/pages/address_list_page.dart';
@@ -46,6 +47,13 @@ void main() {
     building: '120',
     floor: '3',
     phone: '+96566001122',
+  );
+
+  // The dialog's own Delete (the rows' delete buttons only say it as a
+  // tooltip).
+  final confirmDelete = find.descendant(
+    of: find.byType(HeroConfirmDialog),
+    matching: find.text('Delete'),
   );
 
   setUpAll(() async {
@@ -221,10 +229,13 @@ void main() {
     await tester.tap(find.byTooltip('Delete').last);
     await settle(tester);
     expect(
-      find.text('Addresses cannot be restored once deleted. Confirm deletion?'),
+      find.text(
+        'It will be removed from your saved addresses. '
+        'You can undo this right after.',
+      ),
       findsOneWidget,
     );
-    await tester.tap(find.text('Confirm'));
+    await tester.tap(confirmDelete);
     await settle(tester);
 
     expect(find.byType(AddressRowTile), findsOneWidget, reason: 'at once');
@@ -246,7 +257,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Delete').last);
     await settle(tester);
-    await tester.tap(find.text('Confirm'));
+    await tester.tap(confirmDelete);
     await settle(tester);
     expect(find.byType(AddressRowTile), findsOneWidget);
 
@@ -272,7 +283,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Delete').last);
     await settle(tester);
-    await tester.tap(find.text('Confirm'));
+    await tester.tap(confirmDelete);
     await settle(tester);
     expect(find.byType(AddressRowTile), findsOneWidget);
 
@@ -295,7 +306,7 @@ void main() {
 
     await tester.tap(find.byTooltip('Delete').last);
     await settle(tester);
-    await tester.tap(find.text('Confirm'));
+    await tester.tap(confirmDelete);
     await settle(tester);
     // Leaves while the Undo window is still open.
     router.pop();
@@ -317,7 +328,7 @@ void main() {
       await pumpList(tester);
       await tester.tap(find.byTooltip('Delete').last);
       await settle(tester);
-      await tester.tap(find.text('Confirm'));
+      await tester.tap(confirmDelete);
       await tester.pump();
     }
 
@@ -410,7 +421,12 @@ void main() {
 
     await tester.tap(find.byTooltip('Delete').first);
     await settle(tester);
-    await tester.tap(find.text('Cancel'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(HeroConfirmDialog),
+        matching: find.text('Cancel'),
+      ),
+    );
     await settle(tester);
 
     expect(deleteAddress.calls, isEmpty);

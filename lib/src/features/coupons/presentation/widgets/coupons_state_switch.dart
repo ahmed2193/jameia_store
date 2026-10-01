@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/failure_message.dart';
-import '../../../../core/widgets/error_view.dart';
+import '../../../../core/widgets/hero_state_view.dart';
 import '../../../../core/widgets/skeletons.dart';
 import '../../domain/entities/coupon_buckets.dart';
 import '../cubit/coupons_cubit.dart';
@@ -26,7 +26,7 @@ class CouponsStateSwitch extends StatelessWidget {
           loading: true,
           child: CouponsSkeleton(),
         ),
-        CouponsStatus.error => ErrorView(
+        CouponsStatus.error => HeroStateView.error(
           message: state.failure?.localizedMessage,
           onRetry: () => context.read<CouponsCubit>().load(),
         ),

@@ -61,8 +61,7 @@ abstract final class SplashWordmarkPainting {
       final control = Offset(slot.dx, start.dy - rise);
       final at = _alongArc(start, control, slot, flight);
       final grow = Curves.easeInOutCubic.transform(flight);
-      final scale =
-          layout.wordScale * (launchScale + (1 - launchScale) * grow);
+      final scale = layout.wordScale * (launchScale + (1 - launchScale) * grow);
       final turn = (i.isEven ? -1 : 1) * launchTurn * (1 - grow);
       final alpha = (flight / opaqueAt).clamp(0.0, 1.0);
       final color = palette.letter;

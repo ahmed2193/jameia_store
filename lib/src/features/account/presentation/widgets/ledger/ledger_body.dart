@@ -74,7 +74,7 @@ class LedgerBody<T extends LedgerEntry> extends StatelessWidget {
               header: header,
               entryBuilder: entryBuilder,
               entryDate: entryDate,
-              empty: EmptyStateView(
+              empty: HeroStateView(
                 message: emptyMessage,
                 art: HeroAssets.emptyLedger,
               ),

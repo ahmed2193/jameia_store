@@ -4,12 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/routes/routes.dart';
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../cubit/address_book_cubit.dart';
-import 'address_delete_dialog.dart';
 import 'address_row_action.dart';
 
 /// Edit + delete for one row. A confirmed delete takes the row out at once;
@@ -22,13 +20,15 @@ class AddressRowActions extends StatelessWidget {
 
   Future<void> _confirmDelete(BuildContext context) async {
     final cubit = context.read<AddressBookCubit>();
-    final confirmed = await showHeroDialog<bool>(
+    final confirmed = await showHeroConfirmDialog(
       context,
-      barrierLabel: 'addr.delete_barrier_label'.tr(),
-      barrierColor: AppColors.overlayPrimary,
-      pageBuilder: (_) => const AddressDeleteDialog(),
+      title: 'addr.delete_confirm_title'.tr(),
+      message: 'addr.delete_confirm_body'.tr(),
+      icon: HeroIcons.trash,
+      confirmLabel: 'common.delete'.tr(),
+      destructive: true,
     );
-    if (confirmed ?? false) {
+    if (confirmed) {
       await cubit.delete(address.id, holdForUndo: true);
     }
   }

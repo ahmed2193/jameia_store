@@ -9,7 +9,7 @@ import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/catalog_unavailable_overlay.dart';
 import '../../../../../core/widgets/hero_image.dart';
-import '../../../../../core/widgets/price_text.dart';
+import '../../../../../core/widgets/shelf_card_price.dart';
 import '../../../../../core/widgets/rating_badge.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import 'assistant_card_frame.dart';
@@ -84,9 +84,9 @@ class AssistantProductDetailCard extends StatelessWidget {
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: AlignmentDirectional.centerStart,
-                        child: PriceText(
-                          price: product.priceKdFor(pro: isPro),
-                          originalPrice: product.compareAtKd,
+                        child: ShelfCardPrice(
+                          priceKd: product.priceKdFor(pro: isPro),
+                          wasKd: product.compareAtKd,
                         ),
                       )
                     else

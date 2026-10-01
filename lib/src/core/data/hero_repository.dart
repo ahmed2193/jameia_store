@@ -79,8 +79,8 @@ class HeroRepository {
 
   /// How many shops the bundled catalogue lists — one per top category, like
   /// the parsed catalogue's `shops`. The 2 MB asset is read uncached and
-  /// decoded in an isolate on the first call only (warmed after the first
-  /// frame, else the Mine tab), and just the number comes back;
+  /// decoded in an isolate on the first call only (nothing in the app asks
+  /// since the Mine favourites stat went), and just the number comes back;
   /// `hero_data`'s shop block counts when the catalogue cannot be read. Once
   /// known, the answer is a fresh future in the caller's zone.
   Future<int> shopCount() {

@@ -12,12 +12,7 @@ class ProfileSectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       header: true,
-      child: Text(
-        text,
-        style: AppTextStyles.headingLarge.copyWith(
-          fontWeight: AppTextStyles.bold,
-        ),
-      ),
+      child: Text(text, style: AppTextStyles.groupTitle),
     );
   }
 }

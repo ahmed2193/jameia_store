@@ -92,6 +92,11 @@ class AppTextStyles {
   /// Tabular figures for numbers people compare (money, points, codes).
   static const List<FontFeature> tabular = [FontFeature.tabularFigures()];
 
+  /// How high the body face's digits stand above the baseline, in em (Noto
+  /// Sans: its cap height). A count centres this ink, not its line box, on
+  /// its pill (`CountBadge`).
+  static const double digitHeight = 0.714;
+
   /// Digit-display style (prices / counters) in HeroDigits.
   static TextStyle digits(double size, {FontWeight weight = bold}) => TextStyle(
     fontFamily: digitFamily,

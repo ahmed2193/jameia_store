@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/design/hero_assets.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/widgets/state_views.dart';
 import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
@@ -111,7 +112,9 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byType(ErrorView), findsOneWidget);
+    expect(find.byWidgetPredicate(
+        (w) => w is HeroStateView && w.art == HeroAssets.stateError,
+      ), findsOneWidget);
     expect(
       tester.element(find.byType(SliverPersistentHeader)),
       same(header),

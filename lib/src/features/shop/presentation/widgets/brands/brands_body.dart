@@ -68,7 +68,7 @@ class BrandsBody extends StatelessWidget {
                             ),
                             SliverFillRemaining(
                               hasScrollBody: false,
-                              child: EmptyStateView(
+                              child: HeroStateView(
                                 message: 'shop.no_brands'.tr(),
                                 art: HeroAssets.emptyShelf,
                               ),

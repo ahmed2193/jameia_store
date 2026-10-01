@@ -5,7 +5,7 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/app_outline_button.dart';
+import '../../../../../core/widgets/hero_secondary_button.dart';
 import '../../../../../core/widgets/state_views.dart';
 import 'support_faq_header.dart';
 import 'support_section_card.dart';
@@ -60,7 +60,12 @@ class SupportFaqPending extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: AppSpacing.s12),
-                  AppOutlineButton(label: 'retry'.tr(), onPressed: retry),
+                  HeroSecondaryButton(
+                    label: 'retry'.tr(),
+                    compact: true,
+                    height: AppSize.s44,
+                    onPressed: retry,
+                  ),
                 ],
               ),
             ),

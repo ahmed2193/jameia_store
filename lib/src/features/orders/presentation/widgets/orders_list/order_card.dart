@@ -18,7 +18,7 @@ import '../../../../../core/widgets/hero_icon.dart';
 import '../../cubit/orders_cubit.dart';
 import 'order_actions.dart';
 import 'order_items_preview.dart';
-import 'order_status_chip.dart';
+import '../../../../../core/widgets/order_status_chip.dart';
 import 'order_total_row.dart';
 
 /// One order in the list, on a white hairline card: its status first (the

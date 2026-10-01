@@ -12,7 +12,7 @@ class SupportNoResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmptyStateView(
+    return HeroStateView(
       art: HeroAssets.stateSearchEmpty,
       message: 'support.no_results_message'.tr(),
       actionLabel: 'support.chat_with_support'.tr(),

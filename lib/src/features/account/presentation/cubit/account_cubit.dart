@@ -9,16 +9,13 @@ import '../../domain/usecases/get_account_overview_usecase.dart';
 enum AccountStatus { initial, loading, loaded, error }
 
 /// State for the Hero "Mine" tab (`mach_pro_sailor_c_mine`) — the offline
-/// seeded profile (delivery code, avatar) + quick-stat counts + customer-service
-/// unread badge. The signed-in customer (name, phone, wallet) comes from the
+/// seeded profile (delivery code, avatar) + the coupons quick-stat count. The signed-in customer (name, phone, wallet) comes from the
 /// app-global `AuthSessionCubit`, not from here.
 class AccountState extends Equatable {
   const AccountState({
     this.status = AccountStatus.initial,
     this.user,
     this.couponCount = 0,
-    this.favouriteCount = 0,
-    this.customerServiceUnread = 0,
     this.error,
   });
 
@@ -27,8 +24,6 @@ class AccountState extends Equatable {
   /// Seeded profile; null until the overview has loaded.
   final UserProfileEntity? user;
   final int couponCount;
-  final int favouriteCount;
-  final int customerServiceUnread;
   final String? error;
 
   /// The overview read has answered (loaded or failed) — the Mine tab shows
@@ -40,27 +35,16 @@ class AccountState extends Equatable {
     AccountStatus? status,
     UserProfileEntity? user,
     int? couponCount,
-    int? favouriteCount,
-    int? customerServiceUnread,
     String? error,
   }) => AccountState(
     status: status ?? this.status,
     user: user ?? this.user,
     couponCount: couponCount ?? this.couponCount,
-    favouriteCount: favouriteCount ?? this.favouriteCount,
-    customerServiceUnread: customerServiceUnread ?? this.customerServiceUnread,
     error: error,
   );
 
   @override
-  List<Object?> get props => [
-    status,
-    user,
-    couponCount,
-    favouriteCount,
-    customerServiceUnread,
-    error,
-  ];
+  List<Object?> get props => [status, user, couponCount, error];
 }
 
 /// Page-scoped cubit — resolved via `sl<AccountCubit>()`; loads the overview on
@@ -85,8 +69,6 @@ class AccountCubit extends Cubit<AccountState>
           status: AccountStatus.loaded,
           user: overview.user,
           couponCount: overview.couponCount,
-          favouriteCount: overview.favouriteCount,
-          customerServiceUnread: overview.customerServiceUnread,
         ),
       ),
     );

@@ -57,7 +57,7 @@ class RecipesBody extends StatelessWidget {
                 ),
                 LoadPhase.loaded when state.isEmpty => BrandedRefresh(
                   onRefresh: cubit.refresh,
-                  child: EmptyStateView(
+                  child: HeroStateView(
                     message: 'recipes.empty'.tr(),
                     art: HeroAssets.emptyShelf,
                   ),

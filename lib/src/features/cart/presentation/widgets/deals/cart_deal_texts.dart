@@ -59,7 +59,10 @@ abstract final class CartDealTexts {
             namedArgs: {'count': '${deal.remainingValue}'},
           )
         : 'cart.deal_add_from'.tr(
-            namedArgs: {'count': '${deal.remainingValue}', 'category': category},
+            namedArgs: {
+              'count': '${deal.remainingValue}',
+              'category': category,
+            },
           );
   }
 }

@@ -21,13 +21,16 @@ import '../../../domain/entities/courier_trip.dart';
 import '../../cubit/courier_tracking_cubit.dart';
 import '../../cubit/courier_tracking_state.dart';
 import 'live_map_camera.dart';
+import 'live_map_camera_action.dart';
+import 'live_map_camera_button.dart';
+import 'live_map_chase.dart';
+import 'live_map_chase_camera.dart';
 import 'live_map_follow.dart';
 import 'live_map_frame_gate.dart';
 import 'live_map_glide.dart';
 import 'live_map_marker_icons.dart';
 import 'live_map_overlays.dart';
 import 'live_map_pan_watch.dart';
-import 'live_map_recenter_button.dart';
 import 'live_map_road_cutter.dart';
 
 /// The live map: the Hero-styled map with the ride drawn on it, moving.
@@ -37,11 +40,17 @@ import 'live_map_road_cutter.dart';
 /// * Between two fixes the rider GLIDES along the road over the time the
 ///   fixes are apart — always moving, never jumping — turned with the road
 ///   (through a corner, not at it); the road behind them is eaten.
-/// * The camera follows the rider and where they are heading, closing in as
-///   they near it ([LiveMapFollow]); a drag hands the camera to the
-///   customer (the recenter button gives it back); reaching the door takes
-///   it back. A panel that grows or shrinks under the map has the road
-///   framed again in the part left in view.
+/// * While the rider is on the road the camera rides along with them, the
+///   way Google Maps follows a car ([LiveMapChaseCamera]): it glides in from
+///   the whole ride, then keeps to the rider frame by frame — close in,
+///   tilted, turned with the road — closing in near the goal. The camera
+///   button swaps that for the road ahead from above, and back.
+/// * Otherwise (being found, at the store, at the door, motion reduced, the
+///   road ahead asked for) it frames the ride, re-aiming only by clear steps
+///   ([LiveMapFollow]). A drag hands the camera to the customer (the camera
+///   button gives it back); reaching the door takes it back. A panel that
+///   grows or shrinks under the map has the camera aim again for the part
+///   left in view.
 /// * The rider fades to half strength while the feed is quiet, and back.
 /// * Moments ring: rings spread from the store while a rider is found, and
 ///   from the door when the rider is almost there and there — a few laps,
@@ -53,10 +62,11 @@ import 'live_map_road_cutter.dart';
 /// turned, the road recut once the cut would show ([LiveMapRoadCutter]),
 /// never two frames closer than a few vsyncs; only the map rebuilds for it
 /// (a [ValueNotifier], not `setState`); the pins and, once the order is on
-/// its way, the road driven are built once; the camera re-aims only by
-/// clear steps ([LiveMapCamera.shouldReframe]). Reduced motion:
-/// no entrance, no glide (the rider steps fix to fix), no rings, camera
-/// jumps.
+/// its way, the road driven are built once; a framing camera re-aims only
+/// by clear steps ([LiveMapCamera.shouldReframe]), a riding one moves with
+/// the map updates the rider's glide already makes. Reduced motion: no
+/// entrance, no glide (the rider steps fix to fix), no rings, no riding
+/// along, camera jumps.
 class LiveMapLayer extends StatefulWidget {
   const LiveMapLayer({super.key, required this.trip, required this.padding});
 
@@ -117,6 +127,7 @@ class _LiveMapLayerState extends State<LiveMapLayer>
   final ValueNotifier<int> _mapFrame = ValueNotifier<int>(0);
 
   final LiveMapFollow _followState = LiveMapFollow();
+  final LiveMapChase _chase = LiveMapChase();
   final LiveMapRoadCutter _cutter = LiveMapRoadCutter();
 
   GoogleMapController? _map;
@@ -217,6 +228,7 @@ class _LiveMapLayerState extends State<LiveMapLayer>
   @override
   void dispose() {
     _map = null;
+    _chase.end();
     for (final controller in [_intro, _riderIn, _glide, _rings, _quiet]) {
       controller.dispose();
     }
@@ -266,8 +278,9 @@ class _LiveMapLayerState extends State<LiveMapLayer>
         _aim(LiveMapCamera.overview(widget.trip, padding: _edge), jump: true),
       );
       // A follow aimed in this same frame was overwritten by the jump: the
-      // next fix aims again.
+      // next fix aims again (a camera riding along glides in from here).
       _followState.reset();
+      _chase.end();
     });
     // The entrance only draws in the planned road: once the rider has the
     // order the road is whole from the start, and 700 ms of map updates
@@ -301,10 +314,14 @@ class _LiveMapLayerState extends State<LiveMapLayer>
     }
     if (_stage != before) {
       if (!before.hasRider && _stage.hasRider) _showRider();
+      // The store reached (or passed): the camera riding along glides in
+      // again for the road to the door.
+      if (before == CourierStage.toStore) _chase.end();
       // The door reached: the map lands on it, whatever the customer did.
-      if (_stage == CourierStage.arrived && !_followState.following) {
-        setState(_followState.resume);
-      }
+      // A new stage may also change what the camera button offers.
+      setState(() {
+        if (_stage == CourierStage.arrived) _followState.resume();
+      });
       _ringStage(before);
     }
     _follow();
@@ -352,10 +369,23 @@ class _LiveMapLayerState extends State<LiveMapLayer>
     unawaited(_rings.forward(from: 0));
   }
 
-  /// Aims the camera at the road ahead of the rider when [LiveMapFollow]
-  /// says so: on a new stage (or a recentre, [always]); within a stage only
-  /// once that road has clearly shrunk — the map holds still in between.
+  /// Aims the camera as [LiveMapFollow] says ([always]: whatever it did
+  /// last — a recentre, a new room around the map).
+  ///
+  /// Riding along: glides in once, then [_trackChase] keeps it on the rider
+  /// with every map update. Framing: aims at the road ahead of the rider on
+  /// a new stage, and within a stage only once that road has clearly
+  /// shrunk — the map holds still in between.
   void _follow({bool always = false}) {
+    if (_chases) {
+      if (_chase.live) {
+        if (always) _trackChase(force: true);
+      } else if (always || !_chase.active) {
+        _flyIntoChase();
+      }
+      return;
+    }
+    _chase.end();
     final aim = _followState.shouldAim(
       stage: _stage,
       left: LiveMapCamera.leftMeters(widget.trip, _to, _stage),
@@ -368,24 +398,82 @@ class _LiveMapLayerState extends State<LiveMapLayer>
     );
   }
 
+  /// Whether the camera rides along with the rider now: after the entrance,
+  /// while [LiveMapFollow.chases].
+  bool get _chases =>
+      _introStarted &&
+      _followState.chases(stage: _stage, motion: !MotionGuard.reduced(context));
+
+  /// Glides the camera in to ride along: to where the rider will be when
+  /// the glide is over, so it lands on them.
+  void _flyIntoChase() {
+    if (_map == null) return;
+    final pose = _chasePose(_riderMetersIn(AppMotion.cameraGlide));
+    _zoom = pose.zoom;
+    _chase.flyIn(() {
+      if (mounted) _trackChase(force: true);
+    });
+    unawaited(_aim(CameraUpdate.newCameraPosition(pose)));
+  }
+
+  /// Keeps the camera riding along on the rider as the map shows them, when
+  /// they moved since it last did ([force]: anyway).
+  void _trackChase({bool force = false}) {
+    if (_map == null || !_chase.shouldTrack(_shownMeters, force: force)) {
+      return;
+    }
+    final pose = _chasePose(_shownMeters);
+    _zoom = pose.zoom;
+    unawaited(_aim(CameraUpdate.newCameraPosition(pose), jump: true));
+  }
+
+  CameraPosition _chasePose(double meters) => LiveMapChaseCamera.position(
+    widget.trip,
+    meters,
+    _stage,
+    map: _mapSize,
+    padding: widget.padding,
+  );
+
+  /// Where the rider will be [ahead] from now: on along their glide, if
+  /// one runs.
+  double _riderMetersIn(Duration ahead) => _glide.isAnimating
+      ? LiveMapGlide.metersAhead(
+          from: _from,
+          to: _to,
+          done: _glide.value,
+          length: _glide.duration ?? Duration.zero,
+          ahead: ahead,
+        )
+      : _riderMeters;
+
   void _stopFollowing() {
+    _chase.end();
     if (_followState.following) setState(_followState.stop);
   }
 
-  void _recenter() {
-    setState(_followState.resume);
+  /// The camera button: ride along (follow) again, or show the road ahead.
+  void _onCameraAction(LiveMapCameraAction action) {
+    setState(switch (action) {
+      LiveMapCameraAction.follow => _followState.resume,
+      LiveMapCameraAction.overview => _followState.showOverview,
+    });
+    _chase.end();
     _follow(always: true);
+  }
+
+  /// The map's own size, once laid out.
+  Size get _mapSize {
+    final box = context.findRenderObject();
+    return box is RenderBox && box.hasSize ? box.size : Size.zero;
   }
 
   /// The room around a framed ride: [_frameEdge], or less where the map
   /// shows too little around it ([LiveMapCamera.fitEdge]).
   double get _edge {
-    final box = context.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) return _frameEdge;
-    return LiveMapCamera.fitEdge(
-      _frameEdge,
-      widget.padding.deflateSize(box.size),
-    );
+    final size = _mapSize;
+    if (size.isEmpty) return _frameEdge;
+    return LiveMapCamera.fitEdge(_frameEdge, widget.padding.deflateSize(size));
   }
 
   Future<void> _aim(CameraUpdate update, {bool jump = false}) async {
@@ -399,10 +487,12 @@ class _LiveMapLayerState extends State<LiveMapLayer>
   }
 
   /// The zoom the glide gate measures with, read when the camera settles —
-  /// not on every camera frame, which would cost a message per frame.
+  /// not on every camera frame, which would cost a message per frame. A
+  /// camera riding along settles after every map update, at the zoom it was
+  /// given: nothing to read.
   Future<void> _onCameraIdle() async {
     final map = _map;
-    if (map == null) return;
+    if (map == null || _chase.active) return;
     try {
       final zoom = await map.getZoomLevel();
       if (mounted) _zoom = zoom;
@@ -412,7 +502,8 @@ class _LiveMapLayerState extends State<LiveMapLayer>
   }
 
   /// A glide frame is worth a map update only once the rider has visibly
-  /// moved or turned since the last one.
+  /// moved or turned since the last one — or, the camera riding along, once
+  /// the map under them has.
   void _onGlideFrame() {
     final meters = _riderMeters;
     final path = widget.trip.path;
@@ -423,6 +514,9 @@ class _LiveMapLayerState extends State<LiveMapLayer>
       heading: path.headingAround(meters),
       zoom: _zoom,
       latitude: path.pointAt(meters).lat,
+      stepDp: _chase.live
+          ? LiveMapFrameGate.chaseStepDp
+          : LiveMapFrameGate.minStepDp,
     );
     if (moved) _onFrame();
   }
@@ -444,13 +538,15 @@ class _LiveMapLayerState extends State<LiveMapLayer>
     _repaint();
   }
 
-  /// One map update: recut the road if due, note where the rider shows.
+  /// One map update: recut the road if due, note where the rider shows,
+  /// and keep a camera riding along on them.
   void _repaint() {
     if (!mounted) return;
     _recutRoad();
     _shownMeters = _riderMeters;
     _shownHeading = widget.trip.path.headingAround(_shownMeters);
     _mapFrame.value++;
+    _trackChase();
   }
 
   /// Recuts the road when the stage or the entrance changed it, or the
@@ -542,11 +638,18 @@ class _LiveMapLayerState extends State<LiveMapLayer>
             ),
           ),
           PositionedDirectional(
+            start: AppSpacing.gutter,
             end: AppSpacing.gutter,
             bottom: widget.padding.bottom + AppSpacing.s16,
-            child: LiveMapRecenterButton(
-              visible: !_followState.following,
-              onPressed: _recenter,
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: LiveMapCameraButton(
+                action: _followState.action(
+                  stage: _stage,
+                  motion: !MotionGuard.reduced(context),
+                ),
+                onPressed: _onCameraAction,
+              ),
             ),
           ),
         ],

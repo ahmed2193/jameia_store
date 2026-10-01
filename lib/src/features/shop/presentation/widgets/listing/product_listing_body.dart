@@ -139,7 +139,7 @@ class ProductListingBody extends StatelessWidget {
                                 hasScrollBody: false,
                                 child: EntranceCascadeItem(
                                   index: 0,
-                                  child: EmptyStateView(
+                                  child: HeroStateView(
                                     message: 'shop.no_products_here'.tr(),
                                     art: HeroAssets.emptyShelf,
                                   ),

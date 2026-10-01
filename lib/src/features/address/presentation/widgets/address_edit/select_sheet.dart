@@ -12,7 +12,7 @@ import '../../../../../core/widgets/core_widgets.dart';
 import '../../../../../core/widgets/hero_map.dart';
 import 'candidate_row.dart';
 import 'not_serviceable_banner.dart';
-import 'sheet_grabber.dart';
+import '../../../../../core/widgets/hero_sheet_handle.dart';
 
 /// SELECT sheet — helper line + not-serviceable banner + candidate radio list +
 /// Confirm CTA. Outside the delivery area Confirm is grey, and a tap on it
@@ -68,8 +68,8 @@ class _SelectSheetState extends State<SelectSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SheetGrabber(),
-          const SizedBox(height: AppSpacing.s4),
+          const HeroSheetHandle(),
+          const SizedBox(height: AppSpacing.s12),
           Text(
             'addr.deliver_here_hint'.tr(),
             style: AppTextStyles.captionLarge.copyWith(
@@ -114,7 +114,6 @@ class _SelectSheetState extends State<SelectSheet> {
               label: 'addr.confirm_location'.tr(),
               enabled: serviceable,
               onPressed: widget.onConfirm,
-              radius: AppRadius.r1, // create-save pill 25dp ≈ r1
             ),
           ),
         ],

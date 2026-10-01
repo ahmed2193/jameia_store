@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/widgets/hero_section_header.dart';
 
-/// Big bold heading above the history ("Transactions", "Points history"),
-/// the same voice as the Rewards section titles.
+/// The heading above the history ("Transactions", "Points history"): the
+/// shared section header, tight above the first day.
 class LedgerSectionTitle extends StatelessWidget {
   const LedgerSectionTitle(this.text, {super.key});
 
@@ -13,22 +12,13 @@ class LedgerSectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return HeroSectionHeader(
+      title: text,
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppSpacing.s16,
-        AppSpacing.s24,
-        AppSpacing.s16,
+        AppSpacing.gutter,
+        AppSpacing.section,
+        AppSpacing.gutter,
         AppSpacing.s2,
-      ),
-      child: Semantics(
-        header: true,
-        child: Text(
-          text,
-          style: AppTextStyles.displayMedium.copyWith(
-            fontWeight: AppTextStyles.bold,
-            color: AppColors.primaryText,
-          ),
-        ),
       ),
     );
   }

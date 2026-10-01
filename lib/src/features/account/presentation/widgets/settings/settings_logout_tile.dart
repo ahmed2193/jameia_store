@@ -10,7 +10,6 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../../../../auth/presentation/cubit/auth_session_state.dart';
-import 'settings_logout_dialog.dart';
 import 'settings_section.dart';
 import 'settings_tile.dart';
 import 'settings_tone.dart';
@@ -27,13 +26,15 @@ class SettingsLogoutTile extends StatelessWidget {
 
   Future<void> _logOut(BuildContext context) async {
     final session = context.read<AuthSessionCubit>();
-    final confirmed = await showHeroDialog<bool>(
+    final confirmed = await showHeroConfirmDialog(
       context,
-      barrierLabel: 'settings.logout_barrier'.tr(),
-      barrierColor: AppColors.overlayPrimary,
-      pageBuilder: (_) => const SettingsLogoutDialog(),
+      title: 'settings.logout_confirm'.tr(),
+      message: 'settings.logout_subtitle'.tr(),
+      icon: HeroIcons.logout,
+      confirmLabel: 'settings.logout'.tr(),
+      destructive: true,
     );
-    if (confirmed != true) return;
+    if (!confirmed) return;
     await session.signOut();
     if (!context.mounted) return;
     context.go(Routes.login);

@@ -1,5 +1,6 @@
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
 import 'package:hero_mart/src/features/orders/domain/entities/courier_stage.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/live_map/live_map_camera.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/live_map/live_map_frame_gate.dart';
@@ -45,15 +46,23 @@ void main() {
       expect(follow(0, CourierStage.toStore).first, 'newLatLngBounds');
     });
 
-    test('almost at the store: the store, close up', () {
-      final camera = follow(
-        trip.deliveryStartMeters - 10,
-        CourierStage.toStore,
-      );
+    /// A close-up of [point]: from straight above, north up, whatever a
+    /// camera riding along left behind.
+    Matcher closeUpOf(GeoPointEntity point) => equals(<Object?>[
+      'newCameraPosition',
+      <String, Object?>{
+        'bearing': 0.0,
+        'target': LiveMapCamera.latLng(point).toJson(),
+        'tilt': 0.0,
+        'zoom': LiveMapCamera.spotZoom,
+      },
+    ]);
 
-      expect(camera.first, 'newLatLngZoom');
-      expect(camera[1], LiveMapCamera.latLng(trip.store).toJson());
-      expect(camera.last, LiveMapCamera.spotZoom);
+    test('almost at the store: the store, close up', () {
+      expect(
+        follow(trip.deliveryStartMeters - 10, CourierStage.toStore),
+        closeUpOf(trip.store),
+      );
     });
 
     test('on the way: the rider and the door framed', () {
@@ -64,11 +73,10 @@ void main() {
     });
 
     test('at the door: the door, close up', () {
-      final camera = follow(trip.path.lengthMeters, CourierStage.arrived);
-
-      expect(camera.first, 'newLatLngZoom');
-      expect(camera[1], LiveMapCamera.latLng(trip.home).toJson());
-      expect(camera.last, LiveMapCamera.spotZoom);
+      expect(
+        follow(trip.path.lengthMeters, CourierStage.arrived),
+        closeUpOf(trip.home),
+      );
     });
   });
 
@@ -201,6 +209,27 @@ void main() {
       // Across north: 359° → 1° is a 2° turn, not 358°.
       expect(moved(0, 1, shownHeading: 359), isTrue);
       expect(moved(0, 0.5, shownHeading: 359), isFalse);
+    });
+
+    test('riding along, the map moves in finer steps', () {
+      bool chased(double meters) => LiveMapFrameGate.riderMoved(
+        shownMeters: 100,
+        shownHeading: 0,
+        meters: 100 + meters,
+        heading: 0,
+        zoom: zoom,
+        latitude: lat,
+        stepDp: LiveMapFrameGate.chaseStepDp,
+      );
+      final step = LiveMapFrameGate.chaseStepDp * halfDp * 2;
+
+      expect(
+        LiveMapFrameGate.chaseStepDp,
+        lessThan(LiveMapFrameGate.minStepDp),
+      );
+      expect(chased(step * 0.9), isFalse);
+      expect(chased(step * 1.1), isTrue);
+      expect(moved(step * 1.1, 0), isFalse);
     });
 
     test('the road is recut per 8 dp on screen, at least every 6 m', () {

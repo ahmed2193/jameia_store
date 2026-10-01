@@ -5,13 +5,13 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../config/routes/route_args/login_args.dart';
 import '../../../../config/routes/routes.dart';
+import '../../../../core/design/hero_icons.dart';
 import '../../../../core/motion/motion_widgets.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/pro_membership.dart';
 import '../cubit/pro_membership_cubit.dart';
 import '../cubit/pro_membership_state.dart';
-import 'pro_confirm_dialog.dart';
 import 'pro_cta_button.dart';
 
 /// The paywall's CTA for the selected plan: a guest goes to sign-in (`go`, so
@@ -57,18 +57,16 @@ class ProJoinButton extends StatelessWidget {
       );
       return;
     }
-    final confirmed = await showHeroDialog<bool>(
+    final confirmed = await showHeroConfirmDialog(
       context,
-      barrierLabel: 'pro.subscribe'.tr(),
-      pageBuilder: (_) => ProConfirmDialog(
-        title: 'pro.confirm_subscribe_title'.tr(namedArgs: {'plan': plan.name}),
-        message: 'pro.confirm_subscribe_body'.tr(
-          namedArgs: {'price': Formatters.price(plan.priceKd)},
-        ),
-        confirmLabel: 'pro.subscribe'.tr(),
+      title: 'pro.confirm_subscribe_title'.tr(namedArgs: {'plan': plan.name}),
+      message: 'pro.confirm_subscribe_body'.tr(
+        namedArgs: {'price': Formatters.price(plan.priceKd)},
       ),
+      icon: HeroIcons.crown,
+      confirmLabel: 'pro.subscribe'.tr(),
     );
-    if (confirmed ?? false) await cubit.subscribe(plan.id);
+    if (confirmed) await cubit.subscribe(plan.id);
   }
 
   @override

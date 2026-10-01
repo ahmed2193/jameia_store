@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../core/motion/pop_switcher.dart';
 import '../../../../core/responsive/app_size.dart';
@@ -54,7 +53,6 @@ class HomeQuickLookCartButton extends StatelessWidget {
                   )
                 : AppButton(
                     label: 'catalog.add_to_cart'.tr(),
-                    color: AppColors.martGreen,
                     // The add gesture sends the one click.
                     haptic: null,
                     onPressed: add,

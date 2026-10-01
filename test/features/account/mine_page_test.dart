@@ -16,7 +16,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
-import 'package:hero_mart/src/core/data/hero_repository.dart';
 import 'package:hero_mart/src/core/domain/entities/auth_customer_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/motion/change_bump.dart';
@@ -25,7 +24,6 @@ import 'package:hero_mart/src/core/usecase/usecase.dart';
 import 'package:hero_mart/src/core/widgets/light_sweep_band.dart';
 import 'package:hero_mart/src/features/account/presentation/pages/mine_page.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_header_compact_title.dart';
-import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_invite_banner.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_points_stat.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_pro_badge.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/mine/mine_scan_action.dart';
@@ -85,13 +83,11 @@ const List<String> _destinations = [
   Routes.wallet,
   Routes.loyalty,
   Routes.proMembership,
-  Routes.inviteFriends,
   Routes.notifications,
   Routes.assistant,
   Routes.customerService,
   Routes.mineSettings,
   Routes.mineAbout,
-  Routes.shopFavorites,
 ];
 
 void main() {
@@ -110,9 +106,6 @@ void main() {
     await initializeDateFormatting('en');
     registerFakeNetworkInfo();
     await setupServiceLocator();
-    // BX-05: the favourites count is read off the start-up path; the app
-    // warms it after the first frame, which a test binding never reports.
-    await sl<HeroRepository>().shopCount();
   });
 
   setUp(() {
@@ -358,20 +351,17 @@ void main() {
       'Addresses': Routes.addressList,
       'Loyalty points': Routes.loyalty,
       'Hero Pro': Routes.proMembership,
-      'Invite friends': Routes.inviteFriends,
       'Notifications': Routes.notifications,
       'Hero Assistant': Routes.assistant,
       'Customer service': Routes.customerService,
       'Settings': Routes.mineSettings,
       'About': Routes.mineAbout,
       'Delivery code': Routes.mineDeliveryCode,
-      'Invite friends and earn rewards': Routes.inviteFriends,
     };
     final stats = <String, String>{
       'Wallet': Routes.wallet,
       'Points': Routes.loyalty,
       'Coupons': Routes.myCoupons,
-      'Favourites': Routes.shopFavorites,
     };
     Future<void> openAndBack(Finder target, String route) async {
       await tester.tap(target);
@@ -424,6 +414,9 @@ void main() {
     expect(badgeScale().scale.value, 1);
 
     unread.set(120);
+    // The emit reaches the menu in a microtask: with nothing else animating,
+    // the first pump only flushes it, the second builds the bump's start.
+    await tester.pump();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 16));
     // One bump (1 → 1.15 → 1), never a regrow from nothing.
@@ -474,18 +467,11 @@ void main() {
     await teardownApp(tester);
   });
 
-  testWidgets('one ambient shine: the invite banner, or a member PRO pill', (
+  testWidgets('one ambient shine at most: a member\'s PRO pill', (
     tester,
   ) async {
     await pump(tester);
-    expect(find.byType(LightSweepBand), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(MineInviteBanner),
-        matching: find.byType(LightSweepBand),
-      ),
-      findsOneWidget,
-    );
+    expect(find.byType(LightSweepBand), findsNothing);
     await teardownApp(tester);
 
     session.signedIn(_member);

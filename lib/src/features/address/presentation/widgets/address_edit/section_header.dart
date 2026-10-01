@@ -22,22 +22,13 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Flexible(
-            child: Text(
-              title,
-              style: AppTextStyles.headingSmall.copyWith(
-                fontWeight: AppTextStyles.bold,
-              ),
-            ),
-          ),
+          Flexible(child: Text(title, style: AppTextStyles.label)),
           if (required)
             Padding(
               padding: const EdgeInsetsDirectional.only(start: AppSpacing.s2),
               child: Text(
                 '*',
-                style: AppTextStyles.headingSmall.copyWith(
-                  color: AppColors.error,
-                ),
+                style: AppTextStyles.label.copyWith(color: AppColors.errorDeep),
               ),
             ),
         ],

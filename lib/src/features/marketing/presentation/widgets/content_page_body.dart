@@ -43,7 +43,7 @@ class ContentPageBody extends StatelessWidget {
                   : const AppLoader();
             }
             if (page.isEmpty) {
-              return EmptyStateView(
+              return HeroStateView(
                 message: 'content.empty'.tr(),
                 art: HeroAssets.stateNotFound,
               );

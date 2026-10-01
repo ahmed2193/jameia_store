@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../error/failures.dart';
 import '../motion/fade_through_switcher.dart';
 import '../utils/failure_message.dart';
-import 'error_view.dart';
 import 'failure_verdict_builder.dart';
 import 'hero_state_view.dart';
 
@@ -28,8 +27,8 @@ class FailureView extends StatelessWidget {
 
   /// The page's own error state; `message` is the failure's text, or
   /// `null` for the generic one (the connection is there but the store did
-  /// not answer — its own "no internet" text would be wrong). [ErrorView]
-  /// when omitted.
+  /// not answer — its own "no internet" text would be wrong).
+  /// [HeroStateView.error] when omitted.
   final Widget Function(String? message)? errorBuilder;
 
   @override
@@ -52,7 +51,7 @@ class FailureView extends StatelessWidget {
           FailureVerdict.offline => HeroStateView.offline(onRetry: onRetry),
           FailureVerdict.unreachable || FailureVerdict.error =>
             errorBuilder?.call(message) ??
-                ErrorView(message: message, onRetry: onRetry),
+                HeroStateView.error(message: message, onRetry: onRetry),
         },
       );
     },

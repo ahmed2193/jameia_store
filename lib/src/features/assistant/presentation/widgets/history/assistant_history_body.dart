@@ -60,7 +60,7 @@ class AssistantHistoryBody extends StatelessWidget {
                 >(),
                 Expanded(
                   child: state.feed.isEmpty
-                      ? EmptyStateView(
+                      ? HeroStateView(
                           message: 'assistant.history_empty'.tr(),
                           illustration: const AssistantPropScene(
                             prop: HeroAssets.assistantPropBubble,

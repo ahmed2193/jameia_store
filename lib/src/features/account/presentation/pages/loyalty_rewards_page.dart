@@ -1,10 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../cubit/loyalty_rewards_cubit.dart';
-import '../widgets/rewards/rewards_app_bar.dart';
 import '../widgets/rewards/rewards_body.dart';
 import '../widgets/rewards/rewards_failure_listener.dart';
 
@@ -19,10 +20,10 @@ class LoyaltyRewardsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<LoyaltyRewardsCubit>()..load(),
-      child: const Scaffold(
+      child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: RewardsAppBar(),
-        body: RewardsFailureListener(child: RewardsBody()),
+        appBar: HeroTitleBar(title: 'loyalty.rewards_title'.tr()),
+        body: const RewardsFailureListener(child: RewardsBody()),
       ),
     );
   }

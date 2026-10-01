@@ -4,7 +4,6 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/motion/motion_widgets.dart';
-import '../../../../../core/responsive/app_size.dart';
 
 /// Bold heading above a group of history coupons ("Used", "Expired") with
 /// how many there are; it rises in once, when it first scrolls into view.
@@ -33,11 +32,7 @@ class CouponsSectionTitle extends StatelessWidget {
             Flexible(
               child: Text(
                 text,
-                style: AppTextStyles.displaySmall.copyWith(
-                  fontSize: AppSize.font20,
-                  fontWeight: AppTextStyles.bold,
-                  color: AppColors.primaryText,
-                ),
+                style: AppTextStyles.sectionTitle,
               ),
             ),
             const SizedBox(width: AppSpacing.s8),

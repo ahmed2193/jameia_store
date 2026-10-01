@@ -11,11 +11,7 @@ import 'hero_card_image.dart';
 /// (white packshots on a white page). The image clips itself and decodes at
 /// its box size.
 class HeroLineThumb extends StatelessWidget {
-  const HeroLineThumb({
-    super.key,
-    required this.url,
-    this.size = AppSize.s56,
-  });
+  const HeroLineThumb({super.key, required this.url, this.size = AppSize.s56});
 
   static const BoxDecoration _hairline = BoxDecoration(
     borderRadius: BorderRadius.all(Radius.circular(AppRadius.card)),

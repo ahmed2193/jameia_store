@@ -7,13 +7,11 @@ import '../../../../../core/responsive/content_clamp.dart';
 import '../../cubit/account_cubit.dart';
 import 'mine_delivery_code_cell.dart';
 import 'mine_header_sliver.dart';
-import 'mine_invite_banner.dart';
 import 'mine_menu.dart';
 import 'mine_stats_card.dart';
 
 /// The Mine tab page: the collapsing profile header, then the quick stats,
-/// the invite banner, the three menu cards and the delivery code, cascading
-/// in once (header first — it is the anchor, so it paints at once).
+/// the three menu cards and the delivery code, cascading in once (header first — it is the anchor, so it paints at once).
 ///
 /// Waits for the overview (an in-memory read that resolves in a frame), so
 /// the counts never flip from zero on open; a failed read still shows the
@@ -21,7 +19,7 @@ import 'mine_stats_card.dart';
 class MineContent extends StatelessWidget {
   const MineContent({super.key});
 
-  static const int _menuEntrance = 2;
+  static const int _menuEntrance = 1;
   static const int _codeEntrance = _menuEntrance + 3;
 
   @override
@@ -40,8 +38,6 @@ class MineContent extends StatelessWidget {
                 children: [
                   SizedBox(height: AppSpacing.s16),
                   EntranceCascadeItem(index: 0, child: MineStatsCard()),
-                  SizedBox(height: AppSpacing.s12),
-                  EntranceCascadeItem(index: 1, child: MineInviteBanner()),
                   SizedBox(height: AppSpacing.s24),
                   MineMenu(firstEntranceIndex: _menuEntrance),
                   SizedBox(height: AppSpacing.s20),

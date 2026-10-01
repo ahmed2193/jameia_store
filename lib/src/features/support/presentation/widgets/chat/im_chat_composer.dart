@@ -39,8 +39,7 @@ class ImChatComposer extends StatelessWidget {
         children: [
           ImChatIconCircle(
             icon: HeroIcons.camera,
-            onTap: () =>
-                showHeroSnackBar(context, 'support.attach_photo'.tr()),
+            onTap: () => showHeroSnackBar(context, 'support.attach_photo'.tr()),
           ),
           const SizedBox(width: AppSpacing.s8),
           Expanded(

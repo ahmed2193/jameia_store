@@ -22,6 +22,9 @@ enum CourierStage {
   /// A rider is on the map (found, not yet gone).
   bool get hasRider => this != assigning;
 
+  /// The rider is on the road: riding to the store, or to the door.
+  bool get riding => this == toStore || this == onTheWay || this == nearby;
+
   /// The rider carries the order (left the store with it).
   bool get delivering => this == onTheWay || this == nearby || this == arrived;
 }

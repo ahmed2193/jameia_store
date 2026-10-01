@@ -8,8 +8,6 @@ import '../../config/theme/app_spacing.dart';
 import '../../config/theme/app_text_styles.dart';
 import 'branded_loader.dart';
 
-export 'app_outline_button.dart';
-
 /// Hero primary CTA — brand-yellow pill with black foreground (the signature
 /// "Place order" / "Add" button look).
 class AppButton extends StatelessWidget {

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/service_locator.dart';
+import '../../../../config/routes/route_args/login_args.dart';
 import '../../../../config/routes/route_args/otp_verify_args.dart';
 import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
@@ -22,17 +23,17 @@ import '../widgets/login/login_body.dart';
 /// and the sheet rising with the store's welcome offer, "Welcome" and the
 /// number (plus `GET /v1/init` for that offer).
 ///
-/// [sessionExpired] arrives as the route extra (set by the app root when the
-/// network layer gave up refreshing) rather than from `AuthSessionCubit`, so
-/// this page stays independent of the app-global providers (router tests pump
-/// it alone) and the notice is scoped to that one navigation. [returnTo]
-/// (from `LoginArgs`) travels on to the code step, which reopens that page
-/// once the customer is signed in.
+/// [args] arrive as the route extra: the "session expired" notice (set by
+/// the app root when the network layer gave up refreshing) rather than from
+/// `AuthSessionCubit`, so this page stays independent of the app-global
+/// providers (router tests pump it alone) and the notice is scoped to that
+/// one navigation; and the way back to where sign-in was opened, which
+/// travels on to the code step (signed in) and is the way ✕ and "Continue as
+/// guest" take when sign-in is the whole stack.
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key, this.sessionExpired = false, this.returnTo});
+  const LoginPage({super.key, this.args = const LoginArgs()});
 
-  final bool sessionExpired;
-  final String? returnTo;
+  final LoginArgs args;
 
   static bool _sending(LoginState state) => state.isSending;
 
@@ -49,7 +50,7 @@ class LoginPage extends StatelessWidget {
           extra: OtpVerifyArgs(
             phone: challenge.phone,
             debugCode: challenge.debugCode,
-            returnTo: returnTo,
+            login: args,
           ),
         );
       case LoginStatus.error:
@@ -89,10 +90,8 @@ class LoginPage extends StatelessWidget {
             backgroundColor: AppColors.primary,
             body: BrandSheetScaffold(
               logoLabel: AppConstants.appName,
-              leading: const AuthTopButton(),
-              child: ContentClamp(
-                child: LoginBody(sessionExpired: sessionExpired),
-              ),
+              leading: AuthTopButton(args: args),
+              child: ContentClamp(child: LoginBody(args: args)),
             ),
           ),
         ),

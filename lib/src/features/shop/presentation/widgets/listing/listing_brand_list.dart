@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/brand_entity.dart';
-import 'listing_brand_row.dart';
+import '../../../../../core/widgets/option_row.dart';
 
-/// The brand filter's choices: "every brand", then each store brand. A tap
-/// pops the sheet with a record, so "every brand" (`null`) is not a
-/// dismissed sheet.
+/// The brand filter's choices under the sheet header: "every brand", then
+/// each store brand, as choice rows (radio + selection haptic). A tap pops
+/// the sheet with a record, so "every brand" (`null`) is not a dismissed
+/// sheet.
 class ListingBrandList extends StatelessWidget {
   const ListingBrandList({
     super.key,
@@ -30,36 +30,19 @@ class ListingBrandList extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * _maxHeightFactor,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.s16),
-            child: Text(
-              'shop.brand'.tr(),
-              style: AppTextStyles.headingMedium.copyWith(
-                fontWeight: AppTextStyles.bold,
-              ),
-            ),
-          ),
-          Flexible(
-            child: ListView.builder(
-              shrinkWrap: true,
-              padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s12),
-              itemCount: brands.length + 1,
-              itemBuilder: (context, index) {
-                final brand = index == 0 ? null : brands[index - 1];
-                return ListingBrandRow(
-                  key: ValueKey<String>(brand?.id ?? 'all'),
-                  label: brand?.name ?? 'shop.all_brands'.tr(),
-                  isSelected: brand?.slug == selected,
-                  onTap: () => context.pop((slug: brand?.slug)),
-                );
-              },
-            ),
-          ),
-        ],
+      child: ListView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s12),
+        itemCount: brands.length + 1,
+        itemBuilder: (context, index) {
+          final brand = index == 0 ? null : brands[index - 1];
+          return OptionRow(
+            key: ValueKey<String>(brand?.id ?? 'all'),
+            title: brand?.name ?? 'shop.all_brands'.tr(),
+            selected: brand?.slug == selected,
+            onTap: () => context.pop((slug: brand?.slug)),
+          );
+        },
       ),
     );
   }

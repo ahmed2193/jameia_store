@@ -217,7 +217,7 @@ void main() {
     testWidgets('the error, sign-in and offline states lead with their art', (
       tester,
     ) async {
-      await tester.pumpWidget(app(ErrorView(onRetry: () {})));
+      await tester.pumpWidget(app(HeroStateView.error(onRetry: () {})));
       expect(_art(HeroAssets.stateError), findsOneWidget);
       expect(find.byIcon(HeroIcons.warning), findsNothing);
 
@@ -229,7 +229,7 @@ void main() {
 
       await tester.pumpWidget(
         app(
-          const EmptyStateView(message: 'Nothing', art: HeroAssets.emptyShelf),
+          const HeroStateView(message: 'Nothing', art: HeroAssets.emptyShelf),
         ),
       );
       expect(_art(HeroAssets.emptyShelf), findsOneWidget);

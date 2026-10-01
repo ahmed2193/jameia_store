@@ -21,7 +21,7 @@ class AddressListEmptyView extends StatelessWidget {
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
-            child: EmptyStateView(
+            child: HeroStateView(
               message: 'addr.no_saved_addresses'.tr(),
               art: HeroAssets.emptyAddresses,
             ),

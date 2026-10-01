@@ -13,13 +13,13 @@ import 'mine_stat_divider.dart';
 import 'mine_tone.dart';
 import 'mine_wallet_stat.dart';
 
-/// Wallet · points · coupons · favourites on one white card. Each stat
-/// selects only its own value, so a balance change never rebuilds the rest.
+/// Wallet · points · coupons on one white card. Each stat selects only its
+/// own value, so a balance change never rebuilds the rest. (No favourites:
+/// there is no wishlist on the API yet.)
 class MineStatsCard extends StatelessWidget {
   const MineStatsCard({super.key});
 
   static int _coupons(AccountState state) => state.couponCount;
-  static int _favourites(AccountState state) => state.favouriteCount;
 
   @override
   Widget build(BuildContext context) {
@@ -47,16 +47,6 @@ class MineStatsCard extends StatelessWidget {
               tone: MineTone.orange,
               label: 'account.coupons'.tr(),
               route: Routes.myCoupons,
-            ),
-          ),
-          const MineStatDivider(),
-          Expanded(
-            child: MineCountStat(
-              count: _favourites,
-              icon: HeroIcons.heart,
-              tone: MineTone.rose,
-              label: 'account.favourites'.tr(),
-              route: Routes.shopFavorites,
             ),
           ),
         ],

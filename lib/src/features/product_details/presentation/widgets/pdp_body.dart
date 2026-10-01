@@ -62,7 +62,7 @@ class PdpBody extends StatelessWidget {
             }
             if (state.isNotFound) {
               return PoppableStateFrame(
-                child: EmptyStateView(
+                child: HeroStateView(
                   message: 'product.not_found'.tr(),
                   art: HeroAssets.stateNotFound,
                   actionLabel: 'common.back'.tr(),

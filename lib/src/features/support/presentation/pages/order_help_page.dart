@@ -4,12 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/di/service_locator.dart';
-import '../../../../config/routes/routes.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/domain/entities/order_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/motion/haptics.dart';
 import '../../../../core/navigation/screen_failure_listener.dart';
+import '../../../../core/navigation/sign_in_flow.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/cubit_busy_overlay.dart';
 import '../../../../core/widgets/hero_title_bar.dart';
@@ -30,7 +30,7 @@ class OrderHelpPage extends StatelessWidget {
 
   final OrderEntity order;
 
-  static void _signIn(BuildContext context) => context.go(Routes.login);
+  static void _signIn(BuildContext context) => SignInFlow.open(context);
 
   static void _onSent(BuildContext context, OrderHelpState state) =>
       Haptics.done();

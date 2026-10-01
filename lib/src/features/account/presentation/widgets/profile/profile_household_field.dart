@@ -55,22 +55,20 @@ class ProfileHouseholdField extends StatelessWidget {
                               'profile.household_placeholder'.tr(),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.headingSmall.copyWith(
+                              style: AppTextStyles.itemTitle.copyWith(
                                 color: AppColors.tertiaryText,
                               ),
                             )
                           : RollingNumber(
                               value: size,
-                              style: AppTextStyles.headingSmall.copyWith(
-                                color: AppColors.primaryText,
-                              ),
+                              style: AppTextStyles.itemTitle,
                             ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.s8),
                   QtyStepperRoundButton(
                     icon: HeroIcons.minus,
-                    bg: AppColors.white,
+                    bg: AppColors.smallBackground,
                     fg: AppColors.primaryText,
                     size: AppSize.s36,
                     label: 'profile.household_less'.tr(),

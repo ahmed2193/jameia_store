@@ -1,23 +1,20 @@
-# Hero design system (search, cart, checkout, orders)
+# Hero design system
 
-The look of the **search** screens and the **cart → checkout → orders** flow. It follows
-Hero's design language (flat surfaces, type-led hierarchy, one bold action colour, pill
-actions, underlined links) with **Hero's own colours** (logo green + yellow).
+The look of **every screen** of the app. It follows Hero's design language (flat surfaces,
+type-led hierarchy, one bold action colour, pill actions, underlined links) with **Hero's own
+colours** (logo green + yellow).
 
-**Scope.** Only search and the cart / checkout / orders flow use this look today. The rest of
-the app keeps its current widgets until an app-wide pass is approved. That is why two
-families live side by side for now:
+**Scope.** App-wide since the consistency pass of 2026-10-01: every pushed page, sheet,
+dialog, state, list footer and form field uses the components of §5. The older family
+(`EmptyStateView`, `ErrorView`, `AppOutlineButton`, `SummaryRow`, `PriceText`, `TagChip`) is
+deleted; per-feature app bars, dialogs and sheet headers were folded into the shared ones.
 
-| New look (`core/widgets/`) | Older widget still used elsewhere |
-|---|---|
-| `HeroStateView` (+ `.error`, `.signedOut`) | `EmptyStateView`, `ErrorView` |
-| `HeroSecondaryButton` | `AppOutlineButton` |
-| `HeroSectionHeader`, `HeroTextLink` | `SectionHeader` |
-| `HeroSummaryLine` + `HeroMoneyText` | `SummaryRow`, `PriceText` |
-| `HeroTag` | `TagChip` |
+Approved exceptions (keep them, do not "fix" them):
 
-When the app-wide pass is approved, swap the older widgets for the new ones and delete them.
-Do not add new users of the older column.
+- **Checkout sheets** keep their Keeta frame (`CheckoutSheetFrame`: floating ✕, no handle).
+- **Sign-in** pages are brand sheet pages (`BrandSheetScaffold`), not title-bar pages.
+- **Home** keeps its header, shelves and popups (the home redesign), and the **Pro paywall**
+  its own bottom bar.
 
 ## 1. Principles
 
@@ -75,17 +72,22 @@ Money, points and codes: `HeroMoneyText` / `AppTextStyles.tabular`, one left-to-
 | Primary pill (52 dp in bottom bars) | `AppButton` |
 | Secondary pill (`compact` 44 dp for card actions) | `HeroSecondaryButton` |
 | Underlined link (`navigates: false` for in-page actions) | `HeroTextLink` |
-| Title bar (back only when the route can pop) | `HeroTitleBar` |
+| Title bar (back only when the route can pop; `subtitle`, `titleLeading` avatar, `bottom` tab strip) | `HeroTitleBar` |
+| Icon action in a title bar (48 dp, tooltip, disabled when `onPressed` is null) | `HeroBarAction` |
 | Section heading + link / trailing | `HeroSectionHeader` |
 | Row / grouped rows on a hairline card | `HeroListRow` / `HeroListCard` |
 | Choice row with a trailing radio | `OptionRow` + `HeroRadioMark` |
 | Card (white hairline / muted / brand …) | `HeroSurfaceCard` |
-| Tag | `HeroTag` |
+| Tag / order status | `HeroTag` / `OrderStatusChip` |
 | Money / breakdown line | `HeroMoneyText` / `HeroSummaryLine` |
 | Pinned bottom bar | `HeroBottomBar` |
-| Sheet top (handle, title, ✕) | `HeroSheetHeader` (+ its `shape`, white background) |
-| Field look | `HeroInputDecoration.outlined` |
-| Empty / error / signed-out | `HeroStateView` |
+| Confirmation (art or icon plate, title, message, stacked pills; `destructive` = deep red) | `showHeroConfirmDialog` → `bool` (`HeroConfirmDialog`) |
+| Bottom sheet (white, 24 dp top corners by default) | `showHeroBottomSheet` |
+| Sheet top (handle, title, subtitle, leading, ✕) | `HeroSheetHeader`; handle alone: `HeroSheetHandle` |
+| Field look | `HeroInputDecoration.outlined`; a field with more than a `TextField` inside (code, picker, stepper): `HeroFieldShell` |
+| Field label | `AppTextStyles.label` above the field; the refusal one `meta` line in `errorDeep` under it |
+| End of a paged list (dots ↔ compact "Try again") | `NextPageSentinel` + `LoadMoreFooter` |
+| Empty / error / signed-out / not found | `HeroStateView` (`FailureView` for a failed read) |
 
 ## 6. Motion
 
@@ -109,6 +111,14 @@ One press language: cards, tiles, chips and pills = `PressScale` (0.97; round ic
 Segmented controls (`HeroSegmentedControl`, coupons tabs, Pro plans, cart / history) share
 `SegmentedThumbTrack` (one thumb on `AppMotion.thumbSlide`, one selection haptic per change).
 
+The shared components carry their own motion, so every screen moves the same way:
+confirmation dialogs pop in on `AppSprings.snappy` from `AppMotion.dialogPopBegin` (0.8) and
+leave by fading; sheet headers rise in with their content (`EntranceCascadeItem.single`, the ✕
+pops); `HeroStateView` settles its art, then the words and the action rise a step apart; a
+title-bar title or subtitle that changes while shown flips (`FlipValue`); a field's outline
+cross-fades on focus and refusal; a list footer swaps dots ↔ retry with `FadeThroughSwitcher`.
+Reduced motion: the same end states, with fades or cuts only.
+
 Not allowed: endless loops, count-ups on open (a count-up is only for a value the customer
 just earned), cascades on every rebuild (`EntranceCascade` opens once per screen life),
 confetti anywhere but a moment the customer earned (order placed, first add, Pro welcome).
@@ -123,3 +133,9 @@ Animated rows and totals sit in a `RepaintBoundary`. The system: `docs/motion/mo
 5. States: skeleton or `AppLoader` → content → `HeroStateView`, swapped with
    `FadeThroughSwitcher` keyed by a status bucket (never by data that changes while shown).
 6. Every string `.tr()` in en + ar, money LTR, RTL mirrored, text scale 1.3 without overflow.
+7. Asks before a destructive or paid action with `showHeroConfirmDialog`; an optimistic delete
+   with Undo says so in its message (never "cannot be restored").
+8. A signed-out screen signs in through `SignInFlow.open` (the state's `.signedOut` does it):
+   once signed in — or "Continue as guest" — the customer lands back on that page or tab.
+9. Nothing on screen leads nowhere: an entry whose backend is not built is hidden, not
+   shown with fake data (invite friends, favourites, a support unread count).

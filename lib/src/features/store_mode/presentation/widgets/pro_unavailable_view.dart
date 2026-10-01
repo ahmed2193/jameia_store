@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/design/hero_assets.dart';
 import '../../../../core/widgets/branded_refresh.dart';
-import '../../../../core/widgets/empty_state_view.dart';
+import '../../../../core/widgets/hero_state_view.dart';
 
 /// "Hero Pro is not available right now" — the store switched the
 /// programme off or sells no plan. Pull to check again.
@@ -21,7 +21,7 @@ class ProUnavailableView extends StatelessWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: EmptyStateView(
+            child: HeroStateView(
               message: 'pro.unavailable'.tr(),
               art: HeroAssets.stateUnavailable,
             ),

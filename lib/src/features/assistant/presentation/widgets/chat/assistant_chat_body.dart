@@ -46,7 +46,7 @@ class AssistantChatBody extends StatelessWidget {
       (cubit) => cubit.state.status == AssistantAvailabilityStatus.unavailable,
     );
     if (unavailable) {
-      return EmptyStateView(
+      return HeroStateView(
         message: 'assistant.unavailable'.tr(),
         art: HeroAssets.stateUnavailable,
         actionLabel: 'assistant.go_back'.tr(),

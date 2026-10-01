@@ -9,6 +9,7 @@ import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/domain/entities/cart_coupon_entity.dart';
 import '../../../../../core/error/failures.dart';
 import '../../../../../core/motion/collapse_reveal.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/shake_x.dart';
 import '../../../../../core/utils/failure_message.dart';
@@ -91,21 +92,24 @@ class _CartCouponSheetState extends State<CartCouponSheet> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ShakeX(
-                    shakeKey: _refusals,
-                    child: TextField(
-                      controller: _controller,
-                      autofocus: true,
-                      enabled: !busy,
-                      textCapitalization: TextCapitalization.characters,
-                      maxLength: CartCouponEntity.maxCodeLength,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (_) => _apply(),
-                      style: AppTextStyles.itemTitle,
-                      cursorColor: AppColors.primaryText,
-                      decoration: HeroInputDecoration.outlined(
-                        hintText: 'cart.coupon_hint'.tr(),
-                        counterText: '',
+                  EntranceCascadeItem.single(
+                    index: 1,
+                    child: ShakeX(
+                      shakeKey: _refusals,
+                      child: TextField(
+                        controller: _controller,
+                        autofocus: true,
+                        enabled: !busy,
+                        textCapitalization: TextCapitalization.characters,
+                        maxLength: CartCouponEntity.maxCodeLength,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _apply(),
+                        style: AppTextStyles.itemTitle,
+                        cursorColor: AppColors.primaryText,
+                        decoration: HeroInputDecoration.outlined(
+                          hintText: 'cart.coupon_hint'.tr(),
+                          counterText: '',
+                        ),
                       ),
                     ),
                   ),
@@ -128,16 +132,19 @@ class _CartCouponSheetState extends State<CartCouponSheet> {
                           ),
                   ),
                   const SizedBox(height: AppSpacing.s16),
-                  HeroSubmitButton(
-                    label: 'cart.coupon_apply'.tr(),
-                    loading: busy,
-                    success: coupon != null,
-                    successLabel: coupon == null
-                        ? null
-                        : 'cart.coupon_applied'.tr(
-                            namedArgs: {'code': coupon.code},
-                          ),
-                    onPressed: busy ? null : _apply,
+                  EntranceCascadeItem.single(
+                    index: 2,
+                    child: HeroSubmitButton(
+                      label: 'cart.coupon_apply'.tr(),
+                      loading: busy,
+                      success: coupon != null,
+                      successLabel: coupon == null
+                          ? null
+                          : 'cart.coupon_applied'.tr(
+                              namedArgs: {'code': coupon.code},
+                            ),
+                      onPressed: busy ? null : _apply,
+                    ),
                   ),
                 ],
               ),

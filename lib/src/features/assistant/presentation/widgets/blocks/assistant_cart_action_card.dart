@@ -9,9 +9,9 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/fly_to_cart.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/motion.dart';
-import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/hero_card_image.dart';
-import '../../../../../core/widgets/summary_row.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 import '../../../domain/entities/assistant_block.dart';
 import 'assistant_card_frame.dart';
 import 'assistant_cart_action_footer.dart';
@@ -140,11 +140,13 @@ class _AssistantCartActionCardState extends State<AssistantCartActionCard> {
               thumbKey: index < _thumbs.length ? _thumbs[index] : null,
             ),
           if (estimate != null)
-            SummaryRow(
+            HeroSummaryLine(
               label: 'assistant.estimated_total'.tr(),
-              value: Formatters.price(estimate),
+              value: HeroMoneyText(
+                kd: estimate,
+                color: spent ? AppColors.secondaryText : null,
+              ),
               emphasized: true,
-              valueColor: spent ? AppColors.secondaryText : null,
             ),
           const SizedBox(height: AppSpacing.s8),
           AssistantCartActionFooter(block: block, live: widget.live),

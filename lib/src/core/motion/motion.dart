@@ -137,6 +137,10 @@ class AppMotion {
   /// A dialog settles in from above 1 (scale 1.1 → 1 + fade). [INFERENCE].
   static const double dialogScaleBegin = 1.1;
 
+  /// A confirmation dialog pops in from here on `AppSprings.snappy` (the
+  /// home popups' pop-in feel), overshooting 1 a little.
+  static const double dialogPopBegin = 0.8;
+
   /// The one card / button press depth.
   static const double pressedScale = 0.97;
 

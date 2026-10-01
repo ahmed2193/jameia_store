@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../cubit/category_browse_cubit.dart';
+import '../../../../../core/widgets/hero_title_bar.dart';
 import '../../cubit/category_browse_state.dart';
 import '../listing/catalog_app_bar.dart';
 
@@ -14,7 +15,7 @@ class CategoryBrowseAppBar extends StatelessWidget
   final String fallbackTitle;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(HeroTitleBar.height);
 
   @override
   Widget build(BuildContext context) {

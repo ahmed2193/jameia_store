@@ -14,6 +14,10 @@ abstract final class LiveMapFrameGate {
   /// A glide frame is sent once the rider has moved this far on screen…
   static const double minStepDp = 0.5;
 
+  /// …or, while the camera rides along, this far: the whole map moves then,
+  /// so finer steps keep it gliding instead of ticking.
+  static const double chaseStepDp = 0.25;
+
   /// …or turned this much.
   static const double minTurnDegrees = 2;
   static const double _halfTurn = 180;
@@ -27,8 +31,8 @@ abstract final class LiveMapFrameGate {
   static const double lineStepMinMeters = 6;
 
   /// Whether the rider, shown at [shownMeters] facing [shownHeading], now
-  /// at [meters] facing [heading], has visibly moved or turned at [zoom]
-  /// and [latitude].
+  /// at [meters] facing [heading], has visibly moved (by [stepDp]) or
+  /// turned at [zoom] and [latitude].
   static bool riderMoved({
     required double shownMeters,
     required double shownHeading,
@@ -36,13 +40,14 @@ abstract final class LiveMapFrameGate {
     required double heading,
     required double zoom,
     required double latitude,
+    double stepDp = minStepDp,
   }) {
     final turn = (heading - shownHeading).abs() % _fullTurn;
     final turned =
         (turn > _halfTurn ? _fullTurn - turn : turn) >= minTurnDegrees;
     return turned ||
         (meters - shownMeters).abs() >=
-            minStepDp * LiveMapCamera.metersPerDp(zoom, latitude);
+            stepDp * LiveMapCamera.metersPerDp(zoom, latitude);
   }
 
   /// Metres the rider moves between two cuts of the eaten road.

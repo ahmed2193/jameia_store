@@ -18,6 +18,8 @@ import 'package:hero_mart/src/features/address/presentation/cubit/address_book_c
 import 'package:hero_mart/src/config/di/service_locator.dart';
 import 'package:hero_mart/src/config/routes/app_router.dart';
 import 'package:hero_mart/src/config/routes/route_args/login_args.dart';
+import 'package:hero_mart/src/config/routes/route_args/shell_arrival.dart';
+import 'package:hero_mart/src/config/routes/route_args/shell_tabs.dart';
 import 'package:hero_mart/src/config/routes/routes.dart';
 import 'package:hero_mart/src/config/theme/app_theme.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
@@ -265,6 +267,50 @@ void main() {
     router.pop();
     await settle(tester);
     expect(router.state.uri.path, Routes.shell);
+    await teardownApp(tester);
+  });
+
+  testWidgets('signed in from a tab: back on that tab', (tester) async {
+    final router = await pumpApp(tester);
+    // Mine's "Sign in" header.
+    router.go(Routes.login, extra: const LoginArgs(returnTab: ShellTab.mine));
+    await settle(tester);
+    await tester.enterText(find.byType(TextField), '12345678');
+    await tester.pump();
+    await tester.tap(find.byType(HeroSubmitButton));
+    await settle(tester);
+    await tester.enterText(find.byType(TextField), '1234');
+    await tester.pump();
+    await tester.tap(find.byType(HeroSubmitButton));
+    await settle(tester);
+    // The check draws and holds (SuccessBeat) before the stack is replaced.
+    await settle(tester);
+
+    expect(session.state.isSignedIn, isTrue);
+    expect(router.state.uri.path, Routes.shell);
+    expect((router.state.extra! as ShellArrival).tab, ShellTab.mine);
+    expect(router.canPop(), isFalse);
+    await teardownApp(tester);
+  });
+
+  testWidgets('Continue as guest from a sign-in that is the whole stack goes '
+      'back to the page that asked for it', (tester) async {
+    final router = await pumpApp(tester);
+    router.go(
+      Routes.login,
+      extra: const LoginArgs(returnTo: Routes.proMembership),
+    );
+    await settle(tester);
+    final guest = find.byType(LoginGuestButton);
+    await tester.ensureVisible(guest);
+    await tester.pump();
+    await tester.tap(guest);
+    await settle(tester);
+
+    expect(sendOtp.calls, isEmpty);
+    expect(session.state.isSignedIn, isFalse);
+    expect(router.state.uri.path, Routes.proMembership);
+    expect(router.canPop(), isTrue);
     await teardownApp(tester);
   });
 

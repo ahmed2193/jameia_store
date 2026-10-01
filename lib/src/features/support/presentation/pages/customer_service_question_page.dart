@@ -1,10 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../cubit/customer_service_question_cubit.dart';
-import '../widgets/support_app_bar.dart';
 import '../widgets/topics/support_topics_body.dart';
 
 /// Hero FAQ page — `mach_pro_sailor_c_customer_service_question`: the help
@@ -24,7 +25,7 @@ class CustomerServiceQuestionPage extends StatelessWidget {
       create: (_) => sl<CustomerServiceQuestionCubit>()..load(),
       child: Scaffold(
         backgroundColor: AppColors.mediumBackground,
-        appBar: const SupportAppBar(titleKey: 'support.title_help_topics'),
+        appBar: HeroTitleBar(title: 'support.title_help_topics'.tr()),
         body: SupportTopicsBody(initialQuestion: arg),
       ),
     );

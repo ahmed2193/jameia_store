@@ -2,14 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
 import '../../../../../core/navigation/navigation.dart';
-import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/widgets/hero_list_row.dart';
+import '../../../../../core/widgets/hero_sheet_handle.dart';
 
-/// Long-press menu of a bubble: Copy.
+/// Long-press menu of a bubble: the sheet handle and a "Copy" row.
 class AssistantCopySheet extends StatelessWidget {
   const AssistantCopySheet({super.key, required this.text});
 
@@ -39,18 +39,28 @@ class AssistantCopySheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
-        child: ListTile(
-          leading: const HeroIcon(HeroIcons.copy, color: AppColors.primaryText),
-          title: Text('assistant.copy'.tr(), style: AppTextStyles.headingSmall),
-          onTap: () {
-            // The sheet's own context dies with it: confirm from the page's.
-            final navigator = Navigator.of(context);
-            navigator.pop();
-            copy(navigator.context, text);
-          },
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const HeroSheetHandle(),
+          const SizedBox(height: AppSpacing.s8),
+          EntranceCascadeItem.single(
+            child: HeroListRow(
+              icon: HeroIcons.copy,
+              title: 'assistant.copy'.tr(),
+              showChevron: false,
+              onTap: () {
+                // The sheet's own context dies with it: confirm from the
+                // page's.
+                final navigator = Navigator.of(context);
+                navigator.pop();
+                copy(navigator.context, text);
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.s8),
+        ],
       ),
     );
   }

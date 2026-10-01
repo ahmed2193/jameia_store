@@ -6,7 +6,8 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/utils/formatters.dart';
-import '../../../../../core/widgets/price_text.dart';
+import '../../../../../core/widgets/hero_money_text.dart';
+import '../../../../../core/widgets/hero_summary_line.dart';
 import '../../../domain/entities/assistant_cart_snapshot.dart';
 import 'assistant_card_frame.dart';
 import 'assistant_cart_links.dart';
@@ -34,16 +35,9 @@ class AssistantCartSummaryCard extends StatelessWidget {
           if (cart.isEmpty)
             Text('assistant.cart_empty'.tr(), style: label)
           else ...[
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'assistant.items'.plural(cart.itemCount),
-                    style: label,
-                  ),
-                ),
-                PriceText(price: cart.totalKd),
-              ],
+            HeroSummaryLine(
+              label: 'assistant.items'.plural(cart.itemCount),
+              value: HeroMoneyText(kd: cart.totalKd),
             ),
             if (cart.previews.isNotEmpty) ...[
               const SizedBox(height: AppSpacing.s8),

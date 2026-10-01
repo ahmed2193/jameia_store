@@ -79,6 +79,15 @@ dependencies:
   url_launcher: ^6.3.2
   audioplayers: ^6.8.1
 
+  # Order invoice as a PDF (features/orders, invoice page): `pdf` lays the
+  # document out in pure Dart (vector text, embedded Noto fonts, Arabic
+  # shaping + bidi for the RTL copy); `printing` hands it to the system print
+  # dialog and share sheet; `flutter_file_dialog` saves it where the customer
+  # picks (Android "Save to…" / iOS "Save to Files") — no storage permission.
+  pdf: ^3.13.1
+  printing: ^5.15.1
+  flutter_file_dialog: ^3.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -49,12 +49,6 @@ class _FakeLocal implements AccountLocalDataSource {
 
   @override
   int couponCount() => 2;
-
-  @override
-  Future<int> favouriteCount() async => 3;
-
-  @override
-  int customerServiceUnread() => 1;
 }
 
 void main() {

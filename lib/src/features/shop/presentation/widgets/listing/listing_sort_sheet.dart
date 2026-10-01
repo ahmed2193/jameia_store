@@ -2,17 +2,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
-import '../../../../../config/theme/app_text_styles.dart';
-import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/domain/entities/catalog_product_query.dart';
-import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/hero_icon.dart';
+import '../../../../../core/motion/entrance_cascade_item.dart';
+import '../../../../../core/widgets/hero_sheet_header.dart';
+import '../../../../../core/widgets/option_row.dart';
 import 'listing_sort_label.dart';
 
-/// Bottom sheet listing the product orderings. Pops with a record so "the
-/// backend's default" (`null`) is distinguishable from a dismissed sheet.
+/// Bottom sheet listing the product orderings: the shared sheet header, then
+/// one choice row per ordering (the radio and the selection haptic every
+/// choice sheet has), cascading in under the header. Pops with a record so
+/// "the backend's default" (`null`) is distinguishable from a dismissed
+/// sheet.
 class ListingSortSheet extends StatelessWidget {
   const ListingSortSheet({super.key, required this.selected});
 
@@ -22,58 +23,22 @@ class ListingSortSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          vertical: AppSpacing.s12,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: AppSpacing.s16,
-                vertical: AppSpacing.s8,
-              ),
-              child: Text(
-                'shop.sort_by'.tr(),
-                style: AppTextStyles.headingMedium.copyWith(
-                  fontWeight: AppTextStyles.bold,
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          HeroSheetHeader(title: 'shop.sort_by'.tr()),
+          for (final (index, option) in ListingSortLabel.options.indexed)
+            EntranceCascadeItem.single(
+              index: index + 1,
+              child: OptionRow(
+                title: ListingSortLabel.keyOf(option).tr(),
+                selected: option == selected,
+                onTap: () => context.pop((sort: option)),
               ),
             ),
-            for (final option in ListingSortLabel.options)
-              InkWell(
-                onTap: () => context.pop((sort: option)),
-                child: Padding(
-                  padding: const EdgeInsetsDirectional.symmetric(
-                    horizontal: AppSpacing.s16,
-                    vertical: AppSpacing.s12,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          ListingSortLabel.keyOf(option).tr(),
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontWeight: option == selected
-                                ? AppTextStyles.bold
-                                : AppTextStyles.regular,
-                          ),
-                        ),
-                      ),
-                      if (option == selected)
-                        const HeroIcon(
-                          HeroIcons.check,
-                          size: AppSize.s20,
-                          color: AppColors.primaryDark,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
+          const SizedBox(height: AppSpacing.s8),
+        ],
       ),
     );
   }

@@ -6,11 +6,11 @@ import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/cubit_busy_overlay.dart';
+import '../../../../core/widgets/hero_title_bar.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
 import '../cubit/loyalty_program_cubit.dart';
 import '../cubit/profile_cubit.dart';
 import '../cubit/profile_state.dart';
-import '../widgets/profile/profile_edit_app_bar.dart';
 import '../widgets/profile/profile_edit_body.dart';
 import '../widgets/profile/profile_edit_listener.dart';
 
@@ -46,10 +46,10 @@ class ProfileEditPage extends StatelessWidget {
           failOf: (state) => state.status == ProfileStatus.error,
           label: 'profile.saving'.tr(),
           doneLabel: 'profile.saved'.tr(),
-          child: const Scaffold(
+          child: Scaffold(
             backgroundColor: AppColors.mediumBackground,
-            appBar: ProfileEditAppBar(),
-            body: SafeArea(
+            appBar: HeroTitleBar(title: 'profile.title'.tr()),
+            body: const SafeArea(
               top: false,
               child: ContentClamp(child: ProfileEditBody()),
             ),

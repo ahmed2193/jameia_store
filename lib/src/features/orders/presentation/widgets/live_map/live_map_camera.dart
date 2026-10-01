@@ -7,13 +7,14 @@ import '../../../../../core/widgets/hero_map.dart';
 import '../../../domain/entities/courier_stage.dart';
 import '../../../domain/entities/courier_trip.dart';
 
-/// Where the live map's camera looks, the way delivery apps frame a ride:
-/// the whole ride first; then, while it follows, the road left from the
-/// rider to where they are heading — the store, then the door — so every
-/// bend ahead stays in view and the view closes in as they get near; at the
-/// door, the door, close up. Between those steps the camera holds still
-/// ([shouldReframe]): the rider glides across a steady map instead of the
-/// map breathing on every ping.
+/// Where the live map's camera looks while it frames the ride (the camera
+/// riding along is [LiveMapChaseCamera]), the way delivery apps frame one:
+/// the whole ride first; then the road left from the rider to where they
+/// are heading — the store, then the door — so every bend ahead stays in
+/// view and the view closes in as they get near; at the door, the door,
+/// close up — always from straight above, north up. Between those steps
+/// the camera holds still ([shouldReframe]): the rider glides across a
+/// steady map instead of the map breathing on every ping.
 abstract final class LiveMapCamera {
   /// Room around the framed points, inside the map's own padding.
   static const double framePadding = AppSpacing.s48;
@@ -138,8 +139,13 @@ abstract final class LiveMapCamera {
       aimedLeft >= _oneSpotMeters &&
       (left <= aimedLeft * reframeShare || left < _oneSpotMeters);
 
+  /// [point] close up, from straight above with north up — like every
+  /// framing (a fitted frame is always north up and flat), whatever a camera
+  /// riding along left behind.
   static CameraUpdate _spot(GeoPointEntity point) =>
-      CameraUpdate.newLatLngZoom(latLng(point), spotZoom);
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: latLng(point), zoom: spotZoom),
+      );
 
   static CameraUpdate _frame(List<GeoPointEntity> points, double padding) {
     var south = points.first.lat;

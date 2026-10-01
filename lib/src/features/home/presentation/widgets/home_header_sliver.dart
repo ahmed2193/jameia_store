@@ -53,11 +53,7 @@ class HomeHeaderSliver extends StatelessWidget {
       (status) => status.state.membership.hasBenefits,
     );
     // Rebuilds only when the default address or the unread badge changes.
-    return BlocSelector<
-      AddressBookCubit,
-      AddressBookState,
-      HeroAddressEntity?
-    >(
+    return BlocSelector<AddressBookCubit, AddressBookState, HeroAddressEntity?>(
       selector: (state) => state.book.defaultAddress,
       builder: (context, defaultAddress) =>
           BlocSelector<

@@ -1,17 +1,22 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../features/auth/domain/entities/phone_number.dart';
+import 'login_args.dart';
 
 /// `extra` for [Routes.otpVerify]: the phone the code was sent to, plus the
-/// code itself when a non-production backend echoed it, and where to go once
-/// signed in ([returnTo], carried over from the login's `LoginArgs`).
+/// code itself when a non-production backend echoed it, and the phone step's
+/// [login] args — where the customer goes once signed in.
 @immutable
 class OtpVerifyArgs {
-  const OtpVerifyArgs({required this.phone, this.debugCode, this.returnTo});
+  const OtpVerifyArgs({
+    required this.phone,
+    this.debugCode,
+    this.login = const LoginArgs(),
+  });
 
   final PhoneNumber phone;
   final String? debugCode;
 
-  /// Opened on top of the shell after sign-in; `null` = the shell alone.
-  final String? returnTo;
+  /// Carried over from the phone step: the way back once signed in.
+  final LoginArgs login;
 }

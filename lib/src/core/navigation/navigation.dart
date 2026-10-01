@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../config/theme/app_colors.dart';
+import '../../config/theme/app_spacing.dart';
 import '../motion/motion.dart';
 import 'hero_dialog_route.dart';
 
@@ -14,6 +15,7 @@ import 'hero_dialog_route.dart';
 // [showHeroBottomSheet] / [showHeroDialog]: one motion language for all
 // navigation (docs/motion §9.4 #8-#14).
 export 'hero_back_gesture.dart';
+export 'hero_confirm_dialog_presenter.dart';
 export 'hero_cross_fade_page.dart';
 export 'hero_dialog_route.dart';
 export 'hero_fade_through_page.dart';
@@ -23,6 +25,12 @@ export 'hero_slide_up_transition_page.dart';
 export 'hero_snack_bar.dart';
 export 'hero_transition_page.dart';
 export 'route_observer.dart';
+export 'sign_in_flow.dart';
+
+/// The white sheet's 24 dp top corners (`HeroSheetHeader.shape`).
+const ShapeBorder _sheetShape = RoundedRectangleBorder(
+  borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+);
 
 /// The sheet on screen (set when its route first builds).
 ModalRoute<Object?>? _openSheet;
@@ -57,7 +65,9 @@ bool _sheetIsUp() {
 /// One place for the sheet duration / curve so features stop relying on
 /// Material's default. [MotionGuard] collapses motion when reduced.
 /// [elevation] lets a transparent sheet (one that draws its own card) drop
-/// the Material shadow.
+/// the Material shadow. Every sheet is white with 24 dp top corners unless
+/// it asks for another [backgroundColor] / [shape] (one that draws its own
+/// card passes a transparent one) — never Material's tinted surface.
 ///
 /// One sheet at a time: while a sheet is up (not already leaving), another
 /// call does nothing and completes with `null` — a double tap never stacks
@@ -79,8 +89,8 @@ Future<T?> showHeroBottomSheet<T>(
   final shown = showModalBottomSheet<T>(
     context: context,
     isScrollControlled: isScrollControlled,
-    backgroundColor: backgroundColor,
-    shape: shape,
+    backgroundColor: backgroundColor ?? AppColors.white,
+    shape: shape ?? _sheetShape,
     elevation: elevation,
     sheetAnimationStyle: AnimationStyle(
       duration: MotionGuard.duration(context, base),
@@ -110,15 +120,17 @@ Future<T?> showHeroBottomSheet<T>(
 /// Central presenter so centered modal dialogs share one motion (docs/motion
 /// §9.4 #14): fade + scale [AppMotion.dialogScaleBegin] → 1 over
 /// [AppMotion.medium] with [AppMotion.signature] in, a fade over
-/// [AppMotion.fast] with [AppMotion.exit] out ([HeroDialogRoute]). Reduced
-/// motion: a [AppMotion.fast] fade both ways (instant when animations are
-/// off).
+/// [AppMotion.fast] with [AppMotion.exit] out ([HeroDialogRoute]). [pop]:
+/// the card pops in on [AppSprings.snappy] instead (the confirmation
+/// dialogs). Reduced motion: a [AppMotion.fast] fade both ways (instant when
+/// animations are off).
 Future<T?> showHeroDialog<T>(
   BuildContext context, {
   required WidgetBuilder pageBuilder,
   required String barrierLabel,
   bool barrierDismissible = true,
   Color? barrierColor,
+  bool pop = false,
 }) {
   final reduced = MotionGuard.reduced(context);
   final off = MotionGuard.off(context);
@@ -132,9 +144,12 @@ Future<T?> showHeroDialog<T>(
           ? Duration.zero
           : reduced
           ? AppMotion.fast
+          : pop
+          ? AppSprings.snappy.duration
           : AppMotion.medium,
       exit: off ? Duration.zero : AppMotion.fast,
       reduced: reduced,
+      pop: pop,
     ),
   );
 }

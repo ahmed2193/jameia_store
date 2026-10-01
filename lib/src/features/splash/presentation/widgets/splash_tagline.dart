@@ -29,9 +29,7 @@ class SplashTagline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final beat = clock.drive(
-      CurveTween(curve: choreography.tagline(wordmark)),
-    );
+    final beat = clock.drive(CurveTween(curve: choreography.tagline(wordmark)));
     // Touches pass through to the scene under it.
     return IgnorePointer(
       child: LayoutBuilder(
