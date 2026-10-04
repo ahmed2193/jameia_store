@@ -5,6 +5,19 @@ import 'catalog_product_entity.dart';
 import 'geo_point_entity.dart';
 import 'order_status.dart';
 
+/// Who placed the order (`customer`), as the order froze it — the name and
+/// contact the invoice PDF shows under "Deliver to" / "Customer".
+class OrderCustomerEntity extends Equatable {
+  const OrderCustomerEntity({required this.name, this.phone = '', this.email});
+
+  final String name;
+  final String phone;
+  final String? email;
+
+  @override
+  List<Object?> get props => [name, phone, email];
+}
+
 /// The branch that serves the order (`branch`) or its zone (`zone`).
 class OrderPlaceEntity extends Equatable {
   const OrderPlaceEntity({
@@ -123,6 +136,17 @@ class OrderPaymentEntity extends Equatable {
   final int walletUsedFils;
 
   bool get isPaid => status == OrderPaymentStatus.paid;
+
+  /// What the wallet covered of an order paid another way (cash), in fils;
+  /// 0 when the wallet paid the whole order or took no part. The order page
+  /// and the invoice both say "… paid from your wallet" from this.
+  int get walletShareFils =>
+      method != OrderPaymentMethod.wallet && walletUsedFils > 0
+      ? walletUsedFils
+      : 0;
+
+  double get walletShareKd =>
+      walletShareFils / CatalogProductEntity.filsPerDinar;
 
   @override
   List<Object?> get props => [method, status, walletUsedFils];

@@ -29,6 +29,7 @@ class OrderEntity extends Equatable {
     this.status = OrderStatus.other,
     this.statusTimeline = const <OrderStatusEvent>[],
     this.fulfillmentMode = FulfillmentMode.delivery,
+    this.customer,
     this.branch,
     this.zone,
     this.address,
@@ -61,6 +62,9 @@ class OrderEntity extends Equatable {
   final FulfillmentMode fulfillmentMode;
 
   bool get isPickup => fulfillmentMode == FulfillmentMode.pickup;
+
+  /// `null` when the API sent the order without its customer.
+  final OrderCustomerEntity? customer;
   final OrderPlaceEntity? branch;
   final OrderPlaceEntity? zone;
   final OrderAddressEntity? address;
@@ -131,6 +135,7 @@ class OrderEntity extends Equatable {
     status,
     statusTimeline,
     fulfillmentMode,
+    customer,
     branch,
     zone,
     address,

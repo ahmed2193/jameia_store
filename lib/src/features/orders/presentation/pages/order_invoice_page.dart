@@ -13,13 +13,17 @@ import '../../../../core/widgets/screen_stale_notice.dart';
 import '../cubit/order_invoice_cubit.dart';
 import '../cubit/order_invoice_state.dart';
 import '../widgets/invoice/invoice_body.dart';
+import '../widgets/invoice/invoice_export_bar.dart';
 import '../widgets/order_detail_state_switcher.dart';
 
 /// The order's invoice (`Routes.orderInvoice`, `extra`: order id): the
 /// server's own totals, never recomputed on the device. The copy saved on
 /// the device shows at once (offline too, under the "Updated … ago" note);
 /// offline with nothing saved → "No connection". A returning connection
-/// refreshes a saved or failed invoice.
+/// refreshes a saved or failed invoice. Once it shows, "Download invoice"
+/// opens it as a PDF (`Routes.orderInvoicePdf`): previewed in English or
+/// Arabic, then saved, shared or printed — made on the device, so offline
+/// too.
 class OrderInvoicePage extends StatelessWidget {
   const OrderInvoicePage({super.key, required this.orderId});
 
@@ -38,7 +42,9 @@ class OrderInvoicePage extends StatelessWidget {
         child: Scaffold(
           backgroundColor: AppColors.white,
           appBar: HeroTitleBar(title: 'orders.invoice_title'.tr()),
+          bottomNavigationBar: const InvoiceExportBar(),
           body: ContentClamp(
+            maxWidth: InvoiceBody.maxWidth,
             // Below the provider: the page's own context is above it.
             child: Builder(
               builder: (context) => ReconnectRefresh(

@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'src/app.dart';
 import 'src/config/di/service_locator.dart';
 import 'src/config/theme/font_licenses.dart';
+import 'src/core/constants/app_constants.dart';
 import 'src/core/widgets/image_cache_tuner.dart';
 
 Future<void> main() async {
@@ -21,7 +22,7 @@ Future<void> main() async {
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
-      path: 'assets/i18n',
+      path: AppConstants.translationsDir,
       fallbackLocale: const Locale('en'),
       startLocale: const Locale('en'),
       // CLDR plural rules: Arabic needs its few (3–10) and many (11–99)

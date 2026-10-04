@@ -440,6 +440,15 @@ abstract final class HeroIcons {
   /// Medal: round disc with a star, ribbon on top.
   static const IconData medal = IconData(0xE0AF, fontFamily: fontFamily);
 
+  /// Arrow down into an open tray (save a file to the device).
+  static const IconData download = IconData(0xE0D5, fontFamily: fontFamily);
+
+  /// Arrow up out of an open box (the system share sheet).
+  static const IconData share = IconData(0xE0D6, fontFamily: fontFamily);
+
+  /// Printer: paper in at the top, a sheet out at the bottom.
+  static const IconData printer = IconData(0xE0D7, fontFamily: fontFamily);
+
   // Two-tone accent layers (src/<name>.accent.svg): drawn under the line glyph in a soft tone.
 
   /// Two-tone layer under [home].
@@ -1037,6 +1046,9 @@ abstract final class HeroIcons {
     'categoryAllAccent': categoryAllAccent,
     'myLocationAccent': myLocationAccent,
     'officeAccent': officeAccent,
+    'download': download,
+    'share': share,
+    'printer': printer,
     'deliveryDirectional': deliveryDirectional,
     'account': account,
   };

@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import '../../config/di/service_locator.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/data/datasources/cache_slots.dart';
@@ -7,6 +9,9 @@ import 'data/datasources/demo_courier_tracking_data_source.dart';
 import 'data/datasources/demo_rider_chat_data_source.dart';
 import 'data/datasources/fallback_road_route_data_source.dart';
 import 'data/datasources/google_road_route_data_source.dart';
+import 'data/datasources/invoice_assets_data_source.dart';
+import 'data/datasources/invoice_file_data_source.dart';
+import 'data/datasources/invoice_pdf_data_source.dart';
 import 'data/datasources/orders_cache_data_source.dart';
 import 'data/datasources/orders_remote_data_source.dart';
 import 'data/datasources/osrm_road_route_data_source.dart';
@@ -14,14 +19,17 @@ import 'data/datasources/rider_chat_data_source.dart';
 import 'data/datasources/road_route_data_source.dart';
 import 'data/datasources/tracking_alerts_data_source.dart';
 import 'data/repositories/courier_tracking_repository_impl.dart';
+import 'data/repositories/invoice_repository_impl.dart';
 import 'data/repositories/orders_repository_impl.dart';
 import 'data/repositories/rider_chat_repository_impl.dart';
 import 'data/repositories/tracking_alerts_repository_impl.dart';
 import 'domain/repositories/courier_tracking_repository.dart';
+import 'domain/repositories/invoice_repository.dart';
 import 'domain/repositories/orders_repository.dart';
 import 'domain/repositories/rider_chat_repository.dart';
 import 'domain/repositories/tracking_alerts_repository.dart';
 import 'domain/usecases/allow_tracking_alerts_usecase.dart';
+import 'domain/usecases/build_invoice_pdf_usecase.dart';
 import 'domain/usecases/cancel_order_usecase.dart';
 import 'domain/usecases/check_tracking_alerts_usecase.dart';
 import 'domain/usecases/clear_tracking_alert_usecase.dart';
@@ -29,7 +37,11 @@ import 'domain/usecases/get_courier_trip_usecase.dart';
 import 'domain/usecases/get_order_usecase.dart';
 import 'domain/usecases/get_orders_usecase.dart';
 import 'domain/usecases/mark_rider_chat_read_usecase.dart';
+import 'domain/usecases/print_invoice_pdf_usecase.dart';
+import 'domain/usecases/render_invoice_pages_usecase.dart';
+import 'domain/usecases/save_invoice_pdf_usecase.dart';
 import 'domain/usecases/send_rider_message_usecase.dart';
+import 'domain/usecases/share_invoice_pdf_usecase.dart';
 import 'domain/usecases/show_tracking_alert_usecase.dart';
 import 'domain/usecases/submit_product_review_usecase.dart';
 import 'domain/usecases/watch_courier_usecase.dart';
@@ -37,6 +49,8 @@ import 'domain/usecases/watch_order_usecase.dart';
 import 'domain/usecases/watch_orders_usecase.dart';
 import 'domain/usecases/watch_rider_chat_usecase.dart';
 import 'presentation/cubit/courier_tracking_cubit.dart';
+import 'presentation/cubit/invoice_export_cubit.dart';
+import 'presentation/cubit/invoice_preview_cubit.dart';
 import 'presentation/cubit/order_invoice_cubit.dart';
 import 'presentation/cubit/order_review_cubit.dart';
 import 'presentation/cubit/order_tracking_cubit.dart';
@@ -49,7 +63,9 @@ import 'presentation/cubit/tracking_alerts_cubit.dart';
 /// the live rider map — on a simulated feed until the backend tracks riders
 /// (one feed for the app's life, so a ride keeps its clock across opens),
 /// driven on real roads: Google's Routes API when `MAPS_API_KEY` is set (and
-/// the Routes API is enabled for it), else OpenStreetMap roads (OSRM).
+/// the Routes API is enabled for it), else OpenStreetMap roads (OSRM). The
+/// invoice PDF is made on the device (fonts and words from the bundle) and
+/// handed to the system's save / share / print screens.
 /// Called from `setupServiceLocator`.
 void initOrdersFeature() {
   if (sl.isRegistered<OrdersRepository>()) return; // idempotent
@@ -85,6 +101,28 @@ void initOrdersFeature() {
       () => OrderReviewCubit(watchOrder: sl(), submitReview: sl()),
     )
     ..registerFactory(() => OrderInvoiceCubit(watchOrder: sl()))
+    ..registerLazySingleton<InvoiceAssetsDataSource>(
+      () => InvoiceAssetsDataSourceImpl(rootBundle),
+    )
+    ..registerLazySingleton<InvoicePdfDataSource>(
+      () => const InvoicePdfDataSourceImpl(),
+    )
+    ..registerLazySingleton<InvoiceFileDataSource>(
+      () => const InvoiceFileDataSourceImpl(),
+    )
+    ..registerLazySingleton<InvoiceRepository>(
+      () => InvoiceRepositoryImpl(assets: sl(), pdf: sl(), files: sl()),
+    )
+    ..registerLazySingleton(() => BuildInvoicePdfUseCase(sl()))
+    ..registerLazySingleton(() => SaveInvoicePdfUseCase(sl()))
+    ..registerLazySingleton(() => ShareInvoicePdfUseCase(sl()))
+    ..registerLazySingleton(() => PrintInvoicePdfUseCase(sl()))
+    ..registerLazySingleton(() => RenderInvoicePagesUseCase(sl()))
+    ..registerFactory(() => InvoicePreviewCubit(sl()))
+    ..registerFactory(
+      () =>
+          InvoiceExportCubit(build: sl(), save: sl(), share: sl(), print: sl()),
+    )
     ..registerLazySingleton<CourierStoreDataSource>(
       () => CourierStoreRemoteDataSourceImpl(sl()),
     )

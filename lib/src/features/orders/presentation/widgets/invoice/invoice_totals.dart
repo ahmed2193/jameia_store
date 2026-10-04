@@ -1,38 +1,43 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/order_entity.dart';
-import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/widgets/hero_money_text.dart';
 import '../../../../../core/widgets/hero_summary_line.dart';
 import '../../../../../core/widgets/thin_divider.dart';
-import 'invoice_discount_line.dart';
+import '../../../domain/entities/order_invoice_summary.dart';
+import 'invoice_charge_line.dart';
 import 'invoice_loyalty_note.dart';
+import 'invoice_perforation.dart';
 import 'invoice_section.dart';
 
 /// "Payment summary": the order's own totals — every figure comes from the
-/// server, nothing is recomputed here. Deductions and "Free" read in brand
-/// deep green; money is one left-to-right run.
+/// server, nothing is recomputed here. Which rows show is
+/// [OrderInvoiceSummary]'s rule, the same the PDF invoice follows.
+/// Deductions and "Free" read in brand deep green; money is one
+/// left-to-right run.
 class InvoiceTotals extends StatelessWidget {
   const InvoiceTotals({
     super.key,
     required this.order,
     this.trailing = const <Widget>[],
+    this.perforated = false,
   });
-
-  static const TextStyle _freeStyle = TextStyle(color: AppColors.brandDeep);
 
   final OrderEntity order;
 
   /// More rows at the foot of the card (the order page adds how it is paid).
   final List<Widget> trailing;
 
+  /// A receipt's dashed tear line above the total (the invoice page) instead
+  /// of the plain hairline.
+  final bool perforated;
+
   @override
   Widget build(BuildContext context) {
-    final coupon = order.coupon;
-    final loyalty = order.loyalty;
+    final summary = OrderInvoiceSummary.of(order);
+    final points = summary.points;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
@@ -40,57 +45,27 @@ class InvoiceTotals extends StatelessWidget {
         InvoiceSection(
           title: 'orders.summary_title'.tr(),
           children: [
-            HeroSummaryLine(
-              label: 'orders.subtotal'.tr(),
-              value: HeroMoneyText(kd: order.subtotalKd),
-            ),
-            if (order.offerDiscountFils > 0)
-              InvoiceDiscountLine(
-                label: 'orders.offer_discount'.tr(),
-                kd: order.offerDiscountKd,
-              ),
-            if (order.proDiscountFils > 0)
-              InvoiceDiscountLine(
-                label: 'orders.pro_discount'.tr(),
-                kd: order.proDiscountKd,
-              ),
-            if (coupon != null)
-              InvoiceDiscountLine(
-                label: 'orders.coupon_discount'.tr(
-                  namedArgs: {'code': coupon.code},
+            for (final charge in summary.charges)
+              InvoiceChargeLine(charge: charge),
+            if (perforated)
+              const InvoicePerforation()
+            else
+              const Padding(
+                padding: EdgeInsetsDirectional.symmetric(
+                  vertical: AppSpacing.s8,
                 ),
-                kd: coupon.discountKd,
+                child: ThinDivider(),
               ),
-            if (loyalty.discountFils > 0)
-              InvoiceDiscountLine(
-                label: 'orders.loyalty_discount'.tr(),
-                kd: loyalty.discountKd,
-              ),
-            HeroSummaryLine(
-              label: 'orders.delivery_fee'.tr(),
-              value: order.deliveryFeeFils <= 0
-                  ? Text('orders.free'.tr(), style: _freeStyle)
-                  : HeroMoneyText(kd: order.deliveryFeeKd),
-            ),
-            const Padding(
-              padding: EdgeInsetsDirectional.symmetric(vertical: AppSpacing.s8),
-              child: ThinDivider(),
-            ),
             HeroSummaryLine(
               label: 'orders.total'.tr(),
               emphasized: true,
-              value: HeroMoneyText(kd: order.totalKd),
+              value: HeroMoneyText(kd: summary.totalKd),
             ),
             ...trailing,
           ],
         ),
-        // A cancelled or failed order earns nothing.
-        if (loyalty.pointsEarned > 0 &&
-            (!order.isTerminal || order.status == OrderStatus.delivered))
-          InvoiceLoyaltyNote(
-            points: loyalty.pointsEarned,
-            pending: order.status != OrderStatus.delivered,
-          ),
+        if (points != null)
+          InvoiceLoyaltyNote(points: points.points, pending: points.pending),
       ],
     );
   }

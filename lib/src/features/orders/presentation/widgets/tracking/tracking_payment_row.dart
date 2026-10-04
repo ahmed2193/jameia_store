@@ -6,7 +6,6 @@ import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/design/hero_icons.dart';
-import '../../../../../core/domain/entities/catalog_product_entity.dart';
 import '../../../../../core/domain/entities/order_fulfillment_entities.dart';
 import '../../../../../core/domain/entities/order_status.dart';
 import '../../../../../core/responsive/app_size.dart';
@@ -14,6 +13,7 @@ import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/hero_icon.dart';
 import '../../../../../core/widgets/hero_svg_glyph.dart';
 import '../../../../../core/widgets/hero_tag.dart';
+import '../../../domain/entities/order_payment_standing.dart';
 
 /// How the order is paid: the method's plate (cash / wallet), its name, the
 /// wallet share when the wallet covered part of a cash order, and where the
@@ -37,31 +37,20 @@ class TrackingPaymentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final method = switch (payment.method) {
-      OrderPaymentMethod.cod => 'orders.payment_cod'.tr(),
-      OrderPaymentMethod.wallet => 'orders.payment_wallet'.tr(),
-      OrderPaymentMethod.other => 'orders.payment_other'.tr(),
-    };
-    final walletShare =
-        payment.method != OrderPaymentMethod.wallet &&
-            payment.walletUsedFils > 0
+    final method = payment.method.labelKey.tr();
+    final walletShare = payment.walletShareFils > 0
         ? 'orders.payment_wallet_share'.tr(
             namedArgs: {
               'amount': Formatters.isolate(
-                Formatters.priceLtr(
-                  payment.walletUsedFils / CatalogProductEntity.filsPerDinar,
-                ),
+                Formatters.priceLtr(payment.walletShareKd),
               ),
             },
           )
         : '';
-    final status = payment.isPaid
-        ? 'orders.payment_paid'.tr()
-        : cancelled
-        ? 'orders.payment_not_charged'.tr()
-        : payment.method == OrderPaymentMethod.cod
-        ? 'orders.payment_due_on_delivery'.tr()
-        : 'orders.payment_pending'.tr();
+    final status = OrderPaymentStanding.of(
+      payment,
+      cancelled: cancelled,
+    ).labelKey.tr();
     return MergeSemantics(
       child: Row(
         children: [

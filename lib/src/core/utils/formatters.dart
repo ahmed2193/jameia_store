@@ -13,14 +13,21 @@ import 'package:easy_localization/easy_localization.dart';
 class Formatters {
   Formatters._();
 
-  static bool get _isAr => (Intl.defaultLocale ?? 'en').startsWith('ar');
+  static String get _appLanguage => Intl.defaultLocale ?? 'en';
+
+  static bool _isArabic(String languageCode) => languageCode.startsWith('ar');
 
   /// Between two short parts of one line ("Home · Salmiya", "Tomorrow ·
   /// 10:00 – 12:00"); the same in both languages.
   static const String middot = ' · ';
 
   /// Localized currency label: `KD` (en) ↔ `د.ك` (ar).
-  static String get currency => _isAr ? 'د.ك' : 'KD';
+  static String get currency => currencyIn(_appLanguage);
+
+  /// [currency] in [languageCode] whatever the app shows — for a document
+  /// written in a language of the customer's choice (the invoice PDF).
+  static String currencyIn(String languageCode) =>
+      _isArabic(languageCode) ? 'د.ك' : 'KD';
 
   /// 3-decimal amount without a currency label (for digit-font display). Western
   /// digits — see the class note.
@@ -34,12 +41,24 @@ class Formatters {
   /// [price] around an amount already written out (e.g. the number slot of a
   /// `RollingNumberText`).
   static String priceOf(String amount) =>
-      _isAr ? '$amount $currency' : '$currency $amount';
+      _isArabic(_appLanguage) ? '$amount $currency' : '$currency $amount';
 
   /// Price for a run laid out in `Directionality.ltr` (tabular money): the
-  /// label always leads, so it reads `KD 12.500` / `د.ك 12.500` and lands in
-  /// the same visual place as [price] does inside an RTL paragraph.
-  static String priceLtr(double v) => '$currency ${amount(v)}';
+  /// label always leads, so it reads `KD 12.500` / `د.ك 12.500` — in Arabic
+  /// the label sits right of the amount, where [price] inside an RTL
+  /// sentence puts it on the left (see [priceInline]).
+  static String priceLtr(double v) => priceLtrIn(_appLanguage, v);
+
+  /// [priceLtr] in [languageCode] whatever the app shows (see [currencyIn]):
+  /// the invoice PDF reads its money the way the app's columns do.
+  static String priceLtrIn(String languageCode, double v) =>
+      '${currencyIn(languageCode)} ${amount(v)}';
+
+  /// Money inside a sentence on a page whose money columns go through
+  /// `HeroMoneyText` (the invoice: "KD 0.899 each" under a line total, "You
+  /// saved KD 1.250" under the receipt's total): [priceLtr] in its own
+  /// isolate, so Arabic reads `د.ك 0.899` like the column beside it.
+  static String priceInline(double v) => isolate(priceLtr(v));
 
   static final Map<String, DateFormat> _dateTimeFormats =
       <String, DateFormat>{};

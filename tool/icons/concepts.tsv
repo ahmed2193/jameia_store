@@ -127,3 +127,6 @@ myLocation	n	crosshair: ring + centre dot + 4 short ticks	my_location_rounded	sk
 office	n	office block: tall rounded building, four window dots, arched door	(svg) address_label_office	sky
 cash	n	banknote: rounded note with a coin circle in the middle	(svg) checkout_cash	green
 medal	n	medal: round disc with a star, ribbon on top	(svg) rewards_badge	amber
+download	n	arrow down into an open tray (save a file to the device)	download_rounded file_download_outlined	
+share	n	arrow up out of an open box (the system share sheet)	ios_share_rounded share_rounded	
+printer	n	printer: paper in at the top, a sheet out at the bottom	print_rounded print_outlined	

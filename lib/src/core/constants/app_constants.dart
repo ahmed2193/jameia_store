@@ -6,6 +6,10 @@ class AppConstants {
 
   static const String appName = 'Hero';
 
+  /// The translation files (`<languageCode>.json`): EasyLocalization reads
+  /// the app's language from here, the invoice PDF the one it is written in.
+  static const String translationsDir = 'assets/i18n';
+
   // ── Networking ─────────────────────────────────────────────────────────────
   // The API host is build-time config: `AppEnv.apiBaseUrl` (`--dart-define`).
   static const Duration connectTimeout = Duration(seconds: 20);

@@ -25,6 +25,34 @@ void main() {
       expect(order.loyalty.pointsEarned, 35);
     });
 
+    test('reads who placed it; a nameless or missing customer is none', () {
+      Map<String, dynamic> withCustomer(Object? customer) =>
+          orderJson()..['customer'] = customer;
+
+      final customer = OrderModel.fromJson(
+        withCustomer(const <String, dynamic>{
+          'name': 'Ahmed Al-Fahad',
+          'phone': '+96550001111',
+          'email': 'ahmed@example.com',
+        }),
+      ).toEntity().customer;
+      expect(customer?.name, 'Ahmed Al-Fahad');
+      expect(customer?.phone, '+96550001111');
+      expect(customer?.email, 'ahmed@example.com');
+
+      expect(
+        OrderModel.fromJson(
+          withCustomer(const <String, dynamic>{'name': '  ', 'phone': '1'}),
+        ).toEntity().customer,
+        isNull,
+      );
+      expect(
+        OrderModel.fromJson(withCustomer('Ahmed')).toEntity().customer,
+        isNull,
+      );
+      expect(OrderModel.fromJson(orderJson()).toEntity().customer, isNull);
+    });
+
     test('drops a timeline row without a date, keeps the rest', () {
       final order = OrderModel.fromJson(orderJson()).toEntity();
 

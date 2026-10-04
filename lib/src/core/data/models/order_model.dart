@@ -19,6 +19,7 @@ class OrderModel {
     this.status = '',
     this.statusTimeline = const <OrderStatusEventModel>[],
     this.fulfillmentMode = '',
+    this.customer,
     this.branch,
     this.zone,
     this.address,
@@ -50,6 +51,7 @@ class OrderModel {
   static const String statusKey = 'status';
   static const String statusTimelineKey = 'statusTimeline';
   static const String fulfillmentModeKey = 'fulfillmentMode';
+  static const String customerKey = 'customer';
   static const String branchKey = 'branch';
   static const String zoneKey = 'zone';
   static const String addressKey = 'address';
@@ -83,6 +85,7 @@ class OrderModel {
     if (id == null || orderNumber == null) {
       throw const ParsingException('order: identity missing');
     }
+    final customer = JsonRead.object(json[customerKey]);
     final branch = JsonRead.object(json[branchKey]);
     final zone = JsonRead.object(json[zoneKey]);
     final address = JsonRead.object(json[addressKey]);
@@ -106,6 +109,7 @@ class OrderModel {
             ]
           : const <OrderStatusEventModel>[],
       fulfillmentMode: JsonRead.string(json[fulfillmentModeKey]) ?? '',
+      customer: customer == null ? null : OrderCustomerModel.tryParse(customer),
       branch: branch == null ? null : OrderPlaceModel.tryParse(branch),
       zone: zone == null ? null : OrderPlaceModel.tryParse(zone),
       address: address == null ? null : OrderAddressModel.fromJson(address),
@@ -155,6 +159,9 @@ class OrderModel {
   final String status;
   final List<OrderStatusEventModel> statusTimeline;
   final String fulfillmentMode;
+
+  /// `null` on an order the API sent without its customer.
+  final OrderCustomerModel? customer;
   final OrderPlaceModel? branch;
   final OrderPlaceModel? zone;
   final OrderAddressModel? address;

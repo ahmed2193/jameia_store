@@ -211,25 +211,21 @@ void main() {
       expect(moved(0, 0.5, shownHeading: 359), isFalse);
     });
 
-    test('riding along, the map moves in finer steps', () {
-      bool chased(double meters) => LiveMapFrameGate.riderMoved(
-        shownMeters: 100,
-        shownHeading: 0,
-        meters: 100 + meters,
-        heading: 0,
-        zoom: zoom,
-        latitude: lat,
-        stepDp: LiveMapFrameGate.chaseStepDp,
+    test('riding along, every frame up to the shorter gap', () {
+      const last = Duration(milliseconds: 1000);
+      bool tooSoon(int ms) => LiveMapFrameGate.tooSoon(
+        last,
+        last + Duration(milliseconds: ms),
+        gap: LiveMapFrameGate.chaseFrameGap,
       );
-      final step = LiveMapFrameGate.chaseStepDp * halfDp * 2;
 
       expect(
-        LiveMapFrameGate.chaseStepDp,
-        lessThan(LiveMapFrameGate.minStepDp),
+        LiveMapFrameGate.chaseFrameGap,
+        lessThan(LiveMapFrameGate.frameGap),
       );
-      expect(chased(step * 0.9), isFalse);
-      expect(chased(step * 1.1), isTrue);
-      expect(moved(step * 1.1, 0), isFalse);
+      // Every vsync at 60 Hz; every other one at 120.
+      expect(tooSoon(17), isFalse);
+      expect(tooSoon(8), isTrue);
     });
 
     test('the road is recut per 8 dp on screen, at least every 6 m', () {

@@ -19,7 +19,7 @@ class OrderTotalRow extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            'orders.item_count'.tr(namedArgs: {'count': '${order.itemCount}'}),
+            'orders.item_count'.plural(order.itemCount),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.meta,

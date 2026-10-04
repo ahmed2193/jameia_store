@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/responsive/app_size.dart';
+import '../../../domain/entities/order_payment_standing.dart';
 
-/// "Paid" / "Pending" with a small status dot (green / orange). The colour
-/// sits on the dot, so the label keeps the ink value style around it.
+/// Where the payment stands — "Paid", "Pay on delivery", "Not charged",
+/// "Pending", the words of the order page and the PDF — with a small status
+/// dot (green / red / orange). The colour sits on the dot, so the label
+/// keeps the ink value style around it.
 class InvoicePaymentStatus extends StatelessWidget {
-  const InvoicePaymentStatus({super.key, required this.paid});
+  const InvoicePaymentStatus({super.key, required this.standing});
 
-  final bool paid;
+  final OrderPaymentStanding standing;
 
   @override
   Widget build(BuildContext context) {
@@ -22,16 +25,17 @@ class InvoicePaymentStatus extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: paid ? AppColors.success : AppColors.warn,
+              color: switch (standing) {
+                OrderPaymentStanding.paid => AppColors.success,
+                OrderPaymentStanding.notCharged => AppColors.errorDeep,
+                OrderPaymentStanding.dueOnDelivery ||
+                OrderPaymentStanding.pending => AppColors.warn,
+              },
             ),
           ),
         ),
         const SizedBox(width: AppSpacing.s6),
-        Flexible(
-          child: Text(
-            paid ? 'orders.payment_paid'.tr() : 'orders.payment_pending'.tr(),
-          ),
-        ),
+        Flexible(child: Text(standing.labelKey.tr())),
       ],
     );
   }

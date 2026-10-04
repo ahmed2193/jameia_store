@@ -707,7 +707,10 @@
     "history_title": "Order history",
     "empty": "No orders yet",
     "order_no": "Order {number}",
-    "item_count": "{count} items",
+    "item_count": {
+      "one": "{} item",
+      "other": "{} items"
+    },
     "more_items": "+{count} more",
     "placed_at": "Placed {date}",
     "status_placed": "Placed",
@@ -943,7 +946,44 @@
     "live_alert_on_the_way_body_count": {
       "one": "{rider} is bringing it over — about {minutes} min",
       "other": "{rider} is bringing it over — about {minutes} min"
-    }
+    },
+    "invoice_pdf_brand": "Hero",
+    "invoice_pdf_type": "Order type",
+    "invoice_pdf_type_delivery": "Delivery",
+    "invoice_pdf_type_pickup": "Pickup",
+    "invoice_pdf_store": "Store",
+    "invoice_pdf_slot": "Scheduled for",
+    "invoice_pdf_deliver_to": "Deliver to",
+    "invoice_pdf_customer": "Customer",
+    "invoice_pdf_col_number": "#",
+    "invoice_pdf_col_item": "Item",
+    "invoice_pdf_col_qty": "Qty",
+    "invoice_pdf_col_price": "Price ({currency})",
+    "invoice_pdf_col_total": "Total ({currency})",
+    "invoice_pdf_sku": "SKU {sku}",
+    "invoice_pdf_thanks": "Thank you for shopping with Hero.",
+    "invoice_pdf_issued": "Downloaded on {date}",
+    "invoice_pdf_page": "Page {page} of {pages}",
+    "invoice_pdf_download": "Download invoice",
+    "invoice_pdf_sheet_title": "Invoice PDF",
+    "invoice_pdf_sheet_subtitle": "Order {number}",
+    "invoice_pdf_language": "Invoice language",
+    "invoice_pdf_language_en": "English",
+    "invoice_pdf_language_ar": "العربية",
+    "invoice_pdf_preparing": "Preparing your invoice…",
+    "invoice_pdf_pages": {
+      "one": "{} page",
+      "other": "{} pages"
+    },
+    "invoice_pdf_size": "{size} KB",
+    "invoice_pdf_failed": "Couldn't create the PDF",
+    "invoice_pdf_save": "Save to device",
+    "invoice_pdf_share": "Share",
+    "invoice_pdf_print": "Print",
+    "invoice_pdf_saved": "Invoice saved",
+    "invoice_each": "{price} each",
+    "invoice_saved": "You saved {amount}",
+    "invoice_pdf_preview_failed": "Couldn't show the preview"
   },
   "search": {
     "search_hint": "Find more restaurants",

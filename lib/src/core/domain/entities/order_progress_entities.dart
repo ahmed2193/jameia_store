@@ -24,6 +24,15 @@ class OrderSubstitutionEntity extends Equatable {
   String variantNameFor(String languageCode) =>
       pickLocalized(languageCode, en: variantNameEn, ar: variantNameAr);
 
+  /// "Product · Variant" (the product alone without a variant) — what a
+  /// receipt says the line was replaced with.
+  String displayNameFor(String languageCode) => [
+    productNameFor(languageCode),
+    variantNameFor(languageCode),
+  ].where((part) => part.isNotEmpty).join(_partSeparator);
+
+  static const String _partSeparator = ' · ';
+
   @override
   List<Object?> get props => [
     lineKey,

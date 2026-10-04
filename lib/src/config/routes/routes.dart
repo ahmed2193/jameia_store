@@ -43,6 +43,8 @@ class Routes {
   static const String orderTracking = '/order-tracking'; // arg: orderId
   static const String orderReview = '/order-review';
   static const String orderInvoice = '/order-invoice';
+  // The invoice PDF: preview, then save / share / print. extra: OrderEntity
+  static const String orderInvoicePdf = '/order-invoice-pdf';
   static const String orderLiveMap = '/order-live-map'; // arg: OrderEntity
 
   // Account & support

@@ -7,6 +7,7 @@ import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/design/hero_icons.dart';
 import '../../../../core/domain/entities/order_progress_entities.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/hero_icon.dart';
 
 /// Under a line the picker replaced: "Replaced with Oat milk · 1 L", in the
@@ -20,12 +21,7 @@ class OrderLineSubstitutionNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lc = context.locale.languageCode;
-    final variant = substitution.variantNameFor(lc);
-    final name = [
-      substitution.productNameFor(lc),
-      if (variant.isNotEmpty) variant,
-    ].join(' · ');
+    final name = substitution.displayNameFor(context.locale.languageCode);
     return Text.rich(
       TextSpan(
         children: [
@@ -41,7 +37,10 @@ class OrderLineSubstitutionNote extends StatelessWidget {
             ),
           ),
           TextSpan(
-            text: 'orders.line_replaced_with'.tr(namedArgs: {'name': name}),
+            // The name keeps its own direction inside the sentence.
+            text: 'orders.line_replaced_with'.tr(
+              namedArgs: {'name': Formatters.isolate(name)},
+            ),
           ),
         ],
       ),

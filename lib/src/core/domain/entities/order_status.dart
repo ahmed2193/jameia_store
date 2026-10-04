@@ -123,6 +123,13 @@ enum OrderPaymentMethod {
 
   const OrderPaymentMethod(this.wireValue);
   final String wireValue;
+
+  /// i18n key of the customer-facing name; widgets call `.tr()` on it.
+  String get labelKey => switch (this) {
+    cod => 'orders.payment_cod',
+    wallet => 'orders.payment_wallet',
+    other => 'orders.payment_other',
+  };
 }
 
 enum OrderPaymentStatus { pending, paid, other }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/domain/entities/order_entity.dart';
 import '../../../core/navigation/navigation.dart';
 import '../../../features/orders/presentation/pages/order_invoice_page.dart';
+import '../../../features/orders/presentation/pages/order_invoice_pdf_page.dart';
 import '../../../features/orders/presentation/pages/order_live_map_page.dart';
 import '../../../features/orders/presentation/pages/order_review_page.dart';
 import '../../../features/orders/presentation/pages/order_tracking_page.dart';
@@ -12,13 +13,13 @@ import '../route_args/order_review_args.dart';
 import '../route_args/placed_order_args.dart';
 import '../routes.dart';
 
-/// Order lifecycle: tracking, product reviews, invoice, the live rider map.
-/// Each takes the order id as `extra` (the map: the order itself); without
-/// one the placeholder page explains the dead link. They are forward steps
-/// (orders → tracking → invoice / review), so they push on the shared X axis
-/// — except tracking right after the order was placed ([PlacedOrderArgs]), a
-/// new root that fades through, and the live map, a layer over the order
-/// page that slides up.
+/// Order lifecycle: tracking, product reviews, invoice, the invoice PDF, the
+/// live rider map. Each takes the order id as `extra` (the PDF and the map:
+/// the order itself); without one the placeholder page explains the dead
+/// link. They are forward steps (orders → tracking → invoice / review), so
+/// they push on the shared X axis — except tracking right after the order
+/// was placed ([PlacedOrderArgs]), a new root that fades through, and the
+/// PDF preview and the live map, viewers over their page that slide up.
 final List<RouteBase> ordersRoutes = <RouteBase>[
   GoRoute(
     path: Routes.orderTracking,
@@ -60,6 +61,19 @@ final List<RouteBase> ordersRoutes = <RouteBase>[
     path: Routes.orderInvoice,
     pageBuilder: (_, state) =>
         _orderPage(state, (orderId) => OrderInvoicePage(orderId: orderId)),
+  ),
+  GoRoute(
+    path: Routes.orderInvoicePdf,
+    pageBuilder: (_, state) {
+      final order = state.extra;
+      return HeroSlideUpTransitionPage<Object?>(
+        key: state.pageKey,
+        name: state.uri.path,
+        child: order is OrderEntity && order.id.isNotEmpty
+            ? OrderInvoicePdfPage(order: order)
+            : PlaceholderPage(title: PlaceholderPage.titleFor(state.uri.path)),
+      );
+    },
   ),
   GoRoute(
     path: Routes.orderLiveMap,

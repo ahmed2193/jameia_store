@@ -50,9 +50,7 @@ class TrackingStoreRow extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.s8),
             Text(
-              'orders.item_count'.tr(
-                namedArgs: {'count': '${order.itemCount}'},
-              ),
+              'orders.item_count'.plural(order.itemCount),
               style: AppTextStyles.meta,
             ),
           ],

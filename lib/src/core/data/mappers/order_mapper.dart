@@ -18,6 +18,7 @@ extension OrderMapper on OrderModel {
         OrderStatusEvent(at: event.at, status: orderStatusOf(event.status)),
     ],
     fulfillmentMode: FulfillmentMode.fromWire(fulfillmentMode),
+    customer: customer?.toEntity(),
     branch: branch?.toEntity(),
     zone: zone?.toEntity(),
     address: address?.toEntity(),
@@ -80,6 +81,11 @@ extension OrderListMapper on List<OrderModel> {
   List<OrderEntity> toEntities() => [
     for (final model in this) model.toEntity(),
   ];
+}
+
+extension OrderCustomerMapper on OrderCustomerModel {
+  OrderCustomerEntity toEntity() =>
+      OrderCustomerEntity(name: name, phone: phone, email: email);
 }
 
 extension OrderPlaceMapper on OrderPlaceModel {

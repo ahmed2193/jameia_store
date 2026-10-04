@@ -22,6 +22,30 @@ class OrderStatusEventModel {
   final String status;
 }
 
+/// `customer`: who placed the order, as the order froze it.
+class OrderCustomerModel {
+  const OrderCustomerModel({required this.name, this.phone = '', this.email});
+
+  static const String nameKey = 'name';
+  static const String phoneKey = 'phone';
+  static const String emailKey = 'email';
+
+  /// `null` without a name (the API always sends one).
+  static OrderCustomerModel? tryParse(Map<String, dynamic> json) {
+    final name = JsonRead.string(json[nameKey]);
+    if (name == null || name.trim().isEmpty) return null;
+    return OrderCustomerModel(
+      name: name,
+      phone: JsonRead.string(json[phoneKey]) ?? '',
+      email: JsonRead.string(json[emailKey]),
+    );
+  }
+
+  final String name;
+  final String phone;
+  final String? email;
+}
+
 /// `branch` / `zone`: `{ id, name: { en, ar } }`.
 class OrderPlaceModel {
   const OrderPlaceModel({

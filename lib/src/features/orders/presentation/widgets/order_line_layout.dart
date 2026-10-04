@@ -4,15 +4,18 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../config/theme/app_text_styles.dart';
 import '../../../../core/responsive/app_size.dart';
+import '../../../../core/widgets/hero_bidi_text.dart';
 import '../../../../core/widgets/hero_line_thumb.dart';
 
 /// The geometry every order line shares, so paid and free rows read as one
 /// list: an optional product photo ([thumbUrl]), the quantity (`2×`, one
 /// left-to-right tabular run), the name (two lines, [struck] through when
-/// the picker could not find it) over an optional [subtitle] and an
-/// optional [note] (a tag, a "replaced with" line), and an optional
-/// [trailing] value. Flat — the list around it draws the hairlines. Read
-/// out as one node.
+/// the picker could not find it) over an optional [subtitle], an optional
+/// [caption] (the unit price on the invoice) and an optional [note] (a tag,
+/// a "replaced with" line), and an optional [trailing] value. Names and
+/// sizes read in their own direction ([HeroBidiText]): a Latin "2 Liter" in
+/// the Arabic app is not turned into "Liter 2". Flat — the list around it
+/// draws the hairlines. Read out as one node.
 class OrderLineLayout extends StatelessWidget {
   const OrderLineLayout({
     super.key,
@@ -23,6 +26,7 @@ class OrderLineLayout extends StatelessWidget {
     this.trailing,
     this.thumbUrl,
     this.struck = false,
+    this.caption = '',
     this.note,
   });
 
@@ -50,6 +54,9 @@ class OrderLineLayout extends StatelessWidget {
   /// The product photo; `null` = a text-only row (the invoice).
   final String? thumbUrl;
   final bool struck;
+
+  /// A grey line under the subtitle (the unit price); hidden when empty.
+  final String caption;
   final Widget? note;
 
   @override
@@ -82,7 +89,7 @@ class OrderLineLayout extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
+                  HeroBidiText(
                     name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -94,7 +101,7 @@ class OrderLineLayout extends StatelessWidget {
                         : AppTextStyles.itemTitle,
                   ),
                   if (subtitle.isNotEmpty)
-                    Text(
+                    HeroBidiText(
                       subtitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -102,6 +109,9 @@ class OrderLineLayout extends StatelessWidget {
                           ? AppTextStyles.meta
                           : AppTextStyles.meta.copyWith(color: subtitleColor),
                     ),
+                  // Money is never cut short: it wraps instead.
+                  if (caption.isNotEmpty)
+                    Text(caption, style: AppTextStyles.meta),
                   if (note != null) ...[
                     const SizedBox(height: AppSpacing.s4),
                     note,

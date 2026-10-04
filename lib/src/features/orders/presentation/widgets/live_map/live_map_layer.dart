@@ -502,9 +502,14 @@ class _LiveMapLayerState extends State<LiveMapLayer>
   }
 
   /// A glide frame is worth a map update only once the rider has visibly
-  /// moved or turned since the last one — or, the camera riding along, once
-  /// the map under them has.
+  /// moved or turned since the last one. With the camera riding along the
+  /// whole map moves and turns under them: every glide frame is, up to
+  /// [LiveMapFrameGate.chaseFrameGap].
   void _onGlideFrame() {
+    if (_chase.live) {
+      _onFrame(gap: LiveMapFrameGate.chaseFrameGap);
+      return;
+    }
     final meters = _riderMeters;
     final path = widget.trip.path;
     final moved = LiveMapFrameGate.riderMoved(
@@ -514,19 +519,16 @@ class _LiveMapLayerState extends State<LiveMapLayer>
       heading: path.headingAround(meters),
       zoom: _zoom,
       latitude: path.pointAt(meters).lat,
-      stepDp: _chase.live
-          ? LiveMapFrameGate.chaseStepDp
-          : LiveMapFrameGate.minStepDp,
     );
     if (moved) _onFrame();
   }
 
-  void _onFrame() {
+  void _onFrame({Duration gap = LiveMapFrameGate.frameGap}) {
     final binding = SchedulerBinding.instance;
     // A value set outside a frame (a jump) has no frame time: paint now.
     if (binding.schedulerPhase == SchedulerPhase.transientCallbacks) {
       final now = binding.currentFrameTimeStamp;
-      if (LiveMapFrameGate.tooSoon(_lastFrame, now)) return;
+      if (LiveMapFrameGate.tooSoon(_lastFrame, now, gap: gap)) return;
       _lastFrame = now;
     }
     _repaint();

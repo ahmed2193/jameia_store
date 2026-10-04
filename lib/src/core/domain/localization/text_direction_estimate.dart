@@ -3,8 +3,9 @@
 /// one English) and not the first strong character ("Almarai حليب كامل
 /// الدسم" is an Arabic sentence that starts with a Latin brand). Like intl's
 /// `estimateDirectionOfText`: right-to-left when more than 40 % of the words
-/// that carry a letter are Arabic / Hebrew. Used by the assistant and the
-/// rider chat.
+/// that carry a letter are Arabic / Hebrew. Used by the assistant, the
+/// rider chat and `HeroBidiText` (names, codes and addresses on the order
+/// pages).
 abstract final class TextDirectionEstimate {
   static const double _rtlThreshold = 0.4;
 

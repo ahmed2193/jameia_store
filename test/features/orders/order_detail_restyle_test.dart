@@ -23,6 +23,7 @@ import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/motion/confetti_burst.dart';
 import 'package:hero_mart/src/core/motion/haptics.dart';
 import 'package:hero_mart/src/core/responsive/app_size.dart';
+import 'package:hero_mart/src/core/utils/formatters.dart';
 import 'package:hero_mart/src/core/widgets/hero_money_text.dart';
 import 'package:hero_mart/src/core/widgets/hero_submit_button.dart';
 import 'package:hero_mart/src/core/widgets/hero_title_bar.dart';
@@ -431,7 +432,10 @@ void main() {
       expect(find.text('Replaced items: 1'), findsOneWidget);
       // The replaced line says what came instead.
       expect(
-        find.textContaining('Replaced with Jasmine rice', findRichText: true),
+        find.textContaining(
+          'Replaced with ${Formatters.isolate('Jasmine rice')}',
+          findRichText: true,
+        ),
         findsOneWidget,
       );
       // A cancelled order has left the journey; nobody is handling it.
@@ -868,7 +872,10 @@ void main() {
 
       // Line l1 was substituted (the fixture's l2 is not on the order).
       expect(
-        find.textContaining('Replaced with Jasmine rice', findRichText: true),
+        find.textContaining(
+          'Replaced with ${Formatters.isolate('Jasmine rice')}',
+          findRichText: true,
+        ),
         findsOneWidget,
       );
     });
@@ -888,7 +895,8 @@ void main() {
       expect(find.text('Payment summary'), findsOneWidget);
       expect(find.text('Invoice'), findsNothing);
       expect(find.text('JM-1001'), findsOneWidget);
-      expect(find.text('Pending'), findsOneWidget);
+      // Cash not handed over yet: the order page's and the PDF's words.
+      expect(find.text('Pay on delivery'), findsOneWidget);
       expect(find.text('KD 0.500'), findsOneWidget); // delivery fee
       expect(find.text('KD 3.500'), findsNWidgets(2)); // items + summary
       // Not delivered yet: the points come with the delivery.

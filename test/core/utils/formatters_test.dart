@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:hero_mart/src/core/utils/formatters.dart';
 
 void main() {
@@ -18,6 +19,18 @@ void main() {
 
     test('empty text stays empty instead of becoming two markers', () {
       expect(Formatters.isolate(''), '');
+    });
+  });
+
+  group('Formatters.priceInline', () {
+    tearDown(() => Intl.defaultLocale = null);
+
+    test("the money columns' order, kept whole in its own isolate", () {
+      Intl.defaultLocale = 'ar';
+      expect(Formatters.priceInline(0.899), Formatters.isolate('د.ك 0.899'));
+
+      Intl.defaultLocale = 'en';
+      expect(Formatters.priceInline(0.899), Formatters.isolate('KD 0.899'));
     });
   });
 

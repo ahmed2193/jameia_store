@@ -42,6 +42,7 @@ class OrderLinesSliver extends StatefulWidget {
     this.leadingKey,
     this.collapsedCount,
     this.showThumbs = false,
+    this.showUnitPrice = false,
   });
 
   final String orderId;
@@ -69,6 +70,10 @@ class OrderLinesSliver extends StatefulWidget {
   final int? collapsedCount;
   final bool showThumbs;
 
+  /// Each row adds its unit price when more than one was bought (the
+  /// invoice).
+  final bool showUnitPrice;
+
   bool _showsSameAs(OrderLinesSliver other) =>
       orderId == other.orderId &&
       showInvoiceLink == other.showInvoiceLink &&
@@ -78,6 +83,7 @@ class OrderLinesSliver extends StatefulWidget {
       leadingKey == other.leadingKey &&
       collapsedCount == other.collapsedCount &&
       showThumbs == other.showThumbs &&
+      showUnitPrice == other.showUnitPrice &&
       changes == other.changes &&
       listEquals(lines, other.lines) &&
       listEquals(offerLines, other.offerLines);
@@ -199,6 +205,7 @@ class _OrderLinesSliverState extends State<OrderLinesSliver>
           row = OrderLineRow(
             line: line,
             showThumb: widget.showThumbs,
+            showUnitPrice: widget.showUnitPrice,
             outcome: changes.outcomeOf(line.key),
             substitution: changes.substitutionOf(line.key),
           );

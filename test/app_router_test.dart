@@ -80,6 +80,7 @@ import 'package:hero_mart/src/features/marketing/presentation/pages/offers_page.
 import 'package:hero_mart/src/features/notifications/presentation/cubit/unread_notifications_cubit.dart';
 import 'package:hero_mart/src/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/order_invoice_page.dart';
+import 'package:hero_mart/src/features/orders/presentation/pages/order_invoice_pdf_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/order_live_map_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/order_review_page.dart';
 import 'package:hero_mart/src/features/orders/presentation/pages/order_tracking_page.dart';
@@ -328,6 +329,17 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
     note: 'no order extra: the help hub',
   ),
   _RouteCase(
+    Routes.orderInvoicePdf,
+    OrderInvoicePdfPage,
+    extra: (_) => const OrderEntity(id: 'o1', orderNumber: '1001'),
+    verify: (t, extra) => expect(_page<OrderInvoicePdfPage>(t).order, extra),
+  ),
+  const _RouteCase(
+    Routes.orderInvoicePdf,
+    PlaceholderPage,
+    note: 'missing order extra',
+  ),
+  _RouteCase(
     Routes.orderLiveMap,
     OrderLiveMapPage,
     extra: (_) => const OrderEntity(id: 'o1', orderNumber: '1001'),
@@ -391,6 +403,7 @@ final Map<String, Matcher> _pageTypes = <String, Matcher>{
   Routes.cartPreview: _modal,
   Routes.proMembership: _modal,
   Routes.orderLiveMap: _modal,
+  Routes.orderInvoicePdf: _modal,
   Routes.checkout: _forward,
   Routes.checkoutVouchers: _forward,
   Routes.orderTracking: _forward,

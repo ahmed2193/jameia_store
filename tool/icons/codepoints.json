@@ -211,5 +211,8 @@
   "optionsAccent": "0xE0D1",
   "categoryAllAccent": "0xE0D2",
   "myLocationAccent": "0xE0D3",
-  "officeAccent": "0xE0D4"
+  "officeAccent": "0xE0D4",
+  "download": "0xE0D5",
+  "share": "0xE0D6",
+  "printer": "0xE0D7"
 }

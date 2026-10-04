@@ -11,12 +11,15 @@ abstract final class LiveMapFrameGate {
   /// four at 120 — an even beat on every display.
   static const Duration frameGap = Duration(milliseconds: 30);
 
+  /// …or, while the camera rides along, this often — every glide frame up
+  /// to it, moved or not: the whole map moves and turns then, and a map
+  /// stepped by the rider's half dp or two degrees ticks round a corner in
+  /// jumps (the far edge of a turning map moves tens of dp a step). Every
+  /// vsync at 60 Hz, every other one at 90 and 120.
+  static const Duration chaseFrameGap = Duration(milliseconds: 16);
+
   /// A glide frame is sent once the rider has moved this far on screen…
   static const double minStepDp = 0.5;
-
-  /// …or, while the camera rides along, this far: the whole map moves then,
-  /// so finer steps keep it gliding instead of ticking.
-  static const double chaseStepDp = 0.25;
 
   /// …or turned this much.
   static const double minTurnDegrees = 2;
@@ -31,8 +34,8 @@ abstract final class LiveMapFrameGate {
   static const double lineStepMinMeters = 6;
 
   /// Whether the rider, shown at [shownMeters] facing [shownHeading], now
-  /// at [meters] facing [heading], has visibly moved (by [stepDp]) or
-  /// turned at [zoom] and [latitude].
+  /// at [meters] facing [heading], has visibly moved or turned at [zoom]
+  /// and [latitude].
   static bool riderMoved({
     required double shownMeters,
     required double shownHeading,
@@ -40,14 +43,13 @@ abstract final class LiveMapFrameGate {
     required double heading,
     required double zoom,
     required double latitude,
-    double stepDp = minStepDp,
   }) {
     final turn = (heading - shownHeading).abs() % _fullTurn;
     final turned =
         (turn > _halfTurn ? _fullTurn - turn : turn) >= minTurnDegrees;
     return turned ||
         (meters - shownMeters).abs() >=
-            stepDp * LiveMapCamera.metersPerDp(zoom, latitude);
+            minStepDp * LiveMapCamera.metersPerDp(zoom, latitude);
   }
 
   /// Metres the rider moves between two cuts of the eaten road.
@@ -56,6 +58,8 @@ abstract final class LiveMapFrameGate {
     lineStepDp * LiveMapCamera.metersPerDp(zoom, latitude),
   );
 
-  /// Whether a frame at [now] comes too soon after the one at [last].
-  static bool tooSoon(Duration last, Duration now) => now - last < frameGap;
+  /// Whether a frame at [now] comes too soon after the one at [last], frames
+  /// [gap] apart at the most.
+  static bool tooSoon(Duration last, Duration now, {Duration gap = frameGap}) =>
+      now - last < gap;
 }
