@@ -1,0 +1,12 @@
+Kuwait boundary (assets/data/kuwait_boundary.json)
+
+The outline of Kuwait the app checks a delivery pin against contains
+information from OpenStreetMap (relation 305099: Kuwait, its islands and
+its territorial waters), which is made available here under the Open
+Database License (ODbL) 1.0.
+
+© OpenStreetMap contributors
+https://www.openstreetmap.org/copyright
+
+Open Database License (ODbL) v1.0:
+https://opendatacommons.org/licenses/odbl/1-0/

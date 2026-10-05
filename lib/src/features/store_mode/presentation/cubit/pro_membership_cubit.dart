@@ -83,6 +83,7 @@ class ProMembershipCubit extends Cubit<ProMembershipState>
         onFailure: (failure) {
           if (_isCurrent(generation)) _onProgramFailure(failure);
         },
+        showsData: () => state.knowsProgram,
       ),
       followSnapshots<ProSubscription?>(
         _watchSubscription(params),
@@ -93,6 +94,7 @@ class ProMembershipCubit extends Cubit<ProMembershipState>
         onFailure: (failure) {
           if (_isCurrent(generation)) _onSubscriptionFailure(failure);
         },
+        showsData: () => state.subscriptionFreshness.fetchedAt != null,
       ),
     ]);
   }

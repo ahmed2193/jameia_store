@@ -26,7 +26,7 @@ import 'package:hero_mart/src/core/widgets/recipe_meta_line.dart';
 import 'package:hero_mart/src/core/widgets/shelf_add_button.dart';
 import 'package:hero_mart/src/core/widgets/state_art.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/delivery_code/delivery_code_tips_card.dart';
-import 'package:hero_mart/src/features/address/presentation/widgets/address_edit/center_marker.dart';
+import 'package:hero_mart/src/features/address/presentation/widgets/address_edit/picker_pin.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/chat/assistant_tool_glyphs.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/mascot/assistant_mascot.dart';
 import 'package:hero_mart/src/features/assistant/presentation/widgets/mascot/assistant_mascot_mood.dart';
@@ -88,7 +88,7 @@ void main() {
             mainAxisSize: MainAxisSize.min,
             children: [
               HeroSvgGlyph.art(HeroAssets.proCrown, semanticLabel: 'Pro'),
-              HeroSvgGlyph.art(HeroAssets.mapPin, size: 40, height: 48),
+              HeroSvgGlyph.art(HeroAssets.mapPinPicker, size: 40, height: 48),
             ],
           ),
         ),
@@ -99,7 +99,7 @@ void main() {
       expect(art.height, 30);
       expect(art.semanticsLabel, 'Pro');
       expect(art.excludeFromSemantics, isFalse);
-      final pin = _picture(tester, HeroAssets.mapPin);
+      final pin = _picture(tester, HeroAssets.mapPinPicker);
       expect(pin.colorFilter, isNull);
       expect(pin.width, 40);
       expect(pin.height, 48);
@@ -271,14 +271,18 @@ void main() {
       expect(find.byIcon(HeroIcons.account), findsOneWidget);
     });
 
-    testWidgets('the address map pin is the drawn Hero pin, decorative', (
-      tester,
-    ) async {
-      await pump(tester, const CenterMarker(raised: false, label: 'Home'));
-      final pin = _picture(tester, HeroAssets.mapPin);
-      expect(pin.width, 40);
-      expect(pin.height, 48);
+    testWidgets('the address map pin is the drawn Hero pin, decorative; '
+        'outside the delivery area it is the grey pin', (tester) async {
+      await pump(tester, const PickerPin(lifted: false, outside: false));
+      final pin = _picture(tester, HeroAssets.mapPinPicker);
+      expect(pin.width, PickerPin.width);
+      expect(pin.height, PickerPin.height);
       expect(pin.excludeFromSemantics, isTrue);
+
+      await pump(tester, const PickerPin(lifted: false, outside: true));
+      await tester.pumpAndSettle();
+      final away = _picture(tester, HeroAssets.mapPinAway);
+      expect(away.excludeFromSemantics, isTrue);
     });
 
     testWidgets('delivery code: the handover picture mirrors in RTL', (

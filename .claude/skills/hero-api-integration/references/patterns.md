@@ -179,12 +179,17 @@ Policy table and wipe rules: `docs/api_integration.md` §10. Mirror `features/or
    );
    ```
    The stream emits the device copy (when there is one) and then the network snapshot; a
-   `Failure` arrives on the stream's error channel, after any copy. A mutation whose reply
+   `Failure` arrives on the stream's error channel, after any copy. A request that fails (no
+   connection, timeout, 5xx / 429 — not 401 / 403 / 404) with no copy shown yet — a forced read, a
+   copy past `maxAge` — hands the saved copy over first as a `SnapshotOrigin.fallback` snapshot
+   (a forced read touches the disk only then). A mutation whose reply
    answers a cached read keeps it: `keepReply(slot, payload.raw)`.
 4. **Watch use case** (`StreamUseCase`, `WatchParams.cached` / `.fresh`) — the only way the cubit
    reaches it. Page 2+ stays a plain `UseCase` (never cached).
 5. **Cubit** `with SafeCubitMixin, SnapshotLoaderMixin`: `followSnapshots(stream, onSnapshot:,
-   onFailure:, channel:)` (a new load of the channel cancels the old one); `onSnapshot` stores
+   onFailure:, showsData:, channel:)` (a new load of the channel cancels the old one; `showsData`
+   = the channel's data is on screen: a fallback copy fills an empty screen by itself and is
+   dropped over data — `ScreenLoaderMixin.readScreen` passes it for you); `onSnapshot` stores
    the data + `DataFreshness(fetchedAt:, fromCache:)`; `onFailure` with data on screen →
    `freshness.failed()` + a transient `failure` (status stays loaded), without data → status
    error. `Future<void> onReconnected() => refreshOnReconnect(needed: state.freshness.isStale ||
@@ -201,9 +206,11 @@ Policy table and wipe rules: `docs/api_integration.md` §10. Mirror `features/or
      transport shows no snack — the check and the banner speak; offline it nudges the banner);
    - wrap the body in `ReconnectRefresh(onReconnected: cubit.onReconnected, child: …)`.
 7. **Tests:** cache hit (painted without a request inside `freshFor`), stale copy + network
-   replace, stale copy + failure (data kept, stale note), miss + `NetworkFailure` (offline
-   state), reconnect refresh (one request, none when fresh), a copy that no longer parses (a
-   miss, deleted), customer scope wiped on sign-out. Fakes: `hero-api-testing`.
+   replace, stale copy + failure (data kept, stale note), a forced refresh / a too-old copy +
+   failure on an empty screen (the copy, stale, no tap) and over data (data kept), miss +
+   `NetworkFailure` (offline state), reconnect refresh (one request, none when fresh), a copy
+   that no longer parses (a miss, deleted), customer scope wiped on sign-out. Fakes:
+   `hero-api-testing`.
 
 Never cached: the cart (own mirror, `no-store`), profile / addresses (own device copies),
 checkout data, any `POST`, search suggestions, auth / OTP, SSE frames, assistant transcripts.

@@ -8,7 +8,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:hero_mart/src/core/data/models/address.dart';
-import 'package:hero_mart/src/core/utils/hero_geocode.dart';
 
 void main() {
   test('HeroAddress.toJson()/fromJson() round-trip preserves all fields', () {

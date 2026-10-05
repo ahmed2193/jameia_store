@@ -20,7 +20,10 @@ import 'home_min_order_bar.dart';
 /// comes, and sinks back into it when it goes — the one bottom-bar timing
 /// ([CollapseReveal]: in medium, out fast), same as every catalogue page.
 /// After the first add it folds last (backlog B2-03: [MotionBeat.at] 3 —
-/// after the flight and the confetti have started).
+/// after the flight and the confetti have started). One bar at a time on
+/// the tab bar: while the customer is due the first-order gift its bar
+/// stands there instead (its details tell the minimum), and this one folds
+/// at once to make room.
 class HomeCartBar extends StatelessWidget {
   const HomeCartBar({super.key});
 
@@ -29,15 +32,19 @@ class HomeCartBar extends StatelessWidget {
     final minOrderKd = context.select<HomeCubit, double>(
       (cubit) => cubit.state.bootstrap.delivery?.minOrderKd ?? 0,
     );
+    final giftBar = context.select<HomeCubit, bool>(
+      (cubit) => cubit.state.firstOrderGift,
+    );
     return BlocSelector<CartCubit, CartState, bool>(
       selector: (cart) => cart.isEmpty,
       builder: (context, isEmpty) {
         final amount = Formatters.price(minOrderKd);
         return DeferredValue<bool>(
-          value: isEmpty && minOrderKd > 0,
+          value: isEmpty && minOrderKd > 0 && !giftBar,
           delay: MotionBeat.at(3),
-          // Only the fold after an add waits; the bar comes back at once.
-          deferWhen: (shown, next) => shown && !next,
+          // Only the fold after an add waits; the bar comes back at once,
+          // and makes room for the gift bar at once.
+          deferWhen: (shown, next) => shown && !next && !giftBar,
           builder: (context, show) => CollapseReveal(
             visible: show,
             alignment: AlignmentDirectional.topCenter,

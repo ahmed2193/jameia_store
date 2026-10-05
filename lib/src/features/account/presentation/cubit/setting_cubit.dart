@@ -130,10 +130,14 @@ class SettingCubit extends Cubit<SettingState>
   /// over exactly the switch — with `true` when the language did switch (the
   /// widget that owns the gesture fires the success haptic, never this cubit).
   ///
+  /// [context] must outlive the switch (the caller passes the app's, not a
+  /// page's); it is read before the first await only. One already gone
+  /// switches nothing.
+  ///
   /// Known debt (§12): the `BuildContext` parameter, inherited from
   /// [LocalizationCubit.changeLanguageAndWait].
   Future<bool> changeLanguage(BuildContext context, String languageCode) async {
-    if (state.isChangingLanguage) return false;
+    if (state.isChangingLanguage || !context.mounted) return false;
 
     final localizationCubit = context.read<LocalizationCubit>();
     if (localizationCubit.state.languageCode == languageCode) return false;

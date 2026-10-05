@@ -643,8 +643,11 @@ class _LiveMapLayerState extends State<LiveMapLayer>
             start: AppSpacing.gutter,
             end: AppSpacing.gutter,
             bottom: widget.padding.bottom + AppSpacing.s16,
+            // On the right in both directions, as in Google Maps: the map
+            // draws the Google logo bottom-left whatever the language, and
+            // it must stay in sight.
             child: Align(
-              alignment: AlignmentDirectional.centerEnd,
+              alignment: Alignment.centerRight,
               child: LiveMapCameraButton(
                 action: _followState.action(
                   stage: _stage,

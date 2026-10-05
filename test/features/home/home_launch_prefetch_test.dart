@@ -4,9 +4,13 @@
 // Review fixes: B1 — the read waits for the saved language and is never
 // handed over in another one; I4 — a read the session's end (or age) made
 // stale is closed, never adopted.
+// The read also waits for the session restore to know whose app this is:
+// the home copy is kept per identity, so a read before it would miss the
+// copy (and not save the reply) — home on an error offline, until a tap.
 import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
+import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/network/locale_provider.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/check_first_order_welcome_usecase.dart';
 import 'package:hero_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
@@ -50,11 +54,13 @@ void main() {
     readLanguages = <String>[];
     language = 'en';
     clock = DateTime(2026, 9, 29, 10);
+    // The session restore already knows whose app this is, unless a test
+    // says otherwise (group "the identity first").
     prefetch = HomeLaunchPrefetch(
       create,
       language: () => language,
       now: () => clock,
-    );
+    )..identityReady();
   });
 
   tearDown(() async {
@@ -188,11 +194,76 @@ void main() {
       }, language: () => const IntlLocaleProvider().languageCode);
 
       real
+        ..identityReady()
         ..start()
         ..localeReady();
 
       expect(sent, 'ar');
       expect(real.adopt(), same(built.single), reason: 'same language kept');
+    });
+  });
+
+  group('the identity first', () {
+    late HomeLaunchPrefetch waiting;
+
+    setUp(
+      () => waiting = HomeLaunchPrefetch(
+        create,
+        language: () => language,
+        now: () => clock,
+      ),
+    );
+
+    test('the launch frame and the saved language read nothing until the '
+        'session restore knows whose app this is', () async {
+      waiting
+        ..start()
+        ..localeReady();
+      expect(built, isEmpty, reason: 'the home copy is kept per identity');
+
+      waiting.identityReady();
+
+      expect(repository.feedReads, [false], reason: 'the copy first');
+      await pumpEventQueue();
+      expect(waiting.adopt(), same(built.single));
+    });
+
+    test('the identity may land first: the last gate reads', () {
+      waiting
+        ..identityReady()
+        ..localeReady();
+      expect(built, isEmpty);
+
+      waiting.start();
+
+      expect(built, hasLength(1));
+    });
+
+    test('a page built before the identity (a short splash) that failed '
+        'reads again once it is known — its copy, no tap', () async {
+      repository.feed = const Left(NetworkFailure());
+      final page = waiting.adopt();
+      await pumpEventQueue();
+      expect(page.state.status, LoadPhase.error);
+
+      repository.cachedFeed = feedOf('saved'); // the identity's copy
+      waiting.identityReady();
+      await pumpEventQueue();
+
+      expect(repository.feedReads, [false, false]);
+      expect(page.state.status, LoadPhase.loaded);
+      expect(page.state.feed.slides.single.id, 'saved');
+      expect(page.state.load.freshness.fromCache, isTrue);
+    });
+
+    test('a page that already shows data is left alone', () async {
+      final page = waiting.adopt();
+      await pumpEventQueue();
+      expect(page.state.status, LoadPhase.loaded);
+
+      waiting.identityReady();
+
+      expect(repository.feedReads, [false]);
     });
   });
 

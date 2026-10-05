@@ -10,6 +10,7 @@ import 'config/routes/routes.dart';
 import 'config/theme/app_theme.dart';
 import 'core/motion/haptics.dart';
 import 'core/motion/locale_swap_veil_host.dart';
+import 'core/utils/rebuild_descendants.dart';
 import 'core/widgets/hero_image.dart';
 import 'features/account/presentation/cubit/setting_cubit.dart';
 import 'features/account/presentation/cubit/setting_state.dart';
@@ -161,14 +162,21 @@ class _HeroAppState extends State<HeroApp> {
               }
             },
           ),
-          // Cart line names arrive resolved for the request language.
+          // A language switch: the whole app rebuilds once, in place, so
+          // every `.tr()` resolves again — const and offstage widgets too —
+          // while every route, tab, scroll and page cubit is kept (the
+          // screens whose data comes in the request language read it again
+          // themselves). Cart line names arrive resolved for the request
+          // language too.
           BlocListener<LocalizationCubit, LocalizationState>(
             listenWhen: (previous, current) =>
                 previous.isInitialized &&
                 current.isInitialized &&
                 previous.locale != current.locale,
-            listener: (context, _) =>
-                context.read<CartCubit>().onLocaleChanged(),
+            listener: (context, _) {
+              rebuildDescendants(context);
+              context.read<CartCubit>().onLocaleChanged();
+            },
           ),
           // The unread badge + its live (SSE) stream follow the session:
           // start on sign-in (OTP or launch restore), stop on sign-out / expiry.
@@ -235,6 +243,16 @@ class _HeroAppState extends State<HeroApp> {
               AppGlobalCubits.homeLocaleReady();
               _syncAccountLanguage(context);
             },
+          ),
+          // The session restore knows whose app this is (a guest, or the
+          // customer it restored): the splash's home read may start — the
+          // home copy is kept per identity, so a read before this would miss
+          // it and leave home on an error when the request fails.
+          BlocListener<AuthSessionCubit, AuthSessionState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status &&
+                current.status != AuthSessionStatus.unknown,
+            listener: (_, _) => AppGlobalCubits.homeIdentityReady(),
           ),
           // Once per offline → online recovery (never on raw status flips).
           BlocListener<ConnectivityCubit, ConnectivityState>(

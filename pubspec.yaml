@@ -59,10 +59,14 @@ dependencies:
 
   # Live maps for order tracking / shop + address map surfaces.
   google_maps_flutter: ^2.18.1
+  # The Android implementation (already resolved through the plugin) named
+  # directly for `GoogleMapsFlutterAndroid.warmup()`: the Maps SDK starts
+  # before the first map screen instead of stalling it (HeroMapWarmup).
+  google_maps_flutter_android: ^2.19.13
 
   # Real reverse-geocoding (native platform Geocoder) — resolves a pinned
   # LatLng to a localized city / area / street / house, matching the app
-  # locale. Falls back to the offline HeroGeocode when unavailable.
+  # locale. When it cannot answer, the pin stays a bare point.
   geocoding: ^5.0.0
 
   # Device current location for the address map-picker initial centre

@@ -125,6 +125,7 @@ class SearchCubit extends Cubit<SearchState>
         onFailure(failure);
         _blockFailed(_categoriesChannel, failure);
       },
+      showsData: () => state.discover.categories.isNotEmpty,
     ),
     followSnapshots(
       _watchBrands(params),
@@ -142,6 +143,7 @@ class SearchCubit extends Cubit<SearchState>
         onFailure(failure);
         _blockFailed(_brandsChannel, failure);
       },
+      showsData: () => state.discover.brands.isNotEmpty,
     ),
   ]);
 

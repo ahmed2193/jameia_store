@@ -102,6 +102,7 @@ class OrderTrackingCubit extends Cubit<OrderTrackingState>
         ),
       ),
       onFailure: (failure) => _onReadFailed(failure, poll: poll),
+      showsData: () => state.order != null,
     );
     if (generation == _generation) _schedule();
   }

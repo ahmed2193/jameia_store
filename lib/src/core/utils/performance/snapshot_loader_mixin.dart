@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -28,10 +29,18 @@ mixin SnapshotLoaderMixin<S> on Cubit<S> {
   /// Follows [source] on [channel] until it ends, replacing the load running
   /// there. Completes when this load is over — done, replaced, or the cubit
   /// closed — so a pull-to-refresh spinner can await it.
+  ///
+  /// [showsData]: the channel's data is on screen. The saved copy a failed
+  /// read hands over ([DataSnapshot.isFallback]) fills a screen with nothing
+  /// on it, at once and without a tap; over data already shown it is
+  /// dropped — that data is as new as the copy or newer (a page merged
+  /// below it, a change made on screen) — and the failure that follows
+  /// marks it stale.
   Future<void> followSnapshots<T>(
     Stream<DataSnapshot<T>> source, {
     required void Function(DataSnapshot<T> snapshot) onSnapshot,
     required void Function(Failure failure) onFailure,
+    bool Function()? showsData,
     Object channel = _mainChannel,
   }) {
     unawaited(_loads.remove(channel)?.cancel());
@@ -39,7 +48,9 @@ mixin SnapshotLoaderMixin<S> on Cubit<S> {
     _loads[channel] = load;
     load.subscription = source.listen(
       (snapshot) {
-        if (!isClosed) onSnapshot(snapshot);
+        if (isClosed) return;
+        if (snapshot.isFallback && (showsData?.call() ?? false)) return;
+        onSnapshot(snapshot);
       },
       onError: (Object error) {
         if (isClosed) return;
@@ -106,8 +117,17 @@ class _Load {
     if (!_done.isCompleted) _done.complete();
   }
 
+  /// Never fails. A read cancelled while its request is out (the cubit
+  /// closed, a newer load replaced it) still ends when the request does,
+  /// and when the request fails, an `async*` source hands that error to
+  /// this cancel — nobody follows the read any more, so it is only logged
+  /// (left to the caller's `unawaited`, it was an uncaught exception).
   Future<void> cancel() async {
     finish();
-    await subscription?.cancel();
+    try {
+      await subscription?.cancel();
+    } on Object catch (error) {
+      log('a cancelled read failed: $error', name: 'snapshots');
+    }
   }
 }

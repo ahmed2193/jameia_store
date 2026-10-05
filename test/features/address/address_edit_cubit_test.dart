@@ -9,6 +9,9 @@ import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/features/address/domain/entities/address_draft.dart';
 import 'package:hero_mart/src/features/address/domain/entities/address_field.dart';
+import 'package:hero_mart/src/features/address/domain/entities/building_type.dart';
+import 'package:hero_mart/src/features/address/domain/entities/new_address_seed.dart';
+import 'package:hero_mart/src/features/address/domain/entities/pinned_place.dart';
 import 'package:hero_mart/src/features/address/presentation/cubit/address_edit_cubit.dart';
 import 'package:hero_mart/src/features/address/presentation/cubit/address_edit_state.dart';
 
@@ -21,13 +24,15 @@ void main() {
   final created = address(n: 5);
   final existing = address(n: 1, floor: '2');
 
-  AddressEditCubit build({bool edit = false, bool isFirstAddress = false}) =>
-      AddressEditCubit(
-        addAddress: addAddress,
-        updateAddress: updateAddress,
-        original: edit ? existing : null,
-        isFirstAddress: isFirstAddress,
-      );
+  AddressEditCubit build({
+    bool edit = false,
+    NewAddressSeed seed = const NewAddressSeed(),
+  }) => AddressEditCubit(
+    addAddress: addAddress,
+    updateAddress: updateAddress,
+    original: edit ? existing : null,
+    seed: seed,
+  );
 
   void fillValid(AddressEditCubit cubit) {
     cubit
@@ -49,13 +54,33 @@ void main() {
       addTearDown(cubit.close);
       expect(cubit.state.isEditing, isFalse);
       expect(cubit.state.draft, const AddressDraft());
-      expect(cubit.state.draft.location, AddressDraft.kuwaitCity);
+      expect(cubit.state.draft.location, GeoPointEntity.kuwaitCity);
     });
 
     test("a customer's first address starts as the default", () {
-      final cubit = build(isFirstAddress: true);
+      final cubit = build(seed: const NewAddressSeed(isDefault: true));
       addTearDown(cubit.close);
       expect(cubit.state.draft.isDefault, isTrue);
+    });
+
+    test("a new address starts with the customer's own number", () {
+      final cubit = build(
+        seed: const NewAddressSeed(customerPhone: '+96599887766'),
+      );
+      addTearDown(cubit.close);
+      expect(cubit.state.draft.phone, '99887766');
+      expect(cubit.state.errorFor(AddressField.phone), isNull);
+    });
+
+    test('an edited address keeps its own number, not the account one', () {
+      final cubit = AddressEditCubit(
+        addAddress: addAddress,
+        updateAddress: updateAddress,
+        original: existing,
+        seed: const NewAddressSeed(customerPhone: '+96599887766'),
+      );
+      addTearDown(cubit.close);
+      expect(cubit.state.draft.phone, '50001122');
     });
 
     test('edit mode: the draft holds the saved values', () {
@@ -75,9 +100,11 @@ void main() {
         ..labelChanged(AddressLabel.work)
         ..defaultChanged(true)
         ..pinConfirmed(
-          const GeoPointEntity(lat: 29.1, lng: 48.1),
-          city: 'Fintas',
-          street: 'Street 5',
+          const PinnedPlace(
+            location: GeoPointEntity(lat: 29.1, lng: 48.1),
+            area: 'Fintas',
+            street: 'Street 5',
+          ),
         );
       final draft = cubit.state.draft;
       expect(draft.notes, 'Gate code 12');
@@ -86,6 +113,99 @@ void main() {
       expect(draft.location, const GeoPointEntity(lat: 29.1, lng: 48.1));
       expect(draft.city, 'Fintas');
       expect(draft.street, 'Street 5');
+    });
+
+    test('a pin moved to another place rewrites the address from the map, '
+        'typed words included', () {
+      final cubit = build();
+      addTearDown(cubit.close);
+      cubit
+        ..pinConfirmed(
+          const PinnedPlace(
+            location: GeoPointEntity(lat: 29.33, lng: 48.07),
+            area: 'Salmiya',
+            block: '7',
+            street: 'Street 22',
+          ),
+        )
+        ..fieldChanged(AddressField.street, 'Gulf Road')
+        ..pinConfirmed(
+          const PinnedPlace(
+            location: GeoPointEntity(lat: 29.27, lng: 47.95),
+            area: 'Farwaniya',
+            block: '3',
+            street: 'Street 9',
+          ),
+        );
+      final draft = cubit.state.draft;
+      expect(draft.location, const GeoPointEntity(lat: 29.27, lng: 47.95));
+      expect(draft.city, 'Farwaniya');
+      expect(draft.block, '3');
+      expect(draft.street, 'Street 9');
+    });
+
+    test('an edited address follows its moved pin: its area, block, street '
+        'and building become what the map read there; its own details '
+        'stay', () {
+      final cubit = build(edit: true);
+      addTearDown(cubit.close);
+      cubit.pinConfirmed(
+        const PinnedPlace(
+          location: GeoPointEntity(lat: 29.2, lng: 48.0),
+          area: 'Somewhere else',
+          street: 'Other street',
+        ),
+      );
+      final draft = cubit.state.draft;
+      expect(draft.location, const GeoPointEntity(lat: 29.2, lng: 48.0));
+      expect(draft.city, 'Somewhere else');
+      expect(draft.street, 'Other street');
+      expect(draft.block, isEmpty);
+      expect(draft.building, isEmpty);
+      expect(draft.floor, existing.floor);
+      expect(draft.phone, isNotEmpty);
+    });
+
+    test('a read of the confirmed pin that came after Confirm stopped '
+        'waiting fills what is still empty; a read of another spot, or of '
+        'an address with no pin yet, does nothing', () {
+      final cubit = build();
+      addTearDown(cubit.close);
+      const spot = GeoPointEntity(lat: 29.33, lng: 48.07);
+      cubit.pinReadLate(const PinnedPlace(location: spot, area: 'Salmiya'));
+      expect(cubit.state.draft.city, isEmpty); // no pin confirmed yet
+
+      cubit.pinConfirmed(const PinnedPlace(location: spot)); // timed out
+      cubit.fieldChanged(AddressField.street, 'My street');
+      cubit.pinReadLate(
+        const PinnedPlace(
+          location: GeoPointEntity(lat: 29.2, lng: 48.0),
+          area: 'Elsewhere',
+        ),
+      );
+      expect(cubit.state.draft.city, isEmpty);
+
+      cubit.pinReadLate(
+        const PinnedPlace(
+          location: spot,
+          area: 'Salmiya',
+          block: '7',
+          street: 'Street 9',
+        ),
+      );
+      final draft = cubit.state.draft;
+      expect(draft.city, 'Salmiya');
+      expect(draft.block, '7');
+      expect(draft.street, 'My street'); // typed meanwhile: kept
+    });
+
+    test('a house drops the floor and the flat it no longer asks for', () {
+      final cubit = build(edit: true);
+      addTearDown(cubit.close);
+      expect(cubit.state.draft.buildingType, BuildingType.apartment);
+      cubit.buildingTypeChanged(BuildingType.house);
+      expect(cubit.state.draft.buildingType, BuildingType.house);
+      expect(cubit.state.draft.floor, isEmpty);
     });
 
     test('inline errors appear only after a rejected submit', () async {

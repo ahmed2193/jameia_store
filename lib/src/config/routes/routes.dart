@@ -69,6 +69,8 @@ class Routes {
   // Address & location
   static const String addressList = '/address-list';
   static const String addressEdit = '/address-edit';
+  static const String addressSearch =
+      '/address-search'; // arg: GeoPointEntity near; pops a MapDestination
 
   // Marketing & coupons
   static const String myCoupons = '/my-coupons';

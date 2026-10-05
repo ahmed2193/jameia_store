@@ -28,6 +28,7 @@ import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/brand_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
 import 'package:hero_mart/src/core/domain/entities/data_freshness.dart';
+import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
 import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/motion/haptics.dart';
@@ -47,8 +48,10 @@ import 'package:hero_mart/src/features/account/presentation/cubit/loyalty_reward
 import 'package:hero_mart/src/features/account/presentation/cubit/loyalty_rewards_state.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/delivery_code/delivery_code_body.dart';
 import 'package:hero_mart/src/features/account/presentation/widgets/rewards/rewards_body.dart';
-import 'package:hero_mart/src/features/address/presentation/widgets/address_edit/not_serviceable_banner.dart';
-import 'package:hero_mart/src/features/address/presentation/widgets/address_edit/select_sheet.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_picker_cubit.dart';
+import 'package:hero_mart/src/features/address/presentation/cubit/address_picker_state.dart';
+import 'package:hero_mart/src/features/address/presentation/widgets/address_edit/address_map_footer.dart';
+import 'package:hero_mart/src/features/address/presentation/widgets/address_edit/pin_hint_card.dart';
 import 'package:hero_mart/src/features/auth/domain/entities/phone_number.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/otp_cubit.dart';
 import 'package:hero_mart/src/features/auth/presentation/cubit/otp_state.dart';
@@ -610,29 +613,47 @@ void main() {
         'warns, and confirms nothing', (tester) async {
       final haptics = _recordHaptics(tester);
       var confirmed = 0;
+      var choseArea = 0;
+      final picker = _MockAddressPickerCubit();
+      whenListen(
+        picker,
+        const Stream<AddressPickerState>.empty(),
+        initialState: const AddressPickerState(
+          target: GeoPointEntity(lat: 31.6, lng: -8),
+          openingZoom: AddressPickerState.streetZoom,
+          pin: PinStatus.outside,
+        ),
+      );
       await tester.pumpWidget(
         app(
-          SingleChildScrollView(
-            child: SelectSheet(
-              candidates: const [],
-              selected: 0,
-              serviceable: false,
-              loading: false,
-              onSelect: (_) {},
-              onConfirm: () => confirmed++,
+          BlocProvider<AddressPickerCubit>.value(
+            value: picker,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: AddressMapFooter(
+                onConfirm: () => confirmed++,
+                onChooseArea: () => choseArea++,
+              ),
             ),
           ),
         ),
       );
-      await tester.tap(find.text('Confirm delivery location'));
+      expect(find.text('We only deliver inside Kuwait'), findsOneWidget);
+      await tester.tap(find.text('Confirm address'));
       final shake = find.ancestor(
-        of: find.byType(NotServiceableBanner),
+        of: find.byType(PinHintCard),
         matching: find.byType(ShakeX),
       );
       expect(await _peakShake(tester, shake), greaterThan(0));
       expect(haptics, ['HapticFeedbackType.heavyImpact']);
       expect(confirmed, 0);
       await tester.pumpAndSettle();
+      // The way back in: the areas Hero delivers to.
+      await tester.tap(find.text('Choose area'));
+      expect(choseArea, 1);
     });
   });
 }
+
+class _MockAddressPickerCubit extends MockCubit<AddressPickerState>
+    implements AddressPickerCubit {}

@@ -13,6 +13,7 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
     required this.feed,
     this.bootstrap = HomeBootstrap.empty,
     this.welcomeDue = false,
+    this.firstOrderGift = false,
     this.duePopups = const <HomeMarketingPopup>[],
     this.popupsShown = false,
   });
@@ -34,6 +35,11 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
   /// The first-order free-delivery gift opens the popup queue (the store runs
   /// it and the customer has no order yet).
   final bool welcomeDue;
+
+  /// The customer is still due the first-order free delivery (the store runs
+  /// it and they have no order yet): the bar over the tab bar says so until
+  /// their first order is placed. Unlike [welcomeDue] it outlives the popup.
+  final bool firstOrderGift;
 
   /// Marketing popups allowed to show now (frequency already applied).
   final List<HomeMarketingPopup> duePopups;
@@ -57,6 +63,7 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
     HomeFeed? feed,
     HomeBootstrap? bootstrap,
     bool? welcomeDue,
+    bool? firstOrderGift,
     List<HomeMarketingPopup>? duePopups,
     bool? popupsShown,
   }) => HomeState(
@@ -64,6 +71,7 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
     feed: feed ?? this.feed,
     bootstrap: bootstrap ?? this.bootstrap,
     welcomeDue: welcomeDue ?? this.welcomeDue,
+    firstOrderGift: firstOrderGift ?? this.firstOrderGift,
     duePopups: duePopups ?? this.duePopups,
     popupsShown: popupsShown ?? this.popupsShown,
   );
@@ -74,6 +82,7 @@ class HomeState extends Equatable implements ScreenLoadState<HomeState> {
     feed,
     bootstrap,
     welcomeDue,
+    firstOrderGift,
     duePopups,
     popupsShown,
   ];

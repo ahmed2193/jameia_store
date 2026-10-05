@@ -7,6 +7,7 @@ import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/motion/haptics.dart';
 import '../../../../../core/motion/locale_swap_veil.dart';
 import '../../../../../core/motion/motion.dart';
+import '../../../../../core/navigation/app_keys.dart';
 import '../../../../../core/responsive/app_size.dart';
 import '../../../../../core/widgets/hero_segmented_control.dart';
 import '../../cubit/setting_cubit.dart';
@@ -47,6 +48,10 @@ class _SettingsLanguageTileState extends State<SettingsLanguageTile> {
     if (_pending != null) return;
     setState(() => _pending = language);
     final settings = context.read<SettingCubit>();
+    // The switch runs after two waits, and a back gesture while the veil is
+    // up closes Settings: it runs on the app's navigator context, which
+    // outlives every page — never on this row's.
+    final appContext = navigatorKey.currentContext ?? context;
     // Let the thumb land before the veil covers it.
     await Future<void>.delayed(
       MotionGuard.duration(context, AppSprings.calm.duration),
@@ -58,7 +63,7 @@ class _SettingsLanguageTileState extends State<SettingsLanguageTile> {
         context,
         color: AppColors.mediumBackground,
         commit: () async {
-          switched = await settings.changeLanguage(context, language.code);
+          switched = await settings.changeLanguage(appContext, language.code);
         },
       );
       if (switched) Haptics.done();

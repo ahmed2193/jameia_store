@@ -7,6 +7,12 @@ enum SnapshotOrigin {
 
   /// The copy saved on the device the last time the server answered.
   cache,
+
+  /// The saved copy, handed over because the server could not answer (its
+  /// failure follows): the read had skipped the copy (a pull to refresh, a
+  /// reconnect) or found it too old to show first. It fills a screen with
+  /// nothing on it; a screen that shows data keeps its data.
+  fallback,
 }
 
 /// A screen's data together with how fresh it is: what a cached read emits,
@@ -24,7 +30,12 @@ class DataSnapshot<T> extends Equatable {
   final DateTime fetchedAt;
   final SnapshotOrigin origin;
 
-  bool get isFromCache => origin == SnapshotOrigin.cache;
+  /// The device copy ([SnapshotOrigin.cache] or [SnapshotOrigin.fallback]),
+  /// not the server's answer of just now.
+  bool get isFromCache => origin != SnapshotOrigin.network;
+
+  /// The device copy handed over after the server failed.
+  bool get isFallback => origin == SnapshotOrigin.fallback;
 
   /// The same freshness around other data (a page aggregate built from it).
   DataSnapshot<R> map<R>(R Function(T data) convert) => DataSnapshot<R>(

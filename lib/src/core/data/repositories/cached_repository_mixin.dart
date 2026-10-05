@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:developer';
 
 import '../../domain/entities/data_snapshot.dart';
+import '../../error/exceptions.dart';
+import '../../storage/json_cache_store.dart';
 import '../datasources/cache_slots.dart';
 import '../models/remote_payload.dart';
 import 'base_repository_mixin.dart';
@@ -15,14 +17,21 @@ import 'base_repository_mixin.dart';
 ///   2. then the network: its snapshot replaces the copy and is saved
 ///      (fire and forget — a slow or failed write never delays the screen);
 ///   3. a failure arrives as a `Failure` on the error channel AFTER any copy,
-///      so the screen keeps the copy and marks it stale.
+///      so the screen keeps the copy and marks it stale. When no copy was
+///      shown yet — [forceRefresh] skipped it, or it was past `maxAge` — the
+///      saved copy comes first as a [SnapshotOrigin.fallback] snapshot: a
+///      screen with nothing on it shows it (dated, stale) instead of an
+///      error, and one that shows data keeps its own. So whatever asked —
+///      a first load, a pull, a reconnect, a recreated screen — a failure
+///      never hides what the device has saved.
 ///
 /// A copy that no longer parses (the DTO changed, a corrupt file) is a miss:
 /// it is deleted and logged, never shown as an error. A reply that lands
-/// after the owner changed (signed out mid-request) is not saved. A copy
-/// saved "in the future" (the clock moved back) is shown but never counts as
-/// fresh. With [forceRefresh] the copy is not read at all: the screen already
-/// shows data and wants the server's.
+/// after the owner changed (signed out mid-request) is not saved, and no
+/// copy is handed over for them. A copy saved "in the future" (the clock
+/// moved back) is shown but never counts as fresh. With [forceRefresh] the
+/// copy is read only when the request fails — the happy path costs no disk
+/// read.
 mixin CachedRepositoryMixin on BaseRepositoryMixin {
   static const String _logName = 'cache';
 
@@ -49,16 +58,39 @@ mixin CachedRepositoryMixin on BaseRepositoryMixin {
     required E Function(M model) toEntity,
     required bool forceRefresh,
   }) async* {
+    var copyShown = false;
+    // Past `maxAge`: not shown first, kept in case the request fails.
+    CachedJson? tooOld;
     if (cache != null && !forceRefresh) {
-      final copy = await _readCopy(cache, toEntity);
-      if (copy != null) {
-        yield copy;
-        final age = cacheClock().difference(copy.fetchedAt);
-        final fresh = !age.isNegative && age < cache.namespace.freshFor;
-        if (fresh) return;
+      final saved = await cache.read();
+      if (saved != null && _isTooOld(cache, saved)) {
+        tooOld = saved;
+      } else if (saved != null) {
+        final copy = _snapshotOf(cache, saved, toEntity, SnapshotOrigin.cache);
+        if (copy != null) {
+          yield copy;
+          copyShown = true;
+          final age = cacheClock().difference(copy.fetchedAt);
+          final fresh = !age.isNegative && age < cache.namespace.freshFor;
+          if (fresh) return;
+        }
       }
     }
-    final payload = await fetch();
+    final RemotePayload<M> payload;
+    try {
+      payload = await fetch();
+    } on Object catch (error) {
+      if (cache != null && !copyShown && _copyMayStandIn(error)) {
+        final fallback = await _fallback(
+          cache,
+          toEntity,
+          saved: tooOld,
+          readSaved: forceRefresh,
+        );
+        if (fallback != null) yield fallback;
+      }
+      rethrow;
+    }
     final fetchedAt = cacheClock();
     final data = toEntity(payload.model);
     if (cache != null) _save(cache, payload.raw, fetchedAt);
@@ -69,21 +101,56 @@ mixin CachedRepositoryMixin on BaseRepositoryMixin {
     );
   }
 
-  /// The device copy as a snapshot, or `null` — a miss, a copy past the
-  /// namespace's `maxAge`, or one that no longer parses (then deleted).
-  Future<DataSnapshot<E>?> _readCopy<M, E>(
+  /// The connection or the server failed — the saved copy may stand in. A
+  /// reply about the data itself — gone (404), not yours (401 / 403) — is
+  /// the screen's answer, and a copy never hides it.
+  static bool _copyMayStandIn(Object error) =>
+      error is! UnauthorizedException &&
+      error is! ForbiddenException &&
+      error is! NotFoundException;
+
+  bool _isTooOld<M>(CacheSlot<M> cache, CachedJson saved) =>
+      cacheClock().difference(saved.savedAt) > cache.namespace.maxAge;
+
+  /// The request failed with no copy on screen: the saved one, whatever its
+  /// age — [saved] when the read already holds it (past `maxAge`), else
+  /// read now when [readSaved] (a forced read skipped it) — or `null`. Never
+  /// for an owner who changed during the request, and never an error of its
+  /// own: the request's failure is what the screen is told.
+  Future<DataSnapshot<E>?> _fallback<M, E>(
     CacheSlot<M> cache,
+    E Function(M model) toEntity, {
+    required CachedJson? saved,
+    required bool readSaved,
+  }) async {
+    if (!cache.isCurrent) return null;
+    try {
+      final copy = saved ?? (readSaved ? await cache.read() : null);
+      if (copy == null) return null;
+      return _snapshotOf(cache, copy, toEntity, SnapshotOrigin.fallback);
+    } on Object catch (error) {
+      log(
+        '${cache.namespace.name}: saved copy unreadable '
+        '(${error.runtimeType})',
+        name: _logName,
+      );
+      return null;
+    }
+  }
+
+  /// [saved] as a snapshot from [origin], or `null` when it no longer
+  /// parses (then deleted and logged).
+  DataSnapshot<E>? _snapshotOf<M, E>(
+    CacheSlot<M> cache,
+    CachedJson saved,
     E Function(M model) toEntity,
-  ) async {
-    final saved = await cache.read();
-    if (saved == null) return null;
-    final age = cacheClock().difference(saved.savedAt);
-    if (age > cache.namespace.maxAge) return null;
+    SnapshotOrigin origin,
+  ) {
     try {
       return DataSnapshot<E>(
         data: toEntity(cache.parse(saved.data)),
         fetchedAt: saved.savedAt,
-        origin: SnapshotOrigin.cache,
+        origin: origin,
       );
     } on Object catch (error) {
       log(

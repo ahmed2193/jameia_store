@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:hero_mart/src/core/data/hero_repository.dart';
 import 'package:hero_mart/src/core/data/models/address.dart';
-import 'package:hero_mart/src/core/utils/hero_geocode.dart';
 
 void main() {
   // load() reads bundled assets via rootBundle + persists via shared_preferences.

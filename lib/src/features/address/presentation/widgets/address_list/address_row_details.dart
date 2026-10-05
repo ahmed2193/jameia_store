@@ -14,22 +14,20 @@ class AddressRowDetails extends StatelessWidget {
 
   final HeroAddressEntity address;
 
-  /// "Block 7" for a number; a named part ("Fahad Al-Salem Street") as is.
-  static final RegExp _startsWithDigit = RegExp(r'^\d');
-
-  String get _line {
-    String part(String key, String value) => _startsWithDigit.hasMatch(value)
-        ? key.tr(namedArgs: {'value': value})
-        : value;
+  /// Each part as every address line writes it ([addressLinePart]).
+  String _line({required bool rtl}) {
+    String part(AddressLinePart part, String value) =>
+        addressLinePart(part, value, rtl: rtl);
     return [
-      if (address.city.isNotEmpty) address.city,
-      if (address.block.isNotEmpty) part('addr.line.block', address.block),
-      if (address.street.isNotEmpty) part('addr.line.street', address.street),
+      if (address.city.isNotEmpty) addressLineName(address.city, rtl: rtl),
+      if (address.block.isNotEmpty) part(AddressLinePart.block, address.block),
+      if (address.street.isNotEmpty)
+        part(AddressLinePart.street, address.street),
       if (address.building.isNotEmpty)
-        part('addr.line.building', address.building),
-      if (address.floor.isNotEmpty) part('addr.line.floor', address.floor),
+        part(AddressLinePart.building, address.building),
+      if (address.floor.isNotEmpty) part(AddressLinePart.floor, address.floor),
       if (address.apartment.isNotEmpty)
-        part('addr.line.apartment', address.apartment),
+        part(AddressLinePart.apartment, address.apartment),
     ].join('addr.line.separator'.tr());
   }
 
@@ -48,7 +46,7 @@ class AddressRowDetails extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.s4),
         Text(
-          _line,
+          _line(rtl: Directionality.of(context) == TextDirection.rtl),
           style: AppTextStyles.headingSmall.copyWith(
             fontWeight: AppTextStyles.bold,
           ),

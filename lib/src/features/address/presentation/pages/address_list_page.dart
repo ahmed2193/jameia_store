@@ -8,6 +8,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../core/navigation/navigation.dart';
 import '../../../../core/responsive/content_clamp.dart';
 import '../../../../core/widgets/connectivity_scope.dart';
+import '../../../../core/widgets/hero_map_warmup.dart';
 import '../../../../core/widgets/hero_title_bar.dart';
 import '../cubit/address_book_cubit.dart';
 import '../cubit/address_book_state.dart';
@@ -38,6 +39,13 @@ class _AddressListPageState extends State<AddressListPage> {
   void initState() {
     super.initState();
     unawaited(context.read<AddressBookCubit>().ensureSynced());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Adding or editing an address opens the map picker.
+    HeroMapWarmup.afterEntrance(context);
   }
 
   static bool _listenWhen(

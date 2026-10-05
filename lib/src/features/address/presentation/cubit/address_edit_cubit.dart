@@ -2,18 +2,20 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/domain/entities/address_label.dart';
-import '../../../../core/domain/entities/geo_point_entity.dart';
 import '../../../../core/domain/entities/hero_address_entity.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/performance/safe_cubit_mixin.dart';
 import '../../domain/entities/address_draft.dart';
 import '../../domain/entities/address_field.dart';
+import '../../domain/entities/building_type.dart';
+import '../../domain/entities/new_address_seed.dart';
+import '../../domain/entities/pinned_place.dart';
 import '../../domain/usecases/add_address_usecase.dart';
 import '../../domain/usecases/update_address_usecase.dart';
 import 'address_edit_state.dart';
 
 /// Create / edit address form (page-scoped, `registerFactoryParam`): holds
-/// the draft and saves it — `POST /v1/account/addresses` for a new address,
+/// the draft — a new one starts from a [NewAddressSeed] — and saves it — `POST /v1/account/addresses` for a new address,
 /// `PATCH …/:addressId` with the changed fields for an existing one. The page
 /// hands the saved address to the app-global `AddressBookCubit`.
 class AddressEditCubit extends Cubit<AddressEditState>
@@ -22,13 +24,12 @@ class AddressEditCubit extends Cubit<AddressEditState>
     required this._addAddress,
     required this._updateAddress,
     HeroAddressEntity? original,
-    bool isFirstAddress = false,
+    NewAddressSeed seed = const NewAddressSeed(),
   }) : super(
          AddressEditState(
            original: original,
-           // A customer's first address becomes the default one.
            draft: original == null
-               ? AddressDraft(isDefault: isFirstAddress)
+               ? AddressDraft.seeded(seed)
                : AddressDraft.fromAddress(original),
          ),
        );
@@ -45,25 +46,28 @@ class AddressEditCubit extends Cubit<AddressEditState>
   void defaultChanged(bool isDefault) =>
       _edit(state.draft.copyWith(isDefault: isDefault));
 
-  /// The customer confirmed the pin; the reverse-geocoded parts pre-fill the
-  /// form (an empty part never wipes what was typed).
-  void pinConfirmed(
-    GeoPointEntity location, {
-    String city = '',
-    String block = '',
-    String street = '',
-    String building = '',
-    String apartment = '',
-  }) => _edit(
-    state.draft.pinnedAt(
-      location,
-      city: city,
-      block: block,
-      street: street,
-      building: building,
-      apartment: apartment,
+  void buildingTypeChanged(BuildingType type) =>
+      _edit(state.draft.withBuildingType(type));
+
+  /// The customer confirmed the pin at [place]: the address follows it,
+  /// what the map read there fills the form (`AddressDraft.pinnedAt`).
+  void pinConfirmed(PinnedPlace place) => safeEmit(
+    state.copyWith(
+      draft: state.draft.pinnedAt(place.location, parts: place.parts),
     ),
   );
+
+  /// The map read the pin the form holds only after Confirm stopped waiting
+  /// for it: what it read fills the parts still empty. A read of any other
+  /// spot is not this address's.
+  void pinReadLate(PinnedPlace place) {
+    final draft = state.draft;
+    if (!draft.hasPin || place.isBare || place.location != draft.location) {
+      return;
+    }
+    final filled = draft.filledFrom(place.parts);
+    if (filled != draft) safeEmit(state.copyWith(draft: filled));
+  }
 
   Future<void> save() async {
     if (state.isSaving || state.status == AddressEditStatus.saved) return;

@@ -214,5 +214,9 @@
   "officeAccent": "0xE0D4",
   "download": "0xE0D5",
   "share": "0xE0D6",
-  "printer": "0xE0D7"
+  "printer": "0xE0D7",
+  "apartment": "0xE0D8",
+  "apartmentAccent": "0xE0D9",
+  "navigation": "0xE0DA",
+  "navigationAccent": "0xE0DB"
 }

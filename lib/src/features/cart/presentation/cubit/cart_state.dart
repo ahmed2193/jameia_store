@@ -22,6 +22,7 @@ class CartState extends Equatable {
     this.changedBy = CartAction.none,
     this.quantityByProduct = const <String, int>{},
     this.revision = 0,
+    this.ordersPlaced = 0,
   });
 
   final CartEntity cart;
@@ -58,6 +59,11 @@ class CartState extends Equatable {
   /// reach listeners.
   final int revision;
 
+  /// Orders placed from this cart since the app started: bumps once per
+  /// order, so a screen that offers something until the first order (home's
+  /// first-order free-delivery bar) hears that it is spent.
+  final int ordersPlaced;
+
   int get totalQty => cart.itemCount;
   bool get isEmpty => cart.isEmpty;
   double get subtotalKd => cart.totals.subtotalKd;
@@ -81,6 +87,7 @@ class CartState extends Equatable {
     CartAction? changedBy,
     Map<String, int>? quantityByProduct,
     int? revision,
+    int? ordersPlaced,
   }) => CartState(
     cart: cart ?? this.cart,
     isRestored: isRestored ?? this.isRestored,
@@ -93,6 +100,7 @@ class CartState extends Equatable {
     changedBy: changedBy ?? CartAction.none,
     quantityByProduct: quantityByProduct ?? this.quantityByProduct,
     revision: revision ?? this.revision,
+    ordersPlaced: ordersPlaced ?? this.ordersPlaced,
   );
 
   @override
@@ -110,5 +118,6 @@ class CartState extends Equatable {
     failure,
     failedAction,
     changedBy,
+    ordersPlaced,
   ];
 }

@@ -21,12 +21,14 @@ class AppConstants {
   /// holds the map for the full request timeouts.
   static const Duration roadRouteBudget = Duration(seconds: 6);
 
-  /// Google Maps Platform key for the HTTP Places/geocoding endpoints, injected
-  /// at build time: `flutter run --dart-define=MAPS_API_KEY=<key>`. Empty by
-  /// default so NO secret ships in source; a web-service key can't be restricted
-  /// by app signature, so a leaked literal is billable by anyone. When empty the
-  /// LBS layer skips the billed Places calls and falls back to the native
-  /// geocoder + offline [HeroGeocode].
+  /// Google Maps Platform key for the address search's Places API (New)
+  /// calls (autocomplete + place details), injected at build time:
+  /// `flutter run --dart-define=MAPS_API_KEY=<key>`. Empty by default so NO
+  /// secret ships in source; a web-service key can't be restricted by app
+  /// signature, so a leaked literal is billable by anyone — never pass the
+  /// map SDK key from the Android manifest / iOS AppDelegate here. When empty
+  /// the search makes no billed call: it asks the device geocoder and the
+  /// app's own table of Kuwait areas instead.
   static const String mapsApiKey = String.fromEnvironment('MAPS_API_KEY');
 
   // ── Storage keys (shared_preferences) ──────────────────────────────────────

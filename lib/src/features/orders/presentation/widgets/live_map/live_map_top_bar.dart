@@ -1,16 +1,19 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_shadows.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
+import '../../../../../core/design/hero_icons.dart';
 import '../../../../../core/responsive/app_size.dart';
-import '../../../../../core/widgets/round_back_button.dart';
+import '../../../../../core/widgets/hero_map_button.dart';
 import 'live_map_live_dot.dart';
 
-/// Floats over the top of the live map: back to the order, and a white pill
-/// saying the map is live.
+/// Floats over the top of the live map: back to the order (the same round
+/// map button as the address picker's), and a white pill saying the map is
+/// live.
 class LiveMapTopBar extends StatelessWidget {
   const LiveMapTopBar({super.key});
 
@@ -29,12 +32,10 @@ class LiveMapTopBar extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: AppShadows.medium,
-                ),
-                child: RoundBackButton(),
+              HeroMapButton(
+                icon: HeroIcons.back,
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                onPressed: () => context.pop(),
               ),
               const SizedBox(width: AppSpacing.s12),
               DecoratedBox(

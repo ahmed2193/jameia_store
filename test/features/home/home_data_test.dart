@@ -1,13 +1,15 @@
 // Home remote datasource (through the real DioConsumer on a scripted
 // transport), the cache datasource (the live fixtures parse back, one copy
 // per identity), local popup stamps, and the repository: entities, the
-// cache-then-network read, and the failure mapping.
+// cache-then-network read, and the failure mapping. The launch read, end to
+// end: offline, home paints the identity's saved copy by itself (no tap).
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/data/datasources/cache_slots.dart';
 import 'package:hero_mart/src/core/data/models/remote_payload.dart';
 import 'package:hero_mart/src/core/domain/entities/data_snapshot.dart';
+import 'package:hero_mart/src/core/domain/entities/screen_load.dart';
 import 'package:hero_mart/src/core/error/exceptions.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
 import 'package:hero_mart/src/core/network/dio_consumer.dart';
@@ -22,6 +24,14 @@ import 'package:hero_mart/src/features/home/data/models/home_feed_model.dart';
 import 'package:hero_mart/src/features/home/data/models/home_init_model.dart';
 import 'package:hero_mart/src/features/home/data/repositories/home_repository_impl.dart';
 import 'package:hero_mart/src/features/home/domain/entities/home_feed.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/check_first_order_welcome_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/compose_home_feed_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/mark_home_popups_shown_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/select_due_home_popups_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/watch_home_bootstrap_usecase.dart';
+import 'package:hero_mart/src/features/home/domain/usecases/watch_home_feed_usecase.dart';
+import 'package:hero_mart/src/features/home/presentation/cubit/home_cubit.dart';
+import 'package:hero_mart/src/features/home/presentation/cubit/home_launch_prefetch.dart';
 
 import '../../core/network/network_test_fakes.dart';
 import '../../core/storage/cache_test_fakes.dart';
@@ -76,6 +86,7 @@ class _ScriptedRemote implements HomeRemoteDataSource {
     final raw = liveInitJson();
     return RemotePayload(HomeInitModel.fromJson(raw), raw);
   }
+
   @override
   Future<int> countOrders() async {
     final error = ordersError;
@@ -139,24 +150,32 @@ void main() {
       expect(init.proEnabled, isTrue);
     });
 
-    test('countOrders GETs one row of /v1/orders and reads the total', () async {
-      final dataSource = build(
-        FakeHttpClientAdapter(
-          (_, _) => okBody({
-            'data': <Object>[],
-            'pagination': {'total': 0, 'page': 1, 'limit': 1, 'hasMore': false},
-          }),
-        ),
-      );
+    test(
+      'countOrders GETs one row of /v1/orders and reads the total',
+      () async {
+        final dataSource = build(
+          FakeHttpClientAdapter(
+            (_, _) => okBody({
+              'data': <Object>[],
+              'pagination': {
+                'total': 0,
+                'page': 1,
+                'limit': 1,
+                'hasMore': false,
+              },
+            }),
+          ),
+        );
 
-      final total = await dataSource.countOrders();
+        final total = await dataSource.countOrders();
 
-      final request = adapter.requests.single;
-      expect(request.method, 'GET');
-      expect(request.path, EndPoints.orders);
-      expect(request.queryParameters, {'page': 1, 'limit': 1});
-      expect(total, 0);
-    });
+        final request = adapter.requests.single;
+        expect(request.method, 'GET');
+        expect(request.path, EndPoints.orders);
+        expect(request.queryParameters, {'page': 1, 'limit': 1});
+        expect(total, 0);
+      },
+    );
 
     test('countOrders signed out is an UnauthorizedException', () {
       final dataSource = build(
@@ -373,5 +392,81 @@ void main() {
         );
       },
     );
+  });
+
+  // The bug: the splash's home read started before the session restore knew
+  // whose app it was, so it had no slot for the identity's copy — offline,
+  // home showed its error until a tap read again (by then with the copy).
+  group('the launch read, offline, with a saved home', () {
+    late _ScriptedRemote remote;
+    late InMemoryJsonCacheStore store;
+    late CacheOwner owner;
+    late HomeRepositoryImpl repository;
+    final built = <HomeCubit>[];
+
+    HomeCubit create() {
+      final cubit = HomeCubit(
+        WatchHomeFeedUseCase(repository),
+        const ComposeHomeFeedUseCase(),
+        WatchHomeBootstrapUseCase(repository),
+        SelectDueHomePopupsUseCase(repository),
+        MarkHomePopupsShownUseCase(repository),
+        CheckFirstOrderWelcomeUseCase(repository),
+      );
+      built.add(cubit);
+      return cubit;
+    }
+
+    setUp(() {
+      remote = _ScriptedRemote()
+        ..homeError = const NoInternetConnectionException()
+        ..initError = const NoInternetConnectionException();
+      store = InMemoryJsonCacheStore()
+        ..seed(
+          _guestFeedKey(),
+          liveHomeJson(),
+          DateTime.now().subtract(const Duration(hours: 2)),
+        );
+      owner = CacheOwner(); // the session restore has not answered yet
+      repository = HomeRepositoryImpl(
+        remote,
+        HomeLocalDataSourceImpl(_MemoryStorage()),
+        cache: _cacheOf(store, owner),
+      );
+    });
+
+    tearDown(() async {
+      for (final cubit in built) {
+        await cubit.close();
+      }
+      built.clear();
+    });
+
+    test('a read before the identity is known misses the copy', () async {
+      await expectLater(
+        repository.watchHomeFeed(),
+        emitsError(isA<NetworkFailure>()),
+      );
+      expect(store.reads, 0);
+    });
+
+    test('the prefetch waits for the identity, then paints its saved copy '
+        'by itself — stale, dated, no tap', () async {
+      final prefetch = HomeLaunchPrefetch(create, language: () => 'en')
+        ..start()
+        ..localeReady();
+      expect(built, isEmpty);
+
+      owner.signedOut(); // the restore found no session: a guest
+      prefetch.identityReady();
+      await pumpEventQueue();
+      final home = prefetch.adopt();
+
+      expect(home.state.load.phase, LoadPhase.loaded);
+      expect(home.state.feed.sections, isNotEmpty);
+      expect(home.state.load.freshness.fromCache, isTrue);
+      expect(home.state.load.freshness.refreshFailed, isTrue);
+      expect(home.state.load.failure, isA<NetworkFailure>());
+    });
   });
 }

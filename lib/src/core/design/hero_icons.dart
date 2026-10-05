@@ -449,6 +449,12 @@ abstract final class HeroIcons {
   /// Printer: paper in at the top, a sheet out at the bottom.
   static const IconData printer = IconData(0xE0D7, fontFamily: fontFamily);
 
+  /// Apartment block: a tall tower beside a lower block, window dots in a column in each.
+  static const IconData apartment = IconData(0xE0D8, fontFamily: fontFamily);
+
+  /// Location arrow: an arrowhead pointing up and to the right with a notched tail (find me).
+  static const IconData navigation = IconData(0xE0DA, fontFamily: fontFamily);
+
   // Two-tone accent layers (src/<name>.accent.svg): drawn under the line glyph in a soft tone.
 
   /// Two-tone layer under [home].
@@ -812,6 +818,18 @@ abstract final class HeroIcons {
   /// Two-tone layer under [office].
   static const IconData officeAccent = IconData(0xE0D4, fontFamily: fontFamily);
 
+  /// Two-tone layer under [apartment].
+  static const IconData apartmentAccent = IconData(
+    0xE0D9,
+    fontFamily: fontFamily,
+  );
+
+  /// Two-tone layer under [navigation].
+  static const IconData navigationAccent = IconData(
+    0xE0DB,
+    fontFamily: fontFamily,
+  );
+
   // Aliases (tool/icons/aliases.json): another name for a drawn glyph.
 
   /// The [delivery] glyph, flipped in RTL.
@@ -1049,6 +1067,10 @@ abstract final class HeroIcons {
     'download': download,
     'share': share,
     'printer': printer,
+    'apartment': apartment,
+    'apartmentAccent': apartmentAccent,
+    'navigation': navigation,
+    'navigationAccent': navigationAccent,
     'deliveryDirectional': deliveryDirectional,
     'account': account,
   };
@@ -1144,6 +1166,8 @@ IconData? _accentOf(IconData icon) {
     0xE07A => HeroIcons.categoryAllAccent,
     0xE07C => HeroIcons.myLocationAccent,
     0xE0AD => HeroIcons.officeAccent,
+    0xE0D8 => HeroIcons.apartmentAccent,
+    0xE0DA => HeroIcons.navigationAccent,
     _ => null,
   };
   // An alias with its own direction (deliveryDirectional) would leave its layer unflipped in RTL.
@@ -1239,6 +1263,8 @@ HeroIconFill? _fillOf(IconData icon) {
     0xE07A => HeroIconFill.mint,
     0xE07C => HeroIconFill.sky,
     0xE0AD => HeroIconFill.sky,
+    0xE0D8 => HeroIconFill.cream,
+    0xE0DA => HeroIconFill.sky,
     _ => null,
   };
 }

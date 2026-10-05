@@ -23,7 +23,9 @@ abstract interface class ScreenLoadState<S> {
 ///   * [showLoading] — the skeleton only while nothing is on screen;
 ///   * [readScreen] — every snapshot puts its data on screen with its
 ///     freshness; a failure keeps what is on screen (its freshness says the
-///     refresh failed) or, with nothing, becomes the full-screen state;
+///     refresh failed) or, with nothing, becomes the full-screen state —
+///     unless the device has a copy: a failed read hands it over first, so
+///     an empty screen shows it (stale) by itself, whichever call asked;
 ///   * [onReconnected] — one silent [refresh] when the data on screen is a
 ///     saved copy or failed, never for a signed-out screen.
 ///
@@ -52,6 +54,7 @@ mixin ScreenLoaderMixin<S extends ScreenLoadState<S>>
         safeEmit(show(state, snapshot).withLoad(state.load.arrived(snapshot))),
     onFailure: (failure) =>
         safeEmit(state.withLoad(state.load.failedWith(failure))),
+    showsData: () => state.load.isLoaded,
   );
 
   /// Something beside the read failed (an action, one row re-read): told

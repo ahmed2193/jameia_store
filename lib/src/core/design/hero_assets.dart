@@ -27,6 +27,13 @@ class HeroAssets {
   static const String offerVoucher = 'assets/svg/offer_voucher.svg';
   static const String offerGift = 'assets/svg/offer_gift.svg';
 
+  // ── First-order free delivery (home bar + its dialog) ────────────────────
+  /// A Hero rider seen from the side on a white scooter, riding towards the
+  /// end edge (mirror it in RTL): white helmet, the amber cape flowing back
+  /// over the green delivery box with the bag on it. Drawn for the brand-deep
+  /// green bar (64 × 44); the speed lines behind it are painted, not drawn.
+  static const String promoRider = 'assets/svg/promo_rider.svg';
+
   // ── Checkout glyphs (drawn for the Hero-style checkout, colour baked in) ──
   // The "Coupons & offers" disc of the Instant-savings card, the offer ticket
   // of the vouchers page, the express badge (19×13), and the wallet /
@@ -166,8 +173,12 @@ class HeroAssets {
   static const String cartBasket = 'assets/svg/cart_basket.svg';
   static const String cartBasketFull = 'assets/svg/cart_basket_full.svg';
 
-  /// The address-map pin (40 × 48, no shadow: the widget paints it).
-  static const String mapPin = 'assets/svg/map_pin.svg';
+  /// The address picker's pins (48 × 58, tip at 53, no shadow: the picker
+  /// paints one on the ground as the pin lifts). The pin is the live map's
+  /// home pin — the door the rider comes to; outside the delivery area it
+  /// turns grey with a warning sign.
+  static const String mapPinPicker = 'assets/svg/map_pin_picker.svg';
+  static const String mapPinAway = 'assets/svg/map_pin_away.svg';
 
   /// Live rider map markers. The rider is seen from above, riding north (the
   /// map turns it with the road): white helmet, the Hero cape flowing over

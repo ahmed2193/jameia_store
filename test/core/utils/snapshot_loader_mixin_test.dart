@@ -100,6 +100,46 @@ void main() {
     expect(cubit.state, isEmpty);
   });
 
+  // A cached read (`CachedRepositoryMixin`, an `async*` source) cancelled
+  // while its request is out ends when the request does; a failed request
+  // then reaches the cancel. Before the fix that was an uncaught exception
+  // (a language switch closed every tab cubit with its read in flight).
+  group('a read cancelled while its request is out', () {
+    Stream<DataSnapshot<String>> parkedRead(Completer<void> request) async* {
+      yield _snap('copy', cache: true);
+      await request.future;
+      yield _snap('network');
+    }
+
+    test('fails quietly once its cubit closed', () async {
+      final request = Completer<void>();
+      final done = cubit.load(parkedRead(request));
+      await pumpEventQueue();
+      await cubit.close();
+      await done;
+
+      request.completeError(StateError('the request failed'));
+      await pumpEventQueue();
+
+      expect(cubit.state, ['copy']);
+      expect(cubit.failures, isEmpty);
+    });
+
+    test('fails quietly once a newer load replaced it', () async {
+      final request = Completer<void>();
+      final first = cubit.load(parkedRead(request));
+      await pumpEventQueue();
+      await cubit.load(Stream.value(_snap('network')));
+      await first;
+
+      request.completeError(StateError('the request failed'));
+      await pumpEventQueue();
+
+      expect(cubit.state, ['copy', 'network']);
+      expect(cubit.failures, isEmpty);
+    });
+  });
+
   group('refreshOnReconnect', () {
     test('runs only when needed', () async {
       var runs = 0;

@@ -21,9 +21,10 @@ class LanguageChangeResult {
 
 /// Central language orchestration — models khayool's `LocalizationCubit`.
 ///
-/// easy_localization stays the reactive engine: `context.setLocale` rebuilds the
-/// whole tree via its InheritedWidget, so every `.tr()` re-resolves and the
-/// ambient RTL `Directionality` flips. This cubit owns the pieces around that:
+/// easy_localization stays the engine: `setLocale` loads the strings, rebuilds
+/// its dependents and flips the ambient RTL `Directionality`; `.tr()` reads a
+/// global, so the app root rebuilds the rest of the tree on this cubit's new
+/// locale (`rebuildDescendants`). This cubit owns the pieces around that:
 /// launch-time locale restore ([initializeLocale]), the switch entry point
 /// ([changeLanguageAndWait]) that persists + applies + mirrors the locale into
 /// state, the `Intl.defaultLocale` sync the locale-aware Formatters read, and
@@ -86,9 +87,15 @@ class LocalizationCubit extends Cubit<LocalizationState> {
   }
 
   /// Switch to [code] (`en` / `ar`): persist, apply via easy_localization
-  /// (rebuilds every `.tr()` + flips RTL), sync `Intl.defaultLocale`, mirror the
-  /// new locale into state, then push the choice to the account in the
+  /// (loads the strings, flips RTL), sync `Intl.defaultLocale`, mirror the
+  /// new locale into state — the app root then rebuilds the tree so every
+  /// `.tr()` resolves again — and push the choice to the account in the
   /// background. The `isLoading` guard drops re-entrant double taps.
+  ///
+  /// [context] is read once, before the first await: a context already gone
+  /// switches nothing and saves nothing (`success: false`), and one that goes
+  /// while the switch runs no longer matters. So the state never names a
+  /// language the screen does not show.
   Future<LanguageChangeResult> changeLanguageAndWait(
     BuildContext context,
     String code,
@@ -97,13 +104,18 @@ class LocalizationCubit extends Cubit<LocalizationState> {
     if (state.isLoading || code == oldLanguage) {
       return const LanguageChangeResult(success: true);
     }
+    final applyLocale = context.mounted
+        ? EasyLocalization.of(context)?.setLocale
+        : null;
+    if (applyLocale == null) {
+      log('changeLanguageAndWait($code): no live context', name: _logName);
+      return const LanguageChangeResult(success: false);
+    }
     emit(state.copyWith(isLoading: true));
     try {
       await _changeLang(ChangeLangParams(code));
       final locale = Locale(code);
-      if (context.mounted) {
-        await context.setLocale(locale); // rebuilds every .tr() + persists
-      }
+      await applyLocale(locale); // loads the strings + persists
       Intl.defaultLocale = code;
       if (isClosed) {
         return const LanguageChangeResult(success: false);

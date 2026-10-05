@@ -317,9 +317,18 @@ void main() {
 
       catalog.error = const RequestTimeoutException();
       remote.error = const NotFoundException('Page not found');
+      // The offers read above was saved: the failed pull hands it over
+      // first, then tells its failure.
       await expectLater(
         repository.watchOffers(forceRefresh: true),
-        emitsError(isA<TimeoutFailure>()),
+        emitsInOrder(<Object>[
+          isA<DataSnapshot<Object?>>().having(
+            (snapshot) => snapshot.isFallback,
+            'isFallback',
+            isTrue,
+          ),
+          emitsError(isA<TimeoutFailure>()),
+        ]),
       );
       await expectLater(
         repository.watchContentPage(ContentPageKind.faq),

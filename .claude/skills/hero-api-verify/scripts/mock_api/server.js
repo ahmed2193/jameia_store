@@ -31,6 +31,7 @@
 //   POST /__admin/notify {type,title,body,orderId} -> creates an unread notification and pushes it over SSE
 //   GET  /__admin/log              -> request log (method, path, headers of interest)
 //   POST /__admin/addresses/seed/:n           -> adds n sample addresses (the first one ever becomes default)
+//   POST /__admin/addresses/seed-pinless/:n   -> adds n sample addresses with no lat / lng (saved before pins: the app opens them on the map)
 //   POST /__admin/addresses/fail/:status/:n   -> next n address requests (after the Bearer check) answer :status (500 INTERNAL_ERROR, 404 …)
 //   POST /__admin/addresses/delay/:ms         -> address replies wait :ms (in-flight UI, double tap → one request)
 //   POST /__admin/ledger/fail/:status/:n      -> next n wallet / loyalty requests (after the Bearer check) answer :status
@@ -260,6 +261,14 @@ http.createServer((req, res) => {
         data: body.orderId ? { orderId: body.orderId, orderNumber: body.orderNumber || 'JM-LIVE' } : {}, readAt: null, createdAt: now, updatedAt: now };
       notifications.unshift(n); pushSse(n);
       return ok(res, { pushed: n._id, clients: state.sse.size });
+    }
+    if (pathname.startsWith('/__admin/addresses/seed-pinless/')) {
+      const count = Number(pathname.split('/').pop());
+      for (let i = 0; i < count; i++) {
+        const { lat, lng, ...pinless } = sampleAddress(customer.addresses.length);
+        customer.addresses.push(pinless);
+      }
+      return ok(res, { count: customer.addresses.length });
     }
     if (pathname.startsWith('/__admin/addresses/seed/')) {
       const count = Number(pathname.split('/').pop());

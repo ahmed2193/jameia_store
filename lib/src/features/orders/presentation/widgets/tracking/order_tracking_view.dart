@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/navigation/navigation.dart';
 import '../../../../../core/widgets/connectivity_scope.dart';
 import '../../../../../core/widgets/cubit_busy_overlay.dart';
+import '../../../../../core/widgets/hero_map_warmup.dart';
 import '../../../../../core/widgets/reconnect_refresh.dart';
 import '../../cubit/order_tracking_cubit.dart';
 import '../../cubit/order_tracking_state.dart';
@@ -36,6 +37,8 @@ class _OrderTrackingViewState extends State<OrderTrackingView>
     super.didChangeDependencies();
     final route = ModalRoute.of(context);
     if (route is ModalRoute<void>) routeObserver.subscribe(this, route);
+    // "Track on map" opens the live map from here.
+    HeroMapWarmup.afterEntrance(context);
     context.read<OrderTrackingCubit>().setOffline(
       ConnectivityScope.isOfflineOf(context),
     );

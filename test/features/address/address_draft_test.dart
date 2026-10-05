@@ -4,7 +4,10 @@ import 'package:hero_mart/src/core/domain/entities/address_label.dart';
 import 'package:hero_mart/src/core/domain/entities/geo_point_entity.dart';
 import 'package:hero_mart/src/features/address/domain/entities/address_draft.dart';
 import 'package:hero_mart/src/features/address/domain/entities/address_field.dart';
+import 'package:hero_mart/src/features/address/domain/entities/address_parts.dart';
 import 'package:hero_mart/src/features/address/domain/entities/address_update.dart';
+import 'package:hero_mart/src/features/address/domain/entities/building_type.dart';
+import 'package:hero_mart/src/features/address/domain/entities/new_address_seed.dart';
 
 import 'address_test_fakes.dart';
 
@@ -117,29 +120,168 @@ void main() {
       expect(draft.isDefault, isTrue);
     });
 
-    test('an address without a pin opens on Kuwait City', () {
-      final draft = AddressDraft.fromAddress(address(location: null));
-      expect(draft.location, AddressDraft.kuwaitCity);
+    test('a new address takes the account number when it is a Kuwait '
+        'mobile, and starts empty otherwise', () {
+      expect(
+        AddressDraft.seeded(
+          const NewAddressSeed(isDefault: true, customerPhone: '+96599887766'),
+        ),
+        const AddressDraft(isDefault: true, phone: '99887766'),
+      );
+      expect(
+        AddressDraft.seeded(
+          const NewAddressSeed(customerPhone: '+201001234567'),
+        ).phone,
+        isEmpty,
+      );
+      expect(AddressDraft.seeded(const NewAddressSeed()).phone, isEmpty);
     });
 
-    test(
-      'pinnedAt fills resolved parts, keeps typed ones, clamps to limits',
-      () {
-        const typed = AddressDraft(block: '9', street: 'My street');
-        final pinned = typed.pinnedAt(
-          const GeoPointEntity(lat: 29.1, lng: 48.1),
-          city: ' Mahboula ',
-          block: '',
-          street: 'Street 3',
+    test('an address without a pin opens on Kuwait City', () {
+      final draft = AddressDraft.fromAddress(address(location: null));
+      expect(draft.location, GeoPointEntity.kuwaitCity);
+    });
+
+    test('a pin moved to another place takes all its address from the map '
+        'there: a part it could not read is cleared, the customer\'s own '
+        'details stay', () {
+      const before = AddressDraft(
+        location: GeoPointEntity(lat: 29.33, lng: 48.07),
+        hasPin: true,
+        city: 'Salmiya',
+        block: '7',
+        street: 'Gulf Road',
+        building: '12',
+        floor: '3',
+        apartment: '8',
+        notes: 'Blue gate',
+        phone: '99887766',
+      );
+      const farwaniya = GeoPointEntity(lat: 29.27, lng: 47.95);
+      final moved = before.pinnedAt(
+        farwaniya,
+        parts: const AddressParts(city: 'Farwaniya', street: 'Street 9'),
+      );
+      expect(moved.location, farwaniya);
+      expect(moved.city, 'Farwaniya');
+      expect(moved.street, 'Street 9'); // typed before: the map's now
+      expect(moved.block, ''); // not read there: the old block is gone
+      expect(moved.building, '');
+      expect(moved.floor, '3');
+      expect(moved.apartment, '8');
+      expect(moved.notes, 'Blue gate');
+      expect(moved.phone, '99887766');
+    });
+
+    test('a pin nudged on the same building keeps a part the map could not '
+        'read there, and takes the ones it read', () {
+      const before = AddressDraft(
+        location: GeoPointEntity(lat: 29.33, lng: 48.07),
+        hasPin: true,
+        city: 'Salmiya',
+        block: '7',
+        street: 'Street 22',
+        building: '12',
+      );
+      // About 11 m north.
+      const nudged = GeoPointEntity(lat: 29.3301, lng: 48.07);
+      final pinned = before.pinnedAt(
+        nudged,
+        parts: const AddressParts(city: 'Salmiya', street: 'Street 23'),
+      );
+      expect(pinned.street, 'Street 23');
+      expect(pinned.block, '7');
+      expect(pinned.building, '12');
+    });
+
+    test('the first pin of an address saved without one fills only what '
+        'the form lacks: the saved details describe that address', () {
+      final pinless = AddressDraft.fromAddress(
+        address(street: '11', building: '', location: null),
+      );
+      expect(pinless.hasPin, isFalse);
+      const there = GeoPointEntity(lat: 29.3375, lng: 47.6581);
+      final pinned = pinless.pinnedAt(
+        there,
+        parts: const AddressParts(
+          city: 'Jahra',
+          street: 'Street 5',
+          building: '40',
+        ),
+      );
+      expect(pinned.hasPin, isTrue);
+      expect(pinned.location, there);
+      expect(pinned.city, pinless.city); // saved: kept
+      expect(pinned.street, '11'); // saved: kept
+      expect(pinned.building, '40'); // missing: filled from the map
+    });
+
+    test('a read that came late fills only the parts still empty', () {
+      const draft = AddressDraft(
+        location: GeoPointEntity(lat: 29.33, lng: 48.07),
+        hasPin: true,
+        city: 'Salmiya',
+      );
+      final filled = draft.filledFrom(
+        const AddressParts(city: 'Jabriya', block: '4', street: 'Street 2'),
+      );
+      expect(filled.city, 'Salmiya');
+      expect(filled.block, '4');
+      expect(filled.street, 'Street 2');
+      expect(filled.location, draft.location);
+    });
+
+    test('the map\'s parts are trimmed and cut to their limits', () {
+      final pinned = const AddressDraft().pinnedAt(
+        const GeoPointEntity(lat: 29.31, lng: 48.02),
+        parts: AddressParts(
+          city: '  Jabriya ',
+          block: '1' * 40,
           building: 'B' * 40,
-        );
-        expect(pinned.location, const GeoPointEntity(lat: 29.1, lng: 48.1));
-        expect(pinned.city, 'Mahboula');
-        expect(pinned.block, '9'); // empty resolution keeps what was typed
-        expect(pinned.street, 'Street 3');
-        expect(pinned.building, 'B' * AddressDraft.maxBuildingLength);
-      },
-    );
+        ),
+      );
+      expect(pinned.city, 'Jabriya');
+      expect(pinned.block.length, AddressDraft.maxBlockLength);
+      expect(pinned.building, 'B' * AddressDraft.maxBuildingLength);
+    });
+
+    test('a house drops the floor and the flat; other types keep them', () {
+      final flat = valid.copyWith(floor: '3', apartment: '12');
+      final house = flat.withBuildingType(BuildingType.house);
+      expect(house.buildingType, BuildingType.house);
+      expect(house.floor, isEmpty);
+      expect(house.apartment, isEmpty);
+      final office = flat.withBuildingType(BuildingType.office);
+      expect(office.floor, '3');
+      expect(office.apartment, '12');
+    });
+
+    test('pinnedPlace is the pin as the form holds it', () {
+      const at = GeoPointEntity(lat: 29.3, lng: 48.0);
+      final place = valid.copyWith(location: at, city: ' Salmiya ').pinnedPlace;
+      expect(place.location, at);
+      expect(place.area, 'Salmiya');
+      expect(place.block, '7');
+      expect(place.street, '22');
+      expect(place.building, '5');
+      expect(place.name, isEmpty);
+    });
+
+    test('an edited address reads its building type from what it stores', () {
+      expect(
+        AddressDraft.fromAddress(address()).buildingType,
+        BuildingType.house,
+      );
+      expect(
+        AddressDraft.fromAddress(address(floor: '2')).buildingType,
+        BuildingType.apartment,
+      );
+      expect(
+        AddressDraft.fromAddress(address(label: 'Work', apartment: '14'))
+            .buildingType,
+        BuildingType.office,
+      );
+    });
   });
 
   group('AddressUpdate.diff', () {

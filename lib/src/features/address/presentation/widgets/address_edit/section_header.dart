@@ -4,33 +4,35 @@ import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../config/theme/app_text_styles.dart';
 
-/// Section header — bold title with an optional required (*) marker.
+/// A block title of the address form, Glovo style — a large bold heading —
+/// with an optional grey line under it saying what the block is for.
 class SectionHeader extends StatelessWidget {
-  const SectionHeader({super.key, required this.title, this.required = false});
+  const SectionHeader({super.key, required this.title, this.hint});
+
   final String title;
-  final bool required;
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
+    final line = hint;
     return Padding(
-      padding: const EdgeInsetsDirectional.only(
-        start: AppSpacing.s12,
-        end: AppSpacing.s12,
-        top: AppSpacing.s14,
-        bottom: AppSpacing.s10,
-      ),
-      child: Row(
+      padding: const EdgeInsetsDirectional.only(bottom: AppSpacing.s12),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Flexible(child: Text(title, style: AppTextStyles.label)),
-          if (required)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: AppSpacing.s2),
-              child: Text(
-                '*',
-                style: AppTextStyles.label.copyWith(color: AppColors.errorDeep),
+          Semantics(
+            header: true,
+            child: Text(title, style: AppTextStyles.sectionTitle),
+          ),
+          if (line != null) ...[
+            const SizedBox(height: AppSpacing.s4),
+            Text(
+              line,
+              style: AppTextStyles.bodyLarge.copyWith(
+                color: AppColors.secondaryText,
               ),
             ),
+          ],
         ],
       ),
     );

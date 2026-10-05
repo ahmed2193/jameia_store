@@ -4,17 +4,23 @@ import '../../../../core/domain/entities/address_label.dart';
 import '../../../../core/domain/entities/geo_point_entity.dart';
 import '../../../../core/domain/entities/hero_address_entity.dart';
 import 'address_field.dart';
+import 'address_parts.dart';
+import 'building_type.dart';
+import 'new_address_seed.dart';
+import 'pinned_place.dart';
 
 /// The address form: every value `POST /v1/account/addresses` accepts, as the
-/// customer typed it.
+/// customer typed it, plus the [buildingType] that shapes the form.
 ///
 /// Limits are the backend's (OpenAPI). On top of them the app requires what a
 /// courier needs in Kuwait: block, street, building and an 8-digit mobile,
 /// sent as `+965XXXXXXXX`.
 class AddressDraft extends Equatable {
   const AddressDraft({
-    this.location = kuwaitCity,
+    this.location = GeoPointEntity.kuwaitCity,
+    this.hasPin = false,
     this.label = AddressLabel.home,
+    this.buildingType = BuildingType.apartment,
     this.city = '',
     this.block = '',
     this.street = '',
@@ -26,11 +32,24 @@ class AddressDraft extends Equatable {
     this.isDefault = false,
   });
 
+  /// The form for a new address: the default one when [seed] says so, and
+  /// the customer's own number when it is a Kuwait mobile (any other number
+  /// would only be refused, so the field starts empty instead).
+  factory AddressDraft.seeded(NewAddressSeed seed) {
+    final phone = localPhone(seed.customerPhone);
+    return AddressDraft(
+      isDefault: seed.isDefault,
+      phone: phone.length == phoneDigits ? phone : '',
+    );
+  }
+
   /// The form for an existing address. An address saved without a pin opens
-  /// on [kuwaitCity].
+  /// on [GeoPointEntity.kuwaitCity]; its building type is read from what it stores.
   factory AddressDraft.fromAddress(HeroAddressEntity address) => AddressDraft(
-    location: address.location ?? kuwaitCity,
+    location: address.location ?? GeoPointEntity.kuwaitCity,
+    hasPin: address.location != null,
     label: address.labelKind,
+    buildingType: BuildingType.of(address),
     city: address.city,
     block: address.block,
     street: address.street,
@@ -40,12 +59,6 @@ class AddressDraft extends Equatable {
     phone: localPhone(address.phone),
     notes: address.notes,
     isDefault: address.isDefault,
-  );
-
-  /// Map start for a new address (Kuwait City).
-  static const GeoPointEntity kuwaitCity = GeoPointEntity(
-    lat: 29.3759,
-    lng: 47.9774,
   );
 
   // Backend limits (`POST /v1/account/addresses`).
@@ -67,7 +80,15 @@ class AddressDraft extends Equatable {
   static final RegExp _nonDigits = RegExp(r'\D');
 
   final GeoPointEntity location;
+
+  /// [location] is a real pin, not the stand-in of an address that never
+  /// had one (a new one, or one saved without lat / lng).
+  final bool hasPin;
   final AddressLabel label;
+
+  /// Not sent: a house has no floor or flat, so the form hides them.
+  final BuildingType buildingType;
+
   final String city;
   final String block;
   final String street;
@@ -158,36 +179,92 @@ class AddressDraft extends Equatable {
     AddressField.notes => copyWith(notes: value),
   };
 
-  /// The pin moved to [location]; the reverse-geocoded parts fill their fields.
-  /// An empty resolved part keeps what the form already holds, and a long one
-  /// is cut to the backend limit.
-  AddressDraft pinnedAt(
-    GeoPointEntity location, {
-    String city = '',
-    String block = '',
-    String street = '',
-    String building = '',
-    String apartment = '',
-  }) {
-    String resolved(String part, String current, int maxLength) {
+  /// [parts] trimmed and cut to the backend limits: what [pinnedAt] writes.
+  static AddressParts _fit(AddressParts parts) {
+    String cut(String part, int maxLength) {
       final value = part.trim();
-      if (value.isEmpty) return current;
       return value.length > maxLength ? value.substring(0, maxLength) : value;
     }
 
-    return copyWith(
-      location: location,
-      city: resolved(city, this.city, maxCityLength),
-      block: resolved(block, this.block, maxBlockLength),
-      street: resolved(street, this.street, maxStreetLength),
-      building: resolved(building, this.building, maxBuildingLength),
-      apartment: resolved(apartment, this.apartment, maxApartmentLength),
+    return AddressParts(
+      city: cut(parts.city, maxCityLength),
+      block: cut(parts.block, maxBlockLength),
+      street: cut(parts.street, maxStreetLength),
+      building: cut(parts.building, maxBuildingLength),
     );
   }
 
+  /// Closer than this, a new pin is on the same building: a part the map
+  /// could not read there keeps what the form holds.
+  static const double samePlaceMeters = 30;
+
+  /// The pin moved to [location] and the map read [parts] there: the address
+  /// follows the pin. Area, block, street and building become what the map
+  /// read at the new spot; a part it could not read is cleared — the old one
+  /// told of another place — unless the pin only moved on the same building
+  /// ([samePlaceMeters]), where it stays as it was. An address's first pin
+  /// ([hasPin] false) moves nothing: it only fills the parts the form lacks
+  /// ([filledFrom]), the saved ones describing that very address. The
+  /// floor, the flat, the directions and the contact are the customer's own
+  /// and stay.
+  AddressDraft pinnedAt(
+    GeoPointEntity location, {
+    AddressParts parts = AddressParts.none,
+  }) {
+    if (!hasPin) {
+      return filledFrom(parts).copyWith(location: location, hasPin: true);
+    }
+    final read = _fit(parts);
+    final samePlace = this.location.metersTo(location) < samePlaceMeters;
+    String follow(String current, String part) =>
+        part.isNotEmpty || !samePlace ? part : current;
+
+    return copyWith(
+      location: location,
+      city: follow(city, read.city),
+      block: follow(block, read.block),
+      street: follow(street, read.street),
+      building: follow(building, read.building),
+    );
+  }
+
+  /// [parts] read at the pin itself fill only the parts still empty: an
+  /// address's first pin, or a read that came after Confirm stopped waiting
+  /// for it.
+  AddressDraft filledFrom(AddressParts parts) {
+    final read = _fit(parts);
+    String fill(String current, String part) =>
+        current.trim().isEmpty ? part : current;
+
+    return copyWith(
+      city: fill(city, read.city),
+      block: fill(block, read.block),
+      street: fill(street, read.street),
+      building: fill(building, read.building),
+    );
+  }
+
+  /// The form for a [type] building: a house drops the floor and the flat
+  /// (no hidden value is ever saved).
+  AddressDraft withBuildingType(BuildingType type) => type.hasUnits
+      ? copyWith(buildingType: type)
+      : copyWith(buildingType: type, floor: '', apartment: '');
+
+  /// The pin as the form holds it — its point and the parts filled in: the
+  /// map picker opens on it when an address is edited.
+  PinnedPlace get pinnedPlace => PinnedPlace(
+    location: location,
+    area: city.trim(),
+    block: block.trim(),
+    street: street.trim(),
+    building: building.trim(),
+  );
+
   AddressDraft copyWith({
     GeoPointEntity? location,
+    bool? hasPin,
     AddressLabel? label,
+    BuildingType? buildingType,
     String? city,
     String? block,
     String? street,
@@ -199,7 +276,9 @@ class AddressDraft extends Equatable {
     bool? isDefault,
   }) => AddressDraft(
     location: location ?? this.location,
+    hasPin: hasPin ?? this.hasPin,
     label: label ?? this.label,
+    buildingType: buildingType ?? this.buildingType,
     city: city ?? this.city,
     block: block ?? this.block,
     street: street ?? this.street,
@@ -214,7 +293,9 @@ class AddressDraft extends Equatable {
   @override
   List<Object?> get props => [
     location,
+    hasPin,
     label,
+    buildingType,
     city,
     block,
     street,

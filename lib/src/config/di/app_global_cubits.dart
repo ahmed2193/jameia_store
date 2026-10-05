@@ -50,8 +50,8 @@ abstract final class AppGlobalCubits {
   /// Starts home's first read while the splash intro plays (B1-14), so the
   /// home page adopts a cubit that is already reading — or done. Nothing
   /// when home is not registered (a router test without DI). The read itself
-  /// waits for [homeLocaleReady]: the catalogue answers in the request's
-  /// language.
+  /// waits for [homeLocaleReady] — the catalogue answers in the request's
+  /// language — and [homeIdentityReady].
   static void prefetchHome() {
     if (sl.isRegistered<HomeLaunchPrefetch>()) {
       sl<HomeLaunchPrefetch>().start();
@@ -63,6 +63,14 @@ abstract final class AppGlobalCubits {
   static void homeLocaleReady() {
     if (sl.isRegistered<HomeLaunchPrefetch>()) {
       sl<HomeLaunchPrefetch>().localeReady();
+    }
+  }
+
+  /// The session restore knows whose app this is (the app root, once): the
+  /// home prefetch may read now — the home copy is kept per identity.
+  static void homeIdentityReady() {
+    if (sl.isRegistered<HomeLaunchPrefetch>()) {
+      sl<HomeLaunchPrefetch>().identityReady();
     }
   }
 

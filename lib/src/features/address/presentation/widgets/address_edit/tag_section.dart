@@ -5,13 +5,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../config/theme/app_colors.dart';
 import '../../../../../config/theme/app_spacing.dart';
 import '../../../../../core/domain/entities/address_label.dart';
-import '../../../../../core/widgets/address_label_icon.dart';
 import '../../cubit/address_edit_cubit.dart';
 import '../../cubit/address_edit_state.dart';
 import 'label_chip.dart';
 import 'section_header.dart';
 
-/// Tag — Home | Work | Gathering | Other (sent as the address `label`).
+/// "Add a label" — Home | Work | Gathering | Other (sent as the address
+/// `label`), Glovo style: word chips in one grey track. Rebuilds only when
+/// the pick changes.
 class TagSection extends StatelessWidget {
   const TagSection({super.key});
 
@@ -25,42 +26,45 @@ class TagSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: AppColors.white,
-      margin: const EdgeInsets.only(top: AppSpacing.s8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeader(title: 'addr.tag.label'.tr()),
-          Padding(
-            padding: const EdgeInsetsDirectional.only(
-              start: AppSpacing.s12,
-              end: AppSpacing.s12,
-              bottom: AppSpacing.s14,
-            ),
-            child:
-                BlocSelector<AddressEditCubit, AddressEditState, AddressLabel>(
-                  selector: (state) => state.draft.label,
-                  builder: (context, active) {
-                    final cubit = context.read<AddressEditCubit>();
-                    return Wrap(
-                      spacing: AppSpacing.s8,
-                      runSpacing: AppSpacing.s8,
-                      children: [
-                        for (final tag in _tags)
-                          LabelChip(
-                            label: tag.textKey.tr(),
-                            icon: AddressLabelIcon.iconFor(tag.label),
-                            selected: tag.label == active,
-                            onTap: () => cubit.labelChanged(tag.label),
-                          ),
-                      ],
-                    );
-                  },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SectionHeader(
+          title: 'addr.details.label_title'.tr(),
+          hint: 'addr.details.label_hint'.tr(),
+        ),
+        BlocSelector<AddressEditCubit, AddressEditState, AddressLabel>(
+          selector: (state) => state.draft.label,
+          builder: (context, active) {
+            final cubit = context.read<AddressEditCubit>();
+            // The track hugs its chips (a single run of a Wrap).
+            return Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.smallBackground,
+                  borderRadius: BorderRadius.circular(AppRadius.r1),
                 ),
-          ),
-        ],
-      ),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.s4),
+                  child: Wrap(
+                    spacing: AppSpacing.s4,
+                    runSpacing: AppSpacing.s4,
+                    children: [
+                      for (final tag in _tags)
+                        LabelChip(
+                          label: tag.textKey.tr(),
+                          selected: tag.label == active,
+                          onTap: () => cubit.labelChanged(tag.label),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

@@ -7,9 +7,15 @@ import 'home_cubit.dart';
 /// page adopts the cubit that is already reading — or has already painted
 /// its data — and shows no skeleton when the feed came in during the intro.
 ///
-/// The catalogue answers in the request's language, so the read waits for
-/// both the splash's launch frame ([start]) and the customer's saved
-/// language ([localeReady]) — whichever comes second starts it. A read made
+/// The catalogue answers in the request's language, and the device copy
+/// that paints home at once (offline too) is kept per identity — the guest
+/// or the customer — so the read waits for the splash's launch frame
+/// ([start]), the customer's saved language ([localeReady]) and the session
+/// restore knowing whose app this is ([identityReady]): whichever comes last
+/// starts it. Read earlier, it would miss that copy (and never save the
+/// reply), and a failed request would leave home on an error; so a page
+/// adopted before the identity is known reads again once it is, unless it
+/// has data on screen by then. A read made
 /// in another language than the one [adopt] finds ([language]) is dropped,
 /// never handed over; so is one the session's end made stale ([discard]) or
 /// one older than [maxHold].
@@ -39,10 +45,15 @@ class HomeLaunchPrefetch {
   DateTime? _earlyAt;
   bool _requested = false;
   bool _localeReady = false;
+  bool _identityReady = false;
   bool _handedOver = false;
 
-  /// The splash's launch frame is on screen: read once the language is
-  /// known. Nothing once the home page has taken its cubit.
+  /// A page cubit [adopt] built before the identity was known (a splash
+  /// shorter than the restore): it read without the identity's copy.
+  HomeCubit? _readBlind;
+
+  /// The splash's launch frame is on screen: read once the language and
+  /// the identity are known. Nothing once the home page has taken its cubit.
   void start() {
     _requested = true;
     _maybeRead();
@@ -54,6 +65,19 @@ class HomeLaunchPrefetch {
     _maybeRead();
   }
 
+  /// The session restore knows whose app this is — a guest, or the customer
+  /// it restored (the app root, once). A page that read before it and has
+  /// nothing on screen yet reads again: the identity's copy first.
+  void identityReady() {
+    _identityReady = true;
+    final blind = _readBlind;
+    _readBlind = null;
+    if (blind != null && !blind.isClosed && !blind.state.load.isLoaded) {
+      unawaited(blind.load());
+    }
+    _maybeRead();
+  }
+
   /// The launch will not reach home with this read (the session expired
   /// under the splash): it is closed, and the page reads afresh.
   void discard() {
@@ -62,7 +86,8 @@ class HomeLaunchPrefetch {
   }
 
   void _maybeRead() {
-    if (!_requested || !_localeReady || _handedOver || _early != null) return;
+    if (!_requested || !_localeReady || !_identityReady) return;
+    if (_handedOver || _early != null) return;
     _earlyLanguage = _language();
     _earlyAt = _now();
     _early = _create()..load();
@@ -84,7 +109,9 @@ class HomeLaunchPrefetch {
       return early;
     }
     _drop();
-    return _create()..load();
+    final fresh = _create()..load();
+    if (!_identityReady) _readBlind = fresh;
+    return fresh;
   }
 
   void _drop() {

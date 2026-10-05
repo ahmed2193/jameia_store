@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/routes/route_args/shell_arrival.dart';
 import '../../../../config/routes/route_args/shell_tabs.dart';
 import '../../../../core/motion/fly_to_cart.dart';
-import '../../../language/presentation/cubit/localization_cubit.dart';
-import '../../../language/presentation/cubit/localization_state.dart';
 import '../widgets/shell_basket_tab.dart';
 import '../widgets/shell_bottom_nav.dart';
 import '../widgets/shell_session_keyed.dart';
@@ -67,53 +64,38 @@ class _MainShellPageState extends State<MainShellPage> {
 
   @override
   Widget build(BuildContext context) {
-    // The whole shell is rebuilt via BlocBuilder<LocalizationCubit> so the tab
-    // bodies AND the bottom-nav labels re-localize the instant the language
-    // changes — even while this shell is OFFSTAGE (Settings pushed on top):
-    // BlocBuilder listens to the cubit stream directly, independent of route
-    // visibility. easy_localization's `context.setLocale` alone does NOT do this
-    // — `.tr()` is context-free, so on a live switch only Directionality-driven
-    // layout rebuilds; cached text widgets keep their old-language strings.
-    //
-    // The tab builders return fresh (non-const) instances for the same reason:
-    // a canonical const tab would short-circuit `IndexedStack.updateChild`.
-    return BlocBuilder<LocalizationCubit, LocalizationState>(
-      buildWhen: (p, c) => p.locale != c.locale,
-      builder: (context, state) {
-        final tabs = widget.tabs;
-        // Keyed by language so a switch recreates the tab Elements (and thus
-        // their State): strings a tab caches in State would otherwise stay
-        // in the old language. Cost: tab scroll resets on a language switch.
-        // A new session (a sign-in over the kept shell) rebuilds them too,
-        // with fresh page cubits.
-        final body = ShellSessionKeyed(
-          child: ShellTabStack(
-            key: ValueKey(state.languageCode),
-            index: _index,
-            children: [
-              tabs.home(context),
-              tabs.search(context),
-              ShellBasketTab(
-                tabs: tabs,
-                active: _index == ShellBottomNav.cartTab,
-                onBrowse: () => _select(ShellBottomNav.homeTab),
-              ),
-              tabs.mine(context),
-            ],
+    final tabs = widget.tabs;
+    // A language switch keeps the tabs — their State, scroll and page cubits:
+    // the app root rebuilds the whole tree in place, so every `.tr()` here
+    // and in the tab bodies resolves again (even while this shell is
+    // offstage under Settings), and the tabs whose data comes in the request
+    // language read it again over what they show. Only a new session (a
+    // sign-in over the kept shell) rebuilds the tabs, with fresh page cubits.
+    final body = ShellSessionKeyed(
+      child: ShellTabStack(
+        index: _index,
+        children: [
+          tabs.home(context),
+          tabs.search(context),
+          ShellBasketTab(
+            tabs: tabs,
+            active: _index == ShellBottomNav.cartTab,
+            onBrowse: () => _select(ShellBottomNav.homeTab),
           ),
-        );
-        final overlay = tabs.overlay;
-        return Scaffold(
-          // The overlay (the assistant's buddy) floats over the tab bodies,
-          // above the bottom nav; the bodies pass through it untouched.
-          body: overlay == null ? body : overlay(ShellTab.values[_index], body),
-          bottomNavigationBar: ShellBottomNav(
-            index: _index,
-            cartIconKey: _cartIconKey,
-            onTap: _select,
-          ),
-        );
-      },
+          tabs.mine(context),
+        ],
+      ),
+    );
+    final overlay = tabs.overlay;
+    return Scaffold(
+      // The overlay (the assistant's buddy) floats over the tab bodies,
+      // above the bottom nav; the bodies pass through it untouched.
+      body: overlay == null ? body : overlay(ShellTab.values[_index], body),
+      bottomNavigationBar: ShellBottomNav(
+        index: _index,
+        cartIconKey: _cartIconKey,
+        onTap: _select,
+      ),
     );
   }
 }

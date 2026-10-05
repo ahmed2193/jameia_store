@@ -68,6 +68,9 @@ bool _sheetIsUp() {
 /// the Material shadow. Every sheet is white with 24 dp top corners unless
 /// it asks for another [backgroundColor] / [shape] (one that draws its own
 /// card passes a transparent one) — never Material's tinted surface.
+/// [barrierColor] replaces the dimming behind it (a sheet that belongs to
+/// the screen under it, like the map picker's building-type panel, passes a
+/// transparent one; a tap outside still closes it).
 ///
 /// One sheet at a time: while a sheet is up (not already leaving), another
 /// call does nothing and completes with `null` — a double tap never stacks
@@ -81,6 +84,7 @@ Future<T?> showHeroBottomSheet<T>(
   Color? backgroundColor,
   ShapeBorder? shape,
   double? elevation,
+  Color? barrierColor,
 }) {
   if (_sheetIsUp()) return Future<T?>.value();
   _sheetPendingIn = Navigator.of(context);
@@ -92,6 +96,7 @@ Future<T?> showHeroBottomSheet<T>(
     backgroundColor: backgroundColor ?? AppColors.white,
     shape: shape ?? _sheetShape,
     elevation: elevation,
+    barrierColor: barrierColor,
     sheetAnimationStyle: AnimationStyle(
       duration: MotionGuard.duration(context, base),
       reverseDuration: MotionGuard.duration(context, AppMotion.medium),

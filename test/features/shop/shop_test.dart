@@ -457,9 +457,18 @@ void main() {
       await pumpEventQueue();
       catalog.error = const NoInternetConnectionException();
 
+      // A pull that fails hands the saved tree over first: an empty screen
+      // shows it (one with data keeps its own).
       await expectLater(
         repository.watchCategoryTree(forceRefresh: true),
-        emitsError(isA<NetworkFailure>()),
+        emitsInOrder(<Object>[
+          isA<DataSnapshot<Object?>>().having(
+            (snapshot) => snapshot.isFallback,
+            'isFallback',
+            isTrue,
+          ),
+          emitsError(isA<NetworkFailure>()),
+        ]),
       );
       final offline = await repository.watchCategoryTree().first;
       expect(offline.isFromCache, isTrue);

@@ -1,4 +1,7 @@
-import '../../utils/hero_geocode.dart';
+import '../../domain/entities/geo_point_entity.dart';
+import 'address_kinds.dart';
+
+export 'address_kinds.dart';
 
 /// Delivery address model.
 ///
@@ -77,8 +80,8 @@ class HeroAddress {
     recipient: '',
     phone: '',
     isDefault: false,
-    lat: HeroGeocode.base.latitude,
-    lng: HeroGeocode.base.longitude,
+    lat: GeoPointEntity.kuwaitCity.lat,
+    lng: GeoPointEntity.kuwaitCity.lng,
   );
 
   /// Home-bar / picker headline. Prefers an explicit POI name, else the brief.

@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 
 /// Registers the SIL Open Font Licences of the bundled fonts with
 /// [LicenseRegistry], so they travel with the fonts (an OFL condition) and
-/// show on About → Open-source licences.
+/// show on About → Open-source licences — and, beside them, the ODbL credit
+/// of the OpenStreetMap outline of Kuwait the address map checks pins
+/// against (an ODbL condition).
 abstract final class FontLicenses {
   static const String _dir = 'assets/licenses';
 
@@ -13,6 +15,7 @@ abstract final class FontLicenses {
     'OFL-BalooBhaijaan2.txt': ['Baloo Bhaijaan 2 (the Arabic Hero wordmark)'],
     'OFL-NotoSans.txt': ['Noto Sans'],
     'OFL-NotoSansArabic.txt': ['Noto Sans Arabic UI'],
+    'ODbL-OpenStreetMap.txt': ['OpenStreetMap (the Kuwait boundary)'],
   };
 
   /// Call once at start-up; the files are read only when the licences page

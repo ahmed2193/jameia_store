@@ -5,7 +5,9 @@
 // that no longer parses → miss + deleted; a copy "from the future" → shown
 // but revalidated; a reply after the owner changed → not saved; unknown
 // owner → no cache at all; a slow write never delays the screen; a
-// mutation reply kept as the copy (not after the owner changed). Plus the
+// mutation reply kept as the copy (not after the owner changed); a failed
+// request hands over the saved copy (forced, or past maxAge) — never for a
+// 401 / 403 / 404, never twice, read only after the failure. Plus the
 // CacheSlots identity rules.
 
 import 'dart:async';
@@ -181,10 +183,136 @@ void main() {
     },
   );
 
-  test('a copy past maxAge is never shown', () async {
+  test('a copy past maxAge is never shown while the server answers', () async {
     seed(['ancient'], age: const Duration(days: 8));
     final (snapshots, _) = await _collect(repository.watch());
     expect(snapshots.single.origin, SnapshotOrigin.network);
+  });
+
+  // The bug: a read that skipped the copy (a pull, a reconnect, the tab
+  // coming back) or found it past maxAge left an empty screen on its error
+  // when the request failed — the saved copy showed only after a tap.
+  group('a failed request hands over the saved copy', () {
+    test('forceRefresh: the copy (stale, dated), then the failure', () async {
+      seed(['saved'], age: const Duration(minutes: 5));
+      repository.fetchError = const NoInternetConnectionException();
+
+      final (snapshots, failure) = await _collect(
+        repository.watch(forceRefresh: true),
+      );
+
+      expect(snapshots.single.data, ['saved']);
+      expect(snapshots.single.origin, SnapshotOrigin.fallback);
+      expect(snapshots.single.isFromCache, isTrue);
+      expect(snapshots.single.isFallback, isTrue);
+      expect(
+        snapshots.single.fetchedAt,
+        t0.subtract(const Duration(minutes: 5)),
+      );
+      expect(failure, isA<NetworkFailure>());
+      expect(repository.fetches, 1);
+    });
+
+    test('forceRefresh: the request goes out first, the disk is read only '
+        'once it failed', () async {
+      seed(['saved'], age: const Duration(minutes: 5));
+      repository
+        ..fetchGate = Completer<void>()
+        ..fetchError = const RequestTimeoutException();
+
+      final pending = _collect(repository.watch(forceRefresh: true));
+      await pumpEventQueue();
+      expect(repository.fetches, 1);
+      expect(store.reads, 0, reason: 'the happy path reads no copy');
+
+      repository.fetchGate!.complete();
+      final (snapshots, failure) = await pending;
+
+      expect(store.reads, 1);
+      expect(snapshots.single.isFallback, isTrue);
+      expect(failure, isA<TimeoutFailure>());
+    });
+
+    test(
+      'a server failure too (5xx, 429): the copy, then the failure',
+      () async {
+        seed(['saved'], age: const Duration(minutes: 5));
+        for (final error in const <Object>[
+          ServerException('down', statusCode: 503),
+          RateLimitedException('slow down'),
+        ]) {
+          repository.fetchError = error;
+          final (snapshots, failure) = await _collect(
+            repository.watch(forceRefresh: true),
+          );
+          expect(snapshots.single.data, ['saved'], reason: '$error');
+          expect(
+            failure,
+            anyOf(isA<ServerFailure>(), isA<RateLimitedFailure>()),
+            reason: '$error',
+          );
+        }
+      },
+    );
+
+    test('a copy past maxAge stands in, read once', () async {
+      seed(['ancient'], age: const Duration(days: 8));
+      repository.fetchError = const NoInternetConnectionException();
+
+      final (snapshots, failure) = await _collect(repository.watch());
+
+      expect(snapshots.single.data, ['ancient']);
+      expect(snapshots.single.origin, SnapshotOrigin.fallback);
+      expect(failure, isA<NetworkFailure>());
+      expect(store.reads, 1, reason: 'the copy read first is kept');
+    });
+
+    test('a copy already shown is not handed over again', () async {
+      seed(['saved'], age: const Duration(minutes: 5));
+      repository.fetchError = const NoInternetConnectionException();
+
+      final (snapshots, _) = await _collect(repository.watch());
+
+      expect(snapshots.map((s) => s.origin), [SnapshotOrigin.cache]);
+    });
+
+    test('a reply about the data itself (401 / 403 / 404) is told, never '
+        'hidden by the copy', () async {
+      seed(['saved'], age: const Duration(days: 8));
+      for (final error in const <Object>[
+        UnauthorizedException('Sign in'),
+        ForbiddenException('Not yours'),
+        NotFoundException('Gone'),
+      ]) {
+        repository.fetchError = error;
+        final (forced, forcedFailure) = await _collect(
+          repository.watch(forceRefresh: true),
+        );
+        final (tooOld, tooOldFailure) = await _collect(repository.watch());
+        expect(forced, isEmpty, reason: '$error');
+        expect(tooOld, isEmpty, reason: '$error');
+        expect(forcedFailure, isNotNull);
+        expect(tooOldFailure, isNotNull);
+      }
+    });
+
+    test('nothing saved, or a copy that no longer parses: the failure '
+        'alone (the copy deleted)', () async {
+      repository.fetchError = const NoInternetConnectionException();
+      final (missed, missFailure) = await _collect(
+        repository.watch(forceRefresh: true),
+      );
+      expect(missed, isEmpty);
+      expect(missFailure, isA<NetworkFailure>());
+
+      store.seed(keyOf(testNamespace), {'unexpected': 1}, t0);
+      final (broken, brokenFailure) = await _collect(
+        repository.watch(forceRefresh: true),
+      );
+      expect(broken, isEmpty);
+      expect(brokenFailure, isA<NetworkFailure>());
+      expect(store.removes, 1);
+    });
   });
 
   test(
@@ -318,6 +446,25 @@ void main() {
       await pumpEventQueue();
 
       expect(store.writes, 0);
+    });
+
+    test('a request that fails after sign-out hands over no copy', () async {
+      repository = _Repository(slots, mine)
+        ..fetchGate = Completer<void>()
+        ..fetchError = const NoInternetConnectionException();
+      owner.signedIn('42');
+      store.seed(keyOf(mine, owner: 'c:42'), {
+        'names': ['theirs'],
+      }, t0.subtract(const Duration(minutes: 5)));
+      final pending = _collect(repository.watch(forceRefresh: true));
+      await pumpEventQueue();
+      owner.signedOut();
+      repository.fetchGate!.complete();
+
+      final (snapshots, failure) = await pending;
+
+      expect(snapshots, isEmpty);
+      expect(failure, isA<NetworkFailure>());
     });
 
     test('a reply that lands after sign-out is not saved', () async {

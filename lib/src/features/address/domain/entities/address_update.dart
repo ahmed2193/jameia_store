@@ -40,7 +40,7 @@ class AddressUpdate extends Equatable {
     // An address saved without a pin opens on the fallback location; leaving
     // it there is not a change.
     final sameLocation =
-        draft.location == (original.location ?? AddressDraft.kuwaitCity);
+        draft.location == (original.location ?? GeoPointEntity.kuwaitCity);
     return AddressUpdate(
       // A custom label from another client reads as `other`: keep it unless
       // the customer picks a different tag.

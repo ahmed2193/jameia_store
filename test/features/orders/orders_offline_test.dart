@@ -4,7 +4,9 @@
 // paint the saved copy, mark it stale and ask again once on reconnect; the
 // tracking poll is not scheduled offline and runs at once on reconnect;
 // "Last known status" sits under a status that is not live; a next page
-// that failed waits for the connection.
+// that failed waits for the connection. A refresh over an empty screen
+// shows the saved list by itself when the request fails; over a list on
+// screen it keeps that list.
 import 'package:bloc_test/bloc_test.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +43,7 @@ import 'package:hero_mart/src/features/orders/presentation/cubit/order_review_cu
 import 'package:hero_mart/src/features/orders/presentation/cubit/order_tracking_cubit.dart';
 import 'package:hero_mart/src/features/orders/presentation/cubit/order_tracking_state.dart';
 import 'package:hero_mart/src/features/orders/presentation/cubit/orders_cubit.dart';
+import 'package:hero_mart/src/features/orders/presentation/cubit/orders_state.dart';
 import 'package:hero_mart/src/features/orders/presentation/widgets/tracking/tracking_last_known_note.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -210,6 +213,77 @@ void main() {
         expect(store.writes, 0);
       },
     );
+  });
+
+  // The bug: a refresh (the tab coming back, a pull, a reconnect) over a
+  // screen with nothing on it skipped the saved copy, so a failed request
+  // left the error on screen until the "Try again" tap read the copy.
+  group('OrdersCubit over the device copy', () {
+    late _ScriptedRemote remote;
+    late InMemoryJsonCacheStore store;
+
+    OrdersCubit cubitOver(OrdersRepositoryImpl repository) => OrdersCubit(
+      watchFirstPage: WatchOrdersUseCase(repository),
+      getOrders: GetOrdersUseCase(repository),
+      getOrder: GetOrderUseCase(repository),
+      cancelOrder: CancelOrderUseCase(repository),
+    );
+
+    setUp(() async {
+      remote = _ScriptedRemote();
+      store = InMemoryJsonCacheStore();
+      // An earlier session saved the customer's first page.
+      await _repository(
+        remote,
+        store,
+        _customer(),
+      ).watchFirstPage(limit: GetOrdersParams.defaultLimit).drain<void>();
+      await pumpEventQueue();
+    });
+
+    test('a refresh over an empty screen, offline, shows the saved list by '
+        'itself — stale, no tap', () async {
+      final owner = CacheOwner(); // not known when the page first loads
+      final cubit = cubitOver(_repository(remote, store, owner));
+      remote.error = const NoInternetConnectionException();
+      await cubit.load();
+      expect(cubit.state.status, LoadPhase.error);
+
+      owner.signedIn('c1');
+      await cubit.refresh();
+
+      expect(cubit.state.status, LoadPhase.loaded);
+      expect(cubit.state.feed.orders.single.id, 'o1');
+      expect(cubit.state.load.freshness.fromCache, isTrue);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
+      expect(cubit.state.load.failure, isA<NetworkFailure>());
+      expect(cubit.state.isRefreshing, isFalse);
+      remote.error = null; // the connection is back
+      await cubit.onReconnected();
+      expect(cubit.state.load.freshness.isStale, isFalse);
+      await cubit.close();
+    });
+
+    test('a failed refresh over a list on screen keeps that list: the copy '
+        'never replaces it', () async {
+      final cubit = cubitOver(_repository(remote, store, _customer()));
+      remote.error = null;
+      await cubit.refresh();
+      final onScreen = cubit.state.feed;
+      final fetchedAt = cubit.state.load.freshness.fetchedAt;
+      final states = <OrdersState>[];
+      final watching = cubit.stream.listen(states.add);
+
+      remote.error = const NoInternetConnectionException();
+      await cubit.refresh();
+      await watching.cancel();
+
+      expect(states.where((state) => state.load.freshness.fromCache), isEmpty);
+      expect(cubit.state.feed, onScreen);
+      expect(cubit.state.load.freshness.fetchedAt, fetchedAt);
+      expect(cubit.state.load.freshness.refreshFailed, isTrue);
+      await cubit.close();
+    });
   });
 
   group('OrdersCubit', () {

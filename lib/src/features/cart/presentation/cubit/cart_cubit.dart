@@ -138,6 +138,7 @@ class CartCubit extends Cubit<CartState> with SafeCubitMixin<CartState> {
 
   /// The order took the cart with it.
   Future<void> onOrderPlaced() async {
+    safeEmit(state.copyWith(ordersPlaced: state.ordersPlaced + 1));
     _logFailure(await _reset(const NoParams()));
     _logFailure(await _fetch(const NoParams()));
   }

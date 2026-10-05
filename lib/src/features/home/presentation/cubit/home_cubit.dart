@@ -24,7 +24,8 @@ import 'home_state.dart';
 /// loader mixins' flow); the snapshot is secondary: its failure never
 /// blanks the screen, and its saved copy never offers the time-boxed popups.
 /// The popup queue opens with the first-order welcome gift when the customer
-/// is due it, then the marketing popups.
+/// is due it, then the marketing popups; the same gift keeps its bar over
+/// the tab bar until the first order is placed.
 class HomeCubit extends Cubit<HomeState>
     with
         SafeCubitMixin<HomeState>,
@@ -50,8 +51,8 @@ class HomeCubit extends Cubit<HomeState>
   final CheckFirstOrderWelcomeUseCase _checkWelcome;
   final DateTime Function() _now;
 
-  /// Bumped per server snapshot: only the newest one's offer lands.
-  int _popupOffer = 0;
+  /// Bumped per gift check (and by a placed order): only the newest lands.
+  int _giftCheck = 0;
 
   /// First open, and "try again" after a full-screen error (skeleton). A
   /// saved copy paints at once; the server's replaces it when stale.
@@ -73,6 +74,7 @@ class HomeCubit extends Cubit<HomeState>
         channel: _bootstrapChannel,
         onSnapshot: _onBootstrap,
         onFailure: (_) {}, // secondary: home renders without it
+        showsData: () => state.bootstrap != HomeBootstrap.empty,
       ),
     );
     return readScreen<HomeFeed>(
@@ -83,29 +85,44 @@ class HomeCubit extends Cubit<HomeState>
 
   void _onBootstrap(DataSnapshot<HomeBootstrap> snapshot) {
     safeEmit(state.copyWith(bootstrap: snapshot.data));
-    // Popups are time-boxed: never offered from a saved copy.
-    if (snapshot.isFromCache || state.popupsShown) return;
-    unawaited(_offerPopups(snapshot.data));
+    // Popups are time-boxed and the gift is the server's word: neither is
+    // settled from a saved copy. Once the popups were shown, only a gift
+    // still on screen is asked again (it goes when the first order is in).
+    if (snapshot.isFromCache) return;
+    if (state.popupsShown && !state.firstOrderGift) return;
+    unawaited(_settleGift(snapshot.data));
   }
 
   /// Settles the welcome gift (maybe an order count) before the queue is
-  /// offered, so it opens once, whole and in order. A newer snapshot's offer
-  /// replaces one still waiting on its count.
-  Future<void> _offerPopups(HomeBootstrap bootstrap) async {
-    final offer = ++_popupOffer;
+  /// offered, so it opens once, whole and in order; the first-order bar
+  /// follows the same answer. A newer snapshot's check replaces one still
+  /// waiting on its count. A failed count offers no popup gift and leaves
+  /// the bar as it was.
+  Future<void> _settleGift(HomeBootstrap bootstrap) async {
+    final check = ++_giftCheck;
     final welcome = await _checkWelcome(
       CheckFirstOrderWelcomeParams(bootstrap: bootstrap),
     );
-    if (offer != _popupOffer || state.popupsShown) return;
+    if (check != _giftCheck) return;
+    final due = welcome.fold<bool?>((failure) {
+      log('welcome gift unchecked', name: 'HomeCubit', error: failure);
+      return null;
+    }, (due) => due);
+    final offer = !state.popupsShown;
     safeEmit(
       state.copyWith(
-        welcomeDue: welcome.fold((failure) {
-          log('welcome gift unchecked', name: 'HomeCubit', error: failure);
-          return false;
-        }, (due) => due),
-        duePopups: _duePopups(bootstrap),
+        firstOrderGift: due,
+        welcomeDue: offer ? (due ?? false) : null,
+        duePopups: offer ? _duePopups(bootstrap) : null,
       ),
     );
+  }
+
+  /// The customer's first order is in (the cart says an order was placed):
+  /// the gift is spent, and a count still on its way is dropped.
+  void onOrderPlaced() {
+    _giftCheck++;
+    safeEmit(state.copyWith(firstOrderGift: false, welcomeDue: false));
   }
 
   /// The blocks the screen draws: expired strips dropped, a strip folded

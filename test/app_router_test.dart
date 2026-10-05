@@ -60,6 +60,7 @@ import 'package:hero_mart/src/features/address/domain/entities/address_book.dart
 import 'package:hero_mart/src/features/address/presentation/cubit/address_book_cubit.dart';
 import 'package:hero_mart/src/features/address/presentation/pages/address_edit_page.dart';
 import 'package:hero_mart/src/features/address/presentation/pages/address_list_page.dart';
+import 'package:hero_mart/src/features/address/presentation/pages/address_search_page.dart';
 import 'package:hero_mart/src/features/assistant/presentation/cubit/assistant_availability_cubit.dart';
 import 'package:hero_mart/src/features/assistant/presentation/pages/assistant_chat_page.dart';
 import 'package:hero_mart/src/features/assistant/presentation/pages/assistant_history_page.dart';
@@ -288,6 +289,20 @@ final List<_RouteCase> _routeCases = <_RouteCase>[
     note: 'a non-entity extra falls back to a new address',
     extra: (_) => 42,
     verify: (t, _) => expect(_page<AddressEditPage>(t).address, isNull),
+  ),
+  _RouteCase(
+    Routes.addressSearch,
+    AddressSearchPage,
+    note: 'near where the map looks',
+    extra: (_) => const GeoPointEntity(lat: 29.33, lng: 48.07),
+    verify: (t, extra) => expect(_page<AddressSearchPage>(t).near, extra),
+  ),
+  _RouteCase(
+    Routes.addressSearch,
+    AddressSearchPage,
+    note: 'a non-point extra searches without one',
+    extra: (_) => 'Salmiya',
+    verify: (t, _) => expect(_page<AddressSearchPage>(t).near, isNull),
   ),
   const _RouteCase(Routes.myCoupons, MyCouponsPage),
   const _RouteCase(Routes.historyCoupons, HistoryCouponsPage),
