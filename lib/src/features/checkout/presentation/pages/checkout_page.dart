@@ -10,9 +10,9 @@ import '../../../../config/di/service_locator.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/motion/fade_through_switcher.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
 import '../../../../core/widgets/cubit_busy_overlay.dart';
+import '../../../../core/widgets/failure_view.dart';
 import '../../../../core/widgets/hero_state_view.dart';
 import '../../../address/presentation/cubit/address_book_cubit.dart';
 import '../../../auth/presentation/cubit/auth_session_cubit.dart';
@@ -168,8 +168,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       _CheckoutBucket.signedOut => HeroStateView.signedOut(
                         message: 'checkout.sign_in_required'.tr(),
                       ),
-                      _CheckoutBucket.error => HeroStateView.error(
-                        message: loadFailure?.localizedMessage,
+                      _CheckoutBucket.error => FailureView(
+                        failure: loadFailure,
                         onRetry: () => context.read<CheckoutCubit>().retry(
                           defaultAddressId: _defaultAddressId(context),
                           expressSelected: _expressSelected(context),

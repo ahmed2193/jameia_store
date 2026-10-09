@@ -10,14 +10,15 @@ import '../../../language/presentation/cubit/localization_state.dart';
 import '../cubit/home_cubit.dart';
 import '../widgets/home_body.dart';
 import '../widgets/home_cart_bar.dart';
-import '../widgets/home_first_order_bar.dart';
+import '../widgets/home_first_order_relay.dart';
 
 /// Home tab — the Hero storefront as the backend composes it
 /// (`GET /v1/home` + the launch snapshot `GET /v1/init`). Both arrive
 /// resolved for the request language, so a language switch reads them again
 /// — the device copy in that language first — with the feed kept on screen
 /// meanwhile (the shell keeps its tabs across a switch). An order placed
-/// from the cart spends the first-order gift (its bar goes).
+/// from the cart spends the first-order gift; the tab tells the shell's
+/// first-order bar every answer ([HomeFirstOrderRelay]).
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -38,14 +39,15 @@ class HomePage extends StatelessWidget {
           listener: (context, _) => context.read<HomeCubit>().onOrderPlaced(),
         ),
       ],
-      child: const Scaffold(
-        backgroundColor: AppColors.white,
-        body: HomeBody(),
-        // Below the feed, on the shell tab bar: the minimum-order bar, or
-        // the first-order free-delivery bar while the customer is due it.
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [HomeCartBar(), HomeFirstOrderBar()],
+      // The first-order answer goes to the bar on the shell's tab bar (it
+      // stands on Search and Mine too).
+      child: const HomeFirstOrderRelay(
+        child: Scaffold(
+          backgroundColor: AppColors.white,
+          body: HomeBody(),
+          // Below the feed, above the shell tab bar: the minimum-order bar
+          // (it makes room while the first-order bar stands there).
+          bottomNavigationBar: HomeCartBar(),
         ),
       ),
     ),

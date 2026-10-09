@@ -19,6 +19,8 @@ class ShellTabs {
     required this.orderHistory,
     required this.mine,
     this.overlay,
+    this.scope,
+    this.tabBarTop,
   });
 
   final WidgetBuilder home;
@@ -38,4 +40,14 @@ class ShellTabs {
   /// Floats over the tab bodies ([child]) — the assistant's buddy — told
   /// which [ShellTab] is on screen. `null`: nothing floats.
   final Widget Function(ShellTab tab, Widget child)? overlay;
+
+  /// Wraps the whole shell — the tab bodies AND the tab bar ([shell]) — with
+  /// what a tab shares with the bars around the tabs (the home tab tells the
+  /// first-order bar whether it shows). `null`: nothing shared.
+  final Widget Function(Widget shell)? scope;
+
+  /// Stands right on top of the tab bar, under the tab bodies (the
+  /// first-order free-delivery bar), told which [ShellTab] is on screen.
+  /// `null`: nothing there.
+  final Widget Function(ShellTab tab)? tabBarTop;
 }

@@ -10,7 +10,7 @@ import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/hero_svg_glyph.dart';
 import 'home_speed_lines_painter.dart';
 
-/// The Hero rider of the first-order free-delivery bar (and its dialog),
+/// The Hero rider of the first-order free-delivery bar,
 /// [width] wide, with the speed lines streaming out behind it.
 ///
 /// It drives in once from the start edge as it mounts ([AppMotion.slow],
@@ -35,7 +35,7 @@ class HomeFirstOrderRider extends StatefulWidget {
   static const double aspectRatio = 64 / 44;
 
   /// The speed lines' room behind the rider, as a share of [width].
-  static const double trailShare = 0.4;
+  static const double trailShare = 0.3;
 
   /// How much of the lines' room tucks under the rider's box.
   static const double _tuck = 0.5;

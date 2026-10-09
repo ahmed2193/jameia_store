@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../motion/motion.dart';
 import '../responsive/app_size.dart';
+import 'state_art_motions.dart';
+import 'state_art_scene.dart';
 
 /// The illustration a whole-screen state leads with (empty, error, offline,
 /// signed-out, not found …): one of the 160 × 120 `HeroAssets.state*` /
@@ -13,6 +15,10 @@ import '../responsive/app_size.dart';
 /// mount (docs/motion §9.4 #17: [AppMotion.medium], `signature`); a state
 /// that is already there when its screen opens passes `false`. Static under
 /// reduced motion.
+///
+/// An issue plate with moving parts ([StateArtMotions]: the plug that tries
+/// the socket, the swinging sign …) then tells its story, twice at most per
+/// appearance ([StateArtScene]); every other plate stays still.
 ///
 /// [compact]: the 120 × 90 size of the same plate, for a card or a sheet
 /// (docs/motion/asset_manifest.md §1.1).
@@ -80,16 +86,27 @@ class _StateArtState extends State<StateArt>
 
   @override
   Widget build(BuildContext context) {
+    final size = widget.compact
+        ? const Size(StateArt.compactWidth, StateArt.compactHeight)
+        : const Size(StateArt.width, StateArt.height);
+    final parts = StateArtMotions.of(widget.asset);
     return ExcludeSemantics(
       child: FadeTransition(
         opacity: _progress,
         child: ScaleTransition(
           scale: _scale,
-          child: SvgPicture.asset(
-            widget.asset,
-            width: widget.compact ? StateArt.compactWidth : StateArt.width,
-            height: widget.compact ? StateArt.compactHeight : StateArt.height,
-          ),
+          child: parts == null
+              ? SvgPicture.asset(
+                  widget.asset,
+                  width: size.width,
+                  height: size.height,
+                )
+              : StateArtScene(
+                  asset: widget.asset,
+                  parts: parts,
+                  size: size,
+                  unit: size.width / StateArt.width,
+                ),
         ),
       ),
     );

@@ -1,3 +1,7 @@
+import 'dart:developer';
+import 'dart:ui' as ui;
+
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 
 import 'locale_swap_veil_scope.dart';
@@ -26,7 +30,26 @@ class LocaleSwapVeilHost extends StatefulWidget {
 
 /// Shows and removes the one veil (see [LocaleSwapVeilHost]).
 class LocaleSwapVeilHostState extends State<LocaleSwapVeilHost> {
+  /// The app's own layer: what [snapshot] takes a picture of.
+  final GlobalKey _appKey = GlobalKey();
+
   Widget? _veil;
+
+  /// The app as it is on screen right now, as one image the caller owns
+  /// (and disposes), or `null` when it cannot be taken — then the veil is
+  /// a solid colour. Call it right after a frame was painted.
+  ui.Image? snapshot() {
+    final boundary = _appKey.currentContext?.findRenderObject();
+    if (boundary is! RenderRepaintBoundary || !boundary.hasSize) return null;
+    try {
+      return boundary.toImageSync(
+        pixelRatio: View.of(context).devicePixelRatio,
+      );
+    } on Object catch (error) {
+      log('no snapshot for the language veil: $error', name: 'motion');
+      return null;
+    }
+  }
 
   /// Puts [veil] over the whole app (replacing one already up).
   void show(Widget veil) => setState(() => _veil = veil);
@@ -45,7 +68,7 @@ class LocaleSwapVeilHostState extends State<LocaleSwapVeilHost> {
       child: Stack(
         fit: StackFit.passthrough,
         children: [
-          widget.child,
+          RepaintBoundary(key: _appKey, child: widget.child),
           if (veil != null) Positioned.fill(child: veil),
         ],
       ),

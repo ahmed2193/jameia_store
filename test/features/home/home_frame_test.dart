@@ -112,9 +112,12 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byWidgetPredicate(
+    expect(
+      find.byWidgetPredicate(
         (w) => w is HeroStateView && w.art == HeroAssets.stateError,
-      ), findsOneWidget);
+      ),
+      findsOneWidget,
+    );
     expect(
       tester.element(find.byType(SliverPersistentHeader)),
       same(header),

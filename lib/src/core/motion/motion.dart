@@ -109,6 +109,12 @@ class AppMotion {
   /// One `LightSweep` period: the pass plus its rest. [INFERENCE].
   static const Duration sheen = Duration(milliseconds: 3600);
 
+  /// One lap of a state illustration's story (`StateArt`: the plug that
+  /// tries the socket, the stopwatch hand that goes round), its still pause
+  /// included. [INFERENCE] — long enough to read the gesture; two laps fit
+  /// [ambientBudget].
+  static const Duration stateArtLap = Duration(milliseconds: 2400);
+
   /// Total run time of any decorative loop before it rests. [INFERENCE] —
   /// under WCAG 2.2.2's five seconds.
   static const Duration ambientBudget = Duration(milliseconds: 5000);

@@ -281,6 +281,44 @@ stays legible on both backgrounds. Plates match the existing `offer_gift` plate 
 white or amber glyph).
 
 
+## In-app SVGs — batch C (moving issue plates, 2026-10-05)
+
+User request: every way a screen can fail gets its own illustration in the Hero sticker style,
+and the illustrations move. 7 new plates plus the moving parts of 5 existing ones: 12 plates,
+37 files, all built by `tool/issue_art/build.js` from one master each
+(`tool/issue_art/src/*.svg`; README there). A master's top-level `<g id="part-*">` groups become
+`<plate>_<part>.svg` layers in the same 160 × 120 frame; the rest is the still base, which keeps
+the plate's name. `StateArt` stacks them and plays `StateArtMotions` (one `AmbientLoop`:
+laps of `AppMotion.stateArtLap` 2400 ms, two inside `ambientBudget`, on screen only; reduced
+motion, a screen reader or a spent budget show the still sticker). The issue comes from the
+failure (`StateIssue.of`) through `HeroStateView.failure` / `FailureView`.
+
+QA: `build.js` checks the frame, this file's §1.3 palette, no text / raster / style / filter /
+gradient, one decimal on coordinates, < 10 KB (largest layer 1,193 B); contact sheet rendered
+with resvg and checked by eye; frames of every story rendered from a widget test (lap 5 %–90 %)
+and checked: the rest pose at the end matches the start. Tests:
+`test/core/widgets/state_issue_art_test.dart`, `test/core/design/hero_assets_svg_test.dart`.
+
+| Plate (layers) | Issue (`StateIssue`) | The story (parts → motion) | Light-bg | RTL | Reduced motion | Bytes |
+|---|---|---|---|---|---|---|
+| `state_unreachable` (+ `_plug`, `_spark`) | `unreachable`: the internet works, the store does not answer ("Can't reach Hero") | the bag's plug rises to the wall socket, sparks twice, drops back out | pass: ink bag, cable, socket, plug | none | plug out, no spark | 1,801 |
+| `state_timeout` (+ `_button`, `_hand`) | `timeout` | the crown button presses, the red hand goes once round the orange stopwatch | pass: ink watch; red hand on white | none (a clock never mirrors) | hand at 12 | 1,483 |
+| `state_server` (+ `_led`, `_smoke`) | `server` (5xx) | the red light on the bottom unit blinks twice, the smoke rises, fades and comes back | pass: ink stack, `#F0390E` "!" badge | none | still smoke, red light on | 1,854 |
+| `state_maintenance` (+ `_gear`, `_wrench`) | `maintenance` (503) | the gear turns two teeth (8-fold: lands on the same picture), the wrench ratchets twice | pass: ink bag + hard hat, cone, gear, wrench | none | still | 1,956 |
+| `state_rate_limited` (+ `_glow`, `_bag`) | `rateLimited` (429) | the red light's ring pulses out twice, the waiting bag shifts from side to side | pass: ink light body `#1F2937`, ink bag | none | ring shown, bag still | 1,711 |
+| `state_forbidden` (+ `_sign`) | `forbidden` (403) | the no-entry sign swings on its nail, the swing dying down | pass: ink door, `#F0390E` sign | none | still | 1,087 |
+| `state_bad_data` (+ `_piece`) | `badData` (unreadable payload) | the green puzzle piece flies at the gap in the garbled page, does not fit, wobbles, floats back | pass: ink page, red zigzag `#F0390E` in ink context | none | piece outside the page | 1,246 |
+| `state_error` (+ `_bag`, `_orange`, `_badge`) | `unexpected` (anything else) | the tipped bag rocks on its corner, the orange rolls on and back, the "!" pops and shakes | as batch A | none | still | 1,562 |
+| `state_offline` (+ `_signal_mid`, `_signal_out`, `_badge`) | `offline` | the middle then the outer Wi-Fi bar light up in ink, both drop, the slash badge shakes "no" | as batch A | none | grey bars (lit bars hidden) | 1,563 |
+| `state_signed_out` (+ `_lock`, `_sparkle`) | `signedOut` (and `HeroStateView.signedOut`) | someone tries the padlock (a quick shake), the sparkle grows and turns a quarter | as batch A | none | still | 1,355 |
+| `state_not_found` (+ `_flap_start`, `_flap_end`, `_bubbles`) | `notFound` (and every "not there any more" screen) | the flaps flutter, the air bubbles float out, fade and come back | as batch A | none | still | 1,204 |
+| `state_unavailable` (+ `_sign`, `_moon`) | the store does not run it now (not a `StateIssue`) | the closed sign swings on its nail, the moon rocks | as batch A | none | still | 1,723 |
+
+Words (i18n `issue.*`, en + ar): a title per issue and its own message; a 5xx never shows the
+server's text, a 4xx refusal (429 / 403 / 401 / 404 / business) shows the store's
+`error.message` when it sent one; a reply without the envelope (a gateway's HTML page) has an
+empty message, so the UI says its own words.
+
 ## Preview GIFs (docs only)
 
 

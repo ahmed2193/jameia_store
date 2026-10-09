@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120" viewBox="0 0 160 120">
+  <ellipse cx="80" cy="106" rx="46" ry="6" fill="#000000" fill-opacity="0.08"/>
+  <circle cx="80" cy="58" r="44" fill="#E8F1FD"/>
+  <g stroke="#0B2E13" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 22H88L100 34V92Q100 96 96 96H60Q56 96 56 92V26Q56 22 60 22Z" fill="#FFFFFF"/>
+    <path d="M88 22V30Q88 34 92 34H100Z" fill="#EBEBEB"/>
+    <path d="M63 43H83M63 52H92M63 61H74" fill="none" stroke-width="2.5"/>
+    <path d="M63 74L66.5 70.5L70 74L73.5 70.5L77 74" fill="none" stroke="#F0390E" stroke-width="2.5"/>
+  </g>
+  <path d="M80 66H85A3 3 0 0 1 91 66H96V71A3 3 0 0 1 96 77V82H80Z" fill="none" stroke="#C2C2C2" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round" stroke-linejoin="round"/>
+  <g id="part-piece" transform="translate(110 34) rotate(18 8 8)">
+    <path d="M0 0H5A3 3 0 0 1 11 0H16V5A3 3 0 0 1 16 11V16H0Z" fill="#22C55E" stroke="#0B2E13" stroke-width="2.5" stroke-linejoin="round"/>
+    <ellipse cx="4.5" cy="4.5" rx="2.6" ry="1.4" transform="rotate(-30 4.5 4.5)" fill="#FFFFFF" fill-opacity="0.38"/>
+  </g>
+</svg>

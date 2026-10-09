@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120" viewBox="0 0 160 120">
+  <ellipse cx="80" cy="106" rx="46" ry="6" fill="#000000" fill-opacity="0.08"/>
+  <circle cx="80" cy="58" r="44" fill="#DCFCE7"/>
+  <g fill="none" stroke="#0B2E13" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M71 50V45A9 12 0 0 1 89 45V50"/>
+    <path d="M63 50H97Q101 50 101.4 54L104 90Q104.6 96 98.6 96H61.4Q55.4 96 56 90L58.6 54Q59 50 63 50Z" fill="#22C55E"/>
+  </g>
+  <ellipse cx="67" cy="60" rx="7" ry="3" transform="rotate(-30 67 60)" fill="#FFFFFF" fill-opacity="0.38"/>
+  <g id="part-lock">
+    <path d="M94 64V58A7 7 0 0 1 108 58V64" fill="none" stroke="#0B2E13" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="90" y="64" width="22" height="18" rx="4" fill="#FBBF24" stroke="#0B2E13" stroke-width="3"/>
+    <circle cx="101" cy="71" r="2.4" fill="#0B2E13"/>
+    <rect x="100.2" y="72" width="1.6" height="4.5" rx="0.8" fill="#0B2E13"/>
+  </g>
+  <g id="part-sparkle">
+    <path d="M46 24L47.2 26.8L50 28L47.2 29.2L46 32L44.8 29.2L42 28L44.8 26.8Z" fill="#FFEA52" stroke="#F99022" stroke-width="1.5" stroke-linejoin="round"/>
+  </g>
+</svg>

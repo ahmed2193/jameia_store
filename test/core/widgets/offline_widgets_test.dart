@@ -21,6 +21,7 @@ import 'package:hero_mart/src/core/design/hero_assets.dart';
 import 'package:hero_mart/src/core/design/hero_icons.dart';
 import 'package:hero_mart/src/core/domain/entities/connection_recheck.dart';
 import 'package:hero_mart/src/core/error/failures.dart';
+import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/core/navigation/hero_snack_bar.dart';
 import 'package:hero_mart/src/core/utils/relative_age.dart';
 import 'package:hero_mart/src/core/widgets/connectivity_scope.dart';
@@ -530,8 +531,10 @@ void main() {
       expect(retries, 1);
     });
 
-    testWidgets('the connection is there but the store failed again: the '
-        'error + retry, never "No connection"', (tester) async {
+    testWidgets('the connection is there but the store failed again: "Can\'t '
+        'reach Hero" (the unplugged plate) + retry, never "No connection"', (
+      tester,
+    ) async {
       var retries = 0;
       await pump(
         tester,
@@ -542,9 +545,18 @@ void main() {
       );
       await tester.pump();
       await tester.pump(AppConstants.offlineDebounce);
+      await tester.pump(AppMotion.page);
 
       expect(find.text(noConnection), findsNothing);
-      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text("Can't reach Hero"), findsOneWidget);
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is StateArt && widget.asset == HeroAssets.stateUnreachable,
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Retry'), findsOneWidget);
       expect(retries, 0, reason: 'no loop: the customer retries');
     });
 

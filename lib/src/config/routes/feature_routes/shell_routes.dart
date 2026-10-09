@@ -8,7 +8,9 @@ import '../../../features/account/presentation/pages/mine_page.dart';
 import '../../../features/assistant/domain/entities/assistant_thought_place.dart';
 import '../../../features/assistant/presentation/pages/assistant_buddy_layer_page.dart';
 import '../../../features/cart/presentation/pages/cart_tab_page.dart';
+import '../../../features/home/presentation/pages/first_order_bar_layer_page.dart';
 import '../../../features/home/presentation/pages/home_page.dart';
+import '../../../features/home/presentation/pages/home_shell_scope_page.dart';
 import '../../../features/orders/presentation/pages/orders_page.dart';
 import '../../../features/search/presentation/pages/search_page.dart';
 import '../../../features/shell/presentation/pages/main_shell_page.dart';
@@ -39,8 +41,18 @@ Widget _assistant(ShellTab tab, Widget child) => AssistantBuddyLayerPage(
   child: child,
 );
 
+/// What the home tab shares with the shell's tab bar (the first-order bar's
+/// state), around the whole shell.
+Widget _homeScope(Widget shell) => HomeShellScopePage(child: shell);
+
+/// The first-order free-delivery bar stands on the tab bar on Home, Search
+/// and Mine — never on Cart, whose checkout bar stands there.
+Widget _firstOrderBar(ShellTab tab) =>
+    FirstOrderBarLayerPage(here: tab != ShellTab.cart);
+
 /// The four tabs of [MainShellPage]: Home / Search / Cart (+ order history) /
-/// Mine, with the assistant's buddy floating over them.
+/// Mine, with the assistant's buddy floating over them and the first-order
+/// bar on the tab bar.
 const ShellTabs _tabs = ShellTabs(
   home: _home,
   search: _search,
@@ -48,6 +60,8 @@ const ShellTabs _tabs = ShellTabs(
   orderHistory: _orderHistory,
   mine: _mine,
   overlay: _assistant,
+  scope: _homeScope,
+  tabBarTop: _firstOrderBar,
 );
 
 /// Main tab shell plus the stand-alone tab pages. [Routes.shell] and

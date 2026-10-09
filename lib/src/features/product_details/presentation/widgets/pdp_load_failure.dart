@@ -4,19 +4,20 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_spacing.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/responsive/app_size.dart';
-import '../../../../core/utils/failure_message.dart';
 import '../../../../core/widgets/app_loader.dart';
 import '../../../../core/widgets/hero_secondary_button.dart';
 import '../../../../core/widgets/hero_state_view.dart';
 import '../../../../core/widgets/failure_verdict_builder.dart';
 import '../../../../core/widgets/offline_inline_note.dart';
+import '../../../../core/widgets/state_issue.dart';
 
 /// Under the tapped card when the product could not load — the offline
 /// screen contract's verdict ([FailureVerdictBuilder]) in the page's own
 /// layout: "Checking your connection…" while the app checks (a reload by
 /// itself when the connection is there), offline the calm "loads as soon
 /// as you're back online" line (the page asks again by itself on reconnect)
-/// and "Try again"; any other failure, its message and retry.
+/// and "Try again"; the store out of reach, or any other failure, its own
+/// plate, title and words, and a retry.
 class PdpLoadFailure extends StatelessWidget {
   const PdpLoadFailure({
     super.key,
@@ -54,9 +55,12 @@ class PdpLoadFailure extends StatelessWidget {
           ],
         ),
       ),
-      FailureVerdict.unreachable => HeroStateView.error(onRetry: onRetry),
-      FailureVerdict.error => HeroStateView.error(
-        message: failure?.localizedMessage,
+      FailureVerdict.unreachable => HeroStateView.issue(
+        issue: StateIssue.unreachable,
+        onRetry: onRetry,
+      ),
+      FailureVerdict.error => HeroStateView.failure(
+        failure: failure,
         onRetry: onRetry,
       ),
     },

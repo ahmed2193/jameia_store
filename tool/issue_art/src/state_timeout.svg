@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120" viewBox="0 0 160 120">
+  <ellipse cx="80" cy="106" rx="46" ry="6" fill="#000000" fill-opacity="0.08"/>
+  <circle cx="80" cy="58" r="44" fill="#FFF6B0"/>
+  <path d="M47 50L42 47M45 60H39M47 70L42 73M113 50L118 47M115 60H121M113 70L118 73" fill="none" stroke="#0B2E13" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="99" y="34" width="9" height="6" rx="2" transform="rotate(45 103.5 37)" fill="#F99022" stroke="#0B2E13" stroke-width="2.5"/>
+  <circle cx="80" cy="62" r="28" fill="#F99022" stroke="#0B2E13" stroke-width="3"/>
+  <circle cx="80" cy="62" r="21" fill="#FFFFFF" stroke="#0B2E13" stroke-width="2.5"/>
+  <path d="M80 44V47.5M98 62H94.5M80 80V76.5M62 62H65.5" fill="none" stroke="#0B2E13" stroke-width="2.5" stroke-linecap="round"/>
+  <ellipse cx="67" cy="45" rx="6" ry="2.6" transform="rotate(-35 67 45)" fill="#FFFFFF" fill-opacity="0.38"/>
+  <g id="part-button" stroke="#0B2E13" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M80 28V34" fill="none"/>
+    <rect x="72" y="21" width="16" height="7" rx="3.5" fill="#F99022"/>
+  </g>
+  <g id="part-hand" stroke-linecap="round">
+    <path d="M80 62V47" fill="none" stroke="#F0390E" stroke-width="3"/>
+    <circle cx="80" cy="62" r="3.2" fill="#0B2E13"/>
+  </g>
+</svg>

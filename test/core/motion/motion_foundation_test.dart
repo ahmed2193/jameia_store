@@ -3,10 +3,13 @@
 // ticker is static on first build and rolls on change, the language veil
 // commits under itself and always clears, the segmented control reports real
 // changes only, and the through transition fades and shifts mid-way.
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hero_mart/src/core/motion/fade_through_switcher.dart';
 import 'package:hero_mart/src/core/motion/locale_swap_veil.dart';
+import 'package:hero_mart/src/core/motion/locale_swap_veil_host.dart';
 import 'package:hero_mart/src/core/motion/locale_swap_veil_view.dart';
 import 'package:hero_mart/src/core/motion/motion.dart';
 import 'package:hero_mart/src/core/motion/rolling_glyph.dart';
@@ -158,6 +161,52 @@ void main() {
       await running;
       expect(caught, isA<StateError>());
       expect(find.byType(LocaleSwapVeilView), findsNothing);
+    });
+
+    testWidgets('on the app host it holds the last frame up, never an empty '
+        'veil, then clears', (tester) async {
+      late BuildContext ctx;
+      await tester.pumpWidget(
+        MaterialApp(
+          builder: (context, child) => LocaleSwapVeilHost(child: child!),
+          home: Builder(
+            builder: (context) {
+              ctx = context;
+              return const Scaffold(body: Center(child: Text('Home')));
+            },
+          ),
+        ),
+      );
+      final gate = Completer<void>();
+      final running = LocaleSwapVeil.run(
+        ctx,
+        color: Colors.white,
+        commit: () => gate.future,
+      );
+      await tester.pump(); // the frame the snapshot is taken after
+      await tester.pump();
+      // The switch is still running: the veil is the picture of the screen
+      // at full opacity — no solid veil, nothing fading in.
+      final veil = find.byType(LocaleSwapVeilView);
+      expect(veil, findsOneWidget);
+      expect(
+        find.descendant(of: veil, matching: find.byType(RawImage)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: veil, matching: find.byType(ColoredBox)),
+        findsNothing,
+      );
+      final fade = tester.widget<FadeTransition>(
+        find.descendant(of: veil, matching: find.byType(FadeTransition)),
+      );
+      expect(fade.opacity.value, 1);
+
+      gate.complete();
+      await tester.pumpAndSettle();
+      await running;
+      expect(find.byType(LocaleSwapVeilView), findsNothing);
+      expect(find.text('Home'), findsOneWidget);
     });
 
     testWidgets('reduced motion just commits', (tester) async {

@@ -88,6 +88,7 @@ Money, points and codes: `HeroMoneyText` / `AppTextStyles.tabular`, one left-to-
 | Field label | `AppTextStyles.label` above the field; the refusal one `meta` line in `errorDeep` under it |
 | End of a paged list (dots ↔ compact "Try again") | `NextPageSentinel` + `LoadMoreFooter` |
 | Empty / error / signed-out / not found | `HeroStateView` (`FailureView` for a failed read) |
+| A failed load, told by what went wrong | `HeroStateView.failure` / `FailureView`: the `StateIssue` (offline, store out of reach, timeout, server trouble, maintenance, too many tries, signed out, no access, not found, unreadable data, anything else) picks its own moving plate (`assets/svg/state_*.svg`, built by `tool/issue_art`), its title and words |
 
 ## 6. Motion
 
@@ -114,7 +115,9 @@ Segmented controls (`HeroSegmentedControl`, coupons tabs, Pro plans, cart / hist
 The shared components carry their own motion, so every screen moves the same way:
 confirmation dialogs pop in on `AppSprings.snappy` from `AppMotion.dialogPopBegin` (0.8) and
 leave by fading; sheet headers rise in with their content (`EntranceCascadeItem.single`, the ✕
-pops); `HeroStateView` settles its art, then the words and the action rise a step apart; a
+pops); `HeroStateView` settles its art, then the words and the action rise a step apart (an
+issue plate then acts its issue out, two laps at most inside the ambient budget, still under
+reduced motion: `StateArtMotions`); a
 title-bar title or subtitle that changes while shown flips (`FlipValue`); a field's outline
 cross-fades on focus and refusal; a list footer swaps dots ↔ retry with `FadeThroughSwitcher`.
 Reduced motion: the same end states, with fades or cuts only.

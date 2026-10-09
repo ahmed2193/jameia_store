@@ -7,17 +7,15 @@ import '../../../../core/motion/motion.dart';
 import '../../../../core/responsive/app_size.dart';
 import '../../../../core/widgets/hero_icon.dart';
 
-/// The "there is more" arrow at the end of the first-order bar: a white
-/// chevron on a soft white disc that nudges up now and then, as if lifting
-/// the details out of the bar — an [AmbientLoop] (on screen only, within the
-/// ambient budget, still under reduced motion).
+/// The "there is more" arrow at the end of the first-order bar: a plain
+/// white chevron (as on the reference bar) that nudges up now and then, as
+/// if lifting the gift out of the bar — an [AmbientLoop] (on screen only,
+/// within the ambient budget, still under reduced motion).
 class HomeFirstOrderChevron extends StatelessWidget {
   const HomeFirstOrderChevron({super.key});
 
-  static const double _disc = AppSize.s28;
-  static const double _glyph = AppSize.s18;
+  static const double _glyph = AppSize.s24;
   static const double _lift = AppSize.s3;
-  static const double _discAlpha = 0.18;
 
   /// One nudge (up and back), then a still rest.
   static const Duration _nudge = AppMotion.breathe;
@@ -32,21 +30,10 @@ class HomeFirstOrderChevron extends StatelessWidget {
       curve: AppMotion.machEaseInOut,
       valueBuilder: (context, t, child) =>
           Transform.translate(offset: Offset(0, -_lift * t), child: child),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.white.withValues(alpha: _discAlpha),
-        ),
-        child: const SizedBox.square(
-          dimension: _disc,
-          child: Center(
-            child: HeroIcon(
-              HeroIcons.chevronUp,
-              size: _glyph,
-              color: AppColors.white,
-            ),
-          ),
-        ),
+      child: const HeroIcon(
+        HeroIcons.chevronUp,
+        size: _glyph,
+        color: AppColors.white,
       ),
     );
   }

@@ -7,14 +7,20 @@ import '../../../../core/widgets/light_sweep.dart';
 
 /// "Free delivery" picked out of the first-order bar's line: lime letters on
 /// the sticker ink, a light sweeping across it now and then (the one sweep
-/// of its screen, within the ambient budget). Inherits the line's type.
+/// of its screen, within the ambient budget). Set in the line's [style]
+/// (handed over: a widget inside a rich text does not inherit its style).
 class HomeFreeDeliveryChip extends StatelessWidget {
-  const HomeFreeDeliveryChip({super.key, required this.label});
+  const HomeFreeDeliveryChip({
+    super.key,
+    required this.label,
+    required this.style,
+  });
 
   final String label;
+  final TextStyle style;
 
   static const BorderRadius _radius = BorderRadius.all(
-    Radius.circular(AppSize.r4),
+    Radius.circular(AppSize.r3),
   );
 
   @override
@@ -28,14 +34,13 @@ class HomeFreeDeliveryChip extends StatelessWidget {
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.s6,
-            vertical: AppSpacing.s2,
+            horizontal: AppSpacing.s4,
+            vertical: AppSpacing.s1,
           ),
           child: Text(
             label,
             maxLines: 1,
-            style: DefaultTextStyle.of(context).style
-                .copyWith(color: AppColors.proLime),
+            style: style.copyWith(color: AppColors.proLime),
           ),
         ),
       ),

@@ -211,6 +211,33 @@ void main() {
             .having((e) => e.code, 'code', 'INTERNAL_ERROR'),
       ),
     );
+
+    test(
+      'a reply without the envelope (a gateway\'s HTML error page) has '
+      'no words for the customer: an empty message, the status kept',
+      () async {
+        final consumer = consumerWith(
+          FakeHttpClientAdapter(
+            (_, _) => ResponseBody.fromString(
+              '<html><body>502 Bad Gateway</body></html>',
+              502,
+              headers: {
+                Headers.contentTypeHeader: ['text/html'],
+              },
+            ),
+          ),
+        );
+        await expectLater(
+          () => consumer.get('/x'),
+          throwsA(
+            isA<ServerException>()
+                .having((e) => e.statusCode, 'statusCode', 502)
+                .having((e) => e.code, 'code', isNull)
+                .having((e) => e.message, 'message', isEmpty),
+          ),
+        );
+      },
+    );
   });
 
   group('transport failures', () {

@@ -9,7 +9,11 @@ import 'api_headers.dart';
 ///
 /// Reference: https://docs.jm3eia.store/developers/errors.html
 abstract final class ApiExceptionMapper {
-  static const String _fallbackMessage = 'Request failed';
+  /// A reply without the envelope (a proxy's or gateway's own error page)
+  /// has no words for the customer: the message stays empty, so the UI says
+  /// it in its own (`Failure.serverWords` is `null`). The status still tells
+  /// the failure apart, and the debug trace keeps the body.
+  static const String _fallbackMessage = '';
   static const String _legacyMessageKey = 'message';
 
   static const int _badRequest = 400;

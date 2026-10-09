@@ -12,7 +12,9 @@ import '../widgets/shell_tab_stack.dart';
 /// over a [ShellTabStack] so each tab keeps its scroll + state (the tab
 /// coming on screen fades in; hidden tabs tick nothing).
 ///
-/// The router hands over the tab pages ([tabs]); the shell only places them.
+/// The router hands over the tab pages ([tabs]); the shell only places them
+/// — and what the tabs share with the tab bar ([ShellTabs.scope]) and what
+/// stands on it ([ShellTabs.tabBarTop], the first-order bar).
 /// The Cart tab opens on the cart and switches to the order history, which is
 /// told when it is on screen so it re-reads `GET /v1/orders` when the customer
 /// comes back to it.
@@ -86,16 +88,28 @@ class _MainShellPageState extends State<MainShellPage> {
         ],
       ),
     );
+    final tab = ShellTab.values[_index];
     final overlay = tabs.overlay;
-    return Scaffold(
+    final tabBarTop = tabs.tabBarTop;
+    final nav = ShellBottomNav(
+      index: _index,
+      cartIconKey: _cartIconKey,
+      onTap: _select,
+    );
+    final shell = Scaffold(
       // The overlay (the assistant's buddy) floats over the tab bodies,
       // above the bottom nav; the bodies pass through it untouched.
-      body: overlay == null ? body : overlay(ShellTab.values[_index], body),
-      bottomNavigationBar: ShellBottomNav(
-        index: _index,
-        cartIconKey: _cartIconKey,
-        onTap: _select,
-      ),
+      body: overlay == null ? body : overlay(tab, body),
+      // What stands on the tab bar (the first-order bar) sits right on it;
+      // the tab bodies end above it.
+      bottomNavigationBar: tabBarTop == null
+          ? nav
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [tabBarTop(tab), nav],
+            ),
     );
+    final scope = tabs.scope;
+    return scope == null ? shell : scope(shell);
   }
 }

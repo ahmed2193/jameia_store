@@ -4,15 +4,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/design/hero_assets.dart';
 import '../../../../../core/motion/fade_through_switcher.dart';
-import '../../../../../core/utils/failure_message.dart';
 import '../../../../../core/widgets/app_loader.dart';
+import '../../../../../core/widgets/failure_view.dart';
 import '../../../../../core/widgets/hero_state_view.dart';
 import '../../cubit/cart_deals_cubit.dart';
 import '../../cubit/cart_deals_state.dart';
 import 'cart_deal_grid.dart';
 
-/// What the sheet lists under the selected deal: a loader, the error with a
-/// retry (offline → "no internet"), "no deals right now", or the grid.
+/// What the sheet lists under the selected deal: a loader, the failure told
+/// by what went wrong ([FailureView]: the connection check first, then its
+/// own plate and a retry), "no deals right now", or the grid.
 /// Cross-fades only when that changes.
 class CartDealProducts extends StatelessWidget {
   const CartDealProducts({super.key});
@@ -32,8 +33,8 @@ class CartDealProducts extends StatelessWidget {
           child: state.isLoading
               ? const AppLoader()
               : failure != null
-              ? HeroStateView.error(
-                  message: failure.localizedMessage,
+              ? FailureView(
+                  failure: failure,
                   onRetry: () => context.read<CartDealsCubit>().retry(),
                 )
               : state.isEmpty

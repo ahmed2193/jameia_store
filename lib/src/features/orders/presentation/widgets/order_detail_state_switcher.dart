@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/design/hero_icons.dart';
+import '../../../../core/design/hero_assets.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/motion/fade_through_switcher.dart';
 import '../../../../core/widgets/app_loader.dart';
@@ -67,7 +67,7 @@ class OrderDetailStateSwitcher extends StatelessWidget {
                 : notFound
                 ? HeroStateView(
                     message: errorMessage ?? 'orders.not_found'.tr(),
-                    icon: HeroIcons.receipt,
+                    art: HeroAssets.stateNotFound,
                     actionLabel: onBack == null
                         ? null
                         : 'orders.back_to_orders'.tr(),
@@ -76,10 +76,7 @@ class OrderDetailStateSwitcher extends StatelessWidget {
                 : FailureView(
                     failure: failure,
                     onRetry: onRetry,
-                    errorBuilder: (message) => HeroStateView.error(
-                      message: errorMessage ?? message,
-                      onRetry: onRetry,
-                    ),
+                    message: errorMessage,
                   ),
           )
         : (_Bucket.loading, loading);

@@ -697,6 +697,7 @@ candidate id (`B1-xx`/`B2-xx`) is cited directly instead of re-deriving the find
 | Connectivity banner | height + fade in `medium`, out `fast`; "back online" `TintFlash` `breathe` 600 once | `signature` / `exit` | Flapping state: the latest state wins, retargeting mid-reveal | [R08-30][R08-29] |
 | Stale note ("Updated … ago") | height + fade in/out `fast` 150 | `signature` / `exit` | Retargets | [R08-30][R08-27] |
 | Empty state entrance | `medium` 250: fade + scale 0.9 → 1, once; no loop | `signature` | None needed | [R08-31][R08-08][R08-03] |
+| Issue plate story (failure states only: `StateArtMotions`) | after the entrance, laps of `stateArtLap` 2400 — still for the first 10 %, the story, still for the last 25 % — as many as fit `ambientBudget` 5000 (two), on screen only, again when back on screen | per keyframe: `signature` arrivals, `machEaseInOut` swings, `linear` flickers | Off screen, a hidden tab, reduced motion or a screen reader → the still sticker (every track ends where it starts) | user request 2026-10-05 |
 | Error shake (blocked tap / invalid submit) | `medium` 250 decaying sine, about 3 swings | `ShakeX` built-in | A re-tap restarts the shake | [R08-24][R08-26][R01-30] |
 | Success check | `drawOn` 700 draw; hold `successHold` 400 | `emphasizedDecelerate` | Leaving the page cancels it | [R08-02][R02-21] |
 | Celebration (confetti) | `confetti` 1400, one burst, no more than 50-60 pieces | physics + `linear` fade | `IgnorePointer`; never blocks | [R08-32][R08-23] |
@@ -1059,7 +1060,7 @@ Call sites are instantiations / files outside `core/motion`.
 | BusyOverlay / CubitBusyOverlay | 2 / 13 files | **keep** | Contract §3 |
 | BrandedRefresh + RefreshDiscHeader | 18 files | **keep** | |
 | Skeletonized (+ 6 layouts) | 11 | **keep** + a `RepaintBoundary` (P2-M3); sweep mirrors in RTL | [R05-07][INFERENCE] |
-| HeroStateView / EmptyStateView / ErrorView / FailureView | 7 / 22 / 10 / 17 files | **keep**; one entrance (fade + 0.9 → 1, `medium`, once) for every variant; no loop (the FloatLoop on empty coupons retires); checking → offline cross-fades (A06 #14) | A10 #9-#10 |
+| HeroStateView / EmptyStateView / ErrorView / FailureView | 7 / 22 / 10 / 17 files | **keep**; one entrance (fade + 0.9 → 1, `medium`, once) for every variant; no loop (the FloatLoop on empty coupons retires); issue plates (`HeroStateView.failure`, `StateArtMotions`) then tell their story inside the ambient budget (2026-10-05); checking → offline cross-fades (A06 #14) | A10 #9-#10 |
 | StaleDataNotice / StaleAgePill / CubitStaleNotice | 2 + | **keep**; `CollapseReveal` both ways instead of snap + `Opacity` (A06 #11) | |
 | ConnectivityBar (banner) | 1 | **keep** (CollapseReveal + TintFlash) | |
 | RetryingNetworkImage / HeroNetworkImage | 2 | **keep**; `fast` fade, gated, no placeholder fade stacking (P3-5) | |

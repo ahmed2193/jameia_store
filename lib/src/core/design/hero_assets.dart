@@ -27,7 +27,7 @@ class HeroAssets {
   static const String offerVoucher = 'assets/svg/offer_voucher.svg';
   static const String offerGift = 'assets/svg/offer_gift.svg';
 
-  // ── First-order free delivery (home bar + its dialog) ────────────────────
+  // ── First-order free delivery (the home bar) ─────────────────────────────
   /// A Hero rider seen from the side on a white scooter, riding towards the
   /// end edge (mirror it in RTL): white helmet, the amber cape flowing back
   /// over the green delivery box with the bag on it. Drawn for the brand-deep
@@ -191,4 +191,78 @@ class HeroAssets {
   /// The order page's live-map card: a Hero map tile, the road from the
   /// store to home, the rider on it (120 × 88).
   static const String trackingLiveMap = 'assets/svg/tracking_live_map.svg';
+
+  // ── Issue states (built by tool/issue_art from one master each) ──────────
+  // 160×120 plates like the screen states above, one per thing that can go
+  // wrong (`StateIssue`). Each is a still base plus the parts that move, all
+  // in the same frame: `StateArt` stacks them and plays the story
+  // (`StateArtMotions`). The bases of `stateError`, `stateOffline`,
+  // `stateSignedOut`, `stateNotFound` and `stateUnavailable` above have
+  // their moving parts here too.
+  /// Online, but the store does not answer: the bag's plug is out of the
+  /// socket.
+  static const String stateUnreachable = 'assets/svg/state_unreachable.svg';
+  static const String stateUnreachablePlug =
+      'assets/svg/state_unreachable_plug.svg';
+  static const String stateUnreachableSpark =
+      'assets/svg/state_unreachable_spark.svg';
+
+  /// The request took too long: a stopwatch.
+  static const String stateTimeout = 'assets/svg/state_timeout.svg';
+  static const String stateTimeoutButton =
+      'assets/svg/state_timeout_button.svg';
+  static const String stateTimeoutHand = 'assets/svg/state_timeout_hand.svg';
+
+  /// The store's server failed: a smoking server stack.
+  static const String stateServer = 'assets/svg/state_server.svg';
+  static const String stateServerLed = 'assets/svg/state_server_led.svg';
+  static const String stateServerSmoke = 'assets/svg/state_server_smoke.svg';
+
+  /// Down for maintenance: the bag in a hard hat, a cone, a gear, a wrench.
+  static const String stateMaintenance = 'assets/svg/state_maintenance.svg';
+  static const String stateMaintenanceGear =
+      'assets/svg/state_maintenance_gear.svg';
+  static const String stateMaintenanceWrench =
+      'assets/svg/state_maintenance_wrench.svg';
+
+  /// Too many tries: the bag waits at a red light.
+  static const String stateRateLimited = 'assets/svg/state_rate_limited.svg';
+  static const String stateRateLimitedBag =
+      'assets/svg/state_rate_limited_bag.svg';
+  static const String stateRateLimitedGlow =
+      'assets/svg/state_rate_limited_glow.svg';
+
+  /// Not allowed: a door with a no-entry sign.
+  static const String stateForbidden = 'assets/svg/state_forbidden.svg';
+  static const String stateForbiddenSign =
+      'assets/svg/state_forbidden_sign.svg';
+
+  /// The answer could not be read: a garbled page and the piece that does
+  /// not fit.
+  static const String stateBadData = 'assets/svg/state_bad_data.svg';
+  static const String stateBadDataPiece = 'assets/svg/state_bad_data_piece.svg';
+
+  /// The moving parts of the screen states above.
+  static const String stateErrorBag = 'assets/svg/state_error_bag.svg';
+  static const String stateErrorOrange = 'assets/svg/state_error_orange.svg';
+  static const String stateErrorBadge = 'assets/svg/state_error_badge.svg';
+  static const String stateOfflineSignalMid =
+      'assets/svg/state_offline_signal_mid.svg';
+  static const String stateOfflineSignalOut =
+      'assets/svg/state_offline_signal_out.svg';
+  static const String stateOfflineBadge = 'assets/svg/state_offline_badge.svg';
+  static const String stateSignedOutLock =
+      'assets/svg/state_signed_out_lock.svg';
+  static const String stateSignedOutSparkle =
+      'assets/svg/state_signed_out_sparkle.svg';
+  static const String stateNotFoundFlapStart =
+      'assets/svg/state_not_found_flap_start.svg';
+  static const String stateNotFoundFlapEnd =
+      'assets/svg/state_not_found_flap_end.svg';
+  static const String stateNotFoundBubbles =
+      'assets/svg/state_not_found_bubbles.svg';
+  static const String stateUnavailableSign =
+      'assets/svg/state_unavailable_sign.svg';
+  static const String stateUnavailableMoon =
+      'assets/svg/state_unavailable_moon.svg';
 }

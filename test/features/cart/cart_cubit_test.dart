@@ -196,6 +196,21 @@ void main() {
     ]);
   });
 
+  test(
+    'a placed order is counted once, and the count outlives snapshots',
+    () async {
+      final cubit = await started();
+      expect(cubit.state.ordersPlaced, 0);
+
+      await cubit.onOrderPlaced();
+      expect(cubit.state.ordersPlaced, 1);
+
+      await cubit.onOrderPlaced();
+      await cubit.refresh();
+      expect(cubit.state.ordersPlaced, 2);
+    },
+  );
+
   test('reorder sends every line of the order in one batch', () async {
     final cubit = await started();
 

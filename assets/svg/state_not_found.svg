@@ -3,13 +3,6 @@
   <circle cx="80" cy="58" r="44" fill="#E8F1FD"/>
   <g stroke="#0B2E13" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
     <path d="M54 50H106L108 62H52Z" fill="#EBEBEB"/>
-    <path d="M52 62L34 57L37 42L54 50Z" fill="#F3EDE5"/>
-    <path d="M108 62L126 57L123 42L106 50Z" fill="#F3EDE5"/>
     <rect x="52" y="62" width="56" height="34" rx="3" fill="#F3EDE5"/>
-    <g fill="#FFFFFF" stroke-width="2">
-      <circle cx="74" cy="38" r="4"/>
-      <circle cx="86" cy="31" r="3"/>
-      <circle cx="79" cy="22" r="2"/>
-    </g>
   </g>
 </svg>

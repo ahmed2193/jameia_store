@@ -14,6 +14,7 @@ import 'domain/usecases/mark_home_popups_shown_usecase.dart';
 import 'domain/usecases/select_due_home_popups_usecase.dart';
 import 'domain/usecases/watch_home_bootstrap_usecase.dart';
 import 'domain/usecases/watch_home_feed_usecase.dart';
+import 'presentation/cubit/first_order_bar_cubit.dart';
 import 'presentation/cubit/home_cubit.dart';
 import 'presentation/cubit/home_launch_prefetch.dart';
 
@@ -71,5 +72,7 @@ void initHomeFeature() {
         language: () => sl<LocaleProvider>().languageCode,
       ),
     )
-    ..registerFactory<HomeCubit>(() => sl<HomeLaunchPrefetch>().adopt());
+    ..registerFactory<HomeCubit>(() => sl<HomeLaunchPrefetch>().adopt())
+    // The first-order bar on the shell's tab bar, fed by the home tab.
+    ..registerFactory(FirstOrderBarCubit.new);
 }

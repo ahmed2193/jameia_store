@@ -315,11 +315,9 @@ void main() {
     );
 
     Future<bool> check(HomeBootstrap bootstrap) async =>
-        (await CheckFirstOrderWelcomeUseCase(
-          repository,
-        )(CheckFirstOrderWelcomeParams(bootstrap: bootstrap))).getOrElse(
-          () => false,
-        );
+        (await CheckFirstOrderWelcomeUseCase(repository)(
+          CheckFirstOrderWelcomeParams(bootstrap: bootstrap),
+        )).getOrElse(() => false);
 
     test('switched off by the store: never due, no count asked', () async {
       expect(await check(const HomeBootstrap(hasCustomer: true)), isFalse);
@@ -331,21 +329,24 @@ void main() {
       expect(repository.orderCounts, 0);
     });
 
-    test('a signed-in customer (also just after sign-in): due only with 0 orders', () async {
-      repository.ordersCount = const Right(0);
-      expect(await check(customerGift), isTrue);
+    test(
+      'a signed-in customer (also just after sign-in): due only with 0 orders',
+      () async {
+        repository.ordersCount = const Right(0);
+        expect(await check(customerGift), isTrue);
 
-      repository.ordersCount = const Right(2);
-      expect(await check(customerGift), isFalse);
-      expect(repository.orderCounts, 2);
-    });
+        repository.ordersCount = const Right(2);
+        expect(await check(customerGift), isFalse);
+        expect(repository.orderCounts, 2);
+      },
+    );
 
     test('a failed count is returned as it is', () async {
       repository.ordersCount = const Left(NetworkFailure('offline'));
 
-      final result = await CheckFirstOrderWelcomeUseCase(
-        repository,
-      )(const CheckFirstOrderWelcomeParams(bootstrap: customerGift));
+      final result = await CheckFirstOrderWelcomeUseCase(repository)(
+        const CheckFirstOrderWelcomeParams(bootstrap: customerGift),
+      );
 
       expect(result.isLeft(), isTrue);
     });
@@ -361,31 +362,34 @@ void main() {
       await cubit.close();
     });
 
-    test('the queue waits for the count, then offers gift + popups at once', () async {
-      repository
-        ..bootstrap = const Right(
-          HomeBootstrap(
-            firstOrderFreeDelivery: true,
-            hasCustomer: true,
-            popups: [sessionPopup],
-          ),
-        )
-        ..orderGates = [];
-      final cubit = buildCubit();
-      await record(cubit, cubit.load);
+    test(
+      'the queue waits for the count, then offers gift + popups at once',
+      () async {
+        repository
+          ..bootstrap = const Right(
+            HomeBootstrap(
+              firstOrderFreeDelivery: true,
+              hasCustomer: true,
+              popups: [sessionPopup],
+            ),
+          )
+          ..orderGates = [];
+        final cubit = buildCubit();
+        await record(cubit, cubit.load);
 
-      expect(cubit.state.hasPendingPopups, isFalse, reason: 'count pending');
-      expect(cubit.state.bootstrap.hasCustomer, isTrue);
+        expect(cubit.state.hasPendingPopups, isFalse, reason: 'count pending');
+        expect(cubit.state.bootstrap.hasCustomer, isTrue);
 
-      final states = await record(cubit, () async {
-        repository.orderGates!.single.complete(const Right(0));
-      });
+        final states = await record(cubit, () async {
+          repository.orderGates!.single.complete(const Right(0));
+        });
 
-      expect(states, hasLength(1), reason: 'one emission opens the queue');
-      expect(cubit.state.welcomeDue, isTrue);
-      expect(cubit.state.duePopups, [sessionPopup]);
-      await cubit.close();
-    });
+        expect(states, hasLength(1), reason: 'one emission opens the queue');
+        expect(cubit.state.welcomeDue, isTrue);
+        expect(cubit.state.duePopups, [sessionPopup]);
+        await cubit.close();
+      },
+    );
 
     test('a failed count shows no gift; the popups still come', () async {
       repository
@@ -463,6 +467,112 @@ void main() {
       await pumpEventQueue();
 
       expect(cubit.state.welcomeDue, isFalse);
+    });
+  });
+
+  group('first-order bar', () {
+    const guestGift = HomeBootstrap(firstOrderFreeDelivery: true);
+    const customerGift = HomeBootstrap(
+      firstOrderFreeDelivery: true,
+      hasCustomer: true,
+    );
+
+    test('follows the gift and outlives the popup', () async {
+      repository.bootstrap = const Right(guestGift);
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+      expect(cubit.state.firstOrderGift, isTrue);
+
+      cubit.markPopupsShown();
+      expect(cubit.state.welcomeDue, isFalse);
+      expect(cubit.state.firstOrderGift, isTrue, reason: 'the bar stays');
+      await cubit.close();
+    });
+
+    test(
+      'never from a saved copy, nor when the store switched it off',
+      () async {
+        repository
+          ..cachedBootstrap = guestGift
+          ..bootstrap = const Left(NetworkFailure('offline'));
+        final offline = buildCubit();
+        await record(offline, offline.load);
+        expect(offline.state.firstOrderGift, isFalse);
+        await offline.close();
+
+        repository
+          ..cachedBootstrap = null
+          ..bootstrap = const Right(HomeBootstrap(hasCustomer: true));
+        final switchedOff = buildCubit();
+        await record(switchedOff, switchedOff.load);
+        expect(switchedOff.state.firstOrderGift, isFalse);
+        expect(repository.orderCounts, 0);
+        await switchedOff.close();
+      },
+    );
+
+    test(
+      'a placed order takes it away; a late count never brings it back',
+      () async {
+        repository
+          ..bootstrap = const Right(customerGift)
+          ..orderGates = [];
+        final cubit = buildCubit();
+        await record(cubit, cubit.load);
+        await record(cubit, cubit.refresh);
+        final gates = repository.orderGates!;
+        await record(cubit, () async => gates[0].complete(const Right(0)));
+        await record(cubit, () async => gates[1].complete(const Right(0)));
+        expect(cubit.state.firstOrderGift, isTrue);
+
+        await record(cubit, cubit.refresh);
+        cubit.onOrderPlaced();
+        expect(cubit.state.firstOrderGift, isFalse);
+        expect(cubit.state.welcomeDue, isFalse);
+
+        await record(cubit, () async => gates[2].complete(const Right(0)));
+        expect(
+          cubit.state.firstOrderGift,
+          isFalse,
+          reason: 'stale count drops',
+        );
+        await cubit.close();
+      },
+    );
+
+    test(
+      'a refresh after the popups re-asks only while the bar shows',
+      () async {
+        repository.bootstrap = const Right(customerGift);
+        final cubit = buildCubit();
+        await record(cubit, cubit.load);
+        cubit.markPopupsShown();
+        expect(cubit.state.firstOrderGift, isTrue);
+
+        // The first order went in elsewhere (another device): the next server
+        // snapshot's count says so.
+        repository.ordersCount = const Right(1);
+        await record(cubit, cubit.refresh);
+        expect(cubit.state.firstOrderGift, isFalse);
+        expect(cubit.state.welcomeDue, isFalse, reason: 'no popup again');
+        final asked = repository.orderCounts;
+
+        await record(cubit, cubit.refresh);
+        expect(repository.orderCounts, asked, reason: 'nothing left to settle');
+        await cubit.close();
+      },
+    );
+
+    test('a failed count leaves the bar as it was', () async {
+      repository.bootstrap = const Right(customerGift);
+      final cubit = buildCubit();
+      await record(cubit, cubit.load);
+      expect(cubit.state.firstOrderGift, isTrue);
+
+      repository.ordersCount = const Left(NetworkFailure('offline'));
+      await record(cubit, cubit.refresh);
+      expect(cubit.state.firstOrderGift, isTrue);
+      await cubit.close();
     });
   });
 }

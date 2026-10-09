@@ -12,7 +12,7 @@ import 'home_first_order_rider.dart';
 
 /// The first-order free-delivery bar that sits on the shell's tab bar: the
 /// Hero rider riding in on the brand-deep green, "[Free delivery] on your
-/// first order", and the chevron that opens the details ([onTap]). Its top
+/// first order", and the chevron that opens the welcome gift ([onTap]). Its top
 /// corners round off over the feed like a tab pulled up from the bar below.
 ///
 /// It arrives with motion: the rider drives in, the line and the chevron
@@ -24,7 +24,8 @@ class HomeFirstOrderBanner extends StatelessWidget {
 
   final VoidCallback onTap;
 
-  static const double _rider = AppSize.s52;
+  /// The reference bar's proportions: a small rider, one line of text.
+  static const double _rider = AppSize.s44;
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +48,15 @@ class HomeFirstOrderBanner extends StatelessWidget {
             onTap: onTap,
             child: const Padding(
               padding: EdgeInsetsDirectional.fromSTEB(
-                AppSpacing.s4,
-                AppSpacing.s10,
+                AppSpacing.s8,
                 AppSpacing.s12,
-                AppSpacing.s10,
+                AppSpacing.s16,
+                AppSpacing.s12,
               ),
               child: Row(
                 children: [
                   HomeFirstOrderRider(width: _rider),
-                  SizedBox(width: AppSpacing.s8),
+                  SizedBox(width: AppSpacing.s6),
                   Expanded(
                     child: EntranceCascadeItem.single(
                       index: 2,

@@ -24,16 +24,7 @@ abstract final class HomePopupQueue {
   }) async {
     if (welcome) {
       if (!context.mounted) return;
-      final ordered = await showHeroDialog<bool>(
-        context,
-        barrierLabel: 'home.popup_barrier_label'.tr(),
-        barrierColor: AppColors.popupScrim,
-        pageBuilder: (dialogContext) => HomeWelcomePopupView(
-          onOrderNow: () => dialogContext.pop(true),
-          onClose: () => dialogContext.pop(false),
-        ),
-      );
-      if (ordered ?? false) return;
+      if (await showWelcome(context)) return;
       if (popups.isEmpty) return;
       await Future<void>.delayed(AppMotion.page);
     }
@@ -57,5 +48,22 @@ abstract final class HomePopupQueue {
       // Let the closing transition finish before the next popup opens.
       await Future<void>.delayed(AppMotion.page);
     }
+  }
+
+  /// The first-order welcome gift on its own: the animated GIF card of the
+  /// current language over the scrim (the queue's first popup, and what the
+  /// first-order bar on the tab bar opens). `true` when the customer tapped
+  /// "Order now", `false` on the ring or a tap outside.
+  static Future<bool> showWelcome(BuildContext context) async {
+    final ordered = await showHeroDialog<bool>(
+      context,
+      barrierLabel: 'home.popup_barrier_label'.tr(),
+      barrierColor: AppColors.popupScrim,
+      pageBuilder: (dialogContext) => HomeWelcomePopupView(
+        onOrderNow: () => dialogContext.pop(true),
+        onClose: () => dialogContext.pop(false),
+      ),
+    );
+    return ordered ?? false;
   }
 }

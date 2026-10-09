@@ -131,10 +131,6 @@ class _OrdersPageState extends State<OrdersPage> {
                           LoadPhase.error => FailureView(
                             failure: state.loadFailure,
                             onRetry: _cubit.load,
-                            errorBuilder: (message) => HeroStateView.error(
-                              message: message,
-                              onRetry: _cubit.load,
-                            ),
                           ),
                           LoadPhase.loaded => const OrdersList(),
                         },

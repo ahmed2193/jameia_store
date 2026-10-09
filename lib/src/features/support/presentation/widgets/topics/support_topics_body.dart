@@ -95,7 +95,6 @@ class _SupportTopicsBodyState extends State<SupportTopicsBody> {
                           ),
                         CustomerServiceQuestionStatus.error =>
                           HeroStateView.error(
-                            message: state.errorMessage,
                             onRetry: context
                                 .read<CustomerServiceQuestionCubit>()
                                 .load,

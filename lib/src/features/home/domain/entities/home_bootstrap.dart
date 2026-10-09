@@ -81,9 +81,6 @@ class HomeDelivery extends Equatable {
 
   double get minOrderKd => minOrderFils / filsPerDinar;
 
-  /// The zone's delivery fee in dinars — what the first-order gift waives.
-  double get deliveryFeeKd => deliveryFeeFils / filsPerDinar;
-
   /// What a basket of [subtotalKd] is still short of the minimum order, in
   /// fils. The comparison happens in fils because that is what the backend
   /// sends: a subtotal that meets the minimum exactly is exactly zero short,
