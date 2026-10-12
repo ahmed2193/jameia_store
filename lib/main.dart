@@ -7,10 +7,18 @@ import 'src/app.dart';
 import 'src/config/di/service_locator.dart';
 import 'src/config/theme/font_licenses.dart';
 import 'src/core/constants/app_constants.dart';
-import 'src/core/widgets/image_cache_tuner.dart';
+import 'src/core/media/hero_image_cache_manager.dart';
+import 'src/core/media/hero_widgets_binding.dart';
+import 'src/core/media/image_cache_tuner.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // The app binding: memory pressure trims the image cache instead of wiping
+  // it (TrimmingImageCache).
+  HeroWidgetsBinding.ensureInitialized();
+  // Fire-and-forget, first thing: reads the image store's metadata file (off
+  // the UI isolate when large) so the first images already know what is on
+  // disk. path_provider + file I/O only — no get_it, Dio or EasyLocalization.
+  unawaited(HeroImageCacheManager.seedDiskIndex());
   FontLicenses.register(); // OFL texts of the bundled fonts (read lazily)
   await EasyLocalization.ensureInitialized();
   await setupServiceLocator(); // core infra + every feature (config/di)

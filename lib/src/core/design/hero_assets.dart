@@ -98,6 +98,12 @@ class HeroAssets {
   /// A product photo that is missing.
   static const String imagePlaceholder = 'assets/svg/image_placeholder.svg';
 
+  /// [imagePlaceholder]'s bag as a 256 px white-on-transparent alpha mask,
+  /// tinted at draw time by the loading shimmer of every image
+  /// (`HeroImageShimmer`). Generated: `flutter test
+  /// tool/gen_hero_shimmer_mask.dart`.
+  static const String imageShimmerMask = 'assets/images/hero_shimmer_mask.png';
+
   // ── Screen states (docs/motion/asset_manifest.md "Per-screen decisions") ──
   // 160×120 plates: an 88 dp disc (centre 80, 58) over a soft floor shadow,
   // drawn by `StateArt`.

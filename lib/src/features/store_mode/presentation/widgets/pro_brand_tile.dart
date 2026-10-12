@@ -46,12 +46,7 @@ class ProBrandTile extends StatelessWidget {
             border: Border.all(color: AppColors.brandTileBorder),
           ),
           child: brand.hasImage
-              ? HeroImage(
-                  url: brand.image,
-                  width: side,
-                  height: side,
-                  memCacheWidth: context.cacheCapFor(side),
-                )
+              ? HeroImage(url: brand.image, width: side, height: side)
               : Text(
                   brand.initial,
                   style: AppTextStyles.displayLarge.copyWith(
